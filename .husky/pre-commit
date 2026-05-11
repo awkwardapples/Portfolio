@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Temporarily disabled test until step 3C
+# pnpm test
+
+# We'll add proper linting + formatting in step 3C

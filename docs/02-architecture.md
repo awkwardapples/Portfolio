@@ -160,16 +160,16 @@ The pricing config travels with the React build by default. If we later want cli
 
 ## 6. Security model
 
-| Threat | Mitigation |
-|---|---|
-| CSRF on the submit endpoint | WordPress nonce verified in the REST handler |
-| Spam / bot submissions | Honeypot field + time-to-submit check + per-IP rate limit; reCAPTCHA v3 added only if abuse is observed |
-| Malicious file uploads | MIME type allowlist (jpeg, png, webp), size cap (8MB per file pre-compression), `wp_check_filetype_and_ext` |
-| XSS via wizard input | All output sanitised; React escapes by default; PHP output uses `esc_html` / `esc_url` |
-| Make.com webhook URL leakage | Stored in `wp_options` with autoload disabled; not exposed to the frontend; rotated if compromised |
-| HubSpot token leakage | Stored in Make.com connection store; never sent to WordPress or the browser |
-| Plugin code execution | Plugin follows WP security guidelines; capabilities checked on admin actions; no `eval`, no `unserialize` on untrusted input |
-| Submission log data exposure | `qw_submissions` table is admin-only via wp-admin UI; phone numbers and emails redacted in non-admin views |
+| Threat                       | Mitigation                                                                                                                   |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| CSRF on the submit endpoint  | WordPress nonce verified in the REST handler                                                                                 |
+| Spam / bot submissions       | Honeypot field + time-to-submit check + per-IP rate limit; reCAPTCHA v3 added only if abuse is observed                      |
+| Malicious file uploads       | MIME type allowlist (jpeg, png, webp), size cap (8MB per file pre-compression), `wp_check_filetype_and_ext`                  |
+| XSS via wizard input         | All output sanitised; React escapes by default; PHP output uses `esc_html` / `esc_url`                                       |
+| Make.com webhook URL leakage | Stored in `wp_options` with autoload disabled; not exposed to the frontend; rotated if compromised                           |
+| HubSpot token leakage        | Stored in Make.com connection store; never sent to WordPress or the browser                                                  |
+| Plugin code execution        | Plugin follows WP security guidelines; capabilities checked on admin actions; no `eval`, no `unserialize` on untrusted input |
+| Submission log data exposure | `qw_submissions` table is admin-only via wp-admin UI; phone numbers and emails redacted in non-admin views                   |
 
 ## 7. GDPR / compliance model
 
@@ -187,15 +187,15 @@ The architecture treats GDPR as a first-class concern, not a checkbox.
 
 These are budgets, not targets. They are the line we do not cross.
 
-| Metric | Budget | Rationale |
-|---|---|---|
-| Wizard JS bundle (gzipped) | ≤ 180KB | Mobile 4G should reach interactive in under 2s |
-| Wizard CSS (gzipped) | ≤ 20KB | Tailwind purged to used classes only |
-| Time to interactive on the wizard page (4G, mid-tier Android) | ≤ 3s | Conversion drops sharply past this |
-| Largest Contentful Paint (homepage) | ≤ 2.5s | Core Web Vitals "Good" threshold |
-| Cumulative Layout Shift | ≤ 0.1 | Same |
-| Submit endpoint p95 latency (excluding Make.com forward) | ≤ 800ms | Image sideload is the slow path; we time-box it |
-| Make.com forward timeout | 5s | If Make.com is slow, we still return to the user fast |
+| Metric                                                        | Budget  | Rationale                                             |
+| ------------------------------------------------------------- | ------- | ----------------------------------------------------- |
+| Wizard JS bundle (gzipped)                                    | ≤ 180KB | Mobile 4G should reach interactive in under 2s        |
+| Wizard CSS (gzipped)                                          | ≤ 20KB  | Tailwind purged to used classes only                  |
+| Time to interactive on the wizard page (4G, mid-tier Android) | ≤ 3s    | Conversion drops sharply past this                    |
+| Largest Contentful Paint (homepage)                           | ≤ 2.5s  | Core Web Vitals "Good" threshold                      |
+| Cumulative Layout Shift                                       | ≤ 0.1   | Same                                                  |
+| Submit endpoint p95 latency (excluding Make.com forward)      | ≤ 800ms | Image sideload is the slow path; we time-box it       |
+| Make.com forward timeout                                      | 5s      | If Make.com is slow, we still return to the user fast |
 
 ## 9. Observability
 
@@ -211,15 +211,16 @@ A system you cannot observe is one you cannot maintain. The agency operations re
 
 Where, exactly, do we draw the lines so client #2 takes 2 days, not 2 weeks?
 
-| Seam | What varies | What is shared |
-|---|---|---|
-| Pricing config | The numbers, the question list, the trade type | The engine, the config schema, the validation |
-| Branding | Primary colour, business name, logo, contact details | All component code, all layout |
-| Content (WP pages) | Copy, images, service areas | Page templates, schema markup, SEO patterns |
-| Make.com scenario | Webhook URL, HubSpot account, email recipients | The scenario shape (blueprint JSON) |
-| Plugin instance | Plugin slug (`qw-clientname`), settings values | All PHP code |
+| Seam               | What varies                                          | What is shared                                |
+| ------------------ | ---------------------------------------------------- | --------------------------------------------- |
+| Pricing config     | The numbers, the question list, the trade type       | The engine, the config schema, the validation |
+| Branding           | Primary colour, business name, logo, contact details | All component code, all layout                |
+| Content (WP pages) | Copy, images, service areas                          | Page templates, schema markup, SEO patterns   |
+| Make.com scenario  | Webhook URL, HubSpot account, email recipients       | The scenario shape (blueprint JSON)           |
+| Plugin instance    | Plugin slug (`qw-clientname`), settings values       | All PHP code                                  |
 
 What this means in practice:
+
 - Deploying client #2 means cloning the plugin repo, renaming the slug, importing the Make.com blueprint, editing one JSON config file, and a `npm run build`.
 - It does **not** mean editing React component code.
 - It does **not** mean rewriting the Make.com scenario.

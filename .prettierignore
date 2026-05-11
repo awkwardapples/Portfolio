@@ -1,0 +1,20 @@
+# Dependencies
+node_modules
+vendor
+
+# Build artefacts
+apps/wizard/dist
+plugins/quote-wizard/assets/dist
+dist
+coverage
+
+# Prettier does not format PHP — handled by PHPCS in plugin/composer.json
+plugins/quote-wizard/**/*.php
+
+# Lockfiles — let the package manager own these
+pnpm-lock.yaml
+composer.lock
+
+# Generated files
+*.min.js
+*.min.css

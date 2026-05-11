@@ -33,12 +33,12 @@ The engine must **not**:
 
 A pricing config describes how to build a total price from a set of answers. The total is composed by combining contributions of four kinds:
 
-| Contribution kind | Example | Notes |
-|---|---|---|
-| **Base** | Fencing base price: £600 | A flat starting amount |
-| **Per-unit** | Gravel board: £8/metre | Multiplied by a quantity from the answers |
-| **Multiplier** | Difficult terrain: ×1.25 | Multiplies a subset of contributions (or the running total) |
-| **Add-on** | Gate: £180 each | Fixed amounts, possibly quantified |
+| Contribution kind | Example                  | Notes                                                       |
+| ----------------- | ------------------------ | ----------------------------------------------------------- |
+| **Base**          | Fencing base price: £600 | A flat starting amount                                      |
+| **Per-unit**      | Gravel board: £8/metre   | Multiplied by a quantity from the answers                   |
+| **Multiplier**    | Difficult terrain: ×1.25 | Multiplies a subset of contributions (or the running total) |
+| **Add-on**        | Gate: £180 each          | Fixed amounts, possibly quantified                          |
 
 The total is then bracketed into a range using a configurable variance — for example, ±15% — to produce the "low" and "high" outputs the user sees.
 
@@ -54,22 +54,22 @@ The TypeScript definitions below are the source of truth. The JSON Schema and Zo
 // =============================================================================
 // Identifiers — string newtypes for clarity
 // =============================================================================
-type StepId = string;        // unique within a wizard config
-type AnswerKey = string;     // dotted path into the answers object, e.g. "fence.length"
-type RuleId = string;        // unique within a pricing config
+type StepId = string; // unique within a wizard config
+type AnswerKey = string; // dotted path into the answers object, e.g. "fence.length"
+type RuleId = string; // unique within a pricing config
 
 // =============================================================================
 // Wizard configuration
 // =============================================================================
 interface WizardConfig {
   schemaVersion: 1;
-  trade: string;                       // "fencing", "landscaping", etc. Informational only.
+  trade: string; // "fencing", "landscaping", etc. Informational only.
   meta: {
     businessName: string;
-    primaryColor: string;              // hex, e.g. "#0F4C81"
-    currency: "GBP";                   // v1: GBP only
-    locale: "en-GB";                   // v1: en-GB only
-    vatBehavior: "exclusive" | "inclusive";  // affects estimate display copy
+    primaryColor: string; // hex, e.g. "#0F4C81"
+    currency: 'GBP'; // v1: GBP only
+    locale: 'en-GB'; // v1: en-GB only
+    vatBehavior: 'exclusive' | 'inclusive'; // affects estimate display copy
   };
   steps: Step[];
   pricing: PricingConfig;
@@ -94,48 +94,48 @@ interface StepBase {
   description?: string;
   answerKey: AnswerKey;
   required: boolean;
-  visibleWhen?: Condition;             // step skipped if condition is false
+  visibleWhen?: Condition; // step skipped if condition is false
 }
 
 interface TextStep extends StepBase {
-  type: "text";
+  type: 'text';
   placeholder?: string;
   maxLength?: number;
 }
 
 interface NumberStep extends StepBase {
-  type: "number";
+  type: 'number';
   min?: number;
   max?: number;
-  unit?: string;                       // display only, e.g. "metres"
+  unit?: string; // display only, e.g. "metres"
 }
 
 interface SingleChoiceStep extends StepBase {
-  type: "single-choice";
+  type: 'single-choice';
   options: Choice[];
-  display: "buttons" | "dropdown";
+  display: 'buttons' | 'dropdown';
 }
 
 interface MultiChoiceStep extends StepBase {
-  type: "multi-choice";
+  type: 'multi-choice';
   options: Choice[];
   minSelected?: number;
   maxSelected?: number;
 }
 
 interface PhotoUploadStep extends StepBase {
-  type: "photos";
-  maxFiles: number;                    // e.g. 5
-  maxFileSizeMb: number;               // pre-compression
+  type: 'photos';
+  maxFiles: number; // e.g. 5
+  maxFileSizeMb: number; // pre-compression
 }
 
 interface ContactDetailsStep extends StepBase {
-  type: "contact";
-  fields: ContactField[];              // e.g. ["name", "email", "phone", "address", "consent"]
+  type: 'contact';
+  fields: ContactField[]; // e.g. ["name", "email", "phone", "address", "consent"]
 }
 
 interface ReviewStep extends StepBase {
-  type: "review";
+  type: 'review';
 }
 
 interface Choice {
@@ -144,81 +144,76 @@ interface Choice {
   description?: string;
 }
 
-type ContactField = "name" | "email" | "phone" | "address" | "postcode" | "consent";
+type ContactField = 'name' | 'email' | 'phone' | 'address' | 'postcode' | 'consent';
 
 // =============================================================================
 // Conditions — used for step visibility and rule application
 // =============================================================================
 type Condition =
-  | { op: "equals"; key: AnswerKey; value: string | number | boolean }
-  | { op: "includes"; key: AnswerKey; value: string }
-  | { op: "gt" | "gte" | "lt" | "lte"; key: AnswerKey; value: number }
-  | { op: "and"; conditions: Condition[] }
-  | { op: "or"; conditions: Condition[] }
-  | { op: "not"; condition: Condition };
+  | { op: 'equals'; key: AnswerKey; value: string | number | boolean }
+  | { op: 'includes'; key: AnswerKey; value: string }
+  | { op: 'gt' | 'gte' | 'lt' | 'lte'; key: AnswerKey; value: number }
+  | { op: 'and'; conditions: Condition[] }
+  | { op: 'or'; conditions: Condition[] }
+  | { op: 'not'; condition: Condition };
 
 // =============================================================================
 // Pricing configuration
 // =============================================================================
 interface PricingConfig {
-  currency: "GBP";
-  rules: PricingRule[];                // evaluated in array order
+  currency: 'GBP';
+  rules: PricingRule[]; // evaluated in array order
   variance: VarianceConfig;
   rounding: RoundingConfig;
 }
 
-type PricingRule =
-  | BaseRule
-  | PerUnitRule
-  | LookupRule
-  | MultiplierRule
-  | AddonRule;
+type PricingRule = BaseRule | PerUnitRule | LookupRule | MultiplierRule | AddonRule;
 
 interface RuleBase {
   id: RuleId;
-  description: string;                 // for debugging; not shown to user
-  when?: Condition;                    // rule applies only if condition is true
+  description: string; // for debugging; not shown to user
+  when?: Condition; // rule applies only if condition is true
 }
 
 interface BaseRule extends RuleBase {
-  kind: "base";
-  amount: number;                      // e.g. 600
+  kind: 'base';
+  amount: number; // e.g. 600
 }
 
 interface PerUnitRule extends RuleBase {
-  kind: "per-unit";
-  quantityKey: AnswerKey;              // e.g. "fence.length"
-  amountPerUnit: number;               // e.g. 200 (£/metre)
+  kind: 'per-unit';
+  quantityKey: AnswerKey; // e.g. "fence.length"
+  amountPerUnit: number; // e.g. 200 (£/metre)
 }
 
 interface LookupRule extends RuleBase {
-  kind: "lookup";
-  lookupKey: AnswerKey;                // e.g. "fence.material"
-  amounts: Record<string, number>;     // e.g. { closeboard: 0, picket: -100, composite: 400 }
-                                       // The matched value is added.
+  kind: 'lookup';
+  lookupKey: AnswerKey; // e.g. "fence.material"
+  amounts: Record<string, number>; // e.g. { closeboard: 0, picket: -100, composite: 400 }
+  // The matched value is added.
 }
 
 interface MultiplierRule extends RuleBase {
-  kind: "multiplier";
-  lookupKey: AnswerKey;                // e.g. "terrain"
-  factors: Record<string, number>;     // e.g. { normal: 1, difficult: 1.25, severe: 1.5 }
-  appliesTo: "running-total" | { sinceRuleId: RuleId };
-                                       // running-total: multiplies the total so far
-                                       // sinceRuleId: multiplies only the sum since that rule
+  kind: 'multiplier';
+  lookupKey: AnswerKey; // e.g. "terrain"
+  factors: Record<string, number>; // e.g. { normal: 1, difficult: 1.25, severe: 1.5 }
+  appliesTo: 'running-total' | { sinceRuleId: RuleId };
+  // running-total: multiplies the total so far
+  // sinceRuleId: multiplies only the sum since that rule
 }
 
 interface AddonRule extends RuleBase {
-  kind: "addon";
-  amount: number;                      // e.g. 180 for a gate
-  quantityKey?: AnswerKey;             // optional: if present, amount × quantity
-  toggleKey?: AnswerKey;               // optional: applied only if answer is truthy
+  kind: 'addon';
+  amount: number; // e.g. 180 for a gate
+  quantityKey?: AnswerKey; // optional: if present, amount × quantity
+  toggleKey?: AnswerKey; // optional: applied only if answer is truthy
 }
 
 interface VarianceConfig {
   // Final low/high bracket
   // E.g. { mode: "percentage", value: 0.15 } → ±15%
   // E.g. { mode: "absolute", value: 200 } → ±£200
-  mode: "percentage" | "absolute";
+  mode: 'percentage' | 'absolute';
   value: number;
 }
 
@@ -226,7 +221,7 @@ interface RoundingConfig {
   // Applied to low and high independently
   // E.g. { mode: "nearest", to: 50 } → rounds to nearest £50
   // E.g. { mode: "up", to: 10 } → always rounds up to nearest £10
-  mode: "nearest" | "up" | "down";
+  mode: 'nearest' | 'up' | 'down';
   to: number;
 }
 
@@ -234,20 +229,20 @@ interface RoundingConfig {
 // Result screen configuration
 // =============================================================================
 interface ResultConfig {
-  headline: string;                    // e.g. "Your indicative estimate"
-  rangeIntro: string;                  // e.g. "Projects like this typically cost between"
-  rangeSuffix: string;                 // e.g. "+ VAT"
-  disclaimer: string;                  // e.g. "This is an indicative estimate only..."
+  headline: string; // e.g. "Your indicative estimate"
+  rangeIntro: string; // e.g. "Projects like this typically cost between"
+  rangeSuffix: string; // e.g. "+ VAT"
+  disclaimer: string; // e.g. "This is an indicative estimate only..."
   primaryCta: {
-    label: string;                     // e.g. "Book a free site visit"
-    href?: string;                     // e.g. Calendly URL; if absent, shows phone CTA
+    label: string; // e.g. "Book a free site visit"
+    href?: string; // e.g. Calendly URL; if absent, shows phone CTA
   };
   trustSignals?: TrustSignal[];
 }
 
 interface TrustSignal {
-  kind: "review-count" | "rating" | "years-trading" | "free-text";
-  value: string;                       // display string, e.g. "127 five-star reviews"
+  kind: 'review-count' | 'rating' | 'years-trading' | 'free-text';
+  value: string; // display string, e.g. "127 five-star reviews"
 }
 
 // =============================================================================
@@ -257,18 +252,18 @@ type Answers = Record<AnswerKey, AnswerValue>;
 type AnswerValue = string | number | boolean | string[] | null;
 
 interface Estimate {
-  low: number;                         // rounded
-  high: number;                        // rounded
-  currency: "GBP";
-  vatBehavior: "exclusive" | "inclusive";
-  breakdown: BreakdownEntry[];         // for debugging / advanced display
-  warnings: string[];                  // non-fatal issues, e.g. "fallback used for unknown material"
+  low: number; // rounded
+  high: number; // rounded
+  currency: 'GBP';
+  vatBehavior: 'exclusive' | 'inclusive';
+  breakdown: BreakdownEntry[]; // for debugging / advanced display
+  warnings: string[]; // non-fatal issues, e.g. "fallback used for unknown material"
 }
 
 interface BreakdownEntry {
   ruleId: RuleId;
   description: string;
-  contribution: number;                // signed; multipliers contribute the delta
+  contribution: number; // signed; multipliers contribute the delta
 }
 ```
 
@@ -382,15 +377,50 @@ Reference config (abridged for clarity):
   "currency": "GBP",
   "rules": [
     { "id": "base", "kind": "base", "amount": 600, "description": "Base fencing job" },
-    { "id": "length", "kind": "per-unit", "quantityKey": "fence.length", "amountPerUnit": 200, "description": "Per-metre fence" },
-    { "id": "material", "kind": "lookup", "lookupKey": "fence.material",
-      "amounts": { "closeboard": 0, "picket": -100, "composite": 400 }, "description": "Material upgrade" },
-    { "id": "terrain", "kind": "multiplier", "lookupKey": "terrain",
+    {
+      "id": "length",
+      "kind": "per-unit",
+      "quantityKey": "fence.length",
+      "amountPerUnit": 200,
+      "description": "Per-metre fence"
+    },
+    {
+      "id": "material",
+      "kind": "lookup",
+      "lookupKey": "fence.material",
+      "amounts": { "closeboard": 0, "picket": -100, "composite": 400 },
+      "description": "Material upgrade"
+    },
+    {
+      "id": "terrain",
+      "kind": "multiplier",
+      "lookupKey": "terrain",
       "factors": { "normal": 1, "difficult": 1.25, "severe": 1.5 },
-      "appliesTo": "running-total", "description": "Terrain difficulty" },
-    { "id": "removal", "kind": "addon", "amount": 150, "toggleKey": "removeOldFence", "description": "Old fence removal" },
-    { "id": "gravel", "kind": "addon", "amount": 8, "quantityKey": "fence.length", "toggleKey": "gravelBoards", "description": "Gravel boards" },
-    { "id": "gates", "kind": "addon", "amount": 180, "quantityKey": "gates", "description": "Gates" }
+      "appliesTo": "running-total",
+      "description": "Terrain difficulty"
+    },
+    {
+      "id": "removal",
+      "kind": "addon",
+      "amount": 150,
+      "toggleKey": "removeOldFence",
+      "description": "Old fence removal"
+    },
+    {
+      "id": "gravel",
+      "kind": "addon",
+      "amount": 8,
+      "quantityKey": "fence.length",
+      "toggleKey": "gravelBoards",
+      "description": "Gravel boards"
+    },
+    {
+      "id": "gates",
+      "kind": "addon",
+      "amount": 180,
+      "quantityKey": "gates",
+      "description": "Gates"
+    }
   ],
   "variance": { "mode": "percentage", "value": 0.15 },
   "rounding": { "mode": "nearest", "to": 50 }
@@ -399,20 +429,20 @@ Reference config (abridged for clarity):
 
 Step-by-step evaluation:
 
-| Step | Rule | Contribution | Running total |
-|---|---|---|---|
-| 1 | base | +600 | 600 |
-| 2 | length (20 × 200) | +4000 | 4600 |
-| 3 | material (composite) | +400 | 5000 |
-| 4 | terrain (difficult, ×1.25 on 5000) | +1250 (delta) | 6250 |
-| 5 | removal (toggled on) | +150 | 6400 |
-| 6 | gravel (20 × 8, toggled on) | +160 | 6560 |
-| 7 | gates (1 × 180) | +180 | 6740 |
+| Step | Rule                               | Contribution  | Running total |
+| ---- | ---------------------------------- | ------------- | ------------- |
+| 1    | base                               | +600          | 600           |
+| 2    | length (20 × 200)                  | +4000         | 4600          |
+| 3    | material (composite)               | +400          | 5000          |
+| 4    | terrain (difficult, ×1.25 on 5000) | +1250 (delta) | 6250          |
+| 5    | removal (toggled on)               | +150          | 6400          |
+| 6    | gravel (20 × 8, toggled on)        | +160          | 6560          |
+| 7    | gates (1 × 180)                    | +180          | 6740          |
 
 - Total: **£6,740**
 - Variance ±15%: low = 6740 × 0.85 = 5,729; high = 6740 × 1.15 = 7,751
 - Rounded to nearest £50: **low = £5,750**, **high = £7,750**
-- Display: *"Projects like this typically cost between £5,750 and £7,750 + VAT."*
+- Display: _"Projects like this typically cost between £5,750 and £7,750 + VAT."_
 
 This worked example is also a unit test fixture. Any change to the engine that changes this output without an accompanying config change is a regression.
 

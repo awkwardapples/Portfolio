@@ -1,0 +1,6 @@
+# Declares which sub-directories pnpm should treat as workspace packages.
+# The WordPress plugin lives in plugins/quote-wizard but is PHP, not JS,
+# so it intentionally does NOT participate in the pnpm workspace.
+
+packages:
+  - 'apps/*'

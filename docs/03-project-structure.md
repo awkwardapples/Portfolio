@@ -224,6 +224,7 @@ The numbered Phase 1 documents live here, alongside operational docs.
 The `docs/decisions/` subdirectory holds ADRs (Architecture Decision Records). Every non-trivial architectural decision gets a short ADR with context, decision, consequences. This is what saves us in 18 months when someone asks "why on earth did we do it this way?"
 
 Examples of ADRs we will write before coding:
+
 - 0001-thin-wp-endpoint.md (recording the Path A vs Path B decision)
 - 0002-react-hook-form-vs-formik.md
 - 0003-config-bundled-vs-wp-options.md
@@ -231,7 +232,7 @@ Examples of ADRs we will write before coding:
 
 ## 7. What we are deliberately NOT including
 
-- **`shared/` or `packages/common/`** — Tempting, but premature. The React app and the WP plugin share no runtime code (one is TS in the browser, the other is PHP on the server). They share a *contract* (the payload shape), which lives in `docs/` and is duplicated as types in TS and as a validator in PHP. When that duplication causes a bug, we revisit. Until then, the cost of a shared package exceeds the benefit.
+- **`shared/` or `packages/common/`** — Tempting, but premature. The React app and the WP plugin share no runtime code (one is TS in the browser, the other is PHP on the server). They share a _contract_ (the payload shape), which lives in `docs/` and is duplicated as types in TS and as a validator in PHP. When that duplication causes a bug, we revisit. Until then, the cost of a shared package exceeds the benefit.
 - **A monorepo build tool like Turborepo or Nx.** The repo has exactly two buildable artifacts. `pnpm` workspaces (or `npm` workspaces) handle this fine.
 - **Storybook.** The wizard has ~10 components. We can review them by running the dev server. Storybook is a 1-day setup we recover from at component #30, not component #10.
 - **A test runner contracted on the WordPress side.** Plugin code is tested with Pest or PHPUnit. Adding it day one is correct; investing in a full integration test suite is not.
@@ -239,18 +240,18 @@ Examples of ADRs we will write before coding:
 
 ## 8. Naming conventions
 
-| Thing | Convention | Example |
-|---|---|---|
-| React components | PascalCase, one component per file | `PhotoUploadStep.tsx` |
-| React hooks | camelCase, `use` prefix | `useImageCompression.ts` |
-| TS types | PascalCase | `type WizardConfig = …` |
-| PHP classes | PascalCase, PSR-4 | `class SubmitController` |
-| PHP namespace | `Agency\QuoteWizard\…` | rename per client |
-| WP options keys | snake_case, `qw_` prefix | `qw_webhook_url` |
-| WP DB tables | snake_case, `qw_` prefix, no `wp_` (WP adds it) | `qw_submissions` |
-| REST routes | kebab-case | `/wp-json/qw/v1/submit` |
-| Make.com scenarios | `client-name-purpose` | `acme-fencing-lead-intake` |
-| HubSpot custom properties | snake_case, `qw_` prefix | `qw_estimate_low` |
+| Thing                     | Convention                                     | Example                    |
+| ------------------------- | ---------------------------------------------- | -------------------------- |
+| React components          | PascalCase, one component per file             | `PhotoUploadStep.tsx`      |
+| React hooks               | camelCase, `use` prefix                        | `useImageCompression.ts`   |
+| TS types                  | PascalCase                                     | `type WizardConfig = …`    |
+| PHP classes               | PascalCase, PSR-4                              | `class SubmitController`   |
+| PHP namespace             | `Agency\QuoteWizard\…`                         | rename per client          |
+| WP options keys           | snake*case, `qw*` prefix                       | `qw_webhook_url`           |
+| WP DB tables              | snake*case, `qw*`prefix, no`wp\_` (WP adds it) | `qw_submissions`           |
+| REST routes               | kebab-case                                     | `/wp-json/qw/v1/submit`    |
+| Make.com scenarios        | `client-name-purpose`                          | `acme-fencing-lead-intake` |
+| HubSpot custom properties | snake*case, `qw*` prefix                       | `qw_estimate_low`          |
 
 Consistency here pays off when debugging across systems at 9pm.
 

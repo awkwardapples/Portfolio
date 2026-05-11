@@ -1,0 +1,24 @@
+# EditorConfig — https://editorconfig.org
+# This file is the source of truth for whitespace conventions across editors.
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# PHP uses 4 spaces per WordPress Coding Standards.
+[*.php]
+indent_size = 4
+
+# Makefiles require literal tab indentation.
+[Makefile]
+indent_style = tab
+
+# Markdown often relies on trailing whitespace for line breaks.
+[*.md]
+trim_trailing_whitespace = false
