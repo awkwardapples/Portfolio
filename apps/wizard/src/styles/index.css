@@ -1,0 +1,28 @@
+/*
+ * Tailwind entry point.
+ *
+ * Three directives only. Anything component-specific goes inside React
+ * components using Tailwind utility classes, not here.
+ *
+ * Globals are kept minimal because the wizard mounts inside the host
+ * WordPress page; we must not bleed styles into the surrounding page.
+ * The `#qw-root` container scopes our styles by convention — every
+ * style we add is on a Tailwind utility class, which only applies where
+ * we apply it.
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Minimal scoped reset for our mount point. Tailwind's preflight already
+ * does a heavy reset, but it's a global one — we want to keep most of it
+ * scoped to our container so we don't unintentionally restyle the rest of
+ * the WordPress page.
+ *
+ * For step 3B, no scoping work is needed. The placeholder uses only
+ * utility classes inside #qw-root. If/when this becomes a problem in step
+ * 3E (real WP integration), we'll add scoping then with evidence rather
+ * than now speculatively.
+ */

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quote Wizard — Dev</title>
+
+    <!--
+      This HTML file exists ONLY for the Vite dev server (`pnpm dev`).
+      In production, the React bundle is enqueued by the WordPress plugin
+      and mounts into a <div id="qw-root"> rendered by the plugin's shortcode.
+
+      The dev <style> below sets a placeholder value for the CSS variable
+      that the plugin would normally inject per-client. Do not rely on this
+      hex code for production styling — production gets its colour from
+      the plugin settings.
+    -->
+    <style>
+      :root {
+        --qw-primary: 15 76 129; /* dev placeholder; production overrides */
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Same mount point ID as the production WordPress plugin uses. -->
+    <div id="qw-root"></div>
+
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,11 @@
+# Workspace-local ignores. Most things are already excluded by the root
+# .gitignore; these are explicit safeguards in case this directory is
+# ever consumed standalone.
+
+node_modules
+dist
+.vite
+*.log
+
+# Local TypeScript build info
+*.tsbuildinfo
