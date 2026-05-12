@@ -8,12 +8,12 @@ This README covers **this package specifically**. For the project as a whole, se
 
 ## Scripts
 
-| Command | What it does |
-|---|---|
-| `pnpm --filter @growth-ops/wizard dev` | Starts the Vite dev server on `http://localhost:5173`. HMR is enabled. The dev `index.html` provides a `#qw-root` mount point. |
-| `pnpm --filter @growth-ops/wizard build` | Runs `tsc --noEmit` for type-checking, then `vite build`. Output lands in `dist/`. |
-| `pnpm --filter @growth-ops/wizard typecheck` | Type-checks without building. Faster feedback loop than `build`. |
-| `pnpm --filter @growth-ops/wizard preview` | Serves the built `dist/` locally to preview the production bundle. |
+| Command                                      | What it does                                                                                                                   |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `pnpm --filter @growth-ops/wizard dev`       | Starts the Vite dev server on `http://localhost:5173`. HMR is enabled. The dev `index.html` provides a `#qw-root` mount point. |
+| `pnpm --filter @growth-ops/wizard build`     | Runs `tsc --noEmit` for type-checking, then `vite build`. Output lands in `dist/`.                                             |
+| `pnpm --filter @growth-ops/wizard typecheck` | Type-checks without building. Faster feedback loop than `build`.                                                               |
+| `pnpm --filter @growth-ops/wizard preview`   | Serves the built `dist/` locally to preview the production bundle.                                                             |
 
 You can also `cd apps/wizard` and run `pnpm dev`, `pnpm build`, etc. directly.
 

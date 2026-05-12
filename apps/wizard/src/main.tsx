@@ -25,7 +25,6 @@ function mount(): void {
   if (!container) {
     // Non-fatal: the page may not contain the wizard shortcode. Log so
     // engineers spot misconfigurations, but do nothing further.
-    // eslint-disable-next-line no-console
     console.warn(
       `[quote-wizard] no element with id="${MOUNT_ID}" found on this page; wizard will not mount.`,
     );

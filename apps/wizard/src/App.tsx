@@ -12,9 +12,7 @@ export function App(): JSX.Element {
   return (
     <div className="mx-auto max-w-xl p-6">
       <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold text-slate-900">
-          Quote Wizard
-        </h1>
+        <h1 className="text-2xl font-semibold text-slate-900">Quote Wizard</h1>
         <p className="mt-2 text-slate-600">
           The wizard is loading. Real steps will replace this placeholder in Phase 4.
         </p>

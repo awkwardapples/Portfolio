@@ -1,7 +1,10 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+# Run lint-staged on the files about to be committed.
+# This runs ESLint --fix and Prettier --write on the staged set,
+# blocking the commit if any file has an unfixable lint error
+# or any ESLint warning (--max-warnings=0).
+#
+# To bypass intentionally (e.g. for a WIP commit during exploration),
+# use: git commit --no-verify
+# But understand that the same checks will run in CI eventually.
 
-# Temporarily disabled test until step 3C
-# pnpm test
-
-# We'll add proper linting + formatting in step 3C
+pnpm exec lint-staged
