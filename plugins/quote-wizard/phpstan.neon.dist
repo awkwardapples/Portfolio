@@ -1,0 +1,31 @@
+includes:
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+    level: 5
+
+    paths:
+        - src
+        - quote-wizard.php
+        - uninstall.php
+
+    excludePaths:
+        - vendor
+        - tests
+        - assets/dist
+
+    # Constants defined in wp-config.php / quote-wizard.php that PHPStan
+    # can't infer through its own analysis.
+    bootstrapFiles:
+        - tests/phpstan-bootstrap.php
+
+    # Memory: PHPStan's parallel workers each get the configured PHP memory
+    # limit. Composer's `analyse` script runs PHP with -d memory_limit=1G and
+    # passes --memory-limit=1G to PHPStan, which propagates that to workers.
+    # We also cap parallelism so the total memory ceiling stays predictable
+    # on shared LocalWP environments.
+    parallel:
+        maximumNumberOfProcesses: 2
+        processTimeout: 300.0
+
+    ignoreErrors: []

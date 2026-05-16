@@ -1,0 +1,48 @@
+{
+  "name": "agency/quote-wizard",
+  "description": "WordPress plugin hosting the quote wizard React app and routing submissions to Make.com.",
+  "type": "wordpress-plugin",
+  "license": "proprietary",
+  "require": {
+    "php": ">=8.1"
+  },
+  "require-dev": {
+    "squizlabs/php_codesniffer": "^3.10",
+    "wp-coding-standards/wpcs": "^3.1",
+    "phpcsstandards/phpcsutils": "^1.0",
+    "phpcsstandards/phpcsextra": "^1.2",
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+    "phpstan/phpstan": "^1.12",
+    "szepeviktor/phpstan-wordpress": "^1.3",
+    "pestphp/pest": "^3.7",
+    "brain/monkey": "^2.6.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "Agency\\QuoteWizard\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Agency\\QuoteWizard\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "lint": "phpcs",
+    "lint:fix": "phpcbf",
+    "analyse": [
+      "Composer\\Config::disableProcessTimeout",
+      "@php -d memory_limit=1G vendor/bin/phpstan analyse --memory-limit=1G"
+    ],
+    "test": "pest"
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "pestphp/pest-plugin": true
+    },
+    "sort-packages": true
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}

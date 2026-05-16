@@ -1,0 +1,16 @@
+# Composer dependencies (regenerated via `composer install`).
+/vendor/
+
+# Tool caches.
+.phpunit.result.cache
+.phpunit.cache/
+.phpcs-cache
+.phpstan-cache/
+
+# Local overrides.
+phpcs.xml
+phpstan.neon
+composer.lock.local
+
+# Built React bundle is committed — but the wizard's intermediate dist is not.
+# (The plugin's assets/dist IS tracked; only listed here for clarity.)
