@@ -14,12 +14,32 @@
       that the plugin would normally inject per-client. Do not rely on this
       hex code for production styling — production gets its colour from
       the plugin settings.
+
+      The dev <script> below stubs window.GOQW_CONFIG with safe defaults so
+      the React app behaves identically in dev and production. The real
+      production config comes from PublicConfig::to_inline_json() in the
+      WordPress plugin.
     -->
     <style>
       :root {
-        --qw-primary: 15 76 129; /* dev placeholder; production overrides */
+        --goqw-primary: 15 76 129; /* dev placeholder; production overrides */
       }
     </style>
+    <script>
+      window.GOQW_CONFIG = {
+        contractVersion: 1,
+        businessName: 'Dev Site',
+        businessPhone: '01234 567890',
+        businessEmail: 'dev@example.test',
+        primaryColor: '#0F4C81',
+        calendlyUrl: '',
+        restNamespace: 'qw/v1',
+        restUrl: '',
+        restNonce: '',
+        pluginVersion: '0.1.0-dev',
+        buildTimestamp: new Date().toISOString(),
+      };
+    </script>
   </head>
   <body>
     <!-- Same mount point ID as the production WordPress plugin uses. -->

@@ -28,4 +28,8 @@ parameters:
         maximumNumberOfProcesses: 2
         processTimeout: 300.0
 
-    ignoreErrors: []
+    ignoreErrors:
+        # Constants defined in the main plugin file
+        - '#Constant GOQW_PLUGIN_(URL|DIR) not found#'
+        # Strict comparison coming from PHPDoc
+        - '#Strict comparison using === between .+ and non-empty-string#'

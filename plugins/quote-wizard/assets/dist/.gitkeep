@@ -1,0 +1,8 @@
+# This file ensures the assets/dist/ directory is tracked in Git.
+#
+# Built React assets (wizard.HASH.js, wizard.HASH.css, manifest.json) live here.
+# They are produced by `pnpm --filter @growth-ops/wizard build` and copied via
+# scripts/build-plugin.{sh,ps1} (Step 3F).
+#
+# For Step 3E: copy apps/wizard/dist/* into this directory manually one time
+# to see the wizard render. The automated script lands in Step 3F.

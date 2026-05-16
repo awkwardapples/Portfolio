@@ -14,6 +14,7 @@
  *
  * @package Agency\QuoteWizard
  */
+
 declare( strict_types=1 );
 
 namespace Agency\QuoteWizard;

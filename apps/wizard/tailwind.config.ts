@@ -24,10 +24,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        // CSS variable with a sensible fallback. The WordPress plugin will
-        // emit a <style> block setting --qw-primary on the wizard root.
-        // Tailwind utility: `bg-primary`, `text-primary`, etc.
-        primary: 'rgb(var(--qw-primary) / <alpha-value>)',
+        // CSS variable with a sensible fallback. The WordPress plugin emits
+        // a <style> block setting --goqw-primary on :root. Tailwind utility:
+        // `bg-primary`, `text-primary`, etc.
+        primary: 'rgb(var(--goqw-primary, 15 76 129) / <alpha-value>)',
       },
 
       // Typography scale — modest, mobile-first.
