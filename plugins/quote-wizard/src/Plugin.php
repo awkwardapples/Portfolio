@@ -4,6 +4,7 @@
  *
  * @package Agency\QuoteWizard
  */
+
 declare( strict_types=1 );
 
 namespace Agency\QuoteWizard;
@@ -36,3 +37,5 @@ final class Plugin {
 		add_action( 'rest_api_init', array( SubmitController::class, 'register_routes' ) );
 	}
 }
+
+// Make sure there is a blank line at the end of the file.
