@@ -1,0 +1,114 @@
+name: CI
+
+# Runs the same gates we run locally. Nothing here invents a new process;
+# every command below is one a developer runs on their own machine. See
+# docs/decisions/0011-ci-scope.md for the scope rationale.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# If a branch gets a second push while the first run is still going, cancel
+# the older run. This is operational hygiene, not caching/matrix complexity:
+# it just avoids burning minutes on a run that's already superseded.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # JS / TS: format, lint, typecheck, and the REAL production build pipeline.
+  # We call `build-plugin` (not a bare `build`) so CI exercises the exact
+  # packaging path introduced in Step 3F, then assert no source maps leaked
+  # and the manifest is present.
+  # ---------------------------------------------------------------------------
+  js-ts:
+    name: JS/TS (Node 20)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies (frozen lockfile)
+        # --frozen-lockfile fails the job if pnpm-lock.yaml is stale relative
+        # to package.json. Catches dependency drift before it reaches main.
+        run: pnpm install --frozen-lockfile
+
+      - name: Prettier format check
+        run: pnpm format:check
+
+      - name: ESLint
+        run: pnpm lint
+
+      - name: TypeScript typecheck
+        run: pnpm typecheck
+
+      - name: Build plugin (production pipeline)
+        # This runs the wizard build, validates the Vite manifest, and copies
+        # the allowlisted assets into the plugin. It fails hard on a missing or
+        # malformed manifest (see scripts/build-plugin.mjs).
+        run: pnpm build-plugin
+
+      - name: Guard - no source maps in plugin dist
+        # Defence in depth. build-plugin.mjs already refuses to copy *.map, but
+        # CI is exactly where a future regression in that script should be
+        # caught. Fail if any source map reached the plugin's shipped assets.
+        run: |
+          if find plugins/quote-wizard/assets/dist -name '*.map' -print -quit | grep -q .; then
+            echo "::error::Source map found in plugins/quote-wizard/assets/dist - must not ship."
+            find plugins/quote-wizard/assets/dist -name '*.map'
+            exit 1
+          fi
+          echo "OK: no source maps in plugin dist."
+
+      - name: Guard - manifest present in plugin dist
+        run: |
+          if [ ! -f plugins/quote-wizard/assets/dist/manifest.json ]; then
+            echo "::error::manifest.json missing from plugin dist after build."
+            exit 1
+          fi
+          echo "OK: manifest.json present."
+
+  # ---------------------------------------------------------------------------
+  # PHP: PHPCS (warnings fail), PHPStan, Pest. Identical to local composer gates.
+  # ---------------------------------------------------------------------------
+  php:
+    name: PHP (8.1)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: plugins/quote-wizard
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: PHPCS (lint - warnings fail)
+        # phpcs.xml.dist sets ignore_warnings_on_exit=0, so any warning fails
+        # the run - identical behaviour locally and here.
+        run: composer lint
+
+      - name: PHPStan (static analysis)
+        run: composer analyse
+
+      - name: Pest (unit tests)
+        run: composer test

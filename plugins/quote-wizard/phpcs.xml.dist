@@ -113,4 +113,14 @@
 	<!-- PHP and WordPress version targets. -->
 	<config name="testVersion" value="8.1-"/>
 	<config name="minimum_wp_version" value="6.4"/>
+
+	<!--
+		Treat warnings as failures. By default PHPCS exits 0 when only warnings
+		are present; we want any warning to fail the run so that `composer lint`
+		behaves identically on a developer machine and in CI. This codifies the
+		"zero warnings" discipline established in Step 3C / ADR-0006.
+	-->
+	<config name="ignore_warnings_on_exit" value="0"/>
+	<config name="ignore_errors_on_exit" value="0"/>
 </ruleset>
+
