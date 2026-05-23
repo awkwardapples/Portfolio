@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests;
+namespace Quote_Wizard\Tests;
 
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
@@ -9,5 +9,4 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
  */
 abstract class TestCase extends BaseTestCase
 {
-    //
 }
