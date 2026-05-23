@@ -4,6 +4,10 @@ namespace Tests;
 
 use PHPUnit\Framework\TestCase as BaseTestCase;
 
-abstract class TestCase extends BaseTestCase {
-
+/**
+ * Base test case for the Quote Wizard plugin.
+ */
+abstract class TestCase extends BaseTestCase
+{
+    //
 }
