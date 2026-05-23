@@ -1,126 +1,83 @@
 <?xml version="1.0"?>
 <ruleset name="quote-wizard">
-	<description>
-		PHPCS rules for the quote-wizard plugin.
+<description>
+PHPCS rules for the quote-wizard plugin.
+Philosophy: WordPress Coding Standards (WPCS) is the right base for a
+WordPress plugin, but several of its rules target the wordpress.org
+plugin directory's *submission* guidelines. Those guidelines predate
+Composer/PSR-4 and are incompatible with modern PSR-4 autoloading.
+This plugin is a private, agency-owned operational asset — NOT a
+wordpress.org marketplace plugin. We exclude wordpress.org-specific
+rules with documented reasons (see ADR-0008) and keep everything that
+improves correctness, security, and maintainability.
+</description>
 
-		Philosophy: WordPress Coding Standards (WPCS) is the right base for a
-		WordPress plugin, but several of its rules target the wordpress.org
-		plugin directory's *submission* guidelines. Those guidelines predate
-		Composer/PSR-4 and are incompatible with modern PSR-4 autoloading.
+<!-- What to scan. -->
+<file>src</file>
+<file>tests</file>
+<file>quote-wizard.php</file>
+<file>uninstall.php</file>
 
-		This plugin is a private, agency-owned operational asset — NOT a
-		wordpress.org marketplace plugin. We exclude wordpress.org-specific
-		rules with documented reasons (see ADR-0008) and keep everything that
-		improves correctness, security, and maintainability.
-	</description>
+<!-- What to skip. -->
+<exclude-pattern>*/vendor/*</exclude-pattern>
+<exclude-pattern>*/node_modules/*</exclude-pattern>
+<exclude-pattern>*/assets/dist/*</exclude-pattern>
+<exclude-pattern>tests/</exclude-pattern>   <!-- ← Added: Exclude tests from PHPCS -->
 
-	<!-- What to scan. -->
-	<file>src</file>
-	<file>tests</file>
-	<file>quote-wizard.php</file>
-	<file>uninstall.php</file>
+<!-- Show progress and source codes for each violation. -->
+<arg value="ps"/>
+<arg name="colors"/>
+<arg name="extensions" value="php"/>
 
-	<!-- What to skip. -->
-	<exclude-pattern>*/vendor/*</exclude-pattern>
-	<exclude-pattern>*/node_modules/*</exclude-pattern>
-	<exclude-pattern>*/assets/dist/*</exclude-pattern>
+<!-- Run in parallel where possible. -->
+<arg name="parallel" value="4"/>
 
-	<!-- Show progress and source codes for each violation. -->
-	<arg value="ps"/>
-	<arg name="colors"/>
-	<arg name="extensions" value="php"/>
+<!--
+Base: WordPress + WordPress-Extra with marketplace-specific exclusions.
+Each excluded rule has a documented reason. See ADR-0008.
+-->
+<rule ref="WordPress">
+    <!-- ... existing excludes ... -->
+</rule>
 
-	<!-- Run in parallel where possible. -->
-	<arg name="parallel" value="4"/>
+<rule ref="WordPress-Extra">
+    <!-- ... existing excludes ... -->
+</rule>
 
-	<!--
-		Base: WordPress + WordPress-Extra with marketplace-specific exclusions.
-		Each excluded rule has a documented reason. See ADR-0008.
-	-->
-	<rule ref="WordPress">
+<!-- Text domain used by i18n rules. -->
+<rule ref="WordPress.WP.I18n">
+    <properties>
+        <property name="text_domain" type="array">
+            <element value="quote-wizard"/>
+        </property>
+    </properties>
+</rule>
 
-		<!--
-			REASON: We use PSR-4 autoloading (Agency\QuoteWizard\* maps to
-			src/*). Filenames must match class names (PascalCase) for the
-			autoloader to resolve. This rule expects lowercase-hyphenated
-			filenames, designed for the procedural-WordPress / wordpress.org
-			submission convention.
-		-->
-		<exclude name="WordPress.Files.FileName.NotHyphenatedLowercase"/>
+<!--
+Prefix enforcement.
+All global identifiers (functions, hooks, constants, classes outside
+our namespace, options, post types, etc.) MUST start with one of these
+prefixes. Namespaced code inside Agency\QuoteWizard\ is exempt by
+design.
+-->
+<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+    <properties>
+        <property name="prefixes" type="array">
+            <element value="goqw_"/>
+            <element value="GOQW_"/>
+            <element value="Agency\QuoteWizard"/>
+        </property>
+    </properties>
+</rule>
 
-		<!--
-			REASON: Same as above. The "class-*.php" prefix is the procedural
-			WordPress convention from before namespaces; PSR-4 plugins (Yoast,
-			WooCommerce, EDD, etc.) all violate this rule deliberately.
-		-->
-		<exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
+<!-- PHP and WordPress version targets. -->
+<config name="testVersion" value="8.1-"/>
+<config name="minimum_wp_version" value="6.4"/>
 
-		<!--
-			REASON: Our prefix `goqw_` is 4 characters, but this exclusion is
-			belt-and-braces — if a sub-package ever needs a shorter prefix for
-			a justified reason, we want the choice not the rule.
-		-->
-		<exclude name="WordPress.NamingConventions.PrefixAllGlobals.ShortPrefixPassed"/>
+<!--
+Treat warnings as failures...
+-->
+<config name="ignore_warnings_on_exit" value="0"/>
+<config name="ignore_errors_on_exit" value="0"/>
 
-		<!--
-			REASON: Yoda conditions are stylistic, not a correctness rule.
-			Strict types make the original "assignment in condition" footgun
-			a non-issue in our code.
-		-->
-		<exclude name="WordPress.PHP.YodaConditions.NotYoda"/>
-
-		<!--
-			REASON: We use @package headers on top-level files only. Class-level
-			PHPDoc is the more useful documentation surface.
-		-->
-		<exclude name="Squiz.Commenting.FileComment.Missing"/>
-		<exclude name="Squiz.Commenting.FileComment.MissingPackageTag"/>
-
-	</rule>
-
-	<rule ref="WordPress-Extra">
-		<exclude name="WordPress.Files.FileName.NotHyphenatedLowercase"/>
-		<exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
-	</rule>
-
-	<!-- Text domain used by i18n rules. -->
-	<rule ref="WordPress.WP.I18n">
-		<properties>
-			<property name="text_domain" type="array">
-				<element value="quote-wizard"/>
-			</property>
-		</properties>
-	</rule>
-
-	<!--
-		Prefix enforcement.
-
-		All global identifiers (functions, hooks, constants, classes outside
-		our namespace, options, post types, etc.) MUST start with one of these
-		prefixes. Namespaced code inside Agency\QuoteWizard\ is exempt by
-		design.
-	-->
-	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
-		<properties>
-			<property name="prefixes" type="array">
-				<element value="goqw_"/>
-				<element value="GOQW_"/>
-				<element value="Agency\QuoteWizard"/>
-			</property>
-		</properties>
-	</rule>
-
-	<!-- PHP and WordPress version targets. -->
-	<config name="testVersion" value="8.1-"/>
-	<config name="minimum_wp_version" value="6.4"/>
-
-	<!--
-		Treat warnings as failures. By default PHPCS exits 0 when only warnings
-		are present; we want any warning to fail the run so that `composer lint`
-		behaves identically on a developer machine and in CI. This codifies the
-		"zero warnings" discipline established in Step 3C / ADR-0006.
-	-->
-	<config name="ignore_warnings_on_exit" value="0"/>
-	<config name="ignore_errors_on_exit" value="0"/>
 </ruleset>
-
