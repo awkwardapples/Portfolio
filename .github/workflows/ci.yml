@@ -72,9 +72,6 @@ jobs:
   php:
     name: PHP (8.2)
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: plugins/quote-wizard
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -89,13 +86,17 @@ jobs:
           tools: composer:v2
 
       - name: Install dependencies
+        working-directory: plugins/quote-wizard
         run: composer install --no-interaction --no-progress --prefer-dist
 
       - name: PHPCS (lint - warnings fail)
+        working-directory: plugins/quote-wizard
         run: composer lint
 
       - name: PHPStan (static analysis)
+        working-directory: plugins/quote-wizard
         run: composer analyse
 
       - name: Pest (unit tests)
+        working-directory: plugins/quote-wizard
         run: composer test
