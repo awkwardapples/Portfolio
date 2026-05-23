@@ -4,7 +4,6 @@
  *
  * @package Agency\QuoteWizard
  */
-
 declare( strict_types=1 );
 
 namespace Agency\QuoteWizard;
@@ -31,7 +30,7 @@ final class Plugin {
 		add_action( 'wp_enqueue_scripts', array( AssetLoader::class, 'maybe_enqueue' ) );
 
 		// Admin: surface a notice anywhere in wp-admin when the build is missing.
-		add_action( 'admin_notices', array( AssetLoader::class, 'render_admin_notice' ) ); // @phpstan-ignore argument.type
+		add_action( 'admin_notices', array( AssetLoader::class, 'render_admin_notice' ) );
 
 		// REST: register the submit endpoint.
 		add_action( 'rest_api_init', array( SubmitController::class, 'register_routes' ) );
