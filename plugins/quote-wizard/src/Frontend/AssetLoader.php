@@ -15,24 +15,11 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Enqueues the built React bundle and CSS on pages containing the shortcode.
- *
- * Step 3E responsibilities:
- *   - Detect shortcode presence on the current page.
- *   - Resolve hashed filenames via ManifestReader.
- *   - Enqueue JS + CSS using WordPress's standard APIs.
- *   - Inject window.GOQW_CONFIG via wp_add_inline_script before the bundle runs.
- *   - Inject --goqw-primary CSS variable as an inline style before the CSS.
- *   - Surface a clear admin notice if the manifest is missing or invalid.
- *
- * Behaviour when manifest is unavailable:
- *   - Visitors with manage_options capability: admin notice near mount point.
- *   - Other visitors: no notice (graceful degradation); mount div remains empty.
- *   - Both cases: warning logged via Logger.
  */
 final class AssetLoader {
 
 	/**
-	 * Script handle. Used in dependency declarations and dequeue logic.
+	 * Script handle.
 	 */
 	public const SCRIPT_HANDLE = 'goqw-wizard';
 
@@ -42,35 +29,46 @@ final class AssetLoader {
 	public const STYLE_HANDLE = 'goqw-wizard';
 
 	/**
-	 * Tracks whether the build is in a usable state for the current request.
-	 * Set during maybe_enqueue; consulted by Shortcode::render() to decide
-	 * whether to emit an admin-visible warning.
-	 *
-	 * Possible values:
-	 *   - 'ready'         enqueue succeeded
-	 *   - 'missing'       manifest or referenced asset missing
-	 *   - 'not-applicable' shortcode not on this page; no decision needed
+	 * Tracks whether the build is in a usable state.
 	 *
 	 * @var string
 	 */
 	private static string $build_state = 'not-applicable';
 
 	/**
-	 * Conditionally enqueue wizard assets.
+	 * Guards ensure_enqueued() so the work runs at most once per request.
 	 *
-	 * Hooked to wp_enqueue_scripts in Plugin::boot(). Runs on every front-end
-	 * page load. Cheap when the shortcode isn't present.
+	 * @var bool
+	 */
+	private static bool $enqueue_attempted = false;
+
+	/**
+	 * Fast-path enqueue for classic templates.
 	 */
 	public static function maybe_enqueue(): void {
 		if ( ! self::current_page_has_shortcode() ) {
 			return;
 		}
 
+		self::ensure_enqueued();
+	}
+
+	/**
+	 * Idempotently resolve the manifest and enqueue assets.
+	 */
+	public static function ensure_enqueued(): void {
+		if ( self::$enqueue_attempted ) {
+			return;
+		}
+
+		self::$enqueue_attempted = true;
+
 		$manifest = ManifestReader::read();
 
 		if ( null === $manifest ) {
 			self::$build_state = 'missing';
-			Logger::warning( 'Wizard build assets unavailable; shortcode will degrade gracefully' );
+			Logger::operational( 'Wizard build assets unavailable on page request; shortcode degraded.' );
+			Logger::warning( 'Wizard build assets unavailable; shortcode will degrade gracefully.' );
 			return;
 		}
 
@@ -80,12 +78,26 @@ final class AssetLoader {
 
 	/**
 	 * Whether enqueueing for this request resolved successfully.
-	 *
-	 * Used by Shortcode::render to decide whether to emit an admin-visible
-	 * warning alongside the mount div.
 	 */
 	public static function build_state(): string {
 		return self::$build_state;
+	}
+
+	/**
+	 * Does the current request render a page whose content includes the shortcode?
+	 */
+	private static function current_page_has_shortcode(): bool {
+		if ( ! is_singular() ) {
+			return false;
+		}
+
+		$post = get_post();
+
+		if ( ! ( $post instanceof \WP_Post ) ) {
+			return false;
+		}
+
+		return has_shortcode( $post->post_content, Shortcode::TAG );
 	}
 
 	/**
@@ -97,7 +109,7 @@ final class AssetLoader {
 		$js_url  = ManifestReader::asset_url( $manifest['js'] );
 		$css_url = ManifestReader::asset_url( $manifest['css'] );
 
-		// CSS: enqueue first so the inline style block can hook to it.
+		// CSS first.
 		wp_enqueue_style(
 			self::STYLE_HANDLE,
 			$css_url,
@@ -105,15 +117,14 @@ final class AssetLoader {
 			GOQW_VERSION
 		);
 
-		// Inject the brand colour CSS variable before the stylesheet runs.
-		// Use rgb(R G B) format so Tailwind's <alpha-value> token resolves.
+		// Inject primary color CSS variable.
 		$primary_rgb = self::hex_to_rgb_triplet( PublicConfig::build()['primaryColor'] );
 		wp_add_inline_style(
 			self::STYLE_HANDLE,
 			':root { --goqw-primary: ' . esc_attr( $primary_rgb ) . '; }'
 		);
 
-		// JS: enqueue in footer with type=module so Vite's ES bundle works.
+		// JS in footer as module.
 		wp_enqueue_script(
 			self::SCRIPT_HANDLE,
 			$js_url,
@@ -125,7 +136,7 @@ final class AssetLoader {
 			)
 		);
 
-		// Mark the script as a module — Vite emits ESM.
+		// Make script a module.
 		add_filter(
 			'script_loader_tag',
 			static function ( string $tag, string $handle ): string {
@@ -138,7 +149,7 @@ final class AssetLoader {
 			2
 		);
 
-		// Inject window.GOQW_CONFIG BEFORE the bundle script runs.
+		// Inject config before the bundle.
 		wp_add_inline_script(
 			self::SCRIPT_HANDLE,
 			'window.GOQW_CONFIG = ' . PublicConfig::to_inline_json() . ';',
@@ -147,29 +158,7 @@ final class AssetLoader {
 	}
 
 	/**
-	 * Does the current request render a page whose content includes the shortcode?
-	 *
-	 * Conservative check: only "yes" when WordPress has set up the main query
-	 * with a $post that contains the shortcode in its content. Archive pages,
-	 * widget contexts, and template parts are out of scope for v1.
-	 */
-	private static function current_page_has_shortcode(): bool {
-		if ( ! is_singular() ) {
-			return false;
-		}
-
-		$post = get_post();
-		if ( ! ( $post instanceof \WP_Post ) ) {
-			return false;
-		}
-
-		return has_shortcode( $post->post_content, Shortcode::TAG );
-	}
-
-	/**
-	 * Convert "#RRGGBB" to "R G B" triplet (Tailwind alpha-value compatible).
-	 *
-	 * Falls back to the brand default if input is malformed.
+	 * Convert hex to RGB triplet for Tailwind.
 	 *
 	 * @param string $hex Hex colour string, e.g. "#0F4C81".
 	 */
@@ -181,7 +170,6 @@ final class AssetLoader {
 		}
 
 		if ( 6 !== strlen( $hex ) || ! ctype_xdigit( $hex ) ) {
-			// Malformed; fall back to the project default (#0F4C81).
 			return '15 76 129';
 		}
 
@@ -191,8 +179,7 @@ final class AssetLoader {
 	}
 
 	/**
-	 * Ensure the script tag has type="module". WordPress's default emit
-	 * is type="text/javascript"; we replace it (or insert it) for our handle.
+	 * Ensure script has type="module".
 	 *
 	 * @param string $tag The original <script> tag.
 	 */
@@ -206,6 +193,27 @@ final class AssetLoader {
 		} else {
 			$tag = str_replace( '<script ', '<script type="module" ', $tag );
 		}
+
 		return $tag;
+	}
+
+	/**
+	 * Render admin notice when build assets are missing.
+	 */
+	public static function render_admin_notice(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		if ( null !== ManifestReader::read() ) {
+			return; // Assets are present.
+		}
+
+		printf(
+			'<div class="notice notice-error"><p><strong>%1$s</strong> %2$s</p><p>%3$s</p></div>',
+			esc_html__( 'Quote Wizard:', 'quote-wizard' ),
+			esc_html__( 'compiled React assets are missing or unreadable.', 'quote-wizard' ),
+			esc_html__( 'Run "pnpm build-plugin" from the project root to rebuild.', 'quote-wizard' )
+		);
 	}
 }

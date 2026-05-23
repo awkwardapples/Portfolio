@@ -1,0 +1,69 @@
+# .distignore — paths and patterns excluded from the distributable plugin ZIP.
+#
+# NOTE: This file is documentation. The actual exclusion is enforced by
+# scripts/package-plugin.mjs which uses an ALLOWLIST, not a denylist.
+# This file lists patterns we'd never want shipped, as a redundant
+# safety net for human reviewers.
+
+# Development / VCS
+.git
+.github
+.gitignore
+.editorconfig
+.nvmrc
+.prettierrc
+.prettierignore
+.distignore
+.husky
+
+# Node / JS tooling
+node_modules
+package.json
+package-lock.json
+pnpm-lock.yaml
+pnpm-workspace.yaml
+lint-staged.config.js
+
+# PHP tooling
+composer.json
+composer.lock
+phpcs.xml.dist
+phpstan.neon.dist
+phpcs.xml
+phpstan.neon
+.phpunit.cache
+.phpunit.result.cache
+vendor
+
+# Source / non-built assets
+apps/
+docs/
+config/
+automation/
+scripts/
+
+# Tests
+tests/
+*.test.php
+*.spec.php
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Build artefacts not destined for the plugin
+*.map
+*.log
+
+# Secrets — explicit refusal patterns enforced by the packager
+.env
+.env.*
+*secret*
+*credentials*
+*private-key*
+*apikey*
+*api-key*

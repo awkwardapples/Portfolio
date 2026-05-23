@@ -1,0 +1,17 @@
+PROBE 1: Does Shortcode::render() fire during a real frontend page load?
+
+Add ONE line at the very top of Shortcode::render() in
+plugins/quote-wizard/src/Frontend/Shortcode.php, immediately after the
+opening brace of the render() method:
+
+    error_log('[DIAG-3F] Shortcode::render fired; build_state=' . AssetLoader::build_state());
+
+Then:
+  1. Clear the debug log
+  2. Load the frontend page in a browser (hard refresh)
+  3. Check the log:  Select-String -Path "<...>\debug.log" -Pattern "DIAG-3F"
+
+INTERPRETATION:
+  - Line appears  -> render IS firing. Problem is in enqueue/output, go to Probe 4.
+  - Line ABSENT   -> render is NOT firing on real page loads. The content filter
+                     isn't expanding the shortcode. Go to Probe 2.

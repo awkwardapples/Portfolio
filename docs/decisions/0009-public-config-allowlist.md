@@ -28,31 +28,31 @@ The discipline is enforced by **enumeration, not exclusion**:
 
 The fields exposed in version 1 of the contract:
 
-| Field | Type | Source | Sensitivity |
-|---|---|---|---|
-| `contractVersion` | `1` (literal) | constant | n/a |
-| `businessName` | `string` | `Settings::business_name()` | public — appears in wizard UI |
-| `businessPhone` | `string` | `Settings::business_phone()` | public — appears in fallback CTAs |
-| `businessEmail` | `string` | `Settings::business_email()` | public — appears in fallback CTAs |
-| `primaryColor` | `string` (hex) | `Settings::primary_color()` | public — branding |
-| `calendlyUrl` | `string` | `Settings::calendly_url()` | public — post-submission CTA |
-| `restNamespace` | `'qw/v1'` (literal) | constant | n/a |
-| `restUrl` | `string` (URL) | `rest_url('qw/v1')` | public — needed for submission |
-| `restNonce` | `string` | `wp_create_nonce('wp_rest')` | per-request CSRF token |
-| `pluginVersion` | `string` | `GOQW_VERSION` constant | public — useful for support |
-| `buildTimestamp` | `string` (ISO 8601) | manifest mtime | public — useful for support |
+| Field             | Type                | Source                       | Sensitivity                       |
+| ----------------- | ------------------- | ---------------------------- | --------------------------------- |
+| `contractVersion` | `1` (literal)       | constant                     | n/a                               |
+| `businessName`    | `string`            | `Settings::business_name()`  | public — appears in wizard UI     |
+| `businessPhone`   | `string`            | `Settings::business_phone()` | public — appears in fallback CTAs |
+| `businessEmail`   | `string`            | `Settings::business_email()` | public — appears in fallback CTAs |
+| `primaryColor`    | `string` (hex)      | `Settings::primary_color()`  | public — branding                 |
+| `calendlyUrl`     | `string`            | `Settings::calendly_url()`   | public — post-submission CTA      |
+| `restNamespace`   | `'qw/v1'` (literal) | constant                     | n/a                               |
+| `restUrl`         | `string` (URL)      | `rest_url('qw/v1')`          | public — needed for submission    |
+| `restNonce`       | `string`            | `wp_create_nonce('wp_rest')` | per-request CSRF token            |
+| `pluginVersion`   | `string`            | `GOQW_VERSION` constant      | public — useful for support       |
+| `buildTimestamp`  | `string` (ISO 8601) | manifest mtime               | public — useful for support       |
 
 ## Fields explicitly forbidden from the contract
 
-| Field | Reason |
-|---|---|
-| Make.com webhook URL | Sensitive endpoint; abuse vector if leaked |
-| Agency notification email | Internal address |
-| Any `GOQW_*` wp-config.php constant | Server-only by definition |
-| HubSpot API tokens | Not in WP — but mentioned for the discipline |
-| SMTP credentials | Same |
-| Current user's WP user info | Privacy |
-| Wizard submissions / lead data | Privacy |
+| Field                               | Reason                                       |
+| ----------------------------------- | -------------------------------------------- |
+| Make.com webhook URL                | Sensitive endpoint; abuse vector if leaked   |
+| Agency notification email           | Internal address                             |
+| Any `GOQW_*` wp-config.php constant | Server-only by definition                    |
+| HubSpot API tokens                  | Not in WP — but mentioned for the discipline |
+| SMTP credentials                    | Same                                         |
+| Current user's WP user info         | Privacy                                      |
+| Wizard submissions / lead data      | Privacy                                      |
 
 ## Contract versioning
 
@@ -66,29 +66,35 @@ When the version bumps, the React side detects it via `config-loader.ts` and emi
 ## Alternatives considered
 
 **A. Auto-expose all `goqw_*` options to JS.**
+
 - Pros: zero code to maintain.
 - Cons: the next sensitive option added accidentally appears in `window.GOQW_CONFIG`. Direct violation of constraint #1.
 
 **B. Allowlist as an array of strings.**
+
 - Pros: minimal code.
 - Cons: still requires a code change, but the change is opaque ("which value comes from what?"). Doesn't help type safety on the React side.
 
 **C. Explicit method (chosen).**
+
 - Pros: every field traceable to a source; the diff in a PR is obvious; TypeScript ambient declaration mirrors the PHP method literally; static analysis sees both sides.
 - Cons: slightly more code than (A) or (B). Worth it.
 
 ## Consequences
 
 **Easier:**
+
 - Reviewers can verify in 30 seconds that no sensitive field leaked.
 - TypeScript catches drift on the React side via `GoqwPublicConfig` ambient type.
 - Adding a contract-version bump is a deliberate event with a clear migration path.
 - A future engineer searching for "what does the browser see?" finds one method.
 
 **Harder:**
+
 - Two files to keep in sync: `PublicConfig.php` (server) and `global.d.ts` (client).
 - The duplication is intentional. Generating one from the other was considered (e.g. JSON Schema → both sides) and rejected as premature for our scale.
 
 **To revisit:**
+
 - If the contract grows past ~20 fields and the duplication becomes a real maintenance cost, consider a code-generation step.
 - If a future workflow needs to expose values that vary per-page (e.g. trade type from a shortcode attribute), the contract grows a `pageContext` sub-object. That is an additive change, no version bump needed.

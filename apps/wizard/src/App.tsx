@@ -26,9 +26,7 @@ export function App(): JSX.Element {
           Scaffold OK
         </div>
         {showVersionBadge && (
-          <p className="mt-4 text-xs text-slate-400">
-            Quote Wizard v{config.pluginVersion}
-          </p>
+          <p className="mt-4 text-xs text-slate-400">Quote Wizard v{config.pluginVersion}</p>
         )}
       </div>
     </div>

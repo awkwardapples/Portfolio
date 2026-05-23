@@ -2,15 +2,13 @@
 /**
  * Plugin Name:       Quote Wizard
  * Plugin URI:        https://example.com/quote-wizard
- * Description:       Embeds a configurable React quote wizard into WordPress and routes submissions to Make.com for downstream automation.
+ * Description:       Embeds a configurable React quote wizard into WordPress.
  * Version:           0.1.0
  * Requires at least: 6.4
  * Requires PHP:      8.1
  * Author:            Agency
- * Author URI:        https://example.com
  * License:           UNLICENSED
  * Text Domain:       quote-wizard
- * Domain Path:       /languages
  *
  * @package Agency\QuoteWizard
  */
@@ -19,11 +17,10 @@ declare( strict_types=1 );
 
 namespace Agency\QuoteWizard;
 
-// Prevent direct file access.
 defined( 'ABSPATH' ) || exit;
 
 // -----------------------------------------------------------------------------
-// Plugin-wide constants.
+// Plugin Constants
 // -----------------------------------------------------------------------------
 define( 'GOQW_VERSION', '0.1.0' );
 define( 'GOQW_PLUGIN_FILE', __FILE__ );
@@ -31,7 +28,7 @@ define( 'GOQW_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'GOQW_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
 // -----------------------------------------------------------------------------
-// Autoloader (PSR-4)
+// PSR-4 Autoloader
 // -----------------------------------------------------------------------------
 spl_autoload_register(
 	static function ( string $class_name ): void {
@@ -50,12 +47,29 @@ spl_autoload_register(
 );
 
 // -----------------------------------------------------------------------------
-// Activation / deactivation hooks.
+// Activation / Deactivation
 // -----------------------------------------------------------------------------
 register_activation_hook( __FILE__, array( Activator::class, 'activate' ) );
 register_deactivation_hook( __FILE__, array( Deactivator::class, 'deactivate' ) );
 
 // -----------------------------------------------------------------------------
-// Boot the plugin.
+// Boot Plugin
 // -----------------------------------------------------------------------------
-Plugin::boot();
+add_action(
+	'plugins_loaded',
+	function () {
+		// Debug banner for admins.
+		if ( current_user_can( 'manage_options' ) ) {
+			add_action(
+				'wp_footer',
+				function () {
+					echo '<div style="position:fixed;bottom:10px;right:10px;background:#000;color:#0f0;padding:8px 12px;font-family:monospace;z-index:99999;">';
+					echo '✅ Quote Wizard PLUGIN LOADED (Debug Mode)';
+					echo '</div>';
+				}
+			);
+		}
+
+		Plugin::boot();
+	}
+);

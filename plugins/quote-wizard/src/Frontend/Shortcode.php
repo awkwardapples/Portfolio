@@ -33,8 +33,7 @@ defined( 'ABSPATH' ) || exit;
 final class Shortcode {
 
 	/**
-	 * The shortcode tag. Used both for `add_shortcode` and to detect the
-	 * shortcode's presence in post content.
+	 * The shortcode tag.
 	 */
 	public const TAG = 'quote_wizard';
 
@@ -54,6 +53,17 @@ final class Shortcode {
 		// per-instance overrides (e.g. [quote_wizard trade="fencing"]).
 		unset( $atts );
 
+		// Trigger asset enqueueing at render time. This is the reliable signal
+		// across ALL render paths: classic templates, FSE/block templates
+		// (e.g. Kadence template-canvas.php), and page builders. If this
+		// callback runs, the wizard is genuinely on the page, so its assets
+		// should load. ensure_enqueued() is idempotent, so it harmlessly
+		// no-ops if wp_enqueue_scripts already handled a classic template.
+		//
+		// Enqueuing here (during body render) still results in the script
+		// printing in wp_footer because the handle is registered in_footer.
+		AssetLoader::ensure_enqueued();
+
 		$mount = sprintf(
 			'<div id="%1$s" data-mount="quote-wizard"></div>',
 			esc_attr( self::MOUNT_ID )
@@ -71,27 +81,43 @@ final class Shortcode {
 
 	/**
 	 * The admin-visible warning shown above the mount when the build is missing.
+	 *
+	 * The text is intentionally generic — it does NOT echo absolute filesystem
+	 * paths, option values, or any other server-side internals. The operator
+	 * gets enough context to act; non-admin visitors never see this method's
+	 * output (gated by current_user_can in the caller).
+	 *
+	 * Each translatable string is captured on its own simple assignment to
+	 * avoid alignment-sensitive PHPCS warnings on neighbouring multi-line
+	 * function calls.
 	 */
 	private static function admin_warning_html(): string {
-		$title   = esc_html__( 'Quote Wizard: build assets missing', 'quote-wizard' );
+		$title = esc_html__( 'Quote Wizard: build assets missing', 'quote-wizard' );
+
 		$message = esc_html__(
 			'The plugin could not find or read the compiled React assets. This message is only visible to administrators.',
 			'quote-wizard'
 		);
+
 		$hint = esc_html__(
-			'Run the build pipeline: from the repo root, "pnpm --filter @growth-ops/wizard build" then copy apps/wizard/dist/ into plugins/quote-wizard/assets/dist/. The full pipeline ships in Step 3F.',
+			'Run the build pipeline from the repo root: pnpm build-plugin.',
 			'quote-wizard'
 		);
 
-		return sprintf(
-			'<div style="border:1px solid #d63638;background:#fcf0f1;padding:12px 16px;margin:0 0 16px;border-radius:4px;font-family:system-ui,sans-serif;">'
-				. '<p style="margin:0 0 4px;font-weight:600;color:#d63638;">%1$s</p>'
-				. '<p style="margin:0 0 4px;color:#1d2327;">%2$s</p>'
-				. '<p style="margin:0;color:#50575e;font-size:13px;">%3$s</p>'
-			. '</div>',
-			$title,
-			$message,
-			$hint
-		);
+		$style_box = 'border:1px solid #d63638;background:#fcf0f1;padding:12px 16px;margin:0 0 16px;border-radius:4px;font-family:system-ui,sans-serif;';
+
+		$style_head = 'margin:0 0 4px;font-weight:600;color:#d63638;';
+
+		$style_body = 'margin:0 0 4px;color:#1d2327;';
+
+		$style_hint = 'margin:0;color:#50575e;font-size:13px;';
+
+		$html  = '<div style="' . esc_attr( $style_box ) . '">';
+		$html .= '<p style="' . esc_attr( $style_head ) . '">' . $title . '</p>';
+		$html .= '<p style="' . esc_attr( $style_body ) . '">' . $message . '</p>';
+		$html .= '<p style="' . esc_attr( $style_hint ) . '">' . $hint . '</p>';
+		$html .= '</div>';
+
+		return $html;
 	}
 }

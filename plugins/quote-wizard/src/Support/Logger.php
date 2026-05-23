@@ -60,6 +60,39 @@ final class Logger {
 	}
 
 	/**
+	 * Log an OPERATIONAL event — always written, with a distinct tag.
+	 *
+	 * Use this for rare, high-importance events the agency operator MUST see
+	 * in the log regardless of WP_DEBUG_LOG state. Examples:
+	 *   - Build assets missing or unreadable
+	 *   - Make.com forwarder hard-failed after retries (Step 5.3)
+	 *   - Rate-limit triggered at suspicious volume (Step 5.2)
+	 *
+	 * Lines emitted by this method use the prefix `[goqw-ops]` instead of
+	 * `[quote-wizard]` so an operator can grep:
+	 *
+	 *     grep "goqw-ops" /path/to/debug.log
+	 *
+	 * to see just the operational signal, free of routine warnings/info.
+	 *
+	 * @param string               $message Short message describing the event.
+	 * @param array<string, mixed> $context Optional structured context.
+	 */
+	public static function operational( string $message, array $context = array() ): void {
+		$line = '[goqw-ops] ' . $message;
+
+		if ( ! empty( $context ) ) {
+			$encoded = wp_json_encode( $context );
+			if ( is_string( $encoded ) ) {
+				$line .= ' ' . $encoded;
+			}
+		}
+
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		error_log( $line );
+	}
+
+	/**
 	 * Internal: write a line. Never throws.
 	 *
 	 * @param string               $level   Severity label.
