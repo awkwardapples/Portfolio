@@ -99,4 +99,4 @@ jobs:
 
       - name: Pest (unit tests)
         working-directory: plugins/quote-wizard
-        run: composer test
+        run: vendor/bin/pest --no-configuration
