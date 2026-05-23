@@ -99,4 +99,15 @@ jobs:
 
       - name: Pest (unit tests)
         working-directory: plugins/quote-wizard
-        run: vendor/bin/pest --configuration phpunit.xml.dist
+        run: |
+          if [ -f phpunit.xml.dist ]; then
+            CONFIG="phpunit.xml.dist"
+          elif [ -f phpunit.xml ]; then
+            CONFIG="phpunit.xml"
+          else
+            echo "::error::No phpunit config file found!"
+            ls -la phpunit*
+            exit 1
+          fi
+          echo "Using config: $CONFIG"
+          vendor/bin/pest --configuration "$CONFIG"
