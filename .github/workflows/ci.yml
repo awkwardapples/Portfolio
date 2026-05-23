@@ -99,4 +99,4 @@ jobs:
 
       - name: Pest (unit tests)
         working-directory: plugins/quote-wizard
-        run: vendor/bin/pest --no-configuration
+        run: vendor/bin/pest --configuration phpunit.xml.dist
