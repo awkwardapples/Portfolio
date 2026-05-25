@@ -1,43 +1,74 @@
 import type { Config } from 'tailwindcss';
 
+import {
+  neutral,
+  state,
+  accentCssExpression,
+  spacing,
+  fontSize,
+  fontWeight,
+  fontFamily,
+  borderRadius,
+  boxShadow,
+} from './src/design/tokens';
+
 /**
  * Tailwind configuration for the wizard.
  *
- * Design decisions captured here:
+ * IMPORTANT: this REPLACES Tailwind's default theme rather than extending it.
+ * That is the enforcement mechanism for ADR-0012's "closed palette" rule:
+ * if a colour/spacing/size isn't defined here, the utility class does not
+ * exist, so a developer cannot accidentally reach for bg-purple-500 or p-[13px].
  *
- * 1. `content` scans only files inside src/. Tailwind 3 purges unused classes
- *    at build time based on this glob. Forgetting to include a new file type
- *    here is the #1 cause of "my Tailwind class isn't working" — keep this
- *    list audited.
+ * Deliberately ABSENT (so the utilities don't exist):
+ *   - backgroundImage: gradients are impossible (no `bg-gradient-*`).
+ *   - blur / backdropBlur: glassmorphism is impossible.
+ *   - the full default colour palette: only neutral + accent + state exist.
+ *   - the full default spacing scale: only our 4px scale exists.
  *
- * 2. The primary brand colour is defined via CSS variable, not as a literal
- *    hex. This is the seam that lets the WordPress plugin override the colour
- *    per-client without rebuilding the bundle. The variable is set by the
- *    plugin in a small inline style block (step 3E / Phase 5).
- *
- * 3. No plugins yet. We'll add @tailwindcss/forms in Phase 4 when we have
- *    real form inputs to style. Empty `plugins: []` is intentional.
+ * The accent is a runtime CSS variable (--goqw-primary) so the WordPress
+ * plugin sets each client's brand colour without a rebuild (ADR-0009).
  */
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
 
   theme: {
+    colors: {
+      transparent: 'transparent',
+      current: 'currentColor',
+      neutral,
+      primary: accentCssExpression,
+      danger: state.danger,
+      'danger-surface': state.dangerSurface,
+      success: state.success,
+      'success-surface': state.successSurface,
+      surface: neutral[0],
+      'surface-sunken': neutral[50],
+      border: neutral[200],
+      'border-strong': neutral[300],
+      text: neutral[900],
+      'text-muted': neutral[500],
+      'text-subtle': neutral[400],
+      'text-inverse': neutral[0],
+    },
+
+    spacing,
+    fontFamily,
+    fontSize,
+    fontWeight,
+    borderRadius,
+    boxShadow,
+
     extend: {
-      colors: {
-        // CSS variable with a sensible fallback. The WordPress plugin emits
-        // a <style> block setting --goqw-primary on :root. Tailwind utility:
-        // `bg-primary`, `text-primary`, etc.
-        primary: 'rgb(var(--goqw-primary, 15 76 129) / <alpha-value>)',
+      keyframes: {
+        'goqw-pulse': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.55' },
+        },
       },
-
-      // Typography scale — modest, mobile-first.
-      // We extend rather than replace so the standard scale is still available.
-      fontSize: {
-        // Defaults stay; nothing extended in step 3B.
+      animation: {
+        'goqw-pulse': 'goqw-pulse 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite',
       },
-
-      // Spacing extensions can be added later as design needs emerge.
-      // Avoiding speculative additions per the implementation discipline.
     },
   },
 

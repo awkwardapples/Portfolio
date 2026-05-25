@@ -60,6 +60,10 @@ const ALLOWLIST = [
   'assets/dist/manifest.json',
   'assets/dist/*.js',
   'assets/dist/*.css',
+  // Fonts (and other fingerprinted entry assets) Vite emits under assets/.
+  // Self-hosted font files ship with the plugin; see ADR-0012 (typography).
+  'assets/dist/assets/*.woff2',
+  'assets/dist/assets/*.woff',
 ];
 
 /**

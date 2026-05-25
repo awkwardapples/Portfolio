@@ -4,7 +4,7 @@
  * The plugin emits `window.GOQW_CONFIG` BEFORE the wizard bundle runs.
  */
 
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
+ 
 
 const CURRENT_CONTRACT_VERSION = 1 as const;
 

@@ -119,9 +119,17 @@ async function refreshPluginDist() {
   const jsFile = manifest['src/main.tsx'].file;
   const cssFile = manifest['style.css'].file;
 
-  // Explicit copy list. Nothing else is copied — no globs, no source maps,
-  // no surprises.
-  const filesToCopy = ['manifest.json', jsFile, cssFile];
+  // Entry assets (e.g. fonts referenced by the bundle) are listed in the
+  // manifest entry's `assets` array. We copy these too so the shipped CSS/JS
+  // doesn't point at missing files. This is manifest-driven, not hardcoded:
+  // any asset Vite fingerprints and the entry depends on comes along.
+  const entryAssets = Array.isArray(manifest['src/main.tsx'].assets)
+    ? manifest['src/main.tsx'].assets
+    : [];
+
+  // Explicit copy list, derived from the manifest. Nothing else is copied —
+  // no globs, no source maps, no surprises.
+  const filesToCopy = ['manifest.json', jsFile, cssFile, ...entryAssets];
 
   info(`Copying ${filesToCopy.length} allowlisted files from ${WIZARD_DIST} -> ${PLUGIN_DIST}...`);
 
@@ -140,6 +148,10 @@ async function refreshPluginDist() {
     if (!(await pathExists(src))) {
       fatal(`Expected file ${rel} missing in wizard dist; aborting copy.`);
     }
+
+    // Ensure the destination subdirectory exists (entry assets live under
+    // assets/, e.g. assets/inter-variable.HASH.woff2).
+    await fs.mkdir(path.dirname(dst), { recursive: true });
 
     await fs.copyFile(src, dst);
     const stat = await fs.stat(dst);

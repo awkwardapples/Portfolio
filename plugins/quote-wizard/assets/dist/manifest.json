@@ -1,12 +1,19 @@
 {
+  "src/assets/fonts/inter-variable.woff2": {
+    "file": "assets/inter-variable.Dx4kXJAl.woff2",
+    "src": "src/assets/fonts/inter-variable.woff2"
+  },
   "src/main.tsx": {
-    "file": "wizard.ChegnAIU.js",
+    "file": "wizard._SMV8-f1.js",
     "name": "main",
     "src": "src/main.tsx",
-    "isEntry": true
+    "isEntry": true,
+    "assets": [
+      "assets/inter-variable.Dx4kXJAl.woff2"
+    ]
   },
   "style.css": {
-    "file": "wizard.DHF8UQ2u.css",
+    "file": "wizard.BRYpKVQL.css",
     "src": "style.css"
   }
 }
