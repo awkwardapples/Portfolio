@@ -4,8 +4,6 @@
  * The plugin emits `window.GOQW_CONFIG` BEFORE the wizard bundle runs.
  */
 
- 
-
 const CURRENT_CONTRACT_VERSION = 1 as const;
 
 const DEFAULT_CONFIG: GoqwPublicConfig = {

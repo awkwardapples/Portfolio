@@ -35,9 +35,7 @@ export function App(): JSX.Element {
   return (
     <div className="mx-auto max-w-xl p-6">
       <div className="rounded border border-border bg-surface p-6">
-        <h1 className="text-xl font-semibold text-text">
-          {config.businessName || 'Quote Wizard'}
-        </h1>
+        <h1 className="text-xl font-semibold text-text">{config.businessName || 'Quote Wizard'}</h1>
         <p className="mt-2 text-base text-text-muted">
           Design-system foundation. The wizard steps are built in a later part of Phase 4.
         </p>

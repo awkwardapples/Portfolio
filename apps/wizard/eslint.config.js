@@ -19,7 +19,8 @@ import local from './eslint-local/index.js';
 // ---------------------------------------------------------------------------
 
 // Tailwind gradient utilities + CSS gradient functions.
-const GRADIENT_PATTERN = 'bg-gradient-|from-|via-|to-|linear-gradient|radial-gradient|conic-gradient';
+const GRADIENT_PATTERN =
+  'bg-gradient-|from-|via-|to-|linear-gradient|radial-gradient|conic-gradient';
 
 // Glassmorphism / decorative blur.
 const BLUR_PATTERN = 'backdrop-blur|\\bblur-';
@@ -58,7 +59,14 @@ const MARKETING_PATTERN = `\\b(${MARKETING_WORDS.join('|')})\\b`;
 
 export default tseslint.config(
   {
-    ignores: ['dist/**', 'node_modules/**', 'eslint-local/**', '*.config.ts', '*.config.js', 'tailwind.config.ts'],
+    ignores: [
+      'dist/**',
+      'node_modules/**',
+      'eslint-local/**',
+      '*.config.ts',
+      '*.config.js',
+      'tailwind.config.ts',
+    ],
   },
 
   js.configs.recommended,
@@ -103,8 +111,7 @@ export default tseslint.config(
         },
         {
           selector: `Literal[value=/${BLUR_PATTERN}/]`,
-          message:
-            'Blur / glassmorphism is banned (ADR-0012). No backdrop-blur or blur utilities.',
+          message: 'Blur / glassmorphism is banned (ADR-0012). No backdrop-blur or blur utilities.',
         },
         {
           selector: `TemplateElement[value.raw=/${BLUR_PATTERN}/]`,
@@ -112,8 +119,7 @@ export default tseslint.config(
         },
         {
           selector: `Literal[value=/${SPINNER_PATTERN}/]`,
-          message:
-            'Spinners are banned (ADR-0012). Use the Skeleton primitive for loading states.',
+          message: 'Spinners are banned (ADR-0012). Use the Skeleton primitive for loading states.',
         },
         {
           selector: `TemplateElement[value.raw=/${SPINNER_PATTERN}/]`,

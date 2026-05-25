@@ -27,11 +27,7 @@ export function Skeleton({ className, rounded = true }: SkeletonProps): ReactEle
   return (
     <span
       aria-hidden="true"
-      className={cn(
-        'block bg-neutral-100 animate-goqw-pulse',
-        rounded ? 'rounded' : '',
-        className,
-      )}
+      className={cn('block bg-neutral-100 animate-goqw-pulse', rounded ? 'rounded' : '', className)}
     />
   );
 }
