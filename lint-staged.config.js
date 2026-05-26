@@ -15,7 +15,6 @@
  * This file is plain JS (not TS) because lint-staged loads it via Node
  * without a transpilation step.
  */
-
 import path from 'node:path';
 
 const wizardDir = 'apps/wizard';
@@ -26,16 +25,29 @@ function relativeToWizard(absPath) {
   return path.relative(path.join(repoRoot, wizardDir), absPath);
 }
 
+/** Files that should be skipped by ESLint (config files that are intentionally ignored) */
+const eslintIgnoredFiles = ['tailwind.config.ts', 'vitest.config.ts', 'eslint.config.js'];
+
 /** @type {import('lint-staged').Configuration} */
 export default {
   // TS/TSX inside the wizard: ESLint --fix from the wizard's working
   // directory, then Prettier from the repo root.
   //
-  // `pnpm --filter @growth-ops/wizard exec` runs the inner command with
-  // the wizard package as the CWD, which is what ESLint and tsconfig
-  // resolution both expect.
+  // We now filter out config files that are ignored by ESLint to prevent
+  // "File ignored because of a matching ignore pattern" warnings.
   'apps/wizard/**/*.{ts,tsx}': (files) => {
-    const wizardRelative = files.map(relativeToWizard).join(' ');
+    // Filter out files that ESLint should ignore
+    const filesToLint = files.filter((file) => {
+      const filename = path.basename(file);
+      return !eslintIgnoredFiles.includes(filename);
+    });
+
+    if (filesToLint.length === 0) {
+      return []; // Nothing to lint
+    }
+
+    const wizardRelative = filesToLint.map(relativeToWizard).join(' ');
+
     return [
       `pnpm --filter @growth-ops/wizard exec eslint --fix --max-warnings=0 ${wizardRelative}`,
       `prettier --write ${files.join(' ')}`,

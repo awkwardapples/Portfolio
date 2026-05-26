@@ -183,6 +183,52 @@ export default tseslint.config(
     },
   },
 
+  // Domain-layer purity (ADR-0012 / 4.1): src/domain/** is the pure,
+  // framework-agnostic core. It must never import React or any UI component,
+  // so it stays independently testable and could back a non-React consumer.
+  // This is the structural enforcement of "schema layer avoids UI coupling".
+  {
+    files: ['src/domain/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'react',
+              message:
+                'The domain layer must stay React-free (4.1). Keep schemas/validation/pricing pure.',
+            },
+            {
+              name: 'react-dom',
+              message: 'The domain layer must stay framework-free (4.1).',
+            },
+          ],
+          patterns: [
+            {
+              group: ['@/components/*', '@/components/**', '@/design/*', '@/design/**'],
+              message:
+                'The domain layer must not import UI components or design tokens (4.1). Domain describes data, not presentation.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  // Test files legitimately contain otherwise-banned literals: the banned-word
+  // list under test, hex colours in PublicConfig fixtures, etc. They assert ON
+  // these constraints, so the content rules (no-restricted-syntax / emoji) are
+  // relaxed here. All OTHER rules still apply. This mirrors the tokens.ts and
+  // config-loader.ts exceptions.
+  {
+    files: ['src/**/*.test.ts', 'src/**/__tests__/**/*.ts'],
+    rules: {
+      'no-restricted-syntax': 'off',
+      'local/no-emoji': 'off',
+    },
+  },
+
   // tokens.ts is the ONE place raw hex is allowed — it defines the palette.
   // config-loader.ts holds a single fallback default colour that must mirror
   // the PHP PublicConfig default (#0F4C81); it is a contract value, not a

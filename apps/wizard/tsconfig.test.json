@@ -1,0 +1,11 @@
+{
+  // Test files legitimately index into known fixture structures. We keep the
+  // production code under noUncheckedIndexedAccess (strict), but relax it for
+  // tests where the fixture shape is known and asserted by the test itself.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noUncheckedIndexedAccess": false
+  },
+  "include": ["src/**/*.test.ts"],
+  "exclude": ["node_modules", "dist"]
+}
