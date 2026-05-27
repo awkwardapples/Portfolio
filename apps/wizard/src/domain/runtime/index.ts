@@ -26,6 +26,9 @@ export type {
 } from './state';
 export { createInitialState } from './state';
 
+// Navigation helpers
+export { isStepVisible, getVisibleSteps, getNextStepId, getPreviousStepId } from './navigation';
+
 // Event union and individual event types
 export type {
   HydrateEvent,
