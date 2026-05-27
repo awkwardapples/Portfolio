@@ -29,6 +29,9 @@ export { createInitialState } from './state';
 // Navigation helpers
 export { isStepVisible, getVisibleSteps, getNextStepId, getPreviousStepId } from './navigation';
 
+// Answer validation
+export { validateStep } from './answer-validation';
+
 // Event union and individual event types
 export type {
   HydrateEvent,
