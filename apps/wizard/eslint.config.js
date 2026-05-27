@@ -210,6 +210,11 @@ export default tseslint.config(
               message:
                 'The domain layer must not import UI components or design tokens (4.1). Domain describes data, not presentation.',
             },
+            {
+              group: ['@/runtime', '@/runtime/*', '@/runtime/**'],
+              message:
+                'The domain layer must not import from the React adapter (runtime boundary). Domain is framework-agnostic.',
+            },
           ],
         },
       ],

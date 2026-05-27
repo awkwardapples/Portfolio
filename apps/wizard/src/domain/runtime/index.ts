@@ -32,6 +32,23 @@ export { isStepVisible, getVisibleSteps, getNextStepId, getPreviousStepId } from
 // Answer validation
 export { validateStep } from './answer-validation';
 
+// State machine transition
+export { transition } from './transition';
+
+// Selectors
+export {
+  selectVisibleSteps,
+  selectCurrentStep,
+  selectCompletionPercent,
+  selectAnsweredCounts,
+  selectStepValidation,
+  selectCanGoBack,
+  selectCanGoNext,
+} from './selectors';
+
+// Replay
+export { replay } from './replay';
+
 // Event union and individual event types
 export type {
   HydrateEvent,
