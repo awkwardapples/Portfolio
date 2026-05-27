@@ -78,12 +78,14 @@ function onS3State(): WizardState {
   return transition(s1ValidState(), { type: 'STEP_NEXT' }, config);
 }
 
-// Helper: reach submitting phase after all valid steps
+// Helper: reach submitting phase after all valid steps (quantity field 'c' must be
+// set to a non-negative number so the pricing gate passes)
 function submittingState(): WizardState {
   const atS3 = onS3State();
+  const withQty = transition(atS3, { type: 'ANSWER_SET', fieldKey: 'c', value: 20 }, config);
   // SUBMIT_REQUESTED: answering → validating (all valid)
-  const validating = transition(atS3, { type: 'SUBMIT_REQUESTED' }, config);
-  // SUBMIT_REQUESTED: validating → submitting
+  const validating = transition(withQty, { type: 'SUBMIT_REQUESTED' }, config);
+  // SUBMIT_REQUESTED: validating → submitting (pricing valid)
   return transition(validating, { type: 'SUBMIT_REQUESTED' }, config);
 }
 
@@ -414,8 +416,13 @@ describe('transition — SUBMIT_REQUESTED', () => {
     expect(next.validationByStep['s1']?.valid).toBe(false);
   });
 
-  it('validating → submitting', () => {
-    const validating = transition(onS3State(), { type: 'SUBMIT_REQUESTED' }, config);
+  it('validating → submitting when pricing is valid', () => {
+    const withQty = transition(
+      onS3State(),
+      { type: 'ANSWER_SET', fieldKey: 'c', value: 10 },
+      config,
+    );
+    const validating = transition(withQty, { type: 'SUBMIT_REQUESTED' }, config);
     expect(validating.phase).toBe('validating');
     const submitting = transition(validating, { type: 'SUBMIT_REQUESTED' }, config);
     expect(submitting.phase).toBe('submitting');
@@ -449,6 +456,56 @@ describe('transition — SUBMIT_REQUESTED', () => {
     const s = submittingState();
     const after = transition(s, { type: 'SUBMIT_REQUESTED' }, config);
     expect(after).toBe(s);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Pricing gate (validating → submitting)
+// ---------------------------------------------------------------------------
+
+describe('transition — pricing gate', () => {
+  it('validating + SUBMIT_REQUESTED returns to answering when quantity is not set', () => {
+    // 'c' (quantity field) is never filled → computePrice returns valid: false
+    const validating = transition(onS3State(), { type: 'SUBMIT_REQUESTED' }, config);
+    expect(validating.phase).toBe('validating');
+    const blocked = transition(validating, { type: 'SUBMIT_REQUESTED' }, config);
+    expect(blocked.phase).toBe('answering');
+  });
+
+  it('validating + SUBMIT_REQUESTED returns to answering when quantity is negative', () => {
+    const withNegQty = transition(
+      onS3State(),
+      { type: 'ANSWER_SET', fieldKey: 'c', value: -5 },
+      config,
+    );
+    const validating = transition(withNegQty, { type: 'SUBMIT_REQUESTED' }, config);
+    expect(validating.phase).toBe('validating');
+    const blocked = transition(validating, { type: 'SUBMIT_REQUESTED' }, config);
+    expect(blocked.phase).toBe('answering');
+  });
+
+  it('validating + SUBMIT_REQUESTED advances to submitting when quantity is zero', () => {
+    // qty=0 is a valid non-negative number — price is computed (possibly clamped to min)
+    const withZero = transition(
+      onS3State(),
+      { type: 'ANSWER_SET', fieldKey: 'c', value: 0 },
+      config,
+    );
+    const validating = transition(withZero, { type: 'SUBMIT_REQUESTED' }, config);
+    expect(validating.phase).toBe('validating');
+    const submitting = transition(validating, { type: 'SUBMIT_REQUESTED' }, config);
+    expect(submitting.phase).toBe('submitting');
+  });
+
+  it('validating + SUBMIT_REQUESTED advances to submitting when pricing is valid', () => {
+    const withQty = transition(
+      onS3State(),
+      { type: 'ANSWER_SET', fieldKey: 'c', value: 5 },
+      config,
+    );
+    const validating = transition(withQty, { type: 'SUBMIT_REQUESTED' }, config);
+    const submitting = transition(validating, { type: 'SUBMIT_REQUESTED' }, config);
+    expect(submitting.phase).toBe('submitting');
   });
 });
 
@@ -558,8 +615,10 @@ describe('submission lifecycle — success path', () => {
     const s2 = transition(s1, { type: 'ANSWER_SET', fieldKey: 'a', value: 'hello' }, config);
     const s3 = transition(s2, { type: 'STEP_NEXT' }, config); // to s3
     expect(s3.currentStepId).toBe('s3');
+    // fill the quantity field so the pricing gate passes
+    const s3c = transition(s3, { type: 'ANSWER_SET', fieldKey: 'c', value: 10 }, config);
 
-    const validating = transition(s3, { type: 'SUBMIT_REQUESTED' }, config);
+    const validating = transition(s3c, { type: 'SUBMIT_REQUESTED' }, config);
     expect(validating.phase).toBe('validating');
 
     const submitting = transition(validating, { type: 'SUBMIT_REQUESTED' }, config);

@@ -51,8 +51,10 @@ export function createWizardStore(
     const prev = state;
     state = transition(prev, event, config);
 
-    // Pricing gate stub: the validating phase is instantaneous in this adapter.
-    // Future pricing checks insert here between validating and submitting.
+    // Pricing gate: transition() handles the validating → submitting check.
+    // If pricing is invalid the gate returns answering; otherwise submitting.
+    // Either way, dispatching again here is correct — answering re-enters the
+    // answer loop and submitting proceeds to submission.
     if (state.phase === 'validating') {
       state = transition(state, { type: 'SUBMIT_REQUESTED' }, config);
     }

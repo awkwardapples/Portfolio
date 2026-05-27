@@ -1,5 +1,6 @@
 import { validateStep } from '@/domain/runtime/answer-validation';
 import { buildFieldKeyMap } from '@/domain/runtime/condition-evaluator';
+import { computePrice } from '@/domain/pricing/pricing-engine';
 import type {
   AnswerSetEvent,
   HydrateEvent,
@@ -158,10 +159,14 @@ function handleSubmitRequested(
   config: SessionConfig,
   fieldKeyById: ReadonlyMap<string, string>,
 ): WizardState {
-  // validating + SUBMIT_REQUESTED → submitting.
-  // The React adapter auto-advances through validating, which is the pricing
-  // gate stub. Future pricing checks run here before entering submitting.
+  // validating + SUBMIT_REQUESTED → submitting, but only when pricing is valid.
+  // The pricing engine is the sole gatekeeper here; validation already passed
+  // on the answering → validating transition.
   if (state.phase === 'validating') {
+    const pricingResult = computePrice(state.answers, config.wizard, config.pricing);
+    if (!pricingResult.valid) {
+      return { ...state, phase: 'answering' };
+    }
     return { ...state, phase: 'submitting' };
   }
 
