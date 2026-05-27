@@ -35,6 +35,11 @@ The following are binding for all Phase 4 (and later) UI work.
 - No emojis anywhere in the UI.
 - Write like a real person explaining a tool simply.
 
+**Emoji enforcement is mechanical, not reliant on review vigilance:**
+
+- Source files: the `local/no-emoji` ESLint rule (in `eslint.config.js`) catches emojis in JSX text and string literals at lint time, failing CI before code can merge.
+- Validation messages: the `EMOJI_RE` assertion in `src/domain/__tests__/error-tone-and-public-config.test.ts` verifies that no validation issue message contains a Unicode emoji. Both surfaces are covered independently.
+
 ### 4. Loading states
 
 - No spinners anywhere.

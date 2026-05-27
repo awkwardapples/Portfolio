@@ -46,6 +46,9 @@ jobs:
       - name: TypeScript typecheck
         run: pnpm typecheck
 
+      - name: Vitest (unit tests)
+        run: pnpm test
+
       - name: Build plugin (production pipeline)
         run: pnpm build-plugin
 
