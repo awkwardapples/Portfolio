@@ -18,7 +18,10 @@
 declare global {
   interface GoqwPublicConfig {
     /** Hard-bumps when fields are renamed/removed or semantics change. */
-    contractVersion: 1;
+    contractVersion: 2;
+
+    /** Selects which wizard vertical this deployment runs. */
+    wizardId: string;
 
     /** Public business display info (appears in the wizard UI). */
     businessName: string;

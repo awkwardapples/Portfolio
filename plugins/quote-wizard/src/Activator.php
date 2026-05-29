@@ -51,6 +51,7 @@ final class Activator {
 		add_option( 'goqw_primary_color', '#0F4C81' );
 		add_option( 'goqw_calendly_url', '' );
 		add_option( 'goqw_plugin_version', GOQW_VERSION );
+		add_option( 'goqw_wizard_id', 'fencing' );
 	}
 
 	/**

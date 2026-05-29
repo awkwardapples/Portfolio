@@ -24,9 +24,11 @@
 
 import { validatePublicConfig } from '@/domain/validation/validate-public';
 import { CONTRACT_VERSION } from '@/domain/config/public-config';
+import { FALLBACK_VERTICAL_ID } from '@/domain/registry';
 
 const DEFAULT_CONFIG: GoqwPublicConfig = {
   contractVersion: CONTRACT_VERSION,
+  wizardId: FALLBACK_VERTICAL_ID,
   businessName: '',
   businessPhone: '',
   businessEmail: '',

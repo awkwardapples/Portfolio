@@ -37,7 +37,7 @@ final class PublicConfig {
 	 * The current contract version. Bump if any field is renamed, removed,
 	 * or changes semantics. Adding a new optional field does NOT require a bump.
 	 */
-	public const CONTRACT_VERSION = 1;
+	public const CONTRACT_VERSION = 2;
 
 	/**
 	 * Build the public configuration array.
@@ -48,6 +48,9 @@ final class PublicConfig {
 		return array(
 			// Contract version — React reads this and warns on mismatch.
 			'contractVersion' => self::CONTRACT_VERSION,
+
+			// Wizard vertical selector — matches a key in the JS registry.
+			'wizardId'        => get_option( 'goqw_wizard_id', 'fencing' ),
 
 			// Business display info (public — appears in the wizard UI).
 			'businessName'    => Settings::business_name(),

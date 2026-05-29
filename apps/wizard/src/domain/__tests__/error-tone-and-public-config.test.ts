@@ -65,7 +65,8 @@ describe('validation error tone', () => {
 
 describe('PublicConfig validation + fallback contract', () => {
   const valid = {
-    contractVersion: 1,
+    contractVersion: 2,
+    wizardId: 'fencing',
     businessName: 'Test Fencing',
     businessPhone: '01234 567890',
     businessEmail: 'hello@test.test',
@@ -78,7 +79,7 @@ describe('PublicConfig validation + fallback contract', () => {
     buildTimestamp: '2026-05-25T00:00:00.000Z',
   };
 
-  it('accepts a well-formed public config', () => {
+  it('accepts a well-formed v2 public config', () => {
     expect(validatePublicConfig(valid).ok).toBe(true);
   });
 
@@ -87,8 +88,19 @@ describe('PublicConfig validation + fallback contract', () => {
     expect(validatePublicConfig(withExtra).ok).toBe(true);
   });
 
-  it('rejects a wrong contractVersion', () => {
-    const bad = { ...valid, contractVersion: 2 };
+  it('rejects contractVersion v1 (superseded by v2)', () => {
+    const bad = { ...valid, contractVersion: 1 };
+    expect(validatePublicConfig(bad).ok).toBe(false);
+  });
+
+  it('rejects a payload missing wizardId', () => {
+    const bad = { ...valid } as Record<string, unknown>;
+    delete bad.wizardId;
+    expect(validatePublicConfig(bad).ok).toBe(false);
+  });
+
+  it('rejects wizardId as an empty string', () => {
+    const bad = { ...valid, wizardId: '' };
     expect(validatePublicConfig(bad).ok).toBe(false);
   });
 

@@ -104,7 +104,7 @@ Then activate it (from LocalWP's site shell, so `wp` talks to the right database
 wp plugin activate quote-wizard
 ```
 
-Activation creates the database table `wp_goqw_submissions`, seeds eight `goqw_*` options, and schedules a daily cleanup cron event (`goqw_prune_submissions`).
+Activation creates the database table `wp_goqw_submissions`, seeds nine `goqw_*` options (including `goqw_wizard_id`; see ADR-0013), and schedules a daily cleanup cron event (`goqw_prune_submissions`).
 
 ## Step 5 — Put the wizard on a page (about 3 minutes)
 
@@ -128,8 +128,8 @@ Run these from LocalWP's site shell. They confirm each part of the system is hea
 # The table exists with its columns
 wp db tables --all-tables-with-prefix | Select-String "goqw"     # expect wp_goqw_submissions
 
-# The eight options seeded
-wp option list --search="goqw_*" --format=count                  # expect 8
+# The nine options seeded (includes goqw_wizard_id — see ADR-0013)
+wp option list --search="goqw_*" --format=count                  # expect 9
 
 # A couple of specific options
 wp option get goqw_primary_color                                 # expect a hex colour, default #0F4C81

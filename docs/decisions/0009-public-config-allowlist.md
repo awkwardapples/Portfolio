@@ -98,3 +98,53 @@ When the version bumps, the React side detects it via `config-loader.ts` and emi
 
 - If the contract grows past ~20 fields and the duplication becomes a real maintenance cost, consider a code-generation step.
 - If a future workflow needs to expose values that vary per-page (e.g. trade type from a shortcode attribute), the contract grows a `pageContext` sub-object. That is an additive change, no version bump needed.
+
+## Amendment — 2026-05-29: contractVersion v2, wizardId added (Step 4.5)
+
+The PHP↔JS PublicConfig contract is bumped to version 2 and gains one new
+field: `wizardId: string`. The contract is now:
+
+- `contractVersion: 2` (hard bump)
+- `wizardId: string` (NEW; required; selects which vertical the deployment runs)
+- all previous fields unchanged
+
+### Why v2 is a hard bump (not an optional addition)
+
+1. There is no installed base. Bumping now costs nothing; bumping later would
+   require migration handling for v1 payloads in the wild.
+2. `wizardId` is structurally required for multi-client deployments. Making it
+   optional with an implicit fallback would leave the contract ambiguous.
+3. The PHP and JS sides MUST stay in lockstep: a PHP plugin emitting v1 cannot
+   be consumed by a v2-aware JS bundle. The version literal enforces this by
+   failing fast at the validation boundary.
+
+### Lockstep requirement
+
+Deployments must upgrade PHP plugin and JS bundle together. The build pipeline
+already ships them together as a single plugin artifact (Step 3F), so this is
+the default; this amendment makes the requirement explicit.
+
+### Fallback behaviour
+
+`config-loader.ts` continues to fail-safe to defaults on validation failure
+(unchanged from 4.1). The defaults now include `contractVersion: 2` and
+`wizardId: FALLBACK_VERTICAL_ID` (`'fencing'`). A page loading with a missing
+or malformed `window.GOQW_CONFIG` therefore runs the fallback vertical rather
+than failing to mount.
+
+### Updated v2 contract fields
+
+| Field             | Type                | Source                         | Sensitivity |
+| ----------------- | ------------------- | ------------------------------ | ----------- |
+| `contractVersion` | `2` (literal)       | constant                       | n/a         |
+| `wizardId`        | `string`            | `get_option('goqw_wizard_id')` | public      |
+| `businessName`    | `string`            | `Settings::business_name()`    | public      |
+| `businessPhone`   | `string`            | `Settings::business_phone()`   | public      |
+| `businessEmail`   | `string`            | `Settings::business_email()`   | public      |
+| `primaryColor`    | `string` (hex)      | `Settings::primary_color()`    | public      |
+| `calendlyUrl`     | `string`            | `Settings::calendly_url()`     | public      |
+| `restNamespace`   | `'qw/v1'` (literal) | constant                       | n/a         |
+| `restUrl`         | `string` (URL)      | `rest_url('qw/v1')`            | public      |
+| `restNonce`       | `string`            | `wp_create_nonce('wp_rest')`   | per-request |
+| `pluginVersion`   | `string`            | `GOQW_VERSION` constant        | public      |
+| `buildTimestamp`  | `string` (ISO 8601) | manifest mtime                 | public      |

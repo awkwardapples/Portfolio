@@ -22,10 +22,11 @@
 
 import { z } from 'zod';
 
-export const CONTRACT_VERSION = 1 as const;
+export const CONTRACT_VERSION = 2 as const;
 
 export const PublicConfigSchema = z.object({
   contractVersion: z.literal(CONTRACT_VERSION),
+  wizardId: z.string().min(1, 'wizardId must be provided.'),
   businessName: z.string(),
   businessPhone: z.string(),
   businessEmail: z.string(),

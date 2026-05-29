@@ -164,7 +164,7 @@ export default tseslint.config(
     },
   },
 
-  // Boundary: primitives may not import upward (composites/steps/state).
+  // Boundary: primitives may not import upward (composites/steps/screens/state).
   {
     files: ['src/components/primitives/**/*.{ts,tsx}'],
     rules: {
@@ -173,9 +173,38 @@ export default tseslint.config(
         {
           patterns: [
             {
-              group: ['@/components/composites/*', '@/components/steps/*', '@/state/*'],
+              group: [
+                '@/components/composites/*',
+                '@/components/steps/*',
+                '@/components/screens/*',
+                '@/state/*',
+              ],
               message:
-                'Primitives may depend only on design tokens — never composites, steps, or state (component-boundary rule).',
+                'Primitives may depend only on design tokens — never composites, steps, screens, or state (component-boundary rule).',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  // Boundary: composites may not import upward (steps/screens/shell).
+  {
+    files: ['src/components/composites/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                '@/components/steps/*',
+                '@/components/steps/**',
+                '@/components/screens/*',
+                '@/components/screens/**',
+              ],
+              message:
+                'Composites may only import primitives — never steps, screens, or shell (component-boundary rule).',
             },
           ],
         },
