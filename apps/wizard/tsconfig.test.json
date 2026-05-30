@@ -1,7 +1,9 @@
 {
   // Test files legitimately index into known fixture structures. We keep the
   // production code under noUncheckedIndexedAccess (strict), but relax it for
-  // tests where the fixture shape is known and asserted by the test itself.
+  // tests. The `include` was extended in Step 4.5 to cover src/types/*.d.ts
+  // so config-loader tests can see the ambient window.GOQW_CONFIG declaration.
+  // See ADR-0009 amendment (wizardId / contractVersion v2).
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noUncheckedIndexedAccess": false
