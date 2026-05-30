@@ -1,10 +1,11 @@
+import { computePrice } from '@/domain/pricing/pricing-engine';
 import { transition } from '@/domain/runtime/transition';
 import type { WizardEvent } from '@/domain/runtime/events';
 import { createInitialState } from '@/domain/runtime/state';
 import type { SessionConfig, WizardState } from '@/domain/runtime/state';
 
 import type { PersistenceAdapter } from '@/runtime/persistence';
-import type { SubmissionPort } from '@/runtime/submission';
+import type { SubmissionPort, SubmissionRequest } from '@/runtime/submission';
 import { toSubmissionError } from '@/runtime/submission';
 
 // ---------------------------------------------------------------------------
@@ -78,9 +79,14 @@ export function createWizardStore(
   }
 
   async function runSubmission(): Promise<void> {
+    const request = buildRequest(state, config);
     try {
-      const { submissionId } = await submission.submit(state.answers, config);
-      dispatch({ type: 'SUBMIT_SUCCEEDED', submissionId });
+      const result = await submission.submit(request);
+      if (result.ok) {
+        dispatch({ type: 'SUBMIT_SUCCEEDED', submissionId: result.reference });
+      } else {
+        dispatch({ type: 'SUBMIT_FAILED', error: result.error });
+      }
     } catch (error) {
       dispatch({ type: 'SUBMIT_FAILED', error: toSubmissionError(error) });
     }
@@ -100,5 +106,31 @@ export function createWizardStore(
       const restoredAnswers = persistence.load(config.wizard.id);
       dispatch({ type: 'HYDRATE', restoredAnswers });
     },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Request builder
+// ---------------------------------------------------------------------------
+
+function buildRequest(state: WizardState, config: SessionConfig): SubmissionRequest {
+  const pricing = computePrice(state.answers, config.wizard, config.pricing);
+  return {
+    wizardId: state.configMeta.wizardId,
+    schemaVersion: state.configMeta.schemaVersion,
+    answers: state.answers,
+    pricing:
+      pricing.valid &&
+      pricing.totalPence !== null &&
+      pricing.rangeMinPence !== null &&
+      pricing.rangeMaxPence !== null
+        ? {
+            totalPence: pricing.totalPence,
+            lowPence: pricing.rangeMinPence,
+            highPence: pricing.rangeMaxPence,
+            currency: 'GBP',
+          }
+        : undefined,
+    clientTimestamp: new Date().toISOString(),
   };
 }

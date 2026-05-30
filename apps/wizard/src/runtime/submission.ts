@@ -1,5 +1,37 @@
 import type { AnswerMap } from '@/domain/runtime/answer-types';
-import type { SessionConfig, SubmissionErrorInfo } from '@/domain/runtime/state';
+import type { SubmissionErrorCode, SubmissionErrorInfo } from '@/domain/runtime/state';
+
+// ---------------------------------------------------------------------------
+// SubmissionRequest
+// ---------------------------------------------------------------------------
+
+export interface SubmissionRequest {
+  readonly wizardId: string;
+  readonly schemaVersion?: number;
+  readonly answers: AnswerMap;
+  readonly pricing?: {
+    readonly totalPence: number;
+    readonly lowPence: number;
+    readonly highPence: number;
+    readonly currency: 'GBP';
+  };
+  readonly clientTimestamp?: string;
+}
+
+// ---------------------------------------------------------------------------
+// SubmissionPortResult
+// ---------------------------------------------------------------------------
+
+/**
+ * The return type of SubmissionPort.submit().
+ *
+ * Discriminated by `ok`. The port never throws — all outcomes (network
+ * failure, server error, forwarder unavailable) are mapped to this type so
+ * the WizardStore can dispatch deterministically without a try/catch.
+ */
+export type SubmissionPortResult =
+  | { readonly ok: true; readonly reference: string }
+  | { readonly ok: false; readonly error: SubmissionErrorInfo };
 
 // ---------------------------------------------------------------------------
 // SubmissionPort
@@ -10,23 +42,32 @@ import type { SessionConfig, SubmissionErrorInfo } from '@/domain/runtime/state'
  *
  * The domain state machine is pure — it never calls fetch. WizardStore
  * injects this port and calls it when the machine enters the `submitting`
- * phase. Implementations can hit a REST endpoint, write to localStorage for
- * testing, or resolve immediately in Storybook.
+ * phase. Implementations must never throw; all failure conditions are
+ * returned as { ok: false, error }.
  */
 export interface SubmissionPort {
-  submit(answers: AnswerMap, config: SessionConfig): Promise<{ submissionId: string }>;
+  submit(request: SubmissionRequest): Promise<SubmissionPortResult>;
 }
 
 // ---------------------------------------------------------------------------
-// Implementations
+// Built-in port implementations
 // ---------------------------------------------------------------------------
 
 /**
- * Stub that always rejects. Use this as a placeholder during development;
- * replace with a real HTTP adapter before shipping.
+ * Port that always returns a server-error failure. Use as a placeholder
+ * during development to ensure the wizard cannot accidentally submit.
  */
 export const nullSubmissionPort: SubmissionPort = {
-  submit: () => Promise.reject(new Error('No submission port configured.')),
+  submit: (): Promise<SubmissionPortResult> =>
+    Promise.resolve({
+      ok: false,
+      error: {
+        code: 'server_error' as SubmissionErrorCode,
+        message: 'No submission port configured.',
+        submissionId: null,
+        retryable: false,
+      },
+    }),
 };
 
 // ---------------------------------------------------------------------------
@@ -34,16 +75,15 @@ export const nullSubmissionPort: SubmissionPort = {
 // ---------------------------------------------------------------------------
 
 /**
- * Maps an unknown thrown value to a serialisable SubmissionErrorInfo.
+ * Maps an unknown caught value to a serialisable SubmissionErrorInfo.
  *
- * The domain state machine accepts only SubmissionErrorInfo (no Error objects,
- * no stack traces). This function lives in the effects layer so the domain
- * never sees untyped exceptions.
+ * Used as a last-resort fallback in the store's submission effect for any
+ * unexpected throws that escape the port boundary.
  */
 export function toSubmissionError(error: unknown): SubmissionErrorInfo {
   if (error instanceof Error) {
     return {
-      code: 'network_error',
+      code: 'server_error',
       message: error.message,
       submissionId: null,
       retryable: true,

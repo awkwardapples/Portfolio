@@ -82,9 +82,10 @@ export type SubmitSucceededEvent = {
  * Server reported a submission failure.
  *
  * The error.code discriminant drives the UI path:
- *   'forwarder_failed'  show submissionId + fallback contact details (ADR-0005)
- *   'network_error'     show offline/retry message
- *   'server_error'      show generic error + retry option
+ *   'forwarder_unavailable'  show submissionId + fallback contact details (ADR-0005)
+ *   'network_unreachable'    show offline/retry message
+ *   'request_timeout'        show timeout/retry message
+ *   'server_error'           show generic error + retry option
  */
 export type SubmitFailedEvent = {
   readonly type: 'SUBMIT_FAILED';

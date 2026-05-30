@@ -4,11 +4,11 @@ import { createWizardStore, WizardProvider, sessionStorageAdapter } from '@/runt
 import type { SubmissionPort } from '@/runtime';
 import { WizardShell } from '@/components/WizardShell';
 
-// Development submission adapter: resolves after a short delay to simulate
-// a real network round-trip. Replace with the WordPress REST adapter in production.
 const devSubmissionPort: SubmissionPort = {
   submit: () =>
-    new Promise((resolve) => setTimeout(() => resolve({ submissionId: `dev-${Date.now()}` }), 800)),
+    new Promise((resolve) =>
+      setTimeout(() => resolve({ ok: true, reference: `dev-${Date.now()}` }), 800),
+    ),
 };
 
 const session = resolveVertical(config.wizardId) ?? resolveFallbackVertical();

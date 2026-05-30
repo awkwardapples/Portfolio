@@ -52,13 +52,23 @@ export interface StepValidationSnapshot {
 /**
  * Discriminated code for submission failures.
  *
- *   forwarder_failed  HTTP 502 from ADR-0005 sync Make.com forwarder.
- *                     The submission was persisted (submissionId non-null) but
- *                     forwarding failed. Show submissionId + fallback contact.
- *   network_error     No response received (offline or timeout).
- *   server_error      Non-502 HTTP error from the REST endpoint.
+ *   network_unreachable   No response received (offline, DNS failure).
+ *   request_timeout       Fetch aborted after the configured timeout.
+ *   forwarder_unavailable HTTP 502 from ADR-0005 sync forwarder. Data IS
+ *                         persisted; submissionId is non-null.
+ *   bad_response          Server returned 200 but the body was unparseable.
+ *   validation_failed     400/422: server rejected the payload shape.
+ *   unauthorized          401/403: nonce expired or missing.
+ *   server_error          Any other non-502 server error.
  */
-export type SubmissionErrorCode = 'forwarder_failed' | 'network_error' | 'server_error';
+export type SubmissionErrorCode =
+  | 'network_unreachable'
+  | 'request_timeout'
+  | 'forwarder_unavailable'
+  | 'bad_response'
+  | 'validation_failed'
+  | 'unauthorized'
+  | 'server_error';
 
 /**
  * Data-only error descriptor for failed submissions.
@@ -70,9 +80,9 @@ export interface SubmissionErrorInfo {
   readonly code: SubmissionErrorCode;
   readonly message: string;
   /**
-   * Non-null only when code is 'forwarder_failed' (ADR-0005). The submission
-   * was recorded in WordPress even though forwarding failed — show this to the
-   * user so they can quote it when contacting support.
+   * Non-null only when code is 'forwarder_unavailable' (ADR-0005). The
+   * submission was recorded in WordPress even though forwarding failed — show
+   * this reference to the user so they can quote it when contacting support.
    */
   readonly submissionId: string | null;
   readonly retryable: boolean;

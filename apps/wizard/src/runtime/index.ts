@@ -11,5 +11,7 @@ export type { PersistenceAdapter } from './persistence';
 export { sessionStorageAdapter, nullAdapter } from './persistence';
 
 // Submission
-export type { SubmissionPort } from './submission';
+export type { SubmissionPort, SubmissionRequest, SubmissionPortResult } from './submission';
 export { nullSubmissionPort, toSubmissionError } from './submission';
+export { httpSubmissionPort } from './http-submission-port';
+export type { HttpPortOptions } from './http-submission-port';
