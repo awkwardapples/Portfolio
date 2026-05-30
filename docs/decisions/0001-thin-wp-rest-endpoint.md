@@ -63,3 +63,13 @@ We use **Path B**.
 
 - This decision presumes the WordPress site is reasonably available. If client hosting becomes unreliable in practice, we re-evaluate.
 - See ADR-0005 for the related decision on how forwarder failures are surfaced to the user.
+
+## Amendment — 2026-05-30: persist-before-forward formalised in Step 4.6
+
+Step 4.6 implements this ADR's core principle with the strict controller ordering
+documented in ADR-0015. The `wp_goqw_submissions` schema gains a `status` field
+(`persisted → forwarded | forward_failed`) so rows where forwarding failed are
+recoverable. `SubmissionController::handle()` persists in Step 2 and forwards in
+Step 3; the persistence row is the durable record of submission regardless of
+forward outcome. Admin tooling (Phase 6+) can replay `forward_failed` rows without
+involving the user.

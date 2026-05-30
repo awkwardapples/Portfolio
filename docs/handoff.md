@@ -1,6 +1,6 @@
 # Development Handoff
 
-_Last updated: 2026-05-29_
+_Last updated: 2026-05-30_
 
 ## Project
 
@@ -16,13 +16,15 @@ WordPress-based local lead generation wizard platform. A configurable multi-step
 - Step 4.2 — Wizard state machine (FSM + React adapter)
 - Step 4.3 — Pricing engine integration
 - Step 4.4 — React rendering layer
-- **Step 4.5 — Vertical registry + config resolution (JUST COMPLETED)**
+- Step 4.5 — Vertical registry + config resolution
+- **Step 4.6 — WordPress REST submission adapter (JUST COMPLETED) — Phase 4 CLOSED**
 
 ## Where Things Stand
 
-The wizard is **fully functional end-to-end** in development, and the codebase is now **multi-client capable**. Run `pnpm dev` from `apps/wizard`, open `localhost:5173`, and the fencing fixture wizard runs: 4 steps, live price preview, review screen, and a mock success flow. A second client vertical is one PR away.
+**Phase 4 is complete and fully functional end-to-end.** Run `pnpm dev` from `apps/wizard`, open `localhost:5173`, and the fencing fixture wizard runs: 4 steps, live price preview, review screen. In a WordPress environment, submitting persists to `wp_goqw_submissions` and forwards to Make.com; failure modes return honest retry messages.
 
-**297 Vitest tests passing. Zero lint warnings. Zero TypeScript errors. Build clean.**
+**312 Vitest tests passing. Zero lint warnings. Zero TypeScript errors. Build clean.**  
+**PHP: composer lint 0/0, composer analyse no errors, composer test exit 0.**
 
 ## What Was Just Built (Step 4.5)
 
@@ -57,14 +59,10 @@ The wizard is **fully functional end-to-end** in development, and the codebase i
 
 ## Next Steps
 
-### Step 4.6 — WordPress REST submission adapter
-
-Replace `devSubmissionPort` in `src/App.tsx` with a real `SubmissionPort` that POSTs to `qw/v1/submit`. Reference: `src/runtime/submission.ts` for the interface. The WordPress plugin endpoint is in `plugins/quote-wizard/`. See ADR-0001 and ADR-0005.
-
 ### Phase 5 — Production integration + site templates
 
-- Real submission endpoint + Make.com forwarder
-- WordPress shortcode wiring (replace `devSubmissionPort` + `sessionStorageAdapter` with injected config from PHP)
+- Submission endpoint is live (Step 4.6); Make.com forwarder is live
+- WordPress shortcode wiring (replace `devSubmissionPort` fallback with injected config from PHP; `httpSubmissionPort` is ready)
 - Site template layer (Home, Services, Our Work, Contact, Quote pages) — see ADR-0014
 - Analytics
 - Autosave beyond session scope

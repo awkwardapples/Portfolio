@@ -85,3 +85,17 @@ The submission ID is included in the 502 response so the user could reference it
 
 - If average forwarder latency exceeds 3s on real production traffic, we reconsider an async/eventual-consistency model with explicit polling.
 - If Make.com proves to be more flaky than expected, we look at queue-and-retry with a "we'll let you know" model — but only after we have real failure data.
+
+## Amendment — 2026-05-30: 502 wire contract formalised in Step 4.6
+
+The 502 contract specified by this ADR is now formalised in ADR-0015:
+
+- Response body: `{ "errorCode": "forwarder_unavailable", "submissionId": <id> }`
+- `submissionId` confirms persistence to the client (data is safe).
+- The frontend maps this to `SUBMIT_FAILED` with error code `'forwarder_unavailable'`
+  and the operational message _"Your submission was saved. We could not notify our team
+  automatically. Please try again or call us directly."_
+
+Forwarder timeout: 10 seconds (`wp_remote_post` timeout) — long enough for Make.com's
+typical webhook response, short enough to avoid leaving the user waiting on a stalled
+request.
