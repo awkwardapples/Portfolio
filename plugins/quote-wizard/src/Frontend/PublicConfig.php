@@ -45,7 +45,7 @@ final class PublicConfig {
 	 * @return array<string, mixed>
 	 */
 	public static function build(): array {
-		return array(
+		$config = array(
 			// Contract version — React reads this and warns on mismatch.
 			'contractVersion' => self::CONTRACT_VERSION,
 
@@ -63,7 +63,7 @@ final class PublicConfig {
 			// CTAs.
 			'calendlyUrl'     => Settings::calendly_url(),
 
-			// REST contract — used by the future submission flow.
+			// REST contract — used by the submission flow.
 			'restNamespace'   => 'qw/v1',
 			'restUrl'         => esc_url_raw( rest_url( 'qw/v1' ) ),
 			'restNonce'       => wp_create_nonce( 'wp_rest' ),
@@ -71,6 +71,31 @@ final class PublicConfig {
 			// Build identity — appears in console for deployment debugging.
 			'pluginVersion'   => GOQW_VERSION,
 			'buildTimestamp'  => self::build_timestamp(),
+		);
+
+		// Emit enabledServiceIds only when non-empty (additive, optional field).
+		$ids = self::enabled_service_ids();
+		if ( ! empty( $ids ) ) {
+			$config['enabledServiceIds'] = $ids;
+		}
+
+		return $config;
+	}
+
+	/**
+	 * Parse the goqw_enabled_services option into a trimmed, filtered array.
+	 *
+	 * Returns an empty array when the option is absent or blank.
+	 *
+	 * @return string[]
+	 */
+	private static function enabled_service_ids(): array {
+		$option = (string) get_option( 'goqw_enabled_services', '' );
+		return array_values(
+			array_filter(
+				array_map( 'trim', explode( ',', $option ) ),
+				static fn( string $v ): bool => '' !== $v
+			)
 		);
 	}
 

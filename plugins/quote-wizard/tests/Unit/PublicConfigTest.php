@@ -70,3 +70,71 @@ it(
 		expect( $config['wizardId'] )->toBe( 'fencing' );
 	}
 );
+
+it(
+	'omits enabledServiceIds from the config when goqw_enabled_services is empty',
+	function (): void {
+		Functions\when( 'get_option' )->justReturn( '' );
+		Functions\when( 'esc_url_raw' )->returnArg();
+		Functions\when( 'rest_url' )->justReturn( 'https://example.test/wp-json/qw/v1' );
+		Functions\when( 'wp_create_nonce' )->justReturn( 'test-nonce' );
+
+		$config = PublicConfig::build();
+
+		expect( array_key_exists( 'enabledServiceIds', $config ) )->toBeFalse();
+	}
+);
+
+it(
+	'emits enabledServiceIds as a single-element array when set to a single id',
+	function (): void {
+		Functions\when( 'get_option' )->alias(
+			static function ( string $key, string $default = '' ): string {
+				return 'goqw_enabled_services' === $key ? 'fencing' : $default;
+			}
+		);
+		Functions\when( 'esc_url_raw' )->returnArg();
+		Functions\when( 'rest_url' )->justReturn( 'https://example.test/wp-json/qw/v1' );
+		Functions\when( 'wp_create_nonce' )->justReturn( 'test-nonce' );
+
+		$config = PublicConfig::build();
+
+		expect( $config['enabledServiceIds'] )->toBe( array( 'fencing' ) );
+	}
+);
+
+it(
+	'emits enabledServiceIds as a two-element array when set to a CSV of two ids',
+	function (): void {
+		Functions\when( 'get_option' )->alias(
+			static function ( string $key, string $default = '' ): string {
+				return 'goqw_enabled_services' === $key ? 'fencing,decking' : $default;
+			}
+		);
+		Functions\when( 'esc_url_raw' )->returnArg();
+		Functions\when( 'rest_url' )->justReturn( 'https://example.test/wp-json/qw/v1' );
+		Functions\when( 'wp_create_nonce' )->justReturn( 'test-nonce' );
+
+		$config = PublicConfig::build();
+
+		expect( $config['enabledServiceIds'] )->toBe( array( 'fencing', 'decking' ) );
+	}
+);
+
+it(
+	'trims whitespace from service ids in the goqw_enabled_services option',
+	function (): void {
+		Functions\when( 'get_option' )->alias(
+			static function ( string $key, string $default = '' ): string {
+				return 'goqw_enabled_services' === $key ? '  fencing , decking  ' : $default;
+			}
+		);
+		Functions\when( 'esc_url_raw' )->returnArg();
+		Functions\when( 'rest_url' )->justReturn( 'https://example.test/wp-json/qw/v1' );
+		Functions\when( 'wp_create_nonce' )->justReturn( 'test-nonce' );
+
+		$config = PublicConfig::build();
+
+		expect( $config['enabledServiceIds'] )->toBe( array( 'fencing', 'decking' ) );
+	}
+);
