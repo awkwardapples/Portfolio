@@ -75,3 +75,34 @@ and site templates are NOT included; those belong to the site-template layer
 Registry contains exactly one entry (`fencing`) at the time of this ADR.
 A second entry is the eventual proof of the abstraction and is deferred to
 the appropriate phase.
+
+## Amendment — 2026-06-01: Per-session service selection (Step 4.7)
+
+ADR-0013 originally framed the registry as supporting per-deployment defaults
+("which vertical does this deployment run?") and template-repo cleanliness.
+Step 4.7 broadens this: the registry now also supports **per-session selection**
+where the end user picks a service from the deployment's enabled set, and the
+wizard mounts the corresponding ServiceConfig.
+
+This is additive. The registry data structure is unchanged. New helpers
+`listEnabledServiceIds(override?)` and `resolveService(id)` (alias of
+`resolveVertical`) sit alongside the existing API. `PublicConfig.wizardId`
+continues to denote the **default selection** (used as the pre-selected option
+or when only one service is enabled). A new optional field
+`PublicConfig.enabledServiceIds: string[]` restricts the available set to a
+subset of the registry; absent or empty means "all registered services."
+
+### Synonyms
+
+The terms "vertical" and "service" are interchangeable. The codebase retains
+`Vertical` and `SessionConfig` types and `resolveVertical()`. New aliases
+`ServiceId = string` and `ServiceConfig = SessionConfig` exist for readability
+in selection-layer code. There is no renaming.
+
+### Single-engine commitment
+
+This step does NOT introduce a multi-engine architecture. The FSM
+(`transition()`), pricing engine (`computePrice()`), validation, navigation,
+persistence, and submission pipeline are identical regardless of which service
+is active. Only the `WizardConfig` and `PricingConfig` data differ between
+services.

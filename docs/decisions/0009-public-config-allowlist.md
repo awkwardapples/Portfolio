@@ -148,3 +148,24 @@ than failing to mount.
 | `restNonce`       | `string`            | `wp_create_nonce('wp_rest')`   | per-request |
 | `pluginVersion`   | `string`            | `GOQW_VERSION` constant        | public      |
 | `buildTimestamp`  | `string` (ISO 8601) | manifest mtime                 | public      |
+
+## Amendment — 2026-06-01: enabledServiceIds (Step 4.7, additive)
+
+PublicConfig gains an optional field:
+
+- `enabledServiceIds?: string[]` — when present and non-empty, restricts the
+  set of services offered by this deployment to the listed IDs. When absent or
+  empty, all services registered in the in-repo registry are offered.
+
+This addition is **forward-compatible and does NOT bump contractVersion**.
+The field is optional; a v2-only consumer encountering a payload without it
+behaves identically to before. The PHP plugin emits the field only when the
+underlying `goqw_enabled_services` option is non-empty.
+
+### Future field-accumulation note
+
+This is the second optional addition to PublicConfig (after `wizardId` in v2).
+Further additions should consider whether a contractVersion bump is warranted
+to keep the wire surface comprehensible. As a guideline: optional, additive,
+backwards-compatible fields may continue; structural changes or semantic
+modifications to existing fields require a bump.

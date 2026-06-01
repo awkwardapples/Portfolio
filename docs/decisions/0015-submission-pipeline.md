@@ -116,6 +116,15 @@ admin tooling, not in the UI.
   A Phase 6 admin screen could list them and trigger a re-forward without
   browser involvement.
 
+## Amendment — 2026-06-01: wizardId equivalence (Step 4.7)
+
+The `wizardId` field on the submission wire payload (`POST /qw/v1/submit`)
+denotes the **service** that produced the submission. The terms "vertical,"
+"wizard id," and "service" are interchangeable; on the wire the field name
+remains `wizardId` to avoid a wire-contract change.
+
+No payload structure changes in this step.
+
 ## Consequences
 
 **Easier:**
