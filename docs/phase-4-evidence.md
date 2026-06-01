@@ -90,3 +90,92 @@ No new npm dependencies; `rollup-plugin-visualizer` is devDep-only.
 - Component tests (StepRenderer, field renderers) require jsdom Vitest config
 - `h-10` Tailwind utility gap in spacing scale (visual-only, no regression)
 - Make.com workflow design owns end-to-end lead deduplication
+- ServiceSelector + ServiceCard have no rendering tests (jsdom deferred)
+- ServiceSelector mounts at App.tsx root in Phase 4; migrates to QuotePage in Phase 5
+
+---
+
+## Step 4.7 Evidence
+
+_Compiled: 2026-06-01 — Service Abstraction Layer_
+
+### Gate Results
+
+| Gate               | Result                                                                              |
+| ------------------ | ----------------------------------------------------------------------------------- |
+| `pnpm lint`        | 0 errors, 0 warnings                                                                |
+| `pnpm typecheck`   | 0 errors (production + test tsconfig)                                               |
+| `pnpm test`        | **337 / 337 passing** (19 test files)                                               |
+| `pnpm build`       | Clean. 231.83 kB JS (67.88 kB gzip), 15.78 kB CSS (3.73 kB gzip)                    |
+| `composer lint`    | 0 errors, 0 warnings (PHPCS)                                                        |
+| `composer analyse` | No errors (PHPStan level 8)                                                         |
+| `composer test`    | Exit 0 — 20 tests: 2 Example + 7 PublicConfig + 3 Settings + 8 SubmissionController |
+
+### Acceptance Criteria
+
+| #   | Criterion                                                                         | Status                       |
+| --- | --------------------------------------------------------------------------------- | ---------------------------- |
+| 1   | Registry contains fencing and decking entries                                     | ✅                           |
+| 2   | Decking config passes validateWizardConfig and validatePricingConfig              | ✅                           |
+| 3   | listEnabledServiceIds() without override returns all registered services in order | ✅                           |
+| 4   | listEnabledServiceIds([]) returns all registered services                         | ✅                           |
+| 5   | listEnabledServiceIds(['fencing']) returns ['fencing']                            | ✅                           |
+| 6   | listEnabledServiceIds filters unknown ids out                                     | ✅                           |
+| 7   | resolveService returns same SessionConfig as resolveVertical                      | ✅                           |
+| 8   | PublicConfigSchema accepts enabledServiceIds: ['fencing','decking'], [], omitted  | ✅                           |
+| 9   | PublicConfigSchema rejects enabledServiceIds: [''], 'fencing', mixed types        | ✅                           |
+| 10  | PHP PublicConfig::build() omits field when option is empty                        | ✅                           |
+| 11  | PHP PublicConfig::build() emits array, trims whitespace, handles CSV              | ✅                           |
+| 12  | goqw_enabled_services seeded by Activator; option count is 10                     | ✅ (10 options)              |
+| 13  | goqw_enabled_services removed by uninstall (dynamic LIKE query)                   | ✅                           |
+| 14  | When services.length === 1, App auto-selects — selector NOT shown                 | ✅ Manual smoke              |
+| 15  | When services.length > 1, App renders ServiceSelector until user picks            | ✅ Manual smoke              |
+| 16  | Selecting fencing mounts fencing wizard; selecting decking mounts decking wizard  | ✅ Manual smoke              |
+| 17  | Both wizards complete end-to-end against devSubmissionPort                        | ✅ Manual smoke              |
+| 18  | FSM core (src/domain/runtime/\*\*) is unchanged                                   | ✅ git diff shows no changes |
+| 19  | Pricing engine is unchanged                                                       | ✅ git diff                  |
+| 20  | Submission port and HTTP adapter are unchanged                                    | ✅ git diff                  |
+| 21  | WordPress REST controller, repository, forwarder are unchanged                    | ✅ git diff                  |
+| 22  | Wizard rendering tree is unchanged                                                | ✅ git diff                  |
+| 23  | All gates green                                                                   | ✅                           |
+| 24  | Bundle gzip within +15 kB of post-4.6 baseline (67.1 kB)                          | ✅ +0.78 kB                  |
+| 25  | No new dependencies added                                                         | ✅                           |
+| 26  | ADR-0013, 0009, 0015 amendments landed; onboarding + technical-debt updated       | ✅                           |
+
+### New Test Breakdown (Step 4.7)
+
+| Suite                                      | File                                                        | Tests  |
+| ------------------------------------------ | ----------------------------------------------------------- | ------ |
+| Service selection API                      | `src/domain/registry/__tests__/services.test.ts`            | 11     |
+| Decking fixture validation                 | `src/domain/fixtures/__tests__/decking-validation.test.ts`  | 2      |
+| PublicConfig enabledServiceIds (new cases) | `src/domain/__tests__/error-tone-and-public-config.test.ts` | 6      |
+| Service selection helper logic             | `src/__tests__/service-selection.test.ts`                   | 6      |
+| PHP PublicConfig enabledServiceIds (new)   | `tests/Unit/PublicConfigTest.php`                           | 4      |
+| **Total new**                              |                                                             | **29** |
+
+Previous total (Step 4.6): 312 Vitest + 10 PHP
+Current total: **337 Vitest** + **20 PHP**
+
+### Bundle Delta
+
+| Metric  | Before (Step 4.6) | After (Step 4.7) | Delta    |
+| ------- | ----------------- | ---------------- | -------- |
+| JS raw  | 227.7 kB          | 231.83 kB        | +4.13 kB |
+| JS gzip | 67.1 kB           | 67.88 kB         | +0.78 kB |
+| CSS     | 15.1 kB           | 15.78 kB         | +0.68 kB |
+
+New additions: ServiceSelector + ServiceCard (~1.5 kB minified), decking.config.ts
+(~2 kB), services.ts (~0.5 kB). No new npm dependencies.
+
+### Commits (Step 4.7)
+
+| Commit    | Description                                                             |
+| --------- | ----------------------------------------------------------------------- |
+| `3e9b4fe` | docs: ADR amendments for service abstraction (0013, 0009, 0015)         |
+| `4e979c0` | feat(domain): ServiceId and ServiceConfig type aliases                  |
+| `286b0f5` | feat(domain): decking reference vertical fixture                        |
+| `9d39ba5` | feat(registry): service selection API + decking registered              |
+| `3d36d1f` | feat(domain): PublicConfig optional enabledServiceIds field             |
+| `0b84d67` | feat(plugin): PHP PublicConfig emits enabledServiceIds when configured  |
+| `ec55bbc` | feat(selection): ServiceSelector + ServiceCard components               |
+| `fb2fe7a` | refactor(app): per-session service selection with single-service bypass |

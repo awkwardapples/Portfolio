@@ -1,6 +1,6 @@
 # Development Handoff
 
-_Last updated: 2026-05-30_
+_Last updated: 2026-06-01_
 
 ## Project
 
@@ -17,13 +17,17 @@ WordPress-based local lead generation wizard platform. A configurable multi-step
 - Step 4.3 — Pricing engine integration
 - Step 4.4 — React rendering layer
 - Step 4.5 — Vertical registry + config resolution
-- **Step 4.6 — WordPress REST submission adapter (JUST COMPLETED) — Phase 4 CLOSED**
+- Step 4.6 — WordPress REST submission adapter — Phase 4 CLOSED
+- **Step 4.7 — Service abstraction layer (JUST COMPLETED)**
 
 ## Where Things Stand
 
-**Phase 4 is complete and fully functional end-to-end.** Run `pnpm dev` from `apps/wizard`, open `localhost:5173`, and the fencing fixture wizard runs: 4 steps, live price preview, review screen. In a WordPress environment, submitting persists to `wp_goqw_submissions` and forwards to Make.com; failure modes return honest retry messages.
+**Phase 4 fully complete.** Run `pnpm dev` from `apps/wizard`, open `localhost:5173`. The
+service selector appears (two services: Fencing, Decking); clicking either mounts the full
+wizard end-to-end. In a WordPress environment, submission persists to `wp_goqw_submissions`
+and forwards to Make.com.
 
-**312 Vitest tests passing. Zero lint warnings. Zero TypeScript errors. Build clean.**  
+**337 Vitest tests passing. Zero lint warnings. Zero TypeScript errors. Build clean.**  
 **PHP: composer lint 0/0, composer analyse no errors, composer test exit 0.**
 
 ## What Was Just Built (Step 4.5)
@@ -57,12 +61,49 @@ WordPress-based local lead generation wizard platform. A configurable multi-step
 | `docs/decisions/0009-public-config-allowlist.md`     | Amendment appended (v2 + wizardId)                           |
 | `docs/onboarding.md`                                 | Option count 8→9; ADR-0013 reference                         |
 
+## What Was Just Built (Step 4.7)
+
+### New files
+
+| File                                                       | Purpose                                                         |
+| ---------------------------------------------------------- | --------------------------------------------------------------- |
+| `src/domain/fixtures/decking.config.ts`                    | Second reference vertical: decking wizard + pricing config      |
+| `src/domain/fixtures/__tests__/decking-validation.test.ts` | Validates decking fixture against 4.1 schemas (2 tests)         |
+| `src/domain/registry/services.ts`                          | `listEnabledServiceIds`, `resolveService` — selection-layer API |
+| `src/domain/registry/__tests__/services.test.ts`           | 11 tests for services API                                       |
+| `src/components/selection/ServiceSelector.tsx`             | Selection screen: heading + list of ServiceCard buttons         |
+| `src/components/selection/ServiceCard.tsx`                 | Single service button card                                      |
+| `src/components/selection/index.ts`                        | Barrel export                                                   |
+| `src/__tests__/service-selection.test.ts`                  | 6 pure helper logic tests                                       |
+| `docs/technical-debt.md`                                   | Technical debt register with media upload deferral              |
+
+### Modified files
+
+| File                                                        | Change                                                    |
+| ----------------------------------------------------------- | --------------------------------------------------------- |
+| `src/domain/registry/types.ts`                              | Added `ServiceId` and `ServiceConfig` aliases             |
+| `src/domain/registry/verticals.ts`                          | Registered `decking` vertical                             |
+| `src/domain/registry/index.ts`                              | Exported new service API + aliases                        |
+| `src/domain/config/public-config.ts`                        | Added optional `enabledServiceIds` field                  |
+| `src/types/global.d.ts`                                     | Added optional `enabledServiceIds` to ambient declaration |
+| `src/domain/__tests__/error-tone-and-public-config.test.ts` | 6 new enabledServiceIds test cases                        |
+| `src/domain/registry/__tests__/resolve.test.ts`             | Updated `listVerticalIds` assertion to include decking    |
+| `src/App.tsx`                                               | Per-session selection with single-service bypass          |
+| `plugins/quote-wizard/src/Frontend/PublicConfig.php`        | Emit `enabledServiceIds` when configured                  |
+| `plugins/quote-wizard/src/Activator.php`                    | Seed `goqw_enabled_services` option (count: 9 → 10)       |
+| `plugins/quote-wizard/tests/Unit/PublicConfigTest.php`      | 4 new enabledServiceIds test cases                        |
+| `docs/decisions/0013-vertical-registry.md`                  | Amendment: per-session selection + synonymy               |
+| `docs/decisions/0009-public-config-allowlist.md`            | Amendment: enabledServiceIds additive field               |
+| `docs/decisions/0015-submission-pipeline.md`                | Amendment: wizardId/service equivalence                   |
+
 ## Next Steps
 
 ### Phase 5 — Production integration + site templates
 
 - Submission endpoint is live (Step 4.6); Make.com forwarder is live
+- **ServiceSelector** currently mounts at App.tsx root; Phase 5 moves it to the QuotePage in the site shell
 - WordPress shortcode wiring (replace `devSubmissionPort` fallback with injected config from PHP; `httpSubmissionPort` is ready)
+- Before adding a service to a production Make.com workflow, ensure the workflow handles `wizardId: 'decking'` payload shape
 - Site template layer (Home, Services, Our Work, Contact, Quote pages) — see ADR-0014
 - Analytics
 - Autosave beyond session scope

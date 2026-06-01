@@ -104,7 +104,7 @@ Then activate it (from LocalWP's site shell, so `wp` talks to the right database
 wp plugin activate quote-wizard
 ```
 
-Activation creates the database table `wp_goqw_submissions`, seeds nine `goqw_*` options (including `goqw_wizard_id`; see ADR-0013), and schedules a daily cleanup cron event (`goqw_prune_submissions`).
+Activation creates the database table `wp_goqw_submissions`, seeds ten `goqw_*` options (including `goqw_wizard_id` and `goqw_enabled_services`; see ADR-0013), and schedules a daily cleanup cron event (`goqw_prune_submissions`).
 
 ## Step 5 — Put the wizard on a page (about 3 minutes)
 
@@ -128,8 +128,8 @@ Run these from LocalWP's site shell. They confirm each part of the system is hea
 # The table exists with its columns
 wp db tables --all-tables-with-prefix | Select-String "goqw"     # expect wp_goqw_submissions
 
-# The nine options seeded (includes goqw_wizard_id — see ADR-0013)
-wp option list --search="goqw_*" --format=count                  # expect 9
+# The ten options seeded (includes goqw_wizard_id and goqw_enabled_services — see ADR-0013)
+wp option list --search="goqw_*" --format=count                  # expect 10
 
 # A couple of specific options
 wp option get goqw_primary_color                                 # expect a hex colour, default #0F4C81
@@ -263,6 +263,51 @@ The plugin exposes a small, explicit set of values to the browser as `window.GOQ
 **`pnpm build-plugin` fails with a manifest error.** The Vite build did not produce valid output. Run `cd apps\wizard; pnpm build` directly to see the underlying build error.
 
 **CI fails on the lockfile.** Run `pnpm install` locally, commit the updated `pnpm-lock.yaml`, and push.
+
+## Services (Step 4.7)
+
+### What a service is
+
+A "service" is a complete `{ WizardConfig, PricingConfig }` bundle registered in
+`src/domain/registry/verticals.ts`. "Service" and "vertical" are synonyms; the codebase
+uses both names (see ADR-0013 amendment). Currently two services are registered:
+`fencing` and `decking`.
+
+### Adding a new service
+
+1. Create a fixture file under `src/domain/fixtures/<name>.config.ts` following the
+   pattern in `fencing.config.ts` (heavily commented; read it first).
+2. Add the entry to `VERTICALS` in `src/domain/registry/verticals.ts`.
+3. Add validation tests in `src/domain/fixtures/__tests__/<name>-validation.test.ts`.
+4. Run `pnpm test` — the validator will fail-fast if the config is malformed.
+5. For production, set the `goqw_enabled_services` WP option (see below) and ensure
+   any Make.com workflow handles the new `wizardId` payload.
+
+### Controlling which services are offered per deployment
+
+The `goqw_enabled_services` option is a comma-separated list of service IDs. When it is
+empty (the default), **all registered services are offered**.
+
+```powershell
+# Offer only fencing (bypass the selector)
+wp option update goqw_enabled_services 'fencing'
+
+# Offer both fencing and decking (selector shown)
+wp option update goqw_enabled_services 'fencing,decking'
+
+# Offer all registered services (selector shown for 2+)
+wp option update goqw_enabled_services ''
+```
+
+When exactly one service is in the enabled set, the ServiceSelector is bypassed and the
+wizard mounts immediately. Unknown IDs in the option are silently filtered out.
+
+### Removing an unwanted service from a clone
+
+If you are cloning this template for a single-trade client and do not want the decking
+service at all, the cleanest approach is to delete the entry from `VERTICALS` in
+`src/domain/registry/verticals.ts`. Setting `goqw_enabled_services` to the single
+desired ID is also valid and does not require a code change.
 
 ## Where to read more
 
