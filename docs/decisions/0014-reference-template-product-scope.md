@@ -66,3 +66,25 @@ the platform. Architecture supports this set; it does not enforce it.
 
 This ADR records the strategic decision. The technical implementation lands
 across Step 4.5 (vertical registry) and Phase 5 (site templates).
+
+---
+
+## Amendment — 2026-06-01: Concrete pages, not schema-driven (Step 5.0)
+
+Step 5.0 implements the five reference pages as **concrete React components
+with content in typed TypeScript modules**, not as schema-driven templates.
+
+This is the architectural commitment that makes the template-clone workflow
+real: a cloner edits files, not configurations. There is no abstraction
+between "what the page renders" and "what's in the content file" — the page
+imports the const and reads its fields. Type-checking catches mistakes.
+
+The five-page set (Home / Services / Our Work / Contact / Quote) is the
+canonical reference set, not a hard schema. Future clients may add, rename,
+or omit pages by editing the route table; no platform code enforces the
+five-page structure.
+
+This explicitly does NOT pave the road to an operator-editing platform (c).
+Operator content editing would require: a content schema, a content API,
+admin UI, preview tooling, content sync, validation tooling. None of those
+exist; none are planned. Revisit only on explicit demand.
