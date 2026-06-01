@@ -2,11 +2,17 @@
  * Static route table. The single source of truth for which routes exist.
  *
  * Each entry declares a path, document title, nav label, and an element
- * factory. Populated in Step 5.0 Commit 5 (after pages exist).
- * Adding a route = adding one entry here + one page component.
+ * factory. Adding a route = adding one entry here + one page component.
+ *
+ * Element factories use createElement (not JSX) so this file can stay .ts.
  */
 
-import type { ReactElement } from 'react';
+import { createElement, type ReactElement } from 'react';
+import { HomePage } from '@/site/pages/HomePage';
+import { ServicesPage } from '@/site/pages/ServicesPage';
+import { OurWorkPage } from '@/site/pages/OurWorkPage';
+import { ContactPage } from '@/site/pages/ContactPage';
+import { QuotePage } from '@/site/pages/QuotePage';
 
 export interface RouteEntry {
   readonly path: string;
@@ -15,15 +21,39 @@ export interface RouteEntry {
   readonly element: () => ReactElement;
 }
 
-// Populated with real page imports in Commit 5 (feat(site): populated route table).
-export const ROUTES: readonly RouteEntry[] = [];
+export const ROUTES: readonly RouteEntry[] = [
+  { path: '/', title: 'Home', navLabel: 'Home', element: () => createElement(HomePage) },
+  {
+    path: '/services',
+    title: 'Services',
+    navLabel: 'Services',
+    element: () => createElement(ServicesPage),
+  },
+  {
+    path: '/our-work',
+    title: 'Our work',
+    navLabel: 'Our work',
+    element: () => createElement(OurWorkPage),
+  },
+  {
+    path: '/contact',
+    title: 'Contact',
+    navLabel: 'Contact',
+    element: () => createElement(ContactPage),
+  },
+  {
+    path: '/quote',
+    title: 'Get a quote',
+    navLabel: 'Get a free quote',
+    element: () => createElement(QuotePage),
+  },
+] as const;
 
-export const DEFAULT_ROUTE: RouteEntry = {
-  path: '/',
-  title: 'Home',
-  navLabel: 'Home',
-  element: () => null as unknown as ReactElement,
-};
+/**
+ * Default route when pathname does not match — falls back to Home.
+ * Unknown paths render the home page (not a 404) per ADR-0016.
+ */
+export const DEFAULT_ROUTE: RouteEntry = ROUTES[0]!;
 
 /**
  * Pure matcher: given a pathname, return the matching route or DEFAULT_ROUTE.
