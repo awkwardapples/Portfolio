@@ -23,6 +23,13 @@ declare global {
     /** Selects which wizard vertical this deployment runs. */
     wizardId: string;
 
+    /**
+     * Restricts the set of services offered by this deployment to a subset of
+     * the registry. When absent or empty, all registered services are offered.
+     * See ADR-0009 amendment and ADR-0013 amendment.
+     */
+    enabledServiceIds?: string[];
+
     /** Public business display info (appears in the wizard UI). */
     businessName: string;
     businessPhone: string;

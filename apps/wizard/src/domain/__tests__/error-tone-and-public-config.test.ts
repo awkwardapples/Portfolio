@@ -120,4 +120,33 @@ describe('PublicConfig validation + fallback contract', () => {
     expect(validatePublicConfig('nope').ok).toBe(false);
     expect(validatePublicConfig(undefined).ok).toBe(false);
   });
+
+  it('accepts enabledServiceIds as an array of non-empty strings', () => {
+    const withIds = { ...valid, enabledServiceIds: ['fencing', 'decking'] };
+    expect(validatePublicConfig(withIds).ok).toBe(true);
+  });
+
+  it('accepts a payload omitting enabledServiceIds (field is optional)', () => {
+    expect(validatePublicConfig(valid).ok).toBe(true);
+  });
+
+  it('accepts enabledServiceIds as an empty array (logical meaning: all services)', () => {
+    const withEmpty = { ...valid, enabledServiceIds: [] };
+    expect(validatePublicConfig(withEmpty).ok).toBe(true);
+  });
+
+  it('rejects enabledServiceIds containing an empty string', () => {
+    const bad = { ...valid, enabledServiceIds: [''] };
+    expect(validatePublicConfig(bad).ok).toBe(false);
+  });
+
+  it('rejects enabledServiceIds as a plain string (must be an array)', () => {
+    const bad = { ...valid, enabledServiceIds: 'fencing' };
+    expect(validatePublicConfig(bad).ok).toBe(false);
+  });
+
+  it('rejects enabledServiceIds containing a non-string element', () => {
+    const bad = { ...valid, enabledServiceIds: ['fencing', 123] };
+    expect(validatePublicConfig(bad).ok).toBe(false);
+  });
 });

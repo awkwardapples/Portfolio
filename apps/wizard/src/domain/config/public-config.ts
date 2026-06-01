@@ -27,6 +27,9 @@ export const CONTRACT_VERSION = 2 as const;
 export const PublicConfigSchema = z.object({
   contractVersion: z.literal(CONTRACT_VERSION),
   wizardId: z.string().min(1, 'wizardId must be provided.'),
+  enabledServiceIds: z
+    .array(z.string().min(1, 'Service ids must be non-empty strings.'))
+    .optional(),
   businessName: z.string(),
   businessPhone: z.string(),
   businessEmail: z.string(),
