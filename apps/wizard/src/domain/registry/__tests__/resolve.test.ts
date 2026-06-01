@@ -41,8 +41,8 @@ describe('resolveFallbackVertical', () => {
 });
 
 describe('listVerticalIds', () => {
-  it("returns exactly ['fencing'] — a future addition must update this test", () => {
-    expect(listVerticalIds()).toEqual(['fencing']);
+  it("returns ['fencing', 'decking'] in registry insertion order", () => {
+    expect(listVerticalIds()).toEqual(['fencing', 'decking']);
   });
 });
 

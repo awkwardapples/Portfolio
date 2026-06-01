@@ -5,4 +5,5 @@ export {
   resolveFallbackVertical,
   listVerticalIds,
 } from '@/domain/registry/resolve';
+export { listEnabledServiceIds, resolveService } from '@/domain/registry/services';
 export type { Vertical, SessionConfig, ServiceId, ServiceConfig } from '@/domain/registry/types';

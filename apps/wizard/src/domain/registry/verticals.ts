@@ -8,6 +8,7 @@
  */
 
 import { fencingWizardConfig, fencingPricingConfig } from '@/domain/fixtures/fencing.config';
+import { deckingWizardConfig, deckingPricingConfig } from '@/domain/fixtures/decking.config';
 import type { Vertical } from '@/domain/registry/types';
 
 const fencing: Vertical = {
@@ -18,11 +19,20 @@ const fencing: Vertical = {
   pricing: fencingPricingConfig,
 };
 
+const decking: Vertical = {
+  id: 'decking',
+  label: 'Decking (reference template)',
+  schemaVersion: 1,
+  wizard: deckingWizardConfig,
+  pricing: deckingPricingConfig,
+};
+
 /**
  * The closed registry. Object.freeze provides runtime defence against mutation.
  */
 export const VERTICALS: Readonly<Record<string, Vertical>> = Object.freeze({
   fencing,
+  decking,
 });
 
 /**
