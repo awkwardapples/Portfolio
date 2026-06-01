@@ -35,3 +35,17 @@ export interface SessionConfig {
   readonly wizard: WizardConfig;
   readonly pricing: PricingConfig;
 }
+
+/**
+ * Stable identifier for a service. Same value space as the registry's keys.
+ * Alias of `string` for readability at the selection boundary; see ADR-0013
+ * amendment for the vertical/service synonymy.
+ */
+export type ServiceId = string;
+
+/**
+ * Resolved configuration for a service. Synonym of SessionConfig; introduced
+ * for readability in selection code where "service" is the natural product term.
+ * There is NO behavioural difference between the two.
+ */
+export type ServiceConfig = SessionConfig;

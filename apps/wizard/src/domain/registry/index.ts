@@ -5,4 +5,4 @@ export {
   resolveFallbackVertical,
   listVerticalIds,
 } from '@/domain/registry/resolve';
-export type { Vertical, SessionConfig } from '@/domain/registry/types';
+export type { Vertical, SessionConfig, ServiceId, ServiceConfig } from '@/domain/registry/types';
