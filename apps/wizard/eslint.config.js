@@ -273,4 +273,30 @@ export default tseslint.config(
       'no-restricted-syntax': 'off',
     },
   },
+
+  // Site layer (5.0, ADR-0016). May import wizard components, the runtime
+  // adapter, the registry, and the config-loader — but NOT the pure domain
+  // internals (state machine, pricing engine) directly.
+  {
+    files: ['src/site/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/domain/runtime/*', '@/domain/runtime/**'],
+              message:
+                'Site layer must not import the pure runtime directly. Use the registry-resolved ServiceConfig and existing WizardProvider/WizardShell.',
+            },
+            {
+              group: ['@/domain/pricing/*', '@/domain/pricing/**'],
+              message:
+                "Site layer must not import the pricing engine directly. Pricing is the wizard's internal concern.",
+            },
+          ],
+        },
+      ],
+    },
+  },
 );
