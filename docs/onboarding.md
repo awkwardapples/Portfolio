@@ -309,6 +309,51 @@ service at all, the cleanest approach is to delete the entry from `VERTICALS` in
 `src/domain/registry/verticals.ts`. Setting `goqw_enabled_services` to the single
 desired ID is also valid and does not require a code change.
 
+## Site structure (Step 5.0)
+
+### The two halves of the React app
+
+After Step 5.0, the React application has two distinct halves:
+
+- **`src/site/`** — the website shell and five reference pages. This is the part
+  you edit when adapting the template for a new client: update the content modules
+  in `src/site/content/`, change the page components in `src/site/pages/`, and
+  the routing in `src/site/routing/routes.ts` if you add pages.
+
+- **`src/components/`**, **`src/runtime/`**, **`src/domain/`** — the wizard widget.
+  These are shared infrastructure that you do not touch per-client. The wizard is
+  embedded on the `/quote` page by `QuotePage.tsx`.
+
+`src/App.tsx` is a one-line mount of `<SiteApp />` and contains no business logic.
+
+### Adapting content for a new client
+
+Three files drive all the editorial content:
+
+| File                                   | What to change                                     |
+| -------------------------------------- | -------------------------------------------------- |
+| `src/site/content/site-content.ts`     | Business name, tagline, contact, hero copy         |
+| `src/site/content/services-content.ts` | Service names, summaries, descriptions             |
+| `src/site/content/work-content.ts`     | Portfolio entries (replace with real project info) |
+
+Type-checking catches mistakes — if you omit a required field, `pnpm typecheck` fails.
+
+### Adding a new site page
+
+1. Create `src/site/pages/YourPage.tsx`.
+2. Add one entry to `ROUTES` in `src/site/routing/routes.ts` with the path, title,
+   nav label, and element factory.
+3. Run `pnpm test` and `pnpm typecheck`.
+
+No router wiring beyond the route table entry is required.
+
+### ESLint boundary for site code
+
+`src/site/**` files may NOT import from `@/domain/runtime/**` or `@/domain/pricing/**`
+directly. Those are the wizard's internal concerns. Site code uses the registry
+(`@/domain/registry`) and the React adapter (`@/runtime`) — both are allowed.
+The boundary is enforced by ESLint and will fail `pnpm lint` if violated.
+
 ## Where to read more
 
 Architecture decisions live in `docs/decisions/` as numbered ADRs. The ones most useful early:
@@ -317,5 +362,4 @@ Architecture decisions live in `docs/decisions/` as numbered ADRs. The ones most
 - `0009` — the PHP-to-React public config boundary.
 - `0010` — the build pipeline and packaging design.
 - `0011` — what CI does and deliberately does not do.
-
-The wizard UI is a placeholder until Phase 4, which builds the real wizard against a defined design system (recorded in `docs/decisions/0012-phase4-ux-constraints.md`).
+- `0016` — site shell architecture, routing decisions, wizard-embedding approach.

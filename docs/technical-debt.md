@@ -75,3 +75,31 @@ deployment complexity.
 
 **Trigger:** Before any high-traffic deployment, or as part of a security hardening
 pass before Phase 5 goes to production.
+
+---
+
+## WordPress Page Mapping for Multi-Route React App (deferred from Step 5.0)
+
+**What was skipped:** The React SPA now serves five routes (`/`, `/services`,
+`/our-work`, `/contact`, `/quote`). In production WordPress, a user who navigates
+directly to `/our-work` (or bookmarks it, or shares the URL) will receive a
+WordPress 404 unless the server knows to serve the React app for all those paths.
+
+Two viable strategies, neither implemented yet:
+
+- **(a) Single WP page + server rewrite**: One WordPress page has the shortcode.
+  nginx/Apache rewrites all frontend paths to that page. React handles routing
+  client-side after the initial load. Requires server config access.
+
+- **(b) Five WP pages**: Create five WordPress pages, each containing the shortcode
+  and a `data-initial-path` attribute. The React app reads the attribute on mount
+  and navigates to the correct route. Requires no server config change but adds
+  WP content management complexity.
+
+**Why deferred:** Step 5.0's acceptance criterion is a functional Vite-dev-server
+site (ADR-0016). WP deployment is a separate decision that depends on the hosting
+environment of each client.
+
+**Trigger:** First production deployment to WordPress. At that point, choose (a) or
+(b) based on whether server-level config is accessible. Document the decision in
+a new ADR.

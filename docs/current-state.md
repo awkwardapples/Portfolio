@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-06-01_
+_Last updated: 2026-06-02_
 
 ## Completed
 
@@ -11,23 +11,38 @@ _Last updated: 2026-06-01_
 - Step 4.4 — React rendering layer (composites, field registry, step renderer, phase screens, WizardShell, App.tsx wired to fencing fixture)
 - Step 4.5 — Vertical registry + config resolution (closed registry, resolveVertical, PublicConfig v2, wizardId)
 - Step 4.6 — WordPress REST submission adapter — Phase 4 CLOSED
-- **Step 4.7 — Service abstraction layer (JUST COMPLETED)**
+- Step 4.7 — Service abstraction layer
+- **Step 5.0 — Site shell + reference pages (JUST COMPLETED)**
 
 ## Current Step
 
-**Phase 4 fully complete.** Two reference verticals (fencing, decking). Per-session service
-selection: the user picks a service on load; the wizard mounts the matching config. When only
-one service is enabled the selector is bypassed automatically.
+**Step 5.0 complete.** The wizard now lives inside a real five-page website shell.
+Visiting `localhost:5173` shows the home page; nav links route without reload;
+`/quote` shows the service selector → wizard end-to-end. `App.tsx` is a one-line
+mount of `<SiteApp />`.
 
-Next: **Phase 5** — site templates, QuotePage (ServiceSelector moves here), WordPress shortcode
-wiring, analytics, autosave.
+Next: **Step 5.x** — WordPress page mapping for multi-route React app (deployment
+integration), or analytics / autosave.
 
 ## Test Count
 
-**337 Vitest tests passing** (19 test files). PHP Pest: 20 tests discovered
+**359 Vitest tests passing** (21 test files). PHP Pest: 20 tests discovered
 (2 Example + 7 PublicConfig + 3 Settings + 8 SubmissionController), all passing.
 
 ## Key Architectural Facts
+
+### Site layer (src/site/\*\*)
+
+- `src/site/content/` — typed TypeScript const modules (site-content.ts,
+  services-content.ts, work-content.ts). Edit to adapt for a new client.
+- `src/site/routing/` — hand-rolled router. `Link.tsx` dispatches `goqw:navigate`;
+  `Router.tsx` is a pure function of `pathname` prop; `routes.ts` is the static table.
+- `src/site/layout/` — `SiteShell`, `Header`, `Nav`, `Footer`, `SkipLink`.
+- `src/site/pages/` — five concrete page components. `QuotePage` owns the wizard
+  selection/mount (moved from App.tsx in 5.0).
+- `SiteApp` owns pathname state + event subscriptions; renders `SiteShell → Router`.
+- ESLint boundary: `src/site/**` may NOT import `@/domain/runtime/**` or
+  `@/domain/pricing/**` directly.
 
 ### Submission pipeline (Step 4.6 — ADR-0015)
 
@@ -61,7 +76,7 @@ submit(request: SubmissionRequest): Promise<SubmissionPortResult>
 - `VERTICALS`: closed `Readonly<Record<string, Vertical>>`, frozen at runtime
 - `resolveVertical(wizardId): SessionConfig | null` — pure, total, no I/O
 - `resolveFallbackVertical()` — returns the `FALLBACK_VERTICAL_ID` entry (`'fencing'`)
-- `App.tsx` resolves the vertical from `config.wizardId` (set by PHP → `window.GOQW_CONFIG`)
+- `QuotePage` resolves the vertical from `config.wizardId` (set by PHP → `window.GOQW_CONFIG`)
 - Adding a vertical = one PR (new fixture + registry entry)
 
 ### PublicConfig v2 contract
@@ -84,7 +99,7 @@ submit(request: SubmissionRequest): Promise<SubmissionPortResult>
 - `WizardStore`: bridges FSM to React via `useSyncExternalStore`
 - `httpSubmissionPort`: production submission adapter (Step 4.6)
 - `sessionStorageAdapter`: persists answers across page reloads within tab
-- `devSubmissionPort` in App.tsx: fallback when `restUrl` is empty
+- `devSubmissionPort` in QuotePage: fallback when `restUrl` is empty
 
 ### PHP layer (`plugins/quote-wizard/`)
 
@@ -99,12 +114,14 @@ submit(request: SubmissionRequest): Promise<SubmissionPortResult>
 - Two reference verticals: `fencing` (£325/m base) and `decking` (£250/m base).
 - `listEnabledServiceIds(override?)`: returns all registry services or filters by `PublicConfig.enabledServiceIds`.
 - `resolveService(id)`: alias of `resolveVertical` for selection-layer code.
-- `App.tsx`: shows `ServiceSelector` when multiple services enabled; auto-selects and bypasses selector when exactly one service is enabled; falls back to `resolveFallbackVertical()` when all configured ids are unknown.
-- `ServiceSelector` + `ServiceCard`: minimal accessible selection UI; mounts at App.tsx root in Phase 4; migrates to QuotePage in Phase 5.
+- `QuotePage`: shows `ServiceSelector` when multiple services enabled; auto-selects and bypasses selector when exactly one service is enabled; falls back to `resolveFallbackVertical()` when all configured ids are unknown.
+- `ServiceSelector` + `ServiceCard`: minimal accessible selection UI; moved to QuotePage in Step 5.0.
 - `goqw_enabled_services` WP option: CSV of enabled service ids; empty = all services offered.
 
 ## Approved Decisions
 
+- ADR-0016: Site shell and reference pages (Step 5.0)
+- ADR-0014 amendment: concrete pages, not schema-driven (Step 5.0)
 - ADR-0015: Submission pipeline architecture (strict ordering, wire contract)
 - ADR-0015 amendment: wizardId/service equivalence (Step 4.7)
 - ADR-0013: Closed in-repo vertical registry
@@ -117,18 +134,18 @@ submit(request: SubmissionRequest): Promise<SubmissionPortResult>
 
 ## Deferred / Known Gaps
 
+- WordPress page mapping for multi-route React app — Phase 5.x
 - Component tests (StepRenderer, ServiceSelector, ServiceCard) — require jsdom Vitest config
 - Idempotency key for SUBMIT_RETRY duplicates (see ADR-0015 future work)
 - Rate limiting on `qw/v1/submit` (see ADR-0015 future work)
 - `h-10` Tailwind utility: used in primitives; spacing scale only defines keys 0–16
 - Analytics, autosave beyond session scope — Phase 5+
-- Site templates, WordPress shortcode wiring, QuotePage (ServiceSelector migrates here) — Phase 5
 - Media uploads — Phase 4.8
 
 ## Required Gates
 
 - lint (`pnpm lint` → 0 errors, 0 warnings)
 - typecheck (`pnpm typecheck`)
-- vitest (`pnpm test` → 337/337)
+- vitest (`pnpm test` → 359/359)
 - build (`pnpm build`)
 - PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → exit 0

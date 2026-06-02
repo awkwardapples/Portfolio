@@ -1,6 +1,6 @@
 # Development Handoff
 
-_Last updated: 2026-06-01_
+_Last updated: 2026-06-02_
 
 ## Project
 
@@ -18,95 +18,75 @@ WordPress-based local lead generation wizard platform. A configurable multi-step
 - Step 4.4 — React rendering layer
 - Step 4.5 — Vertical registry + config resolution
 - Step 4.6 — WordPress REST submission adapter — Phase 4 CLOSED
-- **Step 4.7 — Service abstraction layer (JUST COMPLETED)**
+- Step 4.7 — Service abstraction layer
+- **Step 5.0 — Site shell + reference pages (JUST COMPLETED)**
 
 ## Where Things Stand
 
-**Phase 4 fully complete.** Run `pnpm dev` from `apps/wizard`, open `localhost:5173`. The
-service selector appears (two services: Fencing, Decking); clicking either mounts the full
-wizard end-to-end. In a WordPress environment, submission persists to `wp_goqw_submissions`
-and forwards to Make.com.
+**Step 5.0 complete.** Run `pnpm dev` from `apps/wizard`, open `localhost:5173`.
+A real five-page site loads: Home, Services, Our Work, Contact, and Quote. Nav links
+navigate without reload. The Quote page shows the service selector; selecting a service
+mounts the full wizard end-to-end. `App.tsx` is now a one-line `<SiteApp />` mount.
 
-**337 Vitest tests passing. Zero lint warnings. Zero TypeScript errors. Build clean.**  
+**359 Vitest tests passing. Zero lint warnings. Zero TypeScript errors. Build clean.**
 **PHP: composer lint 0/0, composer analyse no errors, composer test exit 0.**
 
-## What Was Just Built (Step 4.5)
+## What Was Just Built (Step 5.0)
 
 ### New files
 
-| File                                                      | Purpose                                                         |
-| --------------------------------------------------------- | --------------------------------------------------------------- |
-| `src/domain/registry/types.ts`                            | `Vertical` and `SessionConfig` types                            |
-| `src/domain/registry/verticals.ts`                        | Closed registry: `VERTICALS`, `FALLBACK_VERTICAL_ID`            |
-| `src/domain/registry/resolve.ts`                          | `resolveVertical`, `resolveFallbackVertical`, `listVerticalIds` |
-| `src/domain/registry/index.ts`                            | Registry barrel                                                 |
-| `src/domain/registry/__tests__/resolve.test.ts`           | 9 registry tests                                                |
-| `src/__tests__/config-loader.test.ts`                     | 3 config-loader tests                                           |
-| `src/__tests__/app-vertical-resolution.test.ts`           | 3 resolution smoke tests                                        |
-| `plugins/quote-wizard/tests/Unit/PublicConfigTest.php`    | PHP tests for v2 contract                                       |
-| `docs/decisions/0013-vertical-registry.md`                | ADR-0013                                                        |
-| `docs/decisions/0014-reference-template-product-scope.md` | ADR-0014                                                        |
+| File                                                    | Purpose                                                               |
+| ------------------------------------------------------- | --------------------------------------------------------------------- |
+| `src/site/content/site-content.ts`                      | Site-wide copy (business name, contact, hero, nav CTA)                |
+| `src/site/content/services-content.ts`                  | Service entries rendered on / and /services                           |
+| `src/site/content/work-content.ts`                      | Portfolio entries rendered on /our-work                               |
+| `src/site/content/__tests__/content.test.ts`            | Structural integrity tests (9 tests)                                  |
+| `src/site/routing/Link.tsx`                             | pushState link — dispatches goqw:navigate, modifier-key aware         |
+| `src/site/routing/Router.tsx`                           | Pure function of pathname prop; updates document.title                |
+| `src/site/routing/routes.ts`                            | Static route table (5 entries); matchRoute() with trailing-slash norm |
+| `src/site/routing/__tests__/routes.test.ts`             | Route table + matchRoute tests (13 tests)                             |
+| `src/site/pages/HomePage.tsx`                           | Hero + services preview + CTA                                         |
+| `src/site/pages/ServicesPage.tsx`                       | Full service descriptions + CTA                                       |
+| `src/site/pages/OurWorkPage.tsx`                        | Portfolio entries                                                     |
+| `src/site/pages/ContactPage.tsx`                        | Contact fields + quote CTA                                            |
+| `src/site/pages/QuotePage.tsx`                          | Wizard mount (selection logic moved from App.tsx)                     |
+| `src/site/layout/SkipLink.tsx`                          | Keyboard-accessible skip-to-main link                                 |
+| `src/site/layout/Nav.tsx`                               | Primary nav; aria-current; horizontal scroll on mobile                |
+| `src/site/layout/Header.tsx`                            | Site header with business name + Nav                                  |
+| `src/site/layout/Footer.tsx`                            | Business details + year                                               |
+| `src/site/layout/SiteShell.tsx`                         | Wraps every page: SkipLink, Header, main, Footer                      |
+| `src/site/SiteApp.tsx`                                  | Owns pathname state + navigation subscriptions                        |
+| `src/site/index.ts`                                     | Barrel: exports SiteApp                                               |
+| `docs/decisions/0016-site-shell-and-reference-pages.md` | ADR-0016                                                              |
+| `docs/phase-5-evidence.md`                              | Step 5.0 evidence report                                              |
 
 ### Modified files
 
-| File                                                 | Change                                                       |
-| ---------------------------------------------------- | ------------------------------------------------------------ |
-| `src/domain/config/public-config.ts`                 | `CONTRACT_VERSION` 1→2; add `wizardId` field                 |
-| `src/types/global.d.ts`                              | `contractVersion: 2`; add `wizardId` to interface            |
-| `src/config-loader.ts`                               | Import `FALLBACK_VERTICAL_ID`; add `wizardId` to defaults    |
-| `tsconfig.test.json`                                 | Include `src/types/*.d.ts` so config-loader tests typecheck  |
-| `src/App.tsx`                                        | Remove direct fencing imports; resolve vertical via registry |
-| `plugins/quote-wizard/src/Frontend/PublicConfig.php` | `CONTRACT_VERSION` 1→2; emit `wizardId`                      |
-| `plugins/quote-wizard/src/Activator.php`             | Seed `goqw_wizard_id` option                                 |
-| `docs/decisions/0009-public-config-allowlist.md`     | Amendment appended (v2 + wizardId)                           |
-| `docs/onboarding.md`                                 | Option count 8→9; ADR-0013 reference                         |
-
-## What Was Just Built (Step 4.7)
-
-### New files
-
-| File                                                       | Purpose                                                         |
-| ---------------------------------------------------------- | --------------------------------------------------------------- |
-| `src/domain/fixtures/decking.config.ts`                    | Second reference vertical: decking wizard + pricing config      |
-| `src/domain/fixtures/__tests__/decking-validation.test.ts` | Validates decking fixture against 4.1 schemas (2 tests)         |
-| `src/domain/registry/services.ts`                          | `listEnabledServiceIds`, `resolveService` — selection-layer API |
-| `src/domain/registry/__tests__/services.test.ts`           | 11 tests for services API                                       |
-| `src/components/selection/ServiceSelector.tsx`             | Selection screen: heading + list of ServiceCard buttons         |
-| `src/components/selection/ServiceCard.tsx`                 | Single service button card                                      |
-| `src/components/selection/index.ts`                        | Barrel export                                                   |
-| `src/__tests__/service-selection.test.ts`                  | 6 pure helper logic tests                                       |
-| `docs/technical-debt.md`                                   | Technical debt register with media upload deferral              |
-
-### Modified files
-
-| File                                                        | Change                                                    |
-| ----------------------------------------------------------- | --------------------------------------------------------- |
-| `src/domain/registry/types.ts`                              | Added `ServiceId` and `ServiceConfig` aliases             |
-| `src/domain/registry/verticals.ts`                          | Registered `decking` vertical                             |
-| `src/domain/registry/index.ts`                              | Exported new service API + aliases                        |
-| `src/domain/config/public-config.ts`                        | Added optional `enabledServiceIds` field                  |
-| `src/types/global.d.ts`                                     | Added optional `enabledServiceIds` to ambient declaration |
-| `src/domain/__tests__/error-tone-and-public-config.test.ts` | 6 new enabledServiceIds test cases                        |
-| `src/domain/registry/__tests__/resolve.test.ts`             | Updated `listVerticalIds` assertion to include decking    |
-| `src/App.tsx`                                               | Per-session selection with single-service bypass          |
-| `plugins/quote-wizard/src/Frontend/PublicConfig.php`        | Emit `enabledServiceIds` when configured                  |
-| `plugins/quote-wizard/src/Activator.php`                    | Seed `goqw_enabled_services` option (count: 9 → 10)       |
-| `plugins/quote-wizard/tests/Unit/PublicConfigTest.php`      | 4 new enabledServiceIds test cases                        |
-| `docs/decisions/0013-vertical-registry.md`                  | Amendment: per-session selection + synonymy               |
-| `docs/decisions/0009-public-config-allowlist.md`            | Amendment: enabledServiceIds additive field               |
-| `docs/decisions/0015-submission-pipeline.md`                | Amendment: wizardId/service equivalence                   |
+| File                                                      | Change                                                           |
+| --------------------------------------------------------- | ---------------------------------------------------------------- |
+| `src/App.tsx`                                             | Reduced to one-line `<SiteApp />` mount                          |
+| `apps/wizard/eslint.config.js`                            | ESLint boundary: site layer banned from @/domain/runtime/pricing |
+| `docs/decisions/0014-reference-template-product-scope.md` | Amendment: concrete pages, not schema-driven (5.0)               |
 
 ## Next Steps
 
-### Phase 5 — Production integration + site templates
+### Step 5.x — WordPress deployment integration
 
-- Submission endpoint is live (Step 4.6); Make.com forwarder is live
-- **ServiceSelector** currently mounts at App.tsx root; Phase 5 moves it to the QuotePage in the site shell
-- WordPress shortcode wiring (replace `devSubmissionPort` fallback with injected config from PHP; `httpSubmissionPort` is ready)
-- Before adding a service to a production Make.com workflow, ensure the workflow handles `wizardId: 'decking'` payload shape
-- Site template layer (Home, Services, Our Work, Contact, Quote pages) — see ADR-0014
-- Analytics
-- Autosave beyond session scope
+The site shell is fully functional on the Vite dev server. The remaining
+production integration work:
+
+- **WordPress page mapping**: the React SPA serves five routes (`/`, `/services`,
+  `/our-work`, `/contact`, `/quote`) from one mounted entry point. In WordPress,
+  each route needs either: (a) a single catch-all page with the shortcode and a
+  server-side rewrite rule forwarding all paths to that page, or (b) five separate
+  WP pages each containing the shortcode with the React app navigating client-side.
+  Decision needed before first production deployment. See technical-debt.md.
+- **Short code wiring**: `httpSubmissionPort` is production-ready; the dev fallback
+  in `QuotePage.tsx` cuts over automatically when `config.restUrl` is non-empty (set
+  by PHP via `window.GOQW_CONFIG`).
+- **Make.com workflow**: before adding decking to a production workflow, ensure the
+  workflow handles `wizardId: 'decking'` payload shape.
+- Analytics, autosave beyond session scope — later.
 
 ## Core Architecture
 
@@ -122,14 +102,16 @@ src/components/
   steps/               Field renderers, StepRenderer. May import composites + runtime.
   screens/             Phase screens. May import primitives + composites.
   WizardShell.tsx      Phase switcher. Imports everything.
-src/App.tsx            Entry. Resolves vertical → store → shell.
+src/site/              Website shell + five reference pages. May NOT import
+                       @/domain/runtime/** or @/domain/pricing/** directly.
+src/App.tsx            Entry. One-line mount of <SiteApp />.
 ```
 
 ### Vertical registry
 
 - `resolveVertical(wizardId): SessionConfig | null` — pure, deterministic, no I/O
 - Fallback: `resolveFallbackVertical()` returns `'fencing'` entry
-- App.tsx: `const session = resolveVertical(config.wizardId) ?? resolveFallbackVertical()`
+- `QuotePage`: resolves vertical via `listEnabledServiceIds` + `resolveService`
 - Adding a vertical: new fixture in `src/domain/fixtures/` + one entry in `verticals.ts`
 
 ### State machine
@@ -180,6 +162,9 @@ Vitest in `apps/wizard`. Node environment only (`vitest.config.ts`). Include pat
 
 | File                                      | Purpose                                                   |
 | ----------------------------------------- | --------------------------------------------------------- |
+| `src/site/SiteApp.tsx`                    | Application root; pathname state + site shell             |
+| `src/site/pages/QuotePage.tsx`            | Quote page; wizard selection + mount                      |
+| `src/site/content/site-content.ts`        | Site-wide copy — edit for each client                     |
 | `src/domain/registry/index.ts`            | Registry public surface                                   |
 | `src/domain/registry/verticals.ts`        | VERTICALS map + FALLBACK_VERTICAL_ID                      |
 | `src/domain/fixtures/fencing.config.ts`   | Canonical reference config (WizardConfig + PricingConfig) |
@@ -188,6 +173,5 @@ Vitest in `apps/wizard`. Node environment only (`vitest.config.ts`). Include pat
 | `src/runtime/WizardStore.ts`              | Effect orchestration                                      |
 | `src/components/WizardShell.tsx`          | Phase → screen mapping                                    |
 | `src/components/steps/field-registry.tsx` | Closed FieldType → renderer map                           |
-| `src/App.tsx`                             | Dev entry point (resolves vertical, devSubmissionPort)    |
 | `src/config-loader.ts`                    | Reads window.GOQW_CONFIG; falls back to safe defaults     |
 | `docs/decisions/`                         | All ADRs — read before making structural changes          |
