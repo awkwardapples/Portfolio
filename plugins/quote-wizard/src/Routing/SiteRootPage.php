@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  * Self-healing: if the stored option points to a deleted page, ensure() creates
  * a new one and updates the option.
  */
-final class SiteRootPage {
+class SiteRootPage {
 
 	/**
 	 * WordPress option key that stores the page ID.

@@ -26,6 +26,31 @@ if ( ! defined( 'ABSPATH' ) ) {
 	define( 'ABSPATH', __DIR__ . '/' );
 }
 
+// WordPress time constants used by plugin source files.
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
+if ( ! defined( 'MINUTE_IN_SECONDS' ) ) {
+	define( 'MINUTE_IN_SECONDS', 60 );
+}
+if ( ! defined( 'HOUR_IN_SECONDS' ) ) {
+	define( 'HOUR_IN_SECONDS', 3600 );
+}
+if ( ! defined( 'DAY_IN_SECONDS' ) ) {
+	define( 'DAY_IN_SECONDS', 86400 );
+}
+if ( ! defined( 'WEEK_IN_SECONDS' ) ) {
+	define( 'WEEK_IN_SECONDS', 604800 );
+}
+if ( ! defined( 'REST_REQUEST' ) ) {
+	define( 'REST_REQUEST', false );
+}
+if ( ! defined( 'DOING_CRON' ) ) {
+	define( 'DOING_CRON', false );
+}
+if ( ! defined( 'WP_CLI' ) ) {
+	define( 'WP_CLI', false );
+}
+// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound
+
 // Stub plugin-defined constants used by source files at parse time.
 if ( ! defined( 'GOQW_VERSION' ) ) {
 	define( 'GOQW_VERSION', '0.1.0' );
