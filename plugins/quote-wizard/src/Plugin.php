@@ -16,6 +16,7 @@ use Agency\QuoteWizard\Routing\FrontPagePolicy;
 use Agency\QuoteWizard\Routing\RewriteRegistrar;
 use Agency\QuoteWizard\Routing\RouteInterceptor;
 use Agency\QuoteWizard\Routing\SelfHealer;
+use Agency\QuoteWizard\Routing\SiteRenderer;
 use Agency\QuoteWizard\Routing\SiteRootPage;
 use Agency\QuoteWizard\Submissions\Forwarder;
 use Agency\QuoteWizard\Submissions\SubmissionRepository;
@@ -38,11 +39,14 @@ final class Plugin {
 		$healer      = new SelfHealer( $page );
 		$policy      = new FrontPagePolicy( $page );
 
+		$renderer = new SiteRenderer( $page );
+
 		add_action( 'init', array( $registrar, 'register' ) );
 		add_filter( 'query_vars', array( $registrar, 'add_query_vars' ) );
 		add_action( 'pre_get_posts', array( $interceptor, 'maybe_intercept' ) );
 		add_action( 'init', array( $healer, 'check' ) );
 		add_action( 'admin_notices', array( $policy, 'maybe_render_notice' ) );
+		add_filter( 'the_content', array( $renderer, 'filter_content' ), 5 );
 
 		// Frontend: shortcode that renders the wizard mount point.
 		add_shortcode( Shortcode::TAG, array( Shortcode::class, 'render' ) );
