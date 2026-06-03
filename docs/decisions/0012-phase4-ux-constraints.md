@@ -88,3 +88,19 @@ The following are binding for all Phase 4 (and later) UI work.
 ## Status note
 
 Recorded during Step 3H (documentation step). Implementation deferred to Phase 4. No code in Phase 3 implements any of these constraints.
+
+## Amendment — 2026-06-03: user-supplied photo thumbnails (Step 4.8)
+
+The "no decorative imagery" principle in §1 applies to ornamental visual
+elements chosen by the developer. **User-supplied content is explicitly
+exempt.**
+
+In Step 4.8 the `PhotoField` component displays thumbnail previews of photos
+the user has selected. These thumbnails are functional UI: they confirm which
+files have been attached, allow the user to review and remove them, and reflect
+state the user owns. They are not decorative imagery in the sense ADR-0012
+restricts.
+
+Future contributors should not attempt to suppress photo thumbnails by citing
+the no-imagery rule. The rule governs developer-authored visuals, not user
+content rendered by the application.

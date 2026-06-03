@@ -116,6 +116,109 @@ admin tooling, not in the UI.
   A Phase 6 admin screen could list them and trigger a re-forward without
   browser involvement.
 
+## Amendment — 2026-06-03: photo upload pipeline (Step 4.8)
+
+### Media data shape (inside `answers[fieldKey]`)
+
+Photo field answers are stored inside the existing `answers` object, not in a
+separate top-level field. The value for a photo field key is:
+
+```json
+{
+  "files": [
+    {
+      "fileId": "uuid-string",
+      "originalName": "fence.jpg",
+      "mimeType": "image/jpeg",
+      "sizeBytes": 312400,
+      "width": 1600,
+      "height": 1200,
+      "dataBase64": "<base64-encoded JPEG bytes>"
+    }
+  ]
+}
+```
+
+`fileId` is a client-generated UUID stable within a session. `dataBase64` is
+the re-encoded (canvas-compressed) JPEG payload. The browser enforces:
+
+- max 5 photos per field (configurable via `maxCount` on the field config)
+- max 5 MB encoded per photo
+- max 10 MB total encoded (client-side safety margin: rejects at 9 MB)
+- accepted MIME types: `image/jpeg`, `image/png`, `image/webp`
+
+### `mediaIssues` on 400 responses
+
+When the server rejects a submission due to media validation failure, the 400
+response body carries an optional `mediaIssues` array:
+
+```json
+{
+  "errorCode": "media_validation_failed",
+  "mediaIssues": [{ "fileIndex": 2, "code": "too_large" }]
+}
+```
+
+Possible `code` values: `too_large`, `total_too_large`, `unsupported_type`,
+`invalid_encoding`, `content_mismatch`, `not_an_image`, `dimensions_too_large`.
+
+The `httpSubmissionPort` extracts `mediaIssues` from 400 responses and
+surfaces them in the typed `SubmissionErrorInfo` so the UI can identify
+which photo caused the rejection.
+
+### Server-side media validation order (short-circuit)
+
+Media checks run after existing payload-shape validation and before `INSERT`:
+
+1. Per-photo encoded size ≤ 5 MB (cheapest check)
+2. Running total encoded size ≤ 10 MB
+3. MIME claim is in the allowlist (`image/jpeg | image/png | image/webp`)
+4. Base64 decode succeeds
+5. `finfo` magic-byte check matches the claimed MIME
+6. `getimagesizefromstring()` confirms valid image dimensions ≤ 12 000 × 12 000 px
+
+Short-circuit on first failure: the `fileIndex` of the failing file is
+returned in `mediaIssues`. This prevents the server from decoding large
+payloads unnecessarily.
+
+### Magic-byte verification rationale
+
+The `mimeType` field in the client payload is untrusted. A file renamed from
+`malicious.svg` to `photo.jpg` would pass MIME-allowlist checks but reveal
+its true type via `finfo`. Skipping magic-byte verification is a content-type
+spoofing vulnerability; it is therefore mandatory for the media validation path
+even though it is the most CPU-intensive check.
+
+### Wire contract stability
+
+This amendment is **additive**. `contractVersion` remains `2`. Existing
+client/server pairs without photo fields continue to function; the media
+extraction logic on the server is a no-op when `answers` contains no
+`files` arrays.
+
+### Backend storage
+
+Photos are stored in a dedicated `media_json LONGTEXT NULL` column on
+`wp_goqw_submissions`, separate from `answers_json`. This prevents inflating
+routine row reads (which do not need the media bytes) with up to 10 MB of
+base64. The Forwarder reads `media_json` alongside `answers_json` and
+includes the decoded media array in the Make.com payload.
+
+**Deployment prerequisite**: the Make.com workflow must be updated to handle
+the new `media` array in the forwarded payload. The repo ships the contract;
+configuring the downstream workflow is operational work.
+
+### Photo sessionStorage behaviour
+
+The browser FSM state holds `PhotoMetadata` (name, size, dimensions, fileId)
+only — no base64. Base64 lives in a per-session volatile `PhotoStore` (a
+`useRef<Map>` inside `WizardProvider`). sessionStorage persists metadata but
+not bytes; if the user reloads the tab, photos must be re-attached. The review
+screen shows a "re-attach required" indicator for metadata entries whose base64
+is absent from the store.
+
+---
+
 ## Amendment — 2026-06-01: wizardId equivalence (Step 4.7)
 
 The `wizardId` field on the submission wire payload (`POST /qw/v1/submit`)
