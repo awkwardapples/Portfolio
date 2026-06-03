@@ -35,6 +35,17 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 ( static function (): void {
 	global $wpdb;
 
+	// Delete the Site Root page if it exists.
+	// The plugin's front-page setting change is intentionally NOT reverted:
+	// site owners may rely on it, and uninstall should be safe, not destructive.
+	$site_root_id = (int) get_option( 'goqw_site_root_page_id', 0 );
+	if ( $site_root_id > 0 ) {
+		wp_delete_post( $site_root_id, true );
+	}
+
+	// Clear the front-page admin notice transient if it was never dismissed.
+	delete_transient( 'goqw_front_page_notice' );
+
 	// Drop the submissions table.
 	$goqw_table = $wpdb->prefix . 'goqw_submissions';
 	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery

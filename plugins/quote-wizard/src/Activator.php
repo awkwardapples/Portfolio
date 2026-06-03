@@ -11,6 +11,9 @@ declare( strict_types=1 );
 
 namespace Agency\QuoteWizard;
 
+use Agency\QuoteWizard\Routing\FrontPagePolicy;
+use Agency\QuoteWizard\Routing\RewriteRegistrar;
+use Agency\QuoteWizard\Routing\SiteRootPage;
 use Agency\QuoteWizard\Submissions\Schema;
 
 defined( 'ABSPATH' ) || exit;
@@ -29,6 +32,7 @@ final class Activator {
 		self::create_or_update_schema();
 		self::set_default_options();
 		self::schedule_cron_events();
+		self::setup_site_routing();
 	}
 
 	/**
@@ -37,6 +41,21 @@ final class Activator {
 	private static function create_or_update_schema(): void {
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( Schema::submissions_table_sql() );
+	}
+
+	/**
+	 * Create the Site Root page, register rewrites, apply front-page policy.
+	 * Idempotent: safe to re-run on reactivation.
+	 */
+	private static function setup_site_routing(): void {
+		$page      = new SiteRootPage();
+		$policy    = new FrontPagePolicy( $page );
+		$registrar = new RewriteRegistrar();
+
+		$page->ensure();
+		$policy->apply_on_activation();
+		$registrar->register();
+		flush_rewrite_rules();
 	}
 
 	/**
@@ -53,6 +72,7 @@ final class Activator {
 		add_option( 'goqw_plugin_version', GOQW_VERSION );
 		add_option( 'goqw_wizard_id', 'fencing' );
 		add_option( 'goqw_enabled_services', '' );
+		add_option( SiteRootPage::OPTION_KEY, 0 );
 	}
 
 	/**
