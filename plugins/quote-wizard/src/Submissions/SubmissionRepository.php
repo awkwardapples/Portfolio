@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  * can return 500 rather than silently proceeding to forward. Read
  * operations return plain arrays; no domain objects cross this boundary.
  */
-final class SubmissionRepository {
+class SubmissionRepository {
 
 	/**
 	 * Constructor.

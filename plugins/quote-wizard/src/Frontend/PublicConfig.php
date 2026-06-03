@@ -50,7 +50,9 @@ final class PublicConfig {
 			'contractVersion' => self::CONTRACT_VERSION,
 
 			// Wizard vertical selector — matches a key in the JS registry.
-			'wizardId'        => get_option( 'goqw_wizard_id', 'fencing' ),
+			'wizardId'        => ( (string) get_option( 'goqw_wizard_id', 'fencing' ) !== '' )
+					? get_option( 'goqw_wizard_id', 'fencing' )
+					: 'fencing',
 
 			// Business display info (public — appears in the wizard UI).
 			'businessName'    => Settings::business_name(),

@@ -22,7 +22,7 @@ defined( 'ABSPATH' ) || exit;
  *   - The webhook URL is server-side only (ADR-0007): GOQW_MAKE_WEBHOOK_URL
  *     constant (wp-config.php) takes precedence over the goqw_webhook_url option.
  */
-final class Forwarder {
+class Forwarder {
 
 	private const TIMEOUT_SECONDS = 10;
 

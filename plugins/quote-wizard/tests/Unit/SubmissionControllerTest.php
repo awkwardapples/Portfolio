@@ -76,9 +76,7 @@ function spy_repository( int $returns_id = 42, bool $throw_on_insert = false ): 
 			private readonly int $returns_id,
 			private readonly bool $throw_on_insert
 		) {
-			// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-			global $wpdb;
-			parent::__construct( $wpdb );
+			// Parent constructor not called: all methods that use $wpdb are overridden.
 		}
 
 		/** @param array<string,mixed> $payload */
@@ -191,9 +189,7 @@ it(
 		$repo  = new class ( $order ) extends SubmissionRepository {
 			/** @param list<string> $order */
 			public function __construct( private array &$order ) {
-				// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-				global $wpdb;
-				parent::__construct( $wpdb );
+				// Parent constructor not called: all methods that use $wpdb are overridden.
 			}
 
 			/** @param array<string,mixed> $payload */

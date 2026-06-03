@@ -39,3 +39,67 @@ if ( ! defined( 'GOQW_PLUGIN_DIR' ) ) {
 if ( ! defined( 'GOQW_PLUGIN_URL' ) ) {
 	define( 'GOQW_PLUGIN_URL', 'http://example.test/wp-content/plugins/quote-wizard/' );
 }
+
+// ---------------------------------------------------------------------------
+// WordPress class stubs.
+//
+// Unit tests run without WordPress loaded. These minimal stubs satisfy type
+// checks and provide the handful of methods that plugin source code calls on
+// these classes. Brain\Monkey stubs the global functions; these stubs handle
+// the class-based WP API.
+// ---------------------------------------------------------------------------
+
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals
+
+if ( ! class_exists( 'WP_REST_Response' ) ) {
+	class WP_REST_Response {
+		public function __construct(
+			private readonly mixed $data = null,
+			private readonly int $status = 200
+		) {}
+		public function get_data(): mixed { return $this->data; }
+		public function get_status(): int { return $this->status; }
+	}
+}
+
+if ( ! class_exists( 'WP_Error' ) ) {
+	class WP_Error {
+		/** @var string[] */
+		private array $codes = [];
+		public function __construct( string $code = '', string $message = '', mixed $data = '' ) {
+			$this->codes[] = $code;
+		}
+		public function get_error_code(): string { return $this->codes[0] ?? ''; }
+		public function get_error_message(): string { return ''; }
+	}
+	function is_wp_error( mixed $thing ): bool { return $thing instanceof WP_Error; }
+}
+
+if ( ! class_exists( 'WP_REST_Request' ) ) {
+	class WP_REST_Request {}
+}
+
+if ( ! class_exists( 'WP_Post' ) ) {
+	class WP_Post {
+		public int $ID = 0;
+		public string $post_status = 'publish';
+		public string $post_type = 'page';
+		public string $post_name = '';
+	}
+}
+
+if ( ! class_exists( 'WP_Query' ) ) {
+	class WP_Query {
+		public bool $is_home = true;
+		public bool $is_page = false;
+		public bool $is_singular = false;
+		private bool $main_query = true;
+		public function is_main_query(): bool { return $this->main_query; }
+		public function set_as_secondary(): void { $this->main_query = false; }
+		public function set( string $key, mixed $value ): void {
+			$this->$key = $value;
+		}
+	}
+}
+
+// phpcs:enable WordPress.NamingConventions.PrefixAllGlobals
