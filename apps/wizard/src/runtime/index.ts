@@ -15,3 +15,4 @@ export type { SubmissionPort, SubmissionRequest, SubmissionPortResult } from './
 export { nullSubmissionPort, toSubmissionError } from './submission';
 export { httpSubmissionPort } from './http-submission-port';
 export type { HttpPortOptions } from './http-submission-port';
+export { createPhotoEnrichedPort } from './submission-media';

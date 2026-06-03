@@ -10,6 +10,8 @@ import {
   httpSubmissionPort,
 } from '@/runtime';
 import type { SubmissionPort } from '@/runtime';
+import { PhotoStore } from '@/runtime/photos-store';
+import { createPhotoEnrichedPort } from '@/runtime/submission-media';
 import { ServiceSelector } from '@/components/selection';
 import { WizardShell } from '@/components/WizardShell';
 
@@ -20,7 +22,7 @@ const devSubmissionPort: SubmissionPort = {
     ),
 };
 
-const submissionPort: SubmissionPort =
+const baseSubmissionPort: SubmissionPort =
   config.restUrl !== ''
     ? httpSubmissionPort({ restUrl: config.restUrl, restNonce: config.restNonce })
     : devSubmissionPort;
@@ -47,15 +49,18 @@ export function QuotePage(): ReactElement {
     services.length === 1 ? (services[0]?.id ?? null) : null,
   );
 
-  const store = useMemo(() => {
+  const wizardResources = useMemo(() => {
     if (selectedId === null) return null;
     const service = resolveService(selectedId);
     if (service === null) return null;
-    return createWizardStore(
+    const photoStore = new PhotoStore();
+    const enrichedPort = createPhotoEnrichedPort(baseSubmissionPort, photoStore);
+    const store = createWizardStore(
       { wizard: service.wizard, pricing: service.pricing },
       sessionStorageAdapter,
-      submissionPort,
+      enrichedPort,
     );
+    return { store, photoStore };
   }, [selectedId]);
 
   if (services.length === 0) {
@@ -70,14 +75,15 @@ export function QuotePage(): ReactElement {
         </div>
       );
     }
+    const fallbackPhotoStore = new PhotoStore();
     const fallbackStore = createWizardStore(
       { wizard: fallback.wizard, pricing: fallback.pricing },
       sessionStorageAdapter,
-      submissionPort,
+      createPhotoEnrichedPort(baseSubmissionPort, fallbackPhotoStore),
     );
     return (
       <div className="mx-auto max-w-3xl px-6 py-12">
-        <WizardProvider store={fallbackStore}>
+        <WizardProvider store={fallbackStore} photoStore={fallbackPhotoStore}>
           <WizardShell />
         </WizardProvider>
       </div>
@@ -92,7 +98,7 @@ export function QuotePage(): ReactElement {
     );
   }
 
-  if (store === null) {
+  if (wizardResources === null) {
     return (
       <div className="mx-auto max-w-3xl px-6 py-12">
         <ServiceSelector services={services} onSelect={setSelectedId} />
@@ -102,7 +108,7 @@ export function QuotePage(): ReactElement {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
-      <WizardProvider store={store}>
+      <WizardProvider store={wizardResources.store} photoStore={wizardResources.photoStore}>
         <WizardShell />
       </WizardProvider>
     </div>
