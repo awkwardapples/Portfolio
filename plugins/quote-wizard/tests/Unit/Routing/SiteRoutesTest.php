@@ -75,3 +75,19 @@ it( 'PATHS contains all five expected paths', function (): void {
 		expect( SiteRoutes::PATHS )->toContain( $path );
 	}
 } );
+
+it( 'current_request_path strips query string from REQUEST_URI', function (): void {
+	$_SERVER['REQUEST_URI'] = '/services?foo=bar';
+	expect( SiteRoutes::current_request_path() )->toBe( '/services' );
+} );
+
+it( 'current_request_path returns / when REQUEST_URI is absent', function (): void {
+	unset( $_SERVER['REQUEST_URI'] );
+	expect( SiteRoutes::current_request_path() )->toBe( '/' );
+} );
+
+it( 'current_request_path returns path from URI with fragment', function (): void {
+	$_SERVER['REQUEST_URI'] = '/contact#section';
+	// parse_url extracts path only, fragment is not part of REQUEST_URI from nginx/apache but test the pure logic.
+	expect( SiteRoutes::current_request_path() )->toBe( '/contact' );
+} );

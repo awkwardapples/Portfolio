@@ -49,7 +49,7 @@ final class SiteRenderer {
 			header( 'Cache-Control: no-cache, must-revalidate, max-age=0' );
 		}
 
-		$initial_path = esc_attr( $this->current_request_path() );
+		$initial_path = esc_attr( SiteRoutes::current_request_path() );
 		return sprintf(
 			'<div id="qw-root" data-initial-path="%s"></div>',
 			$initial_path
@@ -72,16 +72,5 @@ final class SiteRenderer {
 			return false;
 		}
 		return (int) get_the_ID() === $site_root_id;
-	}
-
-	/**
-	 * Extract the path portion of the current request URI.
-	 */
-	private function current_request_path(): string {
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.WP.AlternativeFunctions.parse_url_parse_url
-		$uri = (string) ( $_SERVER['REQUEST_URI'] ?? '/' );
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url
-		$path = parse_url( $uri, PHP_URL_PATH );
-		return is_string( $path ) ? $path : '/';
 	}
 }

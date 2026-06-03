@@ -56,7 +56,7 @@ final class RouteInterceptor {
 			return;
 		}
 
-		$request_path = $this->current_request_path();
+		$request_path = SiteRoutes::current_request_path();
 		if ( ! SiteRoutes::is_recognized( $request_path ) ) {
 			return;
 		}
@@ -71,16 +71,5 @@ final class RouteInterceptor {
 		$query->is_home     = false; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 		$query->is_page     = true; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 		$query->is_singular = true; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-	}
-
-	/**
-	 * Extract the path portion of the current request URI without query string.
-	 */
-	private function current_request_path(): string {
-		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.WP.AlternativeFunctions.parse_url_parse_url
-		$uri = (string) ( $_SERVER['REQUEST_URI'] ?? '/' );
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url
-		$path = parse_url( $uri, PHP_URL_PATH );
-		return is_string( $path ) ? $path : '/';
 	}
 }

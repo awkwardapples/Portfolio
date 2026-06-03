@@ -47,4 +47,19 @@ final class SiteRoutes {
 	public static function is_recognized( string $request_path ): bool {
 		return in_array( self::normalize( $request_path ), self::PATHS, true );
 	}
+
+	/**
+	 * Extract the path portion of the current request URI without query string.
+	 *
+	 * Shared between RouteInterceptor and SiteRenderer to avoid duplication.
+	 * Reads $_SERVER['REQUEST_URI'] — safe at this call site because neither
+	 * caller proceeds further without SiteRoutes::is_recognized() returning true.
+	 */
+	public static function current_request_path(): string {
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.WP.AlternativeFunctions.parse_url_parse_url
+		$uri = (string) ( $_SERVER['REQUEST_URI'] ?? '/' );
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url
+		$path = parse_url( $uri, PHP_URL_PATH );
+		return is_string( $path ) ? $path : '/';
+	}
 }
