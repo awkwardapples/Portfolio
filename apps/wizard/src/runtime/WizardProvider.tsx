@@ -1,12 +1,16 @@
 import { createContext, useContext, useEffect, type ReactNode } from 'react';
 
 import type { WizardStore } from '@/runtime/WizardStore';
+import type { PhotoStore } from '@/runtime/photos-store';
 
 // ---------------------------------------------------------------------------
-// Context
+// Contexts
 // ---------------------------------------------------------------------------
 
 const WizardContext = createContext<WizardStore | null>(null);
+
+/** Separate context so photo-store access does not re-render non-photo consumers. */
+export const PhotoStoreContext = createContext<PhotoStore | null>(null);
 
 // ---------------------------------------------------------------------------
 // Provider
