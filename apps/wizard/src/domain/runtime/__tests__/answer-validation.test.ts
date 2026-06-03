@@ -205,13 +205,37 @@ describe('validateStep — type validation: text, textarea, photo', () => {
     expect(result.valid).toBe(true);
   });
 
-  it('accepts a string for photo type', () => {
+  it('accepts a PhotoAnswerValue for photo type', () => {
     const step = singleStep([{ id: 'f', key: 'k', type: 'photo', label: 'L', required: false }]);
-    const result = validateStep(step, { k: 'https://example.com/photo.jpg' }, emptyMap);
+    const photoVal = {
+      files: [
+        {
+          fileId: 'abc-123',
+          originalName: 'photo.jpg',
+          mimeType: 'image/jpeg' as const,
+          sizeBytes: 50000,
+          width: 800,
+          height: 600,
+        },
+      ],
+    };
+    const result = validateStep(step, { k: photoVal }, emptyMap);
     expect(result.valid).toBe(true);
   });
 
-  it('rejects a non-string answer for photo type', () => {
+  it('accepts an empty PhotoAnswerValue for optional photo type', () => {
+    const step = singleStep([{ id: 'f', key: 'k', type: 'photo', label: 'L', required: false }]);
+    const result = validateStep(step, { k: { files: [] } }, emptyMap);
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects a required photo field with empty files array', () => {
+    const step = singleStep([{ id: 'f', key: 'k', type: 'photo', label: 'L', required: true }]);
+    const result = validateStep(step, { k: { files: [] } }, emptyMap);
+    expect(result.valid).toBe(false);
+  });
+
+  it('rejects a non-photo-value answer for photo type', () => {
     const step = singleStep([{ id: 'f', key: 'k', type: 'photo', label: 'L', required: false }]);
     const result = validateStep(step, { k: true }, emptyMap);
     expect(result.valid).toBe(false);

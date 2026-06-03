@@ -3,17 +3,19 @@ import type { Field, Step } from '@/domain/config/wizard-config';
 import type { AnswerMap, AnswerValue } from '@/domain/runtime/answer-types';
 import { evaluateCondition } from '@/domain/runtime/condition-evaluator';
 import { isStepVisible } from '@/domain/runtime/navigation';
+import { isPhotoAnswerValue } from '@/domain/runtime/photos';
 import type { StepValidationFieldIssue, StepValidationSnapshot } from '@/domain/runtime/state';
 
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-/** null/undefined/''/whitespace-only/[] are empty; false and 0 are not. */
+/** null/undefined/''/whitespace-only/[]/empty-photo-array are empty; false and 0 are not. */
 function isEmpty(answer: AnswerValue | undefined): boolean {
   if (answer === null || answer === undefined) return true;
   if (typeof answer === 'string') return answer.trim().length === 0;
   if (Array.isArray(answer)) return (answer as ReadonlyArray<unknown>).length === 0;
+  if (isPhotoAnswerValue(answer)) return answer.files.length === 0;
   return false; // boolean (incl. false) and number (incl. 0) are non-empty
 }
 
@@ -31,8 +33,11 @@ function validateField(field: Field, answer: AnswerValue | undefined): string | 
   switch (field.type) {
     case 'text':
     case 'textarea':
-    case 'photo':
       if (typeof answer !== 'string') return 'Expected a text value.';
+      return null;
+
+    case 'photo':
+      if (!isPhotoAnswerValue(answer)) return 'Expected a photo answer.';
       return null;
 
     case 'select':
