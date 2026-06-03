@@ -347,6 +347,11 @@ Type-checking catches mistakes — if you omit a required field, `pnpm typecheck
 
 No router wiring beyond the route table entry is required.
 
+**When you add a page, also add its path to `SiteRoutes::PATHS` in
+`plugins/quote-wizard/src/Routing/SiteRoutes.php`.** The `CrossLanguageRoutesTest`
+enforces that both lists match exactly and will fail `composer test` if they
+diverge.
+
 ### ESLint boundary for site code
 
 `src/site/**` files may NOT import from `@/domain/runtime/**` or `@/domain/pricing/**`
@@ -354,12 +359,69 @@ directly. Those are the wizard's internal concerns. Site code uses the registry
 (`@/domain/registry`) and the React adapter (`@/runtime`) — both are allowed.
 The boundary is enforced by ESLint and will fail `pnpm lint` if violated.
 
+## Deploying to a WordPress site (Step 5.1)
+
+The plugin self-configures on activation. Here is what happens and how to verify it.
+
+### What happens on plugin activation
+
+1. The `goqw_submissions` table is created (or upgraded).
+2. Default options are seeded including `goqw_site_root_page_id = 0`.
+3. A WordPress page with slug `goqw-site-root` and title "Site" is created.
+4. Rewrite rules are registered for `/services`, `/our-work`, `/contact`, `/quote`.
+5. `flush_rewrite_rules()` is called.
+6. **Front-page policy**:
+   - If no front page was configured (`show_on_front = 'posts'`): the Site Root page
+     is set as the front page automatically.
+   - If a front page was already configured: settings are left alone, and a
+     one-shot admin notice appears explaining the manual step.
+
+### Verification commands (WP-CLI)
+
+```bash
+# Confirm Site Root page was created and ID is stored
+wp option get goqw_site_root_page_id
+
+# Confirm all 11 options were seeded
+wp option list --search="goqw_*" --format=count
+
+# Confirm rewrite rules are present
+wp rewrite list | grep goqw
+
+# Confirm front page is set
+wp option get show_on_front    # should be 'page'
+wp option get page_on_front    # should match goqw_site_root_page_id
+
+# Smoke test: all five routes should return 200 with the SPA shell
+curl -s -o /dev/null -w "%{http_code}" http://your-site.local/
+curl -s -o /dev/null -w "%{http_code}" http://your-site.local/services
+curl -s -o /dev/null -w "%{http_code}" http://your-site.local/contact
+```
+
+### If the front-page notice appears
+
+Go to **Settings → Reading**, set "A static page" → "Front page" to the page
+titled "Site" (slug: `goqw-site-root`).
+
+### Caching
+
+The plugin sends `Cache-Control: no-cache` on the Site Root page. If your site
+uses a full-page caching plugin (W3 Total Cache, WP Super Cache, etc.), add the
+Site Root page to its exclusion list so the data-initial-path attribute is always
+fresh.
+
+### The [quote_wizard] shortcode still works
+
+Step 5.1 is purely additive. Any page with `[quote_wizard]` continues to render
+the wizard widget exactly as before. The new routing mechanism is a separate code
+path.
+
 ## Where to read more
 
 Architecture decisions live in `docs/decisions/` as numbered ADRs. The ones most useful early:
 
 - `0008` — why the plugin uses PSR-4 and the `goqw_` prefix rather than wordpress.org conventions.
 - `0009` — the PHP-to-React public config boundary.
-- `0010` — the build pipeline and packaging design.
+- `0010` — the build pipeline and packaging design (amended in 5.1 with WP routing strategy).
 - `0011` — what CI does and deliberately does not do.
 - `0016` — site shell architecture, routing decisions, wizard-embedding approach.

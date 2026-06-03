@@ -1,6 +1,6 @@
 # Development Handoff
 
-_Last updated: 2026-06-02_
+_Last updated: 2026-06-03_
 
 ## Project
 
@@ -19,19 +19,52 @@ WordPress-based local lead generation wizard platform. A configurable multi-step
 - Step 4.5 — Vertical registry + config resolution
 - Step 4.6 — WordPress REST submission adapter — Phase 4 CLOSED
 - Step 4.7 — Service abstraction layer
-- **Step 5.0 — Site shell + reference pages (JUST COMPLETED)**
+- **Step 5.0 — Site shell + reference pages**
+- **Step 5.1 — WordPress page mapping + production routing (JUST COMPLETED)**
 
 ## Where Things Stand
 
-**Step 5.0 complete.** Run `pnpm dev` from `apps/wizard`, open `localhost:5173`.
-A real five-page site loads: Home, Services, Our Work, Contact, and Quote. Nav links
-navigate without reload. The Quote page shows the service selector; selecting a service
-mounts the full wizard end-to-end. `App.tsx` is now a one-line `<SiteApp />` mount.
+**Step 5.1 complete.** The plugin is production-deployable to WordPress.
 
-**359 Vitest tests passing. Zero lint warnings. Zero TypeScript errors. Build clean.**
-**PHP: composer lint 0/0, composer analyse no errors, composer test exit 0.**
+Activate the plugin on a fresh WP install. The plugin creates a Site Root page,
+registers rewrite rules for `/services`, `/our-work`, `/contact`, `/quote`,
+and sets the Site Root as the front page (if no front page was configured).
+All five routes serve the React SPA. Browser back/forward and SPA navigation
+all work. The wizard submits end-to-end.
 
-## What Was Just Built (Step 5.0)
+For dev: `pnpm dev` from `apps/wizard`, open `localhost:5173`.
+
+**362 Vitest tests passing. Zero lint warnings. Zero TypeScript errors. Build clean.**
+**PHP: composer lint 0/0, composer analyse no errors, composer test 68/68.**
+
+## What Was Just Built (Step 5.1)
+
+### New files (plugin)
+
+| File                               | Purpose                                                                   |
+| ---------------------------------- | ------------------------------------------------------------------------- |
+| `src/Routing/SiteRoutes.php`       | PHP list of the 5 recognized paths; normalize() + is_recognized()         |
+| `src/Routing/SiteRootPage.php`     | Idempotent lifecycle for the single WP page backing all routes            |
+| `src/Routing/FrontPagePolicy.php`  | Sets front page on activation; admin notice if pre-configured             |
+| `src/Routing/RewriteRegistrar.php` | WP rewrite rules + goqw_route query var                                   |
+| `src/Routing/RouteInterceptor.php` | pre_get_posts filter — rewrites main query to Site Root                   |
+| `src/Routing/SelfHealer.php`       | init check — recreates Site Root if missing                               |
+| `src/Routing/SiteRenderer.php`     | the_content filter — outputs `<div id="qw-root" data-initial-path="...">` |
+| `tests/Unit/Routing/*.php`         | 7 test files, 41 new tests; includes CrossLanguageRoutesTest              |
+
+### Modified files (plugin + wizard)
+
+| File                                    | Change                                                          |
+| --------------------------------------- | --------------------------------------------------------------- |
+| `src/Activator.php`                     | Added setup_site_routing() + 11th option                        |
+| `src/Plugin.php`                        | Wired 6 new routing hooks                                       |
+| `uninstall.php`                         | Deletes Site Root page + notice transient                       |
+| `phpunit.xml`                           | Fixed bootstrap (was vendor/autoload.php → tests/bootstrap.php) |
+| `tests/bootstrap.php`                   | Added WP class stubs + time constants                           |
+| `apps/wizard/src/main.tsx`              | Reads data-initial-path as diagnostic hint                      |
+| `docs/decisions/0010-build-pipeline.md` | Amendment: WP routing strategy (Step 5.1)                       |
+
+## What Was Built Before (Step 5.0)
 
 ### New files
 
@@ -70,23 +103,26 @@ mounts the full wizard end-to-end. `App.tsx` is now a one-line `<SiteApp />` mou
 
 ## Next Steps
 
-### Step 5.x — WordPress deployment integration
+### Operational (first real client deployment)
 
-The site shell is fully functional on the Vite dev server. The remaining
-production integration work:
-
-- **WordPress page mapping**: the React SPA serves five routes (`/`, `/services`,
-  `/our-work`, `/contact`, `/quote`) from one mounted entry point. In WordPress,
-  each route needs either: (a) a single catch-all page with the shortcode and a
-  server-side rewrite rule forwarding all paths to that page, or (b) five separate
-  WP pages each containing the shortcode with the React app navigating client-side.
-  Decision needed before first production deployment. See technical-debt.md.
-- **Short code wiring**: `httpSubmissionPort` is production-ready; the dev fallback
-  in `QuotePage.tsx` cuts over automatically when `config.restUrl` is non-empty (set
-  by PHP via `window.GOQW_CONFIG`).
+- **Deploy to WordPress**: install the plugin, activate it. Site Root page is
+  created automatically. Verify: `wp option get goqw_site_root_page_id` > 0,
+  `wp rewrite list | grep goqw` shows 4 rules, all five routes serve the SPA.
+- **Front page**: if the WP install had a pre-existing front page, the admin
+  notice will explain how to point it to the Site Root page manually.
+- **Shortcode wiring**: `httpSubmissionPort` is production-ready; the dev fallback
+  in `QuotePage.tsx` cuts over automatically when `config.restUrl` is non-empty.
 - **Make.com workflow**: before adding decking to a production workflow, ensure the
   workflow handles `wizardId: 'decking'` payload shape.
-- Analytics, autosave beyond session scope — later.
+- **Caching**: tell caching plugins to exclude the Site Root page from full-page
+  caching (plugin sends `Cache-Control: no-cache` but some bypass it).
+
+### Phase 6 — second client cycle
+
+- Clone the template repo for a new client.
+- Update `src/site/content/` modules with real business copy.
+- Add/remove service verticals as needed.
+- Deploy.
 
 ## Core Architecture
 

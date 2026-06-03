@@ -37,19 +37,6 @@ RTL-based tests.
 
 ---
 
-## ServiceSelector at App Root (deferred to Phase 5)
-
-**What was skipped:** The `ServiceSelector` currently mounts at `App.tsx`'s root
-because the site shell (QuotePage) does not yet exist.
-
-**Why deferred:** Phase 5 builds the full site template layer. Moving the selector
-before the shell exists would require a premature layout decision.
-
-**Trigger:** Phase 5 QuotePage implementation. The selector moves from `App.tsx` to
-the `QuotePage` component with surrounding site context.
-
----
-
 ## Idempotency on SUBMIT_RETRY (deferred from Step 4.6)
 
 **What was skipped:** A hash of `(clientTimestamp + wizardId + answers)` as an
@@ -78,28 +65,13 @@ pass before Phase 5 goes to production.
 
 ---
 
-## WordPress Page Mapping for Multi-Route React App (deferred from Step 5.0)
+## Multisite WordPress Support
 
-**What was skipped:** The React SPA now serves five routes (`/`, `/services`,
-`/our-work`, `/contact`, `/quote`). In production WordPress, a user who navigates
-directly to `/our-work` (or bookmarks it, or shares the URL) will receive a
-WordPress 404 unless the server knows to serve the React app for all those paths.
+**What was skipped:** The plugin Activator runs per-site. On a network activation,
+it would run for each site in the network. Network-activation semantics (creating
+one Site Root page per site vs a shared one) are not handled.
 
-Two viable strategies, neither implemented yet:
+**Why deferred:** All current deployments are single-site. Multisite is not a stated
+requirement.
 
-- **(a) Single WP page + server rewrite**: One WordPress page has the shortcode.
-  nginx/Apache rewrites all frontend paths to that page. React handles routing
-  client-side after the initial load. Requires server config access.
-
-- **(b) Five WP pages**: Create five WordPress pages, each containing the shortcode
-  and a `data-initial-path` attribute. The React app reads the attribute on mount
-  and navigates to the correct route. Requires no server config change but adds
-  WP content management complexity.
-
-**Why deferred:** Step 5.0's acceptance criterion is a functional Vite-dev-server
-site (ADR-0016). WP deployment is a separate decision that depends on the hosting
-environment of each client.
-
-**Trigger:** First production deployment to WordPress. At that point, choose (a) or
-(b) based on whether server-level config is accessible. Document the decision in
-a new ADR.
+**Trigger:** A client requires the plugin on a WordPress multisite network.

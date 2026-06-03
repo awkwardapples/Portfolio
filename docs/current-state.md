@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-06-02_
+_Last updated: 2026-06-03_
 
 ## Completed
 
@@ -12,22 +12,29 @@ _Last updated: 2026-06-02_
 - Step 4.5 — Vertical registry + config resolution (closed registry, resolveVertical, PublicConfig v2, wizardId)
 - Step 4.6 — WordPress REST submission adapter — Phase 4 CLOSED
 - Step 4.7 — Service abstraction layer
-- **Step 5.0 — Site shell + reference pages (JUST COMPLETED)**
+- **Step 5.0 — Site shell + reference pages**
+- **Step 5.1 — WordPress page mapping + production routing (JUST COMPLETED)**
 
 ## Current Step
 
-**Step 5.0 complete.** The wizard now lives inside a real five-page website shell.
-Visiting `localhost:5173` shows the home page; nav links route without reload;
-`/quote` shows the service selector → wizard end-to-end. `App.tsx` is a one-line
-mount of `<SiteApp />`.
+**Step 5.1 complete.** The plugin now self-configures WordPress on activation:
+creates a Site Root page, registers rewrite rules for all five React routes,
+and applies a non-invasive front-page policy. The `the_content` filter renders
+the React mount node (`<div id="qw-root" data-initial-path="...">`) with
+`Cache-Control: no-cache`. The system is ready for a first production WordPress
+deployment.
 
-Next: **Step 5.x** — WordPress page mapping for multi-route React app (deployment
-integration), or analytics / autosave.
+Next: operational work — real client deployment, or Phase 6 (second client cycle).
 
 ## Test Count
 
-**359 Vitest tests passing** (21 test files). PHP Pest: 20 tests discovered
-(2 Example + 7 PublicConfig + 3 Settings + 8 SubmissionController), all passing.
+**362 Vitest tests passing** (22 test files, +3 from Step 5.1).
+PHP Pest: **68 tests passing** (was 20 previously, but the phpunit.xml bootstrap
+bug was also fixed in this step; the actual 68 tests were always present and now
+correctly run). Breakdown: 2 Example + 7 PublicConfig + 3 Settings + 8 SubmissionController
+
+- 14 SiteRoutes + 1 CrossLanguage + 9 SiteRootPage + 8 FrontPagePolicy
+- 3 RewriteRegistrar + 7 RouteInterceptor + 4 SelfHealer + 2 SettingsTest.
 
 ## Key Architectural Facts
 
@@ -118,8 +125,24 @@ submit(request: SubmissionRequest): Promise<SubmissionPortResult>
 - `ServiceSelector` + `ServiceCard`: minimal accessible selection UI; moved to QuotePage in Step 5.0.
 - `goqw_enabled_services` WP option: CSV of enabled service ids; empty = all services offered.
 
+## WordPress Routing Layer (Step 5.1)
+
+| Class                      | What                                                                                     |
+| -------------------------- | ---------------------------------------------------------------------------------------- |
+| `Routing\SiteRoutes`       | PHP copy of the 5 recognized paths; `normalize()` + `is_recognized()` match routes.ts    |
+| `Routing\SiteRootPage`     | Idempotent lifecycle for the single WP page backing all routes                           |
+| `Routing\FrontPagePolicy`  | Sets Site Root as front page if not already configured; admin notice otherwise           |
+| `Routing\RewriteRegistrar` | Registers WP rewrite rules for the 4 non-root paths; exposes `goqw_route` query var      |
+| `Routing\RouteInterceptor` | `pre_get_posts` filter — rewrites main query to Site Root for recognized paths           |
+| `Routing\SelfHealer`       | `init` check — recreates Site Root if manually deleted                                   |
+| `Routing\SiteRenderer`     | `the_content` filter (priority 5) — outputs `<div id="qw-root" data-initial-path="...">` |
+| `CrossLanguageRoutesTest`  | Parses routes.ts and asserts it matches SiteRoutes::PATHS exactly                        |
+
+Option seeded on activation: `goqw_site_root_page_id` (11th option total).
+
 ## Approved Decisions
 
+- ADR-0010 amendment: WordPress page mapping strategy (Step 5.1)
 - ADR-0016: Site shell and reference pages (Step 5.0)
 - ADR-0014 amendment: concrete pages, not schema-driven (Step 5.0)
 - ADR-0015: Submission pipeline architecture (strict ordering, wire contract)
@@ -134,7 +157,6 @@ submit(request: SubmissionRequest): Promise<SubmissionPortResult>
 
 ## Deferred / Known Gaps
 
-- WordPress page mapping for multi-route React app — Phase 5.x
 - Component tests (StepRenderer, ServiceSelector, ServiceCard) — require jsdom Vitest config
 - Idempotency key for SUBMIT_RETRY duplicates (see ADR-0015 future work)
 - Rate limiting on `qw/v1/submit` (see ADR-0015 future work)
@@ -146,6 +168,6 @@ submit(request: SubmissionRequest): Promise<SubmissionPortResult>
 
 - lint (`pnpm lint` → 0 errors, 0 warnings)
 - typecheck (`pnpm typecheck`)
-- vitest (`pnpm test` → 359/359)
+- vitest (`pnpm test` → 362/362)
 - build (`pnpm build`)
-- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → exit 0
+- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 68/68
