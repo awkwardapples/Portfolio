@@ -19,6 +19,17 @@ import '@/styles/index.css';
 
 const MOUNT_ID = 'qw-root';
 
+function warnIfPathMismatch(container: HTMLElement): void {
+  const attrPath = container.getAttribute('data-initial-path');
+  if (attrPath === null) return;
+  const livePath = window.location.pathname;
+  if (attrPath !== livePath) {
+    console.warn(
+      `[goqw] data-initial-path (${attrPath}) differs from window.location.pathname (${livePath}); using window.location.`,
+    );
+  }
+}
+
 function mount(): void {
   const container = document.getElementById(MOUNT_ID);
 
@@ -30,6 +41,8 @@ function mount(): void {
     );
     return;
   }
+
+  warnIfPathMismatch(container);
 
   const root = createRoot(container);
   root.render(
