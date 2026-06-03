@@ -129,3 +129,55 @@ grep "goqw-ops" /path/to/debug.log
 - If we add a second JS workspace package, the build scripts may want to grow knowledge of which package to ship.
 - If reproducible builds become important for compliance, reach for zlib-level determinism with a tool like `strip-nondeterminism`.
 - If `Logger::operational` events become numerous, consider routing them to a separate file or aggregator.
+
+---
+
+## Amendment — 2026-06-02: WordPress page mapping (Step 5.1)
+
+ADR-0010 originally covered the cross-platform build and plugin runtime
+integration. Step 5.1 extends this to make the multi-route React app served
+in 5.0 deployable as a real WordPress site.
+
+### Routing strategy
+
+Option A (single WP page + rewrite) was chosen over Option B (five WP pages).
+Rationale: the template-clone workflow demands minimal per-client setup; one
+activation step is preferable to creating five WordPress pages per deployment.
+
+### Route table duplication
+
+The recognized routes are duplicated between TypeScript
+(`src/site/routing/routes.ts`) and PHP (`Routing/SiteRoutes.php`). The
+duplication is intentional and protected by a cross-language consistency test
+(`CrossLanguageRoutesTest`) that parses `routes.ts` and asserts the path lists
+match exactly. A single-source mechanism (JSON file read by both sides) was
+considered and rejected as more complex than the duplication-with-test approach.
+
+### Site Root page lifecycle
+
+The plugin Activator creates a single WordPress page ("Site") on activation,
+idempotently. The page ID is stored in option `goqw_site_root_page_id`. The
+Activator does NOT delete the page on deactivation (preserves any human-added
+content). Uninstall removes it.
+
+The plugin self-heals: on every `init`, if the option points to a missing page,
+the page is recreated. This handles the case of a site admin manually deleting
+the Site Root page in wp-admin.
+
+### Front-page behaviour (non-invasive)
+
+On activation, if and only if no front page is configured (`show_on_front` is
+`'posts'`, or `'page'` with no `page_on_front` set), the plugin sets the Site
+Root page as the front page. If a front page is already configured by the site
+owner, the plugin leaves it alone and surfaces a one-time admin notice explaining
+the manual step required. Rationale: deterministic for clean template-clone
+installs; safe for existing sites.
+
+### Route interception scope
+
+The plugin intercepts only paths in `SiteRoutes::PATHS`. All other URLs
+(`wp-admin`, `wp-json`, `wp-login`, `wp-cron`, uploads, the REST API, file
+downloads, the entire rest of WordPress) flow through unmodified. The
+interception runs on `pre_get_posts` checking `is_main_query()` plus an
+exact-match against `SiteRoutes::PATHS`. No regex, no prefix matching, no
+catch-alls.
