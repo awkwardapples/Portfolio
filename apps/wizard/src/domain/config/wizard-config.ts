@@ -104,6 +104,8 @@ export const FieldSchema = z.strictObject({
   required: z.boolean().default(false),
   options: z.array(optionSchema).optional(),
   condition: ConditionSchema.optional(),
+  /** Maximum number of photos (photo fields only, default 1). Ignored for other field types. */
+  maxCount: z.number().int().min(1).max(5).optional(),
 });
 
 export type Field = z.infer<typeof FieldSchema>;

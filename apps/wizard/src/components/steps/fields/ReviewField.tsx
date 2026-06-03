@@ -1,6 +1,9 @@
 import { useWizardSelector } from '@/runtime/useWizard';
+import { usePhotoStore } from '@/runtime/hooks/usePhotoStore';
 import type { WizardConfig } from '@/domain/config/wizard-config';
 import type { AnswerMap, AnswerValue } from '@/domain/runtime/answer-types';
+import { isPhotoAnswerValue } from '@/domain/runtime/photos';
+import type { PhotoStore } from '@/runtime/photos-store';
 
 import type { FieldRendererProps } from '../types';
 
@@ -15,7 +18,11 @@ interface SummaryRow {
   display: string;
 }
 
-function buildAnswerSummary(answers: AnswerMap, wizard: WizardConfig): SummaryRow[] {
+function buildAnswerSummary(
+  answers: AnswerMap,
+  wizard: WizardConfig,
+  photoStore: PhotoStore | null,
+): SummaryRow[] {
   const rows: SummaryRow[] = [];
   for (const step of wizard.steps) {
     for (const field of step.fields) {
@@ -25,7 +32,15 @@ function buildAnswerSummary(answers: AnswerMap, wizard: WizardConfig): SummaryRo
       if (Array.isArray(val) && val.length === 0) continue;
 
       let display: string;
-      if (Array.isArray(val)) {
+      if (isPhotoAnswerValue(val)) {
+        if (val.files.length === 0) continue;
+        display = val.files
+          .map((meta) => {
+            const hasData = photoStore?.has(meta.fileId) ?? false;
+            return hasData ? meta.originalName : `${meta.originalName} (re-attach required)`;
+          })
+          .join(', ');
+      } else if (Array.isArray(val)) {
         display = (val as ReadonlyArray<string>)
           .map((v) => field.options?.find((o) => o.value === v)?.label ?? v)
           .join(', ');
@@ -46,8 +61,9 @@ export function ReviewField({ field }: FieldRendererProps): JSX.Element {
     answers: state.answers,
     wizard: config.wizard,
   }));
+  const photoStore = usePhotoStore();
 
-  const rows = buildAnswerSummary(answers, wizard);
+  const rows = buildAnswerSummary(answers, wizard, photoStore);
 
   return (
     <div id={`${field.key}-content`} aria-label={field.label}>

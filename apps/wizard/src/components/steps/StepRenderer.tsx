@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 
 import type { Step } from '@/domain/config/wizard-config';
 import type { AnswerValue } from '@/domain/runtime/answer-types';
+import { isPhotoAnswerValue } from '@/domain/runtime/photos';
 import { useWizard } from '@/runtime/useWizard';
+import { usePhotoStore } from '@/runtime/hooks/usePhotoStore';
 import { StepCard } from '@/components/composites';
 
 import { FieldRenderer } from './FieldRenderer';
@@ -26,9 +28,22 @@ interface StepRendererProps {
  */
 export function StepRenderer({ step, isFirst, isLast }: StepRendererProps): JSX.Element {
   const { state, dispatch } = useWizard();
+  const photoStore = usePhotoStore();
   const [touched, setTouched] = useState<ReadonlySet<string>>(new Set());
   const [showAllErrors, setShowAllErrors] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
+
+  // Disable Submit when any photo field has metadata entries missing base64
+  // (user reloaded the page mid-session; photos must be re-attached).
+  const hasMissingPhotos =
+    isLast &&
+    photoStore !== null &&
+    step.fields.some((field) => {
+      if (field.type !== 'photo') return false;
+      const answer = state.answers[field.key];
+      if (!isPhotoAnswerValue(answer)) return false;
+      return answer.files.some((meta) => !photoStore.has(meta.fileId));
+    });
 
   // Focus the heading when this step mounts (step change via key prop).
   useEffect(() => {
@@ -100,6 +115,7 @@ export function StepRenderer({ step, isFirst, isLast }: StepRendererProps): JSX.
           onNext={handleNext}
           isFirst={isFirst}
           isLast={isLast}
+          disabled={hasMissingPhotos}
         />
       </form>
     </StepCard>
