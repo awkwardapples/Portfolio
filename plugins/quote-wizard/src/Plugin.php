@@ -12,6 +12,11 @@ namespace Agency\QuoteWizard;
 use Agency\QuoteWizard\Frontend\AssetLoader;
 use Agency\QuoteWizard\Frontend\Shortcode;
 use Agency\QuoteWizard\Rest\SubmissionController;
+use Agency\QuoteWizard\Routing\FrontPagePolicy;
+use Agency\QuoteWizard\Routing\RewriteRegistrar;
+use Agency\QuoteWizard\Routing\RouteInterceptor;
+use Agency\QuoteWizard\Routing\SelfHealer;
+use Agency\QuoteWizard\Routing\SiteRootPage;
 use Agency\QuoteWizard\Submissions\Forwarder;
 use Agency\QuoteWizard\Submissions\SubmissionRepository;
 
@@ -26,6 +31,19 @@ final class Plugin {
 	 * Register all hooks. Idempotent.
 	 */
 	public static function boot(): void {
+		// Site routing — rewrite rules, route interception, self-healing.
+		$page        = new SiteRootPage();
+		$registrar   = new RewriteRegistrar();
+		$interceptor = new RouteInterceptor( $page );
+		$healer      = new SelfHealer( $page );
+		$policy      = new FrontPagePolicy( $page );
+
+		add_action( 'init', array( $registrar, 'register' ) );
+		add_filter( 'query_vars', array( $registrar, 'add_query_vars' ) );
+		add_action( 'pre_get_posts', array( $interceptor, 'maybe_intercept' ) );
+		add_action( 'init', array( $healer, 'check' ) );
+		add_action( 'admin_notices', array( $policy, 'maybe_render_notice' ) );
+
 		// Frontend: shortcode that renders the wizard mount point.
 		add_shortcode( Shortcode::TAG, array( Shortcode::class, 'render' ) );
 
