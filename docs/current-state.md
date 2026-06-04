@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-06-03_
+_Last updated: 2026-06-04_
 
 ## Completed
 
@@ -12,29 +12,32 @@ _Last updated: 2026-06-03_
 - Step 4.5 — Vertical registry + config resolution (closed registry, resolveVertical, PublicConfig v2, wizardId)
 - Step 4.6 — WordPress REST submission adapter — Phase 4 CLOSED
 - Step 4.7 — Service abstraction layer
+- **Step 4.8 — Photo upload pipeline (browser compression + server validation)**
 - **Step 5.0 — Site shell + reference pages**
-- **Step 5.1 — WordPress page mapping + production routing (JUST COMPLETED)**
+- **Step 5.1 — WordPress page mapping + production routing**
 
 ## Current Step
 
-**Step 5.1 complete.** The plugin now self-configures WordPress on activation:
-creates a Site Root page, registers rewrite rules for all five React routes,
-and applies a non-invasive front-page policy. The `the_content` filter renders
-the React mount node (`<div id="qw-root" data-initial-path="...">`) with
-`Cache-Control: no-cache`. The system is ready for a first production WordPress
-deployment.
+**Step 4.8 complete.** The wizard now supports multi-photo upload fields.
+Browser-side: `compressImage` (canvas, 2000 px max, JPEG 0.85), `PhotoStore`
+(volatile base64 map, not persisted to sessionStorage), `PhotoField` (thumbnails,
+remove, re-attach indicator). Server-side: `MediaValidator` (6-step: size,
+total, MIME, base64 decode, magic-byte, dimensions), `media_json LONGTEXT NULL`
+column on `wp_goqw_submissions`, Forwarder carries media array to Make.com.
+No new JS dependencies — all native canvas API.
 
 Next: operational work — real client deployment, or Phase 6 (second client cycle).
 
 ## Test Count
 
-**362 Vitest tests passing** (22 test files, +3 from Step 5.1).
-PHP Pest: **68 tests passing** (was 20 previously, but the phpunit.xml bootstrap
-bug was also fixed in this step; the actual 68 tests were always present and now
-correctly run). Breakdown: 2 Example + 7 PublicConfig + 3 Settings + 8 SubmissionController
+**384 Vitest tests passing** (24 test files, +22 from Step 4.8).
+PHP Pest: **82 tests passing, 2 skipped** (GD extension unavailable for real JPEG
+generation in the test environment; all server-side validation logic exercised).
+Breakdown: 2 Example + 7 PublicConfig + 3 Settings + 10 SubmissionController
 
-- 14 SiteRoutes + 1 CrossLanguage + 9 SiteRootPage + 8 FrontPagePolicy
-- 3 RewriteRegistrar + 7 RouteInterceptor + 4 SelfHealer + 2 SettingsTest.
+- 8 MediaValidator (6 pass, 2 skip) + 17 SiteRoutes + 1 CrossLanguage
+- 9 SiteRootPage + 8 FrontPagePolicy + 3 RewriteRegistrar
+- 7 RouteInterceptor + 4 SelfHealer + 2 SettingsTest.
 
 ## Key Architectural Facts
 
@@ -162,12 +165,13 @@ Option seeded on activation: `goqw_site_root_page_id` (11th option total).
 - Rate limiting on `qw/v1/submit` (see ADR-0015 future work)
 - `h-10` Tailwind utility: used in primitives; spacing scale only defines keys 0–16
 - Analytics, autosave beyond session scope — Phase 5+
-- Media uploads — Phase 4.8
+- Media retention policy — photos stored indefinitely (see technical-debt.md)
+- Photo preview thumbnails in sessionStorage — UX polish, currently shows re-attach indicator
 
 ## Required Gates
 
 - lint (`pnpm lint` → 0 errors, 0 warnings)
 - typecheck (`pnpm typecheck`)
-- vitest (`pnpm test` → 362/362)
-- build (`pnpm build`)
-- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 68/68
+- vitest (`pnpm test` → 384/384)
+- build (`pnpm -r build`)
+- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 82/82 (2 skipped)

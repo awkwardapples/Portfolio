@@ -1,6 +1,6 @@
 # Development Handoff
 
-_Last updated: 2026-06-03_
+_Last updated: 2026-06-04_
 
 ## Project
 
@@ -19,23 +19,30 @@ WordPress-based local lead generation wizard platform. A configurable multi-step
 - Step 4.5 — Vertical registry + config resolution
 - Step 4.6 — WordPress REST submission adapter — Phase 4 CLOSED
 - Step 4.7 — Service abstraction layer
+- **Step 4.8 — Photo upload pipeline (browser compression + server validation)**
 - **Step 5.0 — Site shell + reference pages**
-- **Step 5.1 — WordPress page mapping + production routing (JUST COMPLETED)**
+- **Step 5.1 — WordPress page mapping + production routing**
 
 ## Where Things Stand
 
-**Step 5.1 complete.** The plugin is production-deployable to WordPress.
+**Step 4.8 complete.** The wizard photo upload pipeline is fully implemented.
 
-Activate the plugin on a fresh WP install. The plugin creates a Site Root page,
-registers rewrite rules for `/services`, `/our-work`, `/contact`, `/quote`,
-and sets the Site Root as the front page (if no front page was configured).
-All five routes serve the React SPA. Browser back/forward and SPA navigation
-all work. The wizard submits end-to-end.
+`PhotoField` accepts up to `maxCount` files, compresses them in-browser via canvas
+(2000 px / JPEG 0.85), stores base64 in a volatile `PhotoStore` (not serialised to
+sessionStorage), and dispatches metadata-only answers to the FSM. At submission time
+`createPhotoEnrichedPort` merges the base64 back in. On the server, `MediaValidator`
+enforces size, total, MIME, decode, magic-byte, and dimension checks before the row
+is persisted. `media_json` is stored separately from `answers_json` and forwarded to
+Make.com as a `media` array.
+
+**Deployment prerequisite for photo fields**: update the Make.com workflow to handle
+the new `media[]` array before going live. See onboarding.md "Photo upload deployment
+checklist".
 
 For dev: `pnpm dev` from `apps/wizard`, open `localhost:5173`.
 
-**362 Vitest tests passing. Zero lint warnings. Zero TypeScript errors. Build clean.**
-**PHP: composer lint 0/0, composer analyse no errors, composer test 68/68.**
+**384 Vitest tests passing. Zero lint warnings. Zero TypeScript errors. Build clean.**
+**PHP: composer lint 0/0, composer analyse no errors, composer test 82/82 (2 skipped).**
 
 ## What Was Just Built (Step 5.1)
 

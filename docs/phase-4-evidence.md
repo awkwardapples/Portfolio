@@ -179,3 +179,82 @@ New additions: ServiceSelector + ServiceCard (~1.5 kB minified), decking.config.
 | `0b84d67` | feat(plugin): PHP PublicConfig emits enabledServiceIds when configured  |
 | `ec55bbc` | feat(selection): ServiceSelector + ServiceCard components               |
 | `fb2fe7a` | refactor(app): per-session service selection with single-service bypass |
+
+---
+
+## Step 4.8 — Photo Upload Pipeline (2026-06-04)
+
+### Gates
+
+| Gate               | Result                                                                 |
+| ------------------ | ---------------------------------------------------------------------- |
+| `pnpm lint`        | 0 errors, 0 warnings                                                   |
+| `pnpm typecheck`   | 0 errors                                                               |
+| `pnpm test`        | **384 / 384 passing** (24 test files, +22 from Step 4.8)               |
+| `pnpm -r build`    | Clean. 246.81 kB JS (72.75 kB gzip), 17.31 kB CSS (4.03 kB gzip)       |
+| `composer lint`    | 0 errors, 0 warnings                                                   |
+| `composer analyse` | No errors                                                              |
+| `composer test`    | **82 / 82 passing**, 2 skipped (GD unavailable for real JPEG fixtures) |
+
+### Bundle delta
+
+| Step | JS gzip  | Delta    |
+| ---- | -------- | -------- |
+| 5.1  | 70.61 kB | baseline |
+| 4.8  | 72.75 kB | +2.14 kB |
+
+No new JS dependencies. Photo compression uses native canvas API.
+
+### Acceptance criteria (from spec)
+
+| #   | Criterion                                                         | Verified by                      |
+| --- | ----------------------------------------------------------------- | -------------------------------- |
+| 1   | Multi-photo field accepts up to maxCount files, rejects beyond    | Client-side guard                |
+| 2   | Files >5 MB rejected before compression                           | PhotoField validation            |
+| 3   | Compressed images preserve aspect ratio within 1px                | scaleToFit tests                 |
+| 4   | Compressed JPEG output format confirmed                           | compressImage returns image/jpeg |
+| 5   | Total >9 MB rejected client-side                                  | PhotoField total check           |
+| 6   | sessionStorage does not grow with photo count (metadata only)     | PhotoStore arch                  |
+| 7   | Navigation away/back: metadata persists, photos need re-attach    | PhotoStore lifecycle             |
+| 8   | Review step shows re-attach indicator for metadata-without-base64 | ReviewField + annotation         |
+| 9   | Submit disabled when any photo metadata lacks base64              | StepRenderer gate                |
+| 10  | Server rejects MIME mismatch (content_mismatch)                   | MediaValidatorTest               |
+| 11  | Server rejects total >10 MB                                       | MediaValidatorTest               |
+| 12  | 400 response body contains mediaIssues[]                          | SubmissionControllerTest         |
+| 13  | Persistence does NOT happen when media validation fails           | SubmissionControllerTest         |
+| 14  | media_json column added via dbDelta                               | Schema.php                       |
+| 15  | Forwarder carries media payload to Make.com                       | Forwarder.php                    |
+| 16  | F1 fixed: onboarding option count consistent throughout           | docs/onboarding.md               |
+| 17  | F2 fixed: roadmap deferred section references technical-debt.md   | docs/roadmap.md                  |
+| 18  | F3 fixed: bundle-baseline.md is the single rolling file           | docs/bundle-baseline.md          |
+| 19  | F4 fixed: current_request_path consolidated into SiteRoutes       | SiteRoutes.php                   |
+| 20  | FSM transition.ts byte-unchanged                                  | git diff                         |
+| 21  | No new endpoints                                                  | Code review                      |
+| 22  | All gates green                                                   | Above                            |
+| 23  | Make.com deployment prerequisite documented                       | onboarding.md                    |
+| 24  | Retention policy documented as deferred                           | technical-debt.md                |
+
+### New files
+
+| File                                                      | Purpose                                                    |
+| --------------------------------------------------------- | ---------------------------------------------------------- |
+| `apps/wizard/src/domain/runtime/photos.ts`                | PhotoMetadata, PhotoAnswerValue, PhotoFilePayload, guard   |
+| `apps/wizard/src/utils/image-compression.ts`              | compressImage, scaleToFit, blobToBase64                    |
+| `apps/wizard/src/runtime/photos-store.ts`                 | PhotoStore class + generateFileId                          |
+| `apps/wizard/src/runtime/hooks/usePhotoStore.ts`          | usePhotoStore hook                                         |
+| `apps/wizard/src/runtime/submission-media.ts`             | createPhotoEnrichedPort (base64 enrichment at submit time) |
+| `plugins/quote-wizard/src/Submissions/MediaValidator.php` | Server-side 6-step media validation                        |
+
+### Commits
+
+| Hash      | Message                                                                           |
+| --------- | --------------------------------------------------------------------------------- |
+| `adb8741` | docs: ADR-0015 amendment (media payload); ADR-0012 photo thumbnail clarification  |
+| `a641653` | refactor(plugin): consolidate current_request_path into SiteRoutes (F4)           |
+| `c0a08c3` | feat(wizard): PhotoAnswerValue type; answer-validation handles photo fields       |
+| `98be0ec` | feat(wizard): image-compression utility (scaleToFit, blobToBase64, compressImage) |
+| `1a7b6a7` | feat(wizard): PhotoStore, generateFileId, usePhotoStore hook; PhotoStoreContext   |
+| `623bf8e` | feat(wizard): WizardProvider provides PhotoStore; photo-enriched submission port  |
+| `7eeec7c` | feat(wizard): multi-photo PhotoField; ReviewField photo summary; submit gate      |
+| `b64d4ac` | feat(plugin): MediaValidator + SubmissionController media integration             |
+| `24b5f85` | feat(plugin): media_json column via dbDelta; SubmissionRepository + Forwarder     |

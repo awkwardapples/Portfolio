@@ -15,17 +15,21 @@ A single-page structural view of project state. Updated on every completed step.
 
 ## Step status
 
-| Step | Status   | What                                         |
-| ---- | -------- | -------------------------------------------- |
-| 4.7  | Complete | Service abstraction layer + decking vertical |
-| 5.0  | Complete | Site shell + 5 reference pages               |
-| 5.1  | Complete | WordPress page mapping + production routing  |
+| Step | Status   | What                                                 |
+| ---- | -------- | ---------------------------------------------------- |
+| 4.7  | Complete | Service abstraction layer + decking vertical         |
+| 4.8  | Complete | Photo upload pipeline (browser compression + server) |
+| 5.0  | Complete | Site shell + 5 reference pages                       |
+| 5.1  | Complete | WordPress page mapping + production routing          |
 
 ## Deferred (with triggers)
 
+Conscious deferral decisions, including trigger conditions, are maintained in
+[`docs/technical-debt.md`](technical-debt.md). The canonical list lives there;
+this section only summarises the key items.
+
 | Item                             | Trigger to revisit                        |
 | -------------------------------- | ----------------------------------------- |
-| 4.8 Media uploads                | Real client requirement for photo upload  |
 | Idempotency for submission retry | First observed duplicate Make.com lead    |
 | Rate limiting on submit endpoint | >100 submissions/day or observed abuse    |
 | Admin replay UI for failed sends | Ops team needs manual retry capability    |
@@ -33,6 +37,7 @@ A single-page structural view of project state. Updated on every completed step.
 | h-10 Tailwind utility hygiene    | Visual regression observed                |
 | Component testing in jsdom       | Component bug not caught by current tests |
 | Multisite WordPress support      | Client requires network activation        |
+| Media retention policy           | Privacy concern or storage growth         |
 
 ## Out of scope (explicitly not planned)
 

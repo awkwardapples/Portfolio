@@ -4,19 +4,78 @@ This file records conscious deferral decisions: things we knowingly skipped
 and the trigger condition that should prompt revisiting them. It is not a
 backlog; it is a record of trade-offs made deliberately.
 
-## Media Uploads (deferred from Step 4.7)
+## Media Retention Policy (deferred from Step 4.8)
 
-**What was skipped:** A file/image upload field type for wizard steps (e.g. "upload
-a photo of your existing fence"). The Step 4.7 spec explicitly deferred this.
+**What was skipped:** Automatic pruning of photo data from `wp_goqw_submissions.media_json`.
+Photos are stored indefinitely. On a busy deployment this column could grow significantly.
 
-**Why deferred:** No client has requested photo uploads yet. Implementing a file field
-type requires: a new field type in the registry, a media upload REST endpoint, WP media
-library integration, and browser-side file validation. The surface area is significant
-and the payoff is zero until a real client needs it.
+**Why deferred:** No production deployment yet. No client has raised a data retention or
+storage concern. Adding a WP-Cron prune job introduces a policy decision (how long to
+keep photos) that should be made with the client, not assumed.
 
-**Trigger:** The first client engagement that requires photo uploads as part of the
-quote process. At that point, create a dedicated step (e.g. 4.8 — Media Upload field
-type) rather than retrofitting.
+**Trigger:** A client raises a privacy concern, GDPR request, or storage cost issue.
+At that point, implement a configurable retention window (e.g. 30 days) via a WP-Cron
+daily prune that sets `media_json = NULL` on rows older than the window, while
+preserving `answers_json` for operational analytics.
+
+---
+
+## Photo Preview Thumbnails in sessionStorage (deferred from Step 4.8)
+
+**What was skipped:** Persisting low-resolution preview thumbnails to sessionStorage so
+the user sees what they uploaded after reloading the page, even though the full base64
+bytes cannot be persisted (sessionStorage quota).
+
+**Why deferred:** The re-attach affordance (indicator shown when metadata exists without
+base64) handles the UX adequately for now. Thumbnail persistence adds complexity
+(canvas downscale, separate sessionStorage key per file) for marginal UX improvement.
+
+**Trigger:** User research or support reports showing that the "re-attach required"
+indicator causes meaningful drop-off or confusion.
+
+---
+
+## Admin Replay UI for Failed Sends (deferred from Step 4.6)
+
+**What was skipped:** A wp-admin screen listing `wp_goqw_submissions` rows with
+`status = 'forward_failed'` and a button to re-forward them to Make.com without
+browser involvement.
+
+**Why deferred:** Current volume is low; failed rows are recoverable by the developer
+directly in the database or via WP-CLI. A full admin UI adds significant scope.
+
+**Trigger:** Ops team needs to re-forward rows without developer access to the database
+(first real client deployment with non-technical operators).
+
+---
+
+## SSR / Static Rendering (deferred, out of scope for Phase 4–5)
+
+**What was skipped:** Server-side rendering of the React SPA for SEO or initial-load
+performance. Currently the site shell and all five pages are client-rendered.
+
+**Why deferred:** The current clients are local trade businesses where SEO is managed
+via Google Business and local citations, not technical on-page SEO. The wizard itself
+is never crawled by search engines by design. SSR adds deployment complexity and a
+Node.js process dependency.
+
+**Trigger:** A client explicitly requires page content to be crawlable, or a performance
+audit identifies first-contentful-paint as a blocking conversion issue.
+
+---
+
+## h-10 Tailwind Utility Hygiene (deferred from Step 4.3, still open)
+
+**What was skipped:** `h-10` appears in several primitives. The spacing scale in the
+Tailwind config only explicitly defines keys 0–16, and `h-10` is within range, but it
+was not included in the closed "approved utilities" inventory in ADR-0012.
+
+**Why deferred:** No visual regression observed; `h-10` (40px) is within the standard
+Tailwind scale and renders correctly. Cleaning it up would require a sweep of all
+primitives to explicitly approve or replace it.
+
+**Trigger:** A visual regression is observed where `h-10` produces the wrong output, or
+a strict custom Tailwind config is introduced that redefines the scale.
 
 ---
 

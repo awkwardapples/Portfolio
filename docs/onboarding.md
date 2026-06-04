@@ -128,8 +128,8 @@ Run these from LocalWP's site shell. They confirm each part of the system is hea
 # The table exists with its columns
 wp db tables --all-tables-with-prefix | Select-String "goqw"     # expect wp_goqw_submissions
 
-# The ten options seeded (includes goqw_wizard_id and goqw_enabled_services — see ADR-0013)
-wp option list --search="goqw_*" --format=count                  # expect 10
+# The eleven options seeded (includes goqw_wizard_id, goqw_enabled_services, goqw_site_root_page_id — see ADR-0013)
+wp option list --search="goqw_*" --format=count                  # expect 11
 
 # A couple of specific options
 wp option get goqw_primary_color                                 # expect a hex colour, default #0F4C81
@@ -146,6 +146,26 @@ $r.StatusCode                                                    # expect 501
 # The cleanup cron event is scheduled
 wp cron event list | Select-String "goqw_prune_submissions"      # expect one event
 ```
+
+## Photo upload deployment checklist (Step 4.8)
+
+If the wizard config includes a `photo` field type, the following must be
+verified before the deployment goes live:
+
+1. **Make.com workflow handles media.** The forwarded payload now includes a
+   `media` array (see ADR-0015 amendment). Update the Make.com scenario to
+   parse and route `media[].files[].dataBase64` correctly. Without this, photo
+   data is captured in the database but silently ignored by the downstream
+   workflow.
+
+2. **PHP upload limits.** Confirm `upload_max_filesize` and `post_max_size` in
+   `php.ini` are at least `15M`. The wizard enforces a 9 MB client-side cap,
+   but the PHP limit is the hard ceiling. The default on many hosts is 8 MB,
+   which would cause silent rejection.
+
+3. **Smoke test.** Upload a multi-photo quote, confirm the submission row in
+   `wp_goqw_submissions` has a non-null `media_json` column, and confirm
+   Make.com received the media array.
 
 ## The daily development loop
 
