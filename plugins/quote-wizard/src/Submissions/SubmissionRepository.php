@@ -49,11 +49,12 @@ class SubmissionRepository {
 				'schema_version'   => $payload['schema_version'],
 				'answers_json'     => $payload['answers_json'],
 				'pricing_json'     => $payload['pricing_json'],
+				'media_json'       => $payload['media_json'] ?? null,
 				'client_timestamp' => $payload['client_timestamp'],
 				'status'           => 'persisted',
 				'created_at'       => current_time( 'mysql', true ),
 			),
-			array( '%s', '%d', '%s', '%s', '%s', '%s', '%s' )
+			array( '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s' )
 		);
 
 		if ( false === $result ) {

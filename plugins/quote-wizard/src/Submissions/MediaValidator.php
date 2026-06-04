@@ -30,7 +30,7 @@ defined( 'ABSPATH' ) || exit;
  * .svg to .jpg would pass allowlist checks but is caught here. Skipping it
  * is a content-type spoofing vulnerability.
  */
-final class MediaValidator {
+class MediaValidator {
 
 	private const ALLOWED_MIMES = array( 'image/jpeg', 'image/png', 'image/webp' );
 

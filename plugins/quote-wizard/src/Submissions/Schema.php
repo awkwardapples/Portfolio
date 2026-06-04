@@ -61,6 +61,7 @@ final class Schema {
 			schema_version INT NOT NULL DEFAULT 1,
 			answers_json LONGTEXT NOT NULL,
 			pricing_json LONGTEXT NULL,
+			media_json LONGTEXT NULL,
 			client_timestamp VARCHAR(64) NOT NULL DEFAULT '',
 			status VARCHAR(32) NOT NULL DEFAULT 'persisted',
 			created_at DATETIME NOT NULL,

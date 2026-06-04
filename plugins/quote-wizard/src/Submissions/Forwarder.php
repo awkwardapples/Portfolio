@@ -52,6 +52,9 @@ class Forwarder {
 				'pricing'          => null !== $payload['pricing_json']
 					? json_decode( $payload['pricing_json'], true )
 					: null,
+				'media'            => isset( $payload['media_json'] ) && null !== $payload['media_json']
+					? json_decode( $payload['media_json'], true )
+					: null,
 				'client_timestamp' => $payload['client_timestamp'],
 			)
 		);

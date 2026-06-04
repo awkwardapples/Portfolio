@@ -398,3 +398,59 @@ it(
 		expect( $response->get_status() )->toBe( 200 );
 	}
 );
+
+it(
+	'persists media_json as null when answers have no photo fields',
+	function (): void {
+		$repo    = spy_repository( 1 );
+		$fwd     = spy_forwarder( ForwardResult::success() );
+		$ctrl    = new SubmissionController( $repo, $fwd );
+		$request = make_request( valid_payload() );
+
+		$ctrl->handle( $request );
+
+		expect( $repo->inserts[0] )->toHaveKey( 'media_json' );
+		expect( $repo->inserts[0]['media_json'] )->toBeNull();
+	}
+);
+
+it(
+	'persists non-null media_json when photo files are present',
+	function (): void {
+		$repo = spy_repository( 1 );
+		$fwd  = spy_forwarder( ForwardResult::success() );
+
+		// Stub validator so the test focuses on media_json persistence, not image validation.
+		$validator = new class extends \Agency\QuoteWizard\Submissions\MediaValidator {
+			/** @return array{ok: bool, issues: list<array{fileIndex: int, code: string}>} */
+			public function validate( array $answers ): array {
+				return array( 'ok' => true, 'issues' => array() );
+			}
+		};
+		$ctrl    = new SubmissionController( $repo, $fwd, $validator );
+		$payload = valid_payload(
+			array(
+				'answers' => array(
+					'fence_type' => 'wooden',
+					'photos'     => array(
+						'files' => array(
+							array(
+								'fileId'       => 'f1',
+								'originalName' => 'test.jpg',
+								'mimeType'     => 'image/jpeg',
+								'dataBase64'   => 'fakeb64',
+							),
+						),
+					),
+				),
+			)
+		);
+		$request = make_request( $payload );
+
+		$ctrl->handle( $request );
+
+		expect( $repo->inserts[0]['media_json'] )->not->toBeNull();
+		$decoded = json_decode( $repo->inserts[0]['media_json'], true );
+		expect( $decoded[0]['fieldKey'] )->toBe( 'photos' );
+	}
+);

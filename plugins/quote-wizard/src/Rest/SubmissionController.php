@@ -179,8 +179,31 @@ final class SubmissionController {
 				: 1,
 			'answers_json'     => wp_json_encode( $answers ),
 			'pricing_json'     => null !== $pricing ? wp_json_encode( $pricing ) : null,
+			'media_json'       => $this->extract_media_json( $answers ),
 			'client_timestamp' => sanitize_text_field( $client_ts ),
 		);
+	}
+
+	/**
+	 * Extract the media (photo) entries from the answers map and encode as JSON.
+	 *
+	 * Returns null when no photo fields are present, so the media_json column
+	 * is NULL for non-photo submissions (routine row reads skip it).
+	 *
+	 * @param  array<string,mixed> $answers  Decoded answers.
+	 * @return string|null  JSON-encoded media array, or null.
+	 */
+	private function extract_media_json( array $answers ): ?string {
+		$media = array();
+		foreach ( $answers as $field_key => $value ) {
+			if ( is_array( $value ) && isset( $value['files'] ) && is_array( $value['files'] ) ) {
+				$media[] = array(
+					'fieldKey' => (string) $field_key,
+					'files'    => $value['files'],
+				);
+			}
+		}
+		return empty( $media ) ? null : wp_json_encode( $media );
 	}
 
 	/**
