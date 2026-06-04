@@ -115,6 +115,34 @@ describe('httpSubmissionPort — network failure paths', () => {
   });
 });
 
+describe('httpSubmissionPort — mediaIssues extraction', () => {
+  it('400 with mediaIssues array parses fileIndex and code', async () => {
+    const body = JSON.stringify({
+      errorCode: 'media_validation_failed',
+      mediaIssues: [{ fileIndex: 2, code: 'too_large' }],
+    });
+    const mock = vi.fn().mockResolvedValue(fakeResponse(400, body));
+    const result = await portWithMock(mock).submit(VALID_REQUEST);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('validation_failed');
+      expect(result.error.mediaIssues).toHaveLength(1);
+      expect(result.error.mediaIssues?.[0]).toEqual({ fileIndex: 2, code: 'too_large' });
+    }
+  });
+
+  it('400 without mediaIssues returns undefined mediaIssues', async () => {
+    const mock = vi
+      .fn()
+      .mockResolvedValue(fakeResponse(400, JSON.stringify({ errorCode: 'validation_failed' })));
+    const result = await portWithMock(mock).submit(VALID_REQUEST);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.mediaIssues).toBeUndefined();
+    }
+  });
+});
+
 describe('httpSubmissionPort — wire contract', () => {
   let spy: ReturnType<typeof vi.fn>;
 

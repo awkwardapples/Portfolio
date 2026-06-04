@@ -312,3 +312,89 @@ it(
 		expect( $repo->failed[0]['msg'] )->toBe( 'http_status_503' );
 	}
 );
+
+// ---------------------------------------------------------------------------
+// Media validation (Step 4.8)
+// ---------------------------------------------------------------------------
+
+it(
+	'returns 400 with mediaIssues when media validation fails, and does not persist',
+	function (): void {
+		$repo    = spy_repository();
+		$fwd     = spy_forwarder( ForwardResult::success() );
+		$ctrl    = new SubmissionController( $repo, $fwd );
+
+		// Payload with an oversized encoded photo (exceeds per-photo limit).
+		// Use a small limit (100 bytes) so the test does not allocate megabytes.
+		$validator = new \Agency\QuoteWizard\Submissions\MediaValidator( max_photo_bytes: 100 );
+		$ctrl      = new SubmissionController( $repo, $fwd, $validator );
+		$payload   = valid_payload(
+			array(
+				'answers' => array(
+					'photos' => array(
+						'files' => array(
+							array(
+								'fileId'       => 'f1',
+								'originalName' => 'big.jpg',
+								'mimeType'     => 'image/jpeg',
+								'dataBase64'   => str_repeat( 'A', 101 ),
+							),
+						),
+					),
+				),
+			)
+		);
+		$request  = make_request( $payload );
+		$response = $ctrl->handle( $request );
+
+		expect( $response->get_status() )->toBe( 400 );
+		expect( $response->get_data()['errorCode'] )->toBe( 'media_validation_failed' );
+		expect( $response->get_data() )->toHaveKey( 'mediaIssues' );
+		expect( $repo->inserts )->toBeEmpty();
+		expect( $fwd->calls )->toBeEmpty();
+	}
+);
+
+it(
+	'does not call repository insert when media validation fails',
+	function (): void {
+		$repo = spy_repository();
+		$fwd  = spy_forwarder( ForwardResult::success() );
+		$ctrl = new SubmissionController( $repo, $fwd );
+
+		$payload = valid_payload(
+			array(
+				'answers' => array(
+					'photos' => array(
+						'files' => array(
+							array(
+								'fileId'       => 'f1',
+								'mimeType'     => 'application/pdf',
+								'originalName' => 'doc.pdf',
+								'dataBase64'   => base64_encode( 'not an image' ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+							),
+						),
+					),
+				),
+			)
+		);
+
+		$ctrl->handle( make_request( $payload ) );
+
+		expect( $repo->inserts )->toBeEmpty();
+	}
+);
+
+it(
+	'proceeds past media validation when answers contain no photo fields',
+	function (): void {
+		$repo    = spy_repository( 1 );
+		$fwd     = spy_forwarder( ForwardResult::success() );
+		$ctrl    = new SubmissionController( $repo, $fwd );
+		$request = make_request( valid_payload() );
+
+		$response = $ctrl->handle( $request );
+
+		expect( $response->get_status() )->toBe( 200 );
+	}
+);

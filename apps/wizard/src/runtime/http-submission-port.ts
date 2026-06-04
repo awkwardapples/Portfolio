@@ -1,4 +1,4 @@
-import type { SubmissionErrorInfo } from '@/domain/runtime/state';
+import type { MediaIssue, SubmissionErrorInfo } from '@/domain/runtime/state';
 import type { SubmissionPort, SubmissionPortResult, SubmissionRequest } from '@/runtime/submission';
 
 // ---------------------------------------------------------------------------
@@ -135,7 +135,8 @@ async function mapResponse(response: Response): Promise<SubmissionPortResult> {
   }
 
   if (response.status === 400 || response.status === 422) {
-    return err_(ERR_VALIDATION, MSG_FALLBACK, false);
+    const mediaIssues = extractMediaIssues(body);
+    return err_(ERR_VALIDATION, MSG_FALLBACK, false, null, mediaIssues);
   }
 
   if (response.status === 401 || response.status === 403) {
@@ -153,11 +154,27 @@ function extractReference(body: unknown): string | null {
   return null;
 }
 
+function extractMediaIssues(body: unknown): readonly MediaIssue[] | undefined {
+  if (body === null || typeof body !== 'object') return undefined;
+  const issues = (body as Record<string, unknown>)['mediaIssues'];
+  if (!Array.isArray(issues)) return undefined;
+  return issues
+    .filter(
+      (item): item is { fileIndex: number; code: string } =>
+        typeof item === 'object' &&
+        item !== null &&
+        typeof (item as Record<string, unknown>)['fileIndex'] === 'number' &&
+        typeof (item as Record<string, unknown>)['code'] === 'string',
+    )
+    .map((item) => ({ fileIndex: item.fileIndex, code: item.code }));
+}
+
 function err_(
   code: SubmissionErrorInfo['code'],
   message: string,
   retryable = true,
   submissionId: string | null = null,
+  mediaIssues?: readonly MediaIssue[],
 ): SubmissionPortResult {
-  return { ok: false, error: { code, message, submissionId, retryable } };
+  return { ok: false, error: { code, message, submissionId, retryable, mediaIssues } };
 }

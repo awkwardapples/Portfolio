@@ -76,6 +76,11 @@ export type SubmissionErrorCode =
  * No Error objects, no stack traces, no non-serializable values. Safe to
  * persist, replay, and display directly.
  */
+export interface MediaIssue {
+  readonly fileIndex: number;
+  readonly code: string;
+}
+
 export interface SubmissionErrorInfo {
   readonly code: SubmissionErrorCode;
   readonly message: string;
@@ -86,6 +91,9 @@ export interface SubmissionErrorInfo {
    */
   readonly submissionId: string | null;
   readonly retryable: boolean;
+  /** Present when code is 'validation_failed' and the server identified specific
+   *  photo files that failed media validation. */
+  readonly mediaIssues?: readonly MediaIssue[];
 }
 
 /**

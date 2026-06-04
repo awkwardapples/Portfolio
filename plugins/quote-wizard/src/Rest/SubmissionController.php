@@ -10,6 +10,7 @@ declare( strict_types=1 );
 namespace Agency\QuoteWizard\Rest;
 
 use Agency\QuoteWizard\Submissions\Forwarder;
+use Agency\QuoteWizard\Submissions\MediaValidator;
 use Agency\QuoteWizard\Submissions\SubmissionRepository;
 use Agency\QuoteWizard\Support\Logger;
 use WP_REST_Request;
@@ -37,12 +38,14 @@ final class SubmissionController {
 	/**
 	 * Constructor.
 	 *
-	 * @param SubmissionRepository $repository  Data-access layer for submissions.
-	 * @param Forwarder            $forwarder   Webhook forwarder.
+	 * @param SubmissionRepository $repository      Data-access layer for submissions.
+	 * @param Forwarder            $forwarder        Webhook forwarder.
+	 * @param MediaValidator       $media_validator  Photo upload validator.
 	 */
 	public function __construct(
 		private readonly SubmissionRepository $repository,
-		private readonly Forwarder $forwarder
+		private readonly Forwarder $forwarder,
+		private readonly MediaValidator $media_validator = new MediaValidator()
 	) {}
 
 	/**
@@ -58,6 +61,20 @@ final class SubmissionController {
 		if ( $validated instanceof WP_Error ) {
 			return new WP_REST_Response(
 				array( 'errorCode' => 'validation_failed' ),
+				400
+			);
+		}
+
+		// Step 1b: validate media entries (photo fields) before persisting.
+		$media_result = $this->media_validator->validate(
+			is_array( $payload['answers'] ?? null ) ? $payload['answers'] : array()
+		);
+		if ( ! $media_result['ok'] ) {
+			return new WP_REST_Response(
+				array(
+					'errorCode'   => 'media_validation_failed',
+					'mediaIssues' => $media_result['issues'],
+				),
 				400
 			);
 		}
