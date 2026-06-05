@@ -436,6 +436,104 @@ Step 5.1 is purely additive. Any page with `[quote_wizard]` continues to render
 the wizard widget exactly as before. The new routing mechanism is a separate code
 path.
 
+## Deploying the plugin to a WordPress install (Step 5.2)
+
+These steps deploy a freshly-built plugin artifact to a real WordPress install
+(LocalWP, staging, or production). They are required after any code change that
+affects the bundle or the PHP plugin source.
+
+### Prerequisites
+
+- Node and pnpm installed (versions per `package.json` engines).
+- PHP and Composer installed (versions per `composer.json` requirements).
+- Access to the WordPress install's filesystem and command-line (wp-cli).
+
+### Procedure
+
+1. **Build the artifact from a clean working tree.**
+
+   From the project root:
+
+   ```powershell
+   pnpm install
+   pnpm -r build
+   ```
+
+   This produces the React bundle in `apps/wizard/dist/` and copies it into
+   `plugins/quote-wizard/assets/dist/` via the existing build-plugin script.
+
+2. **Verify the manifest contains relative paths.**
+
+   Open `plugins/quote-wizard/assets/dist/manifest.json` and confirm all `file`
+   entries are relative paths (e.g. `wizard.AbC123.js`). If any contain
+   absolute paths or Windows drive letters (`C:/`), the build is corrupted.
+   Do not proceed.
+
+3. **Deactivate the plugin in the target WordPress install.**
+
+   ```bash
+   wp plugin deactivate quote-wizard
+   ```
+
+4. **Delete the existing plugin directory.**
+
+   ```bash
+   wp plugin delete quote-wizard
+   ```
+
+   This ensures no stale files remain. The plugin's options and database table
+   persist (uninstall.php is only invoked on explicit uninstall via wp-admin or
+   `wp plugin uninstall`, not deactivate-and-delete).
+
+5. **Copy the new plugin directory.**
+
+   Copy `plugins/quote-wizard/` (the directory at the project root, with the
+   freshly-built `assets/dist/`) into the WordPress install's `wp-content/plugins/`.
+
+6. **Activate the plugin.**
+
+   ```bash
+   wp plugin activate quote-wizard
+   ```
+
+7. **Clear caches.**
+
+   ```bash
+   wp cache flush
+   wp transient delete --all
+   ```
+
+   And, in the browser, hard-reload the site (Ctrl+Shift+R or equivalent) or use
+   "Clear site data" in dev tools.
+
+8. **Verify the deployment.**
+
+   ```bash
+   wp plugin list
+   ```
+
+   Confirm the version matches `GOQW_VERSION` in `quote-wizard.php`.
+
+   ```bash
+   wp eval "echo GOQW_PLUGIN_URL;"
+   ```
+
+   Confirm this returns a clean URL of the form
+   `http://yoursite.local/wp-content/plugins/quote-wizard/`.
+
+   Visit the front of the site and confirm the React app loads.
+
+### Common pitfalls
+
+- **Stale caches.** Browser caching, page caching plugins, and CDN caching can
+  serve old assets even after deployment. Always hard-reload and flush caches.
+- **Half-deployed state.** Do not copy individual files over a running plugin
+  directory. Always deactivate-delete-redeploy as a unit. Mixed file versions
+  produce unpredictable failures.
+- **Symlinks.** Do not symlink the plugin source repository into wp-content/plugins/.
+  This causes WordPress's URL resolution to inject absolute filesystem paths into
+  asset URLs. Copy files; do not link.
+
 ## Where to read more
 
 Architecture decisions live in `docs/decisions/` as numbered ADRs. The ones most useful early:
