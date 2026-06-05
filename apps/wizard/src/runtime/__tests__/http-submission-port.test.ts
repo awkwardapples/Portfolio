@@ -7,7 +7,7 @@ import type { SubmissionRequest } from '@/runtime/submission';
 // ---------------------------------------------------------------------------
 
 const BASE_OPTIONS = {
-  restUrl: 'https://example.test/wp-json/qw/v1/submit',
+  restUrl: 'https://example.test/wp-json/qw/v1',
   restNonce: 'test-nonce-123',
 };
 
@@ -173,5 +173,37 @@ describe('httpSubmissionPort — wire contract', () => {
     const errMock = vi.fn().mockRejectedValue(new Error('network fail'));
     await portWithMock(errMock).submit(VALID_REQUEST);
     expect(errMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('httpSubmissionPort — URL construction (F5 regression)', () => {
+  it('POSTs to {restUrl}/submit, not directly to restUrl', async () => {
+    const fetchSpy = vi
+      .fn()
+      .mockResolvedValue(fakeResponse(200, JSON.stringify({ reference: 'GOQW-1' })));
+    const port = httpSubmissionPort({
+      restUrl: 'http://example.com/wp-json/qw/v1',
+      restNonce: 'nonce123',
+      fetchImpl: fetchSpy as unknown as typeof fetch,
+    });
+    await port.submit(VALID_REQUEST);
+    expect(fetchSpy).toHaveBeenCalledOnce();
+    const [calledUrl] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    expect(calledUrl).toBe('http://example.com/wp-json/qw/v1/submit');
+  });
+
+  it('handles restUrl with trailing slash (no double-slash in result)', async () => {
+    const fetchSpy = vi
+      .fn()
+      .mockResolvedValue(fakeResponse(200, JSON.stringify({ reference: 'GOQW-1' })));
+    const port = httpSubmissionPort({
+      restUrl: 'http://example.com/wp-json/qw/v1/',
+      restNonce: 'nonce123',
+      fetchImpl: fetchSpy as unknown as typeof fetch,
+    });
+    await port.submit(VALID_REQUEST);
+    const [calledUrl] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    expect(calledUrl).toBe('http://example.com/wp-json/qw/v1/submit');
+    expect(calledUrl).not.toContain('//submit');
   });
 });

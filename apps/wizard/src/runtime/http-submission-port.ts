@@ -6,7 +6,8 @@ import type { SubmissionPort, SubmissionPortResult, SubmissionRequest } from '@/
 // ---------------------------------------------------------------------------
 
 export interface HttpPortOptions {
-  /** Absolute REST URL from PublicConfig (e.g. https://example.com/wp-json/qw/v1/submit). */
+  /** REST namespace base URL from PublicConfig (e.g. https://example.com/wp-json/qw/v1).
+   *  The port appends the per-endpoint path; see ADR-0015 amendment 2026-06-05. */
   readonly restUrl: string;
   /** WP REST nonce from PublicConfig. */
   readonly restNonce: string;
@@ -74,9 +75,14 @@ export function httpSubmissionPort(options: HttpPortOptions): SubmissionPort {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
+      // PHP emits the namespace base (qw/v1); we own the per-endpoint path.
+      const endpointUrl = options.restUrl.endsWith('/')
+        ? `${options.restUrl}submit`
+        : `${options.restUrl}/submit`;
+
       let response: Response;
       try {
-        response = await fetchImpl(options.restUrl, {
+        response = await fetchImpl(endpointUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
