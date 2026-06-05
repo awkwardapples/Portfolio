@@ -88,3 +88,22 @@ This explicitly does NOT pave the road to an operator-editing platform (c).
 Operator content editing would require: a content schema, a content API,
 admin UI, preview tooling, content sync, validation tooling. None of those
 exist; none are planned. Revisit only on explicit demand.
+
+---
+
+## Amendment — 2026-06-05: Reference wizards must exercise built capabilities (Step 5.2)
+
+Step 4.8 built the photo upload capability — `PhotoField`, `PhotoStore`,
+`MediaValidator`, `media_json` column — but did not update the fencing reference
+wizard config to use it. The capability shipped but was not exercised in the
+canonical reference deployment.
+
+This is corrected in Step 5.2: the fencing config gains a `site_photos` step.
+Going forward, the discipline is: **a capability is not considered shipped until
+at least one reference wizard exercises it.** Adding the capability and adding
+its reference usage are part of the same step, not separate steps.
+
+This applies retroactively to the planning discipline: every future
+capability-adding step must include either (a) updating an existing reference
+wizard to exercise it, or (b) explicit justification why no reference exercise
+is appropriate.

@@ -242,3 +242,22 @@ No payload structure changes in this step.
 - The table redesign requires a fresh activation on existing dev installs
   (deactivate, drop `wp_goqw_submissions`, reactivate). No migration path for
   production because there is no production yet.
+
+---
+
+## Amendment — 2026-06-05: Endpoint path ownership (Step 5.2)
+
+The `PublicConfig.restUrl` field emitted by PHP is the **REST namespace base URL**
+(e.g. `http://example.com/wp-json/qw/v1`), NOT a full endpoint URL. The TypeScript
+client owns the per-endpoint path: the submission port appends `/submit` before
+issuing the POST.
+
+This contract is now made explicit. Prior to Step 5.2 the two sides had drifted —
+PHP emitted the namespace base, but `httpSubmissionPort` used it directly as the
+POST target, producing a 404. The Step 5.2 fix appends `/submit` in the TS port.
+A new test in `http-submission-port.test.ts` asserts the constructed URL ends
+with `/submit`, preventing regression.
+
+Future endpoints in the `qw/v1` namespace (idempotency, status query, etc.) will
+follow the same pattern: PHP emits the namespace; TypeScript appends the per-
+endpoint path.
