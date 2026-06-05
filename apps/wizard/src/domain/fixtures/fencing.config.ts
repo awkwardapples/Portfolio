@@ -96,6 +96,22 @@ export const fencingWizardConfig: WizardConfig = {
       ],
     },
     {
+      id: 'site_photos',
+      title: 'Site photos',
+      description: 'Add photos of the area so we can give a more accurate estimate.',
+      fields: [
+        {
+          id: 'site_photos',
+          key: 'site_photos',
+          type: 'photo',
+          label: 'Photos of the area (optional)',
+          maxCount: 5,
+          required: false,
+          help: 'Up to 5 photos. We accept JPEG, PNG, and WebP. Photos are compressed automatically before upload.',
+        },
+      ],
+    },
+    {
       id: 'contact',
       title: 'Your details',
       description: 'Where should we send your quote?',
