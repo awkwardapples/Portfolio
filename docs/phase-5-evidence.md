@@ -226,3 +226,118 @@ Change: `warnIfPathMismatch` function added to main.tsx. No new npm dependencies
 | `b86ef6b` | feat(plugin): activation orchestration — Site Root + rewrites         |
 | `c9782ca` | feat(plugin): SiteRenderer — React mount node on Site Root page       |
 | `cdb4605` | feat(wizard): main.tsx reads data-initial-path as diagnostic hint     |
+
+---
+
+## Step 5.2 Evidence
+
+_Compiled: 2026-06-05 — Covers Step 5.2 (OV-001 Remediation)_
+
+### Summary
+
+Step 5.2 closes OV-001, the six-finding manual WordPress verification audit
+from June 2026. Two code fixes (F5, F6), two operational items (F1, F3), two
+formally deferred with triggers (F2, F4).
+
+### Gate Results
+
+#### JavaScript / TypeScript (apps/wizard)
+
+| Gate             | Result                                                           |
+| ---------------- | ---------------------------------------------------------------- |
+| `pnpm lint`      | 0 errors, 0 warnings                                             |
+| `pnpm typecheck` | 0 errors                                                         |
+| `pnpm test`      | **390 / 390 passing** (25 test files, +6 from Step 5.2)          |
+| `pnpm build`     | Clean. 247.22 kB JS (72.89 kB gzip), 17.31 kB CSS (4.03 kB gzip) |
+
+#### PHP (plugins/quote-wizard)
+
+No PHP behavior changes in Step 5.2 (only version constant bump).
+
+| Gate               | Result                                |
+| ------------------ | ------------------------------------- |
+| `composer lint`    | 0 errors, 0 warnings (PHPCS)          |
+| `composer analyse` | No errors (PHPStan level 8)           |
+| `composer test`    | Exit 0 — 82 tests (2 skipped, no new) |
+
+### New Test Breakdown (Step 5.2)
+
+| Suite                     | File                                                       | New Tests    |
+| ------------------------- | ---------------------------------------------------------- | ------------ |
+| URL construction (F5)     | `src/runtime/__tests__/http-submission-port.test.ts`       | 2            |
+| Fencing config validation | `src/domain/fixtures/__tests__/fencing-validation.test.ts` | 4 (new file) |
+| **Total new**             |                                                            | **+6**       |
+
+Starting count was 384. fencing-validation.test.ts is a new file covering:
+wizard validation, pricing validation, step count/order, and photo field shape.
+
+### Acceptance Criteria
+
+| #   | Criterion                                                                                     | Status                       |
+| --- | --------------------------------------------------------------------------------------------- | ---------------------------- |
+| 1   | httpSubmissionPort POSTs to `{restUrl}/submit` regardless of trailing slash                   | ✅ 2 new unit tests          |
+| 2   | Fencing config has exactly 5 steps in order: dimensions, extras, site_photos, contact, review | ✅ New test                  |
+| 3   | site_photos step has photo field with maxCount: 5 and required: false                         | ✅ New test                  |
+| 4   | validateWizardConfig(fencingWizardConfig) returns ok                                          | ✅ New test                  |
+| 5   | Plugin version constant is 0.2.0                                                              | ✅ git diff quote-wizard.php |
+| 6   | All gates green: lint 0/0, typecheck 0 errors, Vitest 390, build clean, Pest unchanged        | ✅ Gates passed              |
+| 7   | Bundle gzip ≤ 80 KB after 5.2                                                                 | ✅ 72.89 kB (under 80 kB)    |
+| 8   | docs/onboarding.md contains deploy procedure section                                          | ✅ File review               |
+| 9   | docs/technical-debt.md contains OV-001 findings F1–F6 with status and triggers                | ✅ File review               |
+| 10  | docs/current-state.md reflects post-5.2 status accurately                                     | ✅ File review               |
+| 11  | docs/handoff.md directs new contributors to right starting documents                          | ✅ File review               |
+| 12  | docs/roadmap.md shows 5.2 complete, 5.3 gated, deferred section refers to technical-debt.md   | ✅ File review               |
+| 13  | ADR-0015 and ADR-0014 amendments landed                                                       | ✅ File review               |
+| 14  | All five docs tell internally consistent story                                                | ✅ Cross-document review     |
+| 15  | FSM core (src/domain/runtime/\*\*) is byte-unchanged                                          | ✅ git diff                  |
+| 16  | PHP submission pipeline is byte-unchanged (only version bump)                                 | ✅ git diff                  |
+| 17  | Site shell (src/site/\*\*) is byte-unchanged                                                  | ✅ git diff                  |
+| 18  | Decking config is byte-unchanged                                                              | ✅ git diff                  |
+| 19  | No new dependencies                                                                           | ✅ git diff package.json     |
+
+### Criterion 21 — Operational Verification (pending)
+
+**Status: Not yet recorded.** Step 5.3 is gated on this criterion.
+
+Criterion 21 requires a human to deploy the 5.2 artifact to a real WordPress
+install (LocalWP is sufficient) using the procedure documented in
+`docs/onboarding.md` → "Deploying the plugin to a WordPress install", then verify:
+
+- Submission POST returns 200 with reference
+- `wp_goqw_submissions` row appears with `status = 'persisted'` or `'forwarded'`
+- Photo upload step renders and accepts files in the fencing wizard
+- Photos appear in `media_json` of the persisted row
+
+Record results here when complete.
+
+### OV-001 Finding Summary
+
+| Finding | Description                                              | Resolution                        |
+| ------- | -------------------------------------------------------- | --------------------------------- |
+| F1      | No documented deploy procedure                           | RESOLVED — onboarding.md          |
+| F2      | FrontPagePolicy over-cautious with default Sample Page   | DEFERRED — trigger documented     |
+| F3      | Plugin version not tracking releases                     | RESOLVED — bumped to 0.2.0        |
+| F4      | Corrupted URL symptom (transient)                        | DEFERRED — not reproducible       |
+| F5      | Submission POST URL wrong (namespace base, not endpoint) | RESOLVED — TS appends /submit     |
+| F6      | Fencing reference wizard had no photo step               | RESOLVED — site_photos step added |
+
+### Changes in Step 5.2
+
+**Code changes:**
+
+- `apps/wizard/src/runtime/http-submission-port.ts` — appends `/submit` to `restUrl`
+- `apps/wizard/src/runtime/__tests__/http-submission-port.test.ts` — BASE_OPTIONS restUrl updated to namespace base; 2 new URL construction tests
+- `apps/wizard/src/domain/fixtures/fencing.config.ts` — `site_photos` step inserted between `extras` and `contact`
+- `apps/wizard/src/domain/fixtures/__tests__/fencing-validation.test.ts` — new file, 4 tests
+- `plugins/quote-wizard/quote-wizard.php` — `GOQW_VERSION` bumped `0.1.0` → `0.2.0`
+
+**Documentation changes:**
+
+- `docs/decisions/0015-submission-pipeline.md` — amendment: endpoint path ownership
+- `docs/decisions/0014-reference-template-product-scope.md` — amendment: reference exercise discipline
+- `docs/onboarding.md` — added deploy procedure section
+- `docs/technical-debt.md` — OV-001 F1–F6 catalog + standing planning discipline
+- `docs/current-state.md` — post-5.2 status
+- `docs/handoff.md` — reoriented for post-OV-001 reality
+- `docs/roadmap.md` — 5.2 complete, 5.3 gated, deferred section updated
+- `docs/phase-5-evidence.md` — this section

@@ -1,135 +1,59 @@
-# Development Handoff
+# Handoff
 
-_Last updated: 2026-06-04_
+_Last updated: 2026-06-05_
 
-## Project
+## Status
 
-WordPress-based local lead generation wizard platform. A configurable multi-step quote wizard embeds into WordPress pages via a shortcode and collects answers, computes a price estimate, and submits to a WordPress REST endpoint which forwards to Make.com.
+Phase 4 functionally complete. Phase 5 in progress (5.0 + 5.1 + 5.2 done).
+System verified end-to-end in WordPress via OV-001 (June 2026). Six findings
+addressed in 5.2.
 
-## Completed Phases
+## What to read first if you're new
 
-- Phase 1 — complete
-- Phase 2 — complete
-- Phase 3 — complete
-- Step 4.0 — UX shell (design-system primitives)
-- Step 4.1 — Config schema + validation architecture
-- Step 4.2 — Wizard state machine (FSM + React adapter)
-- Step 4.3 — Pricing engine integration
-- Step 4.4 — React rendering layer
-- Step 4.5 — Vertical registry + config resolution
-- Step 4.6 — WordPress REST submission adapter — Phase 4 CLOSED
-- Step 4.7 — Service abstraction layer
-- **Step 4.8 — Photo upload pipeline (browser compression + server validation)**
-- **Step 5.0 — Site shell + reference pages**
-- **Step 5.1 — WordPress page mapping + production routing**
+1. `docs/roadmap.md` — single-page project shape and status.
+2. `docs/current-state.md` — what works right now.
+3. `docs/technical-debt.md` — known deferred work with triggers.
+4. `docs/onboarding.md` — how to develop, build, and deploy.
+5. ADRs in `docs/decisions/` in numerical order — record of every architectural
+   decision. Read 0014 first if you want to understand the product direction
+   (template-clone repository, not multi-tenant SaaS, not operator-editing CMS).
 
-## Where Things Stand
+## What to do first
 
-**Step 4.8 complete.** The wizard photo upload pipeline is fully implemented.
+If you are starting a new step:
 
-`PhotoField` accepts up to `maxCount` files, compresses them in-browser via canvas
-(2000 px / JPEG 0.85), stores base64 in a volatile `PhotoStore` (not serialised to
-sessionStorage), and dispatches metadata-only answers to the FSM. At submission time
-`createPhotoEnrichedPort` merges the base64 back in. On the server, `MediaValidator`
-enforces size, total, MIME, decode, magic-byte, and dimension checks before the row
-is persisted. `media_json` is stored separately from `answers_json` and forwarded to
-Make.com as a `media` array.
+1. Read this file. Read `current-state.md`. Read the most recent ADR amendment.
+2. Run all gates locally and confirm they match what `current-state.md` claims.
+   If they don't, that's a finding before you start any work.
+3. If your step affects the WordPress-deployed system, run OV-001-style
+   verification at the end. See the planning discipline in `technical-debt.md`.
 
-**Deployment prerequisite for photo fields**: update the Make.com workflow to handle
-the new `media[]` array before going live. See onboarding.md "Photo upload deployment
-checklist".
+## What NOT to do
 
-For dev: `pnpm dev` from `apps/wizard`, open `localhost:5173`.
+- Do not add new architectural surface without explicit approval. The system
+  is structurally complete for its target (b — reusable template repository).
+- Do not begin a new development step until the prior step's verification is
+  recorded in evidence and the documentation set (current-state, handoff,
+  technical-debt, roadmap, relevant ADRs) reflects reality.
+- Do not skip the deploy procedure in `onboarding.md`. The OV-001 episode (June 2026) demonstrated what happens when redeployment is improvised.
 
-**384 Vitest tests passing. Zero lint warnings. Zero TypeScript errors. Build clean.**
-**PHP: composer lint 0/0, composer analyse no errors, composer test 82/82 (2 skipped).**
+## Next candidate steps (in order of recommendation)
 
-## What Was Just Built (Step 5.1)
+1. **Step 5.3 — Adaptation runbook.** Now that OV-001 is closed, document the
+   complete workflow for cloning this template for a new client. This is the
+   step that turns "we have a template" into "a person can deploy it."
+   _Gated on: 5.2 completion + OV-001 criterion 21 (operational verification)._
 
-### New files (plugin)
+2. **Step 5.4 — Make.com workflow documentation.** Operational, not code.
+   Captures how a deployer configures the downstream automation.
 
-| File                               | Purpose                                                                   |
-| ---------------------------------- | ------------------------------------------------------------------------- |
-| `src/Routing/SiteRoutes.php`       | PHP list of the 5 recognized paths; normalize() + is_recognized()         |
-| `src/Routing/SiteRootPage.php`     | Idempotent lifecycle for the single WP page backing all routes            |
-| `src/Routing/FrontPagePolicy.php`  | Sets front page on activation; admin notice if pre-configured             |
-| `src/Routing/RewriteRegistrar.php` | WP rewrite rules + goqw_route query var                                   |
-| `src/Routing/RouteInterceptor.php` | pre_get_posts filter — rewrites main query to Site Root                   |
-| `src/Routing/SelfHealer.php`       | init check — recreates Site Root if missing                               |
-| `src/Routing/SiteRenderer.php`     | the_content filter — outputs `<div id="qw-root" data-initial-path="...">` |
-| `tests/Unit/Routing/*.php`         | 7 test files, 41 new tests; includes CrossLanguageRoutesTest              |
+3. **Step 6 — Second client deployment.** The empirical test of the template.
 
-### Modified files (plugin + wizard)
+Other candidate steps (deferred until triggered):
 
-| File                                    | Change                                                          |
-| --------------------------------------- | --------------------------------------------------------------- |
-| `src/Activator.php`                     | Added setup_site_routing() + 11th option                        |
-| `src/Plugin.php`                        | Wired 6 new routing hooks                                       |
-| `uninstall.php`                         | Deletes Site Root page + notice transient                       |
-| `phpunit.xml`                           | Fixed bootstrap (was vendor/autoload.php → tests/bootstrap.php) |
-| `tests/bootstrap.php`                   | Added WP class stubs + time constants                           |
-| `apps/wizard/src/main.tsx`              | Reads data-initial-path as diagnostic hint                      |
-| `docs/decisions/0010-build-pipeline.md` | Amendment: WP routing strategy (Step 5.1)                       |
-
-## What Was Built Before (Step 5.0)
-
-### New files
-
-| File                                                    | Purpose                                                               |
-| ------------------------------------------------------- | --------------------------------------------------------------------- |
-| `src/site/content/site-content.ts`                      | Site-wide copy (business name, contact, hero, nav CTA)                |
-| `src/site/content/services-content.ts`                  | Service entries rendered on / and /services                           |
-| `src/site/content/work-content.ts`                      | Portfolio entries rendered on /our-work                               |
-| `src/site/content/__tests__/content.test.ts`            | Structural integrity tests (9 tests)                                  |
-| `src/site/routing/Link.tsx`                             | pushState link — dispatches goqw:navigate, modifier-key aware         |
-| `src/site/routing/Router.tsx`                           | Pure function of pathname prop; updates document.title                |
-| `src/site/routing/routes.ts`                            | Static route table (5 entries); matchRoute() with trailing-slash norm |
-| `src/site/routing/__tests__/routes.test.ts`             | Route table + matchRoute tests (13 tests)                             |
-| `src/site/pages/HomePage.tsx`                           | Hero + services preview + CTA                                         |
-| `src/site/pages/ServicesPage.tsx`                       | Full service descriptions + CTA                                       |
-| `src/site/pages/OurWorkPage.tsx`                        | Portfolio entries                                                     |
-| `src/site/pages/ContactPage.tsx`                        | Contact fields + quote CTA                                            |
-| `src/site/pages/QuotePage.tsx`                          | Wizard mount (selection logic moved from App.tsx)                     |
-| `src/site/layout/SkipLink.tsx`                          | Keyboard-accessible skip-to-main link                                 |
-| `src/site/layout/Nav.tsx`                               | Primary nav; aria-current; horizontal scroll on mobile                |
-| `src/site/layout/Header.tsx`                            | Site header with business name + Nav                                  |
-| `src/site/layout/Footer.tsx`                            | Business details + year                                               |
-| `src/site/layout/SiteShell.tsx`                         | Wraps every page: SkipLink, Header, main, Footer                      |
-| `src/site/SiteApp.tsx`                                  | Owns pathname state + navigation subscriptions                        |
-| `src/site/index.ts`                                     | Barrel: exports SiteApp                                               |
-| `docs/decisions/0016-site-shell-and-reference-pages.md` | ADR-0016                                                              |
-| `docs/phase-5-evidence.md`                              | Step 5.0 evidence report                                              |
-
-### Modified files
-
-| File                                                      | Change                                                           |
-| --------------------------------------------------------- | ---------------------------------------------------------------- |
-| `src/App.tsx`                                             | Reduced to one-line `<SiteApp />` mount                          |
-| `apps/wizard/eslint.config.js`                            | ESLint boundary: site layer banned from @/domain/runtime/pricing |
-| `docs/decisions/0014-reference-template-product-scope.md` | Amendment: concrete pages, not schema-driven (5.0)               |
-
-## Next Steps
-
-### Operational (first real client deployment)
-
-- **Deploy to WordPress**: install the plugin, activate it. Site Root page is
-  created automatically. Verify: `wp option get goqw_site_root_page_id` > 0,
-  `wp rewrite list | grep goqw` shows 4 rules, all five routes serve the SPA.
-- **Front page**: if the WP install had a pre-existing front page, the admin
-  notice will explain how to point it to the Site Root page manually.
-- **Shortcode wiring**: `httpSubmissionPort` is production-ready; the dev fallback
-  in `QuotePage.tsx` cuts over automatically when `config.restUrl` is non-empty.
-- **Make.com workflow**: before adding decking to a production workflow, ensure the
-  workflow handles `wizardId: 'decking'` payload shape.
-- **Caching**: tell caching plugins to exclude the Site Root page from full-page
-  caching (plugin sends `Cache-Control: no-cache` but some bypass it).
-
-### Phase 6 — second client cycle
-
-- Clone the template repo for a new client.
-- Update `src/site/content/` modules with real business copy.
-- Add/remove service verticals as needed.
-- Deploy.
+- FrontPagePolicy heuristic refinement (OV-001-F2 trigger).
+- Idempotency / rate limiting / replay UI (operational hardening; deferred).
+- Media retention policy (deferred per 4.8 spec).
 
 ## Core Architecture
 
@@ -164,16 +88,12 @@ src/App.tsx            Entry. One-line mount of <SiteApp />.
 - Phases: `idle → answering → validating → submitting → submit_success | submit_failure`
 - `validating` is instantaneous (auto-advanced by WizardStore immediately after entry)
 
-### Pricing
+### Submission pipeline
 
-- `computePrice(answers, wizard, pricing): PricingResult` — integer pence only
-- Evaluation: base×qty → modifiers → extras → clamp → round → spread
-- Gate: pricing must be valid to enter `submitting`; invalid returns to `answering`
-- Display: `PriceSummary` shown when `price.valid === true`; updates live
-
-### ReviewField exception
-
-`ReviewField` uses `useWizardSelector` internally (Option A). It is the **only** field renderer that does not follow the pure prop-driven pattern. This is documented in the file.
+- `httpSubmissionPort`: appends `/submit` to `restUrl` namespace base (F5 fix, ADR-0015 amendment 2026-06-05)
+- `devSubmissionPort`: fallback when `config.restUrl === ''`
+- HTTP 200 → `SUBMIT_SUCCEEDED`; all other outcomes → `SUBMIT_FAILED`
+- No internal retry: retry is a user-initiated FSM event (`SUBMIT_RETRY`)
 
 ## Core Constraints (unchanged)
 
@@ -190,31 +110,21 @@ src/App.tsx            Entry. One-line mount of <SiteApp />.
 - ADR-0012: flat UI, no gradients, no blur, no spinners (Skeleton only), no inline styles, no hex in components, no marketing language, no emoji
 - PublicConfig v2 lockstep: PHP plugin and JS bundle must be upgraded together
 
-## Workflow
-
-1. Plan first, wait for approval
-2. Implement incrementally
-3. Verify: `pnpm lint` → `pnpm typecheck` → `pnpm test` → `pnpm build`
-4. Produce evidence report
-
-## Testing
-
-Vitest in `apps/wizard`. Node environment only (`vitest.config.ts`). Include pattern: `src/**/*.test.ts`. Component tests (React rendering) require a separate jsdom config decision — currently deferred.
-
 ## Key Files
 
-| File                                      | Purpose                                                   |
-| ----------------------------------------- | --------------------------------------------------------- |
-| `src/site/SiteApp.tsx`                    | Application root; pathname state + site shell             |
-| `src/site/pages/QuotePage.tsx`            | Quote page; wizard selection + mount                      |
-| `src/site/content/site-content.ts`        | Site-wide copy — edit for each client                     |
-| `src/domain/registry/index.ts`            | Registry public surface                                   |
-| `src/domain/registry/verticals.ts`        | VERTICALS map + FALLBACK_VERTICAL_ID                      |
-| `src/domain/fixtures/fencing.config.ts`   | Canonical reference config (WizardConfig + PricingConfig) |
-| `src/domain/runtime/transition.ts`        | State machine transition function                         |
-| `src/domain/pricing/pricing-engine.ts`    | Pure pricing computation                                  |
-| `src/runtime/WizardStore.ts`              | Effect orchestration                                      |
-| `src/components/WizardShell.tsx`          | Phase → screen mapping                                    |
-| `src/components/steps/field-registry.tsx` | Closed FieldType → renderer map                           |
-| `src/config-loader.ts`                    | Reads window.GOQW_CONFIG; falls back to safe defaults     |
-| `docs/decisions/`                         | All ADRs — read before making structural changes          |
+| File                                      | Purpose                                                    |
+| ----------------------------------------- | ---------------------------------------------------------- |
+| `src/site/SiteApp.tsx`                    | Application root; pathname state + site shell              |
+| `src/site/pages/QuotePage.tsx`            | Quote page; wizard selection + mount                       |
+| `src/site/content/site-content.ts`        | Site-wide copy — edit for each client                      |
+| `src/domain/registry/index.ts`            | Registry public surface                                    |
+| `src/domain/registry/verticals.ts`        | VERTICALS map + FALLBACK_VERTICAL_ID                       |
+| `src/domain/fixtures/fencing.config.ts`   | Canonical reference config (WizardConfig + PricingConfig)  |
+| `src/domain/runtime/transition.ts`        | State machine transition function                          |
+| `src/domain/pricing/pricing-engine.ts`    | Pure pricing computation                                   |
+| `src/runtime/WizardStore.ts`              | Effect orchestration                                       |
+| `src/runtime/http-submission-port.ts`     | Production submission adapter (appends /submit to restUrl) |
+| `src/components/WizardShell.tsx`          | Phase → screen mapping                                     |
+| `src/components/steps/field-registry.tsx` | Closed FieldType → renderer map                            |
+| `src/config-loader.ts`                    | Reads window.GOQW_CONFIG; falls back to safe defaults      |
+| `docs/decisions/`                         | All ADRs — read before making structural changes           |

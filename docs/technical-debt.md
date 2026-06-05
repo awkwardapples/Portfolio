@@ -4,6 +4,80 @@ This file records conscious deferral decisions: things we knowingly skipped
 and the trigger condition that should prompt revisiting them. It is not a
 backlog; it is a record of trade-offs made deliberately.
 
+## OV-001 findings (from manual WordPress verification, June 2026)
+
+### OV-001-F1 — Plugin deployment procedure (RESOLVED in 5.2)
+
+**Status:** Documented in `docs/onboarding.md` as of Step 5.2.
+**Trigger to revisit:** If deploy procedure becomes complex enough to warrant
+automation, consider a `deploy-plugin` script.
+
+---
+
+### OV-001-F2 — FrontPagePolicy mistakes default Sample Page for deliberate config
+
+**Status:** Documented; not yet fixed in code.
+**Severity:** Medium. Affects first-deployment user experience.
+**Trigger to revisit:** Before first real client deployment with a custom front
+page configuration, OR if a deployer reports the manual `wp option update
+page_on_front` step as friction. The fix is a heuristic refinement in
+`FrontPagePolicy::apply_on_activation()` to recognize the WP default Sample Page
+(slug = `sample-page` OR ID 2 in fresh installs) as overwriteable.
+
+---
+
+### OV-001-F3 — Plugin version not tracking releases (RESOLVED in 5.2)
+
+**Status:** Bumped to 0.2.0 in Step 5.2.
+**Trigger to revisit:** Establish a discipline that every release-significant
+step bumps the plugin version. Recommended semver from this point forward:
+patch for fixes, minor for new capabilities, major for breaking changes.
+
+---
+
+### OV-001-F4 — Corrupted URL symptom (transient, cause uncertain)
+
+**Status:** Symptom not reproducible after clean redeploy. Suspected cause: stale
+HTML cached during half-deployed rebuild state, since flushed.
+**Severity:** Low (if non-recurring).
+**Trigger to revisit:** If the corrupted-URL symptom recurs at any point,
+investigate by capturing the live HTML the server is producing (not the browser
+request URL) at the moment of failure.
+
+---
+
+### OV-001-F5 — Submission POST URL wrong (RESOLVED in 5.2)
+
+**Status:** Fixed in 5.2 (TS appends `/submit` to namespace base URL).
+See ADR-0015 amendment 2026-06-05 for the contract clarification.
+
+---
+
+### OV-001-F6 — Fencing reference wizard had no photo step (RESOLVED in 5.2)
+
+**Status:** Fixed in 5.2 (`site_photos` step added to `fencing.config.ts`).
+**Trigger to revisit:** None. Capability is now exercised in the reference
+deployment.
+
+---
+
+## Standing planning discipline addition (from OV-001)
+
+Every step that affects the WordPress-deployed system must include verification
+that the deployed artifact actually works end-to-end in WordPress, not just that
+the codebase passes gates. The discipline applies to:
+
+- Any code change in `apps/wizard/src/**` that affects the bundle.
+- Any code change in `plugins/quote-wizard/src/**`.
+- Any change to the wire contract between PHP and TypeScript.
+
+The verification step is operational, not automated. It must include at minimum:
+deploy the new artifact per the onboarding procedure, exercise the changed
+surface in a real WordPress install (LocalWP is sufficient), and record results
+in the step's evidence report.
+
+---
+
 ## Media Retention Policy (deferred from Step 4.8)
 
 **What was skipped:** Automatic pruning of photo data from `wp_goqw_submissions.media_json`.

@@ -1,8 +1,51 @@
 # Current State
 
-_Last updated: 2026-06-04_
+_Last updated: 2026-06-05 (post Step 5.2)_
 
-## Completed
+## What's working
+
+- Wizard engine (FSM, validation, navigation, persistence).
+- Pricing engine (computePrice, gate enforcement).
+- Submission pipeline end-to-end in WordPress (validate → persist → forward → respond).
+- Site shell with 5 routes (Home, Services, Our Work, Contact, Quote).
+- Service abstraction (fencing + decking verticals).
+- Photo upload (multi-photo, browser compression, server-side validation, base64 in payload).
+- WordPress page mapping (single root page + rewrite rules + non-invasive front-page policy).
+
+## Gate state (last verified)
+
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: 0 errors
+- `pnpm test`: 390/390 (+6 from 5.2: 2 URL construction, 4 fencing config)
+- `pnpm build`: clean, ~73 kB gzip bundle
+- `composer test`: passing (82 tests at last count)
+- `composer analyse`: clean
+
+## OV-001 verification
+
+Completed June 2026. Six findings; all resolved or formally deferred. See
+`docs/technical-debt.md` for the catalog. The system has been verified end-to-end
+in a real WordPress install (LocalWP).
+
+## What's NOT yet built
+
+- Adaptation runbook for clients cloning the template (Step 5.3 candidate).
+- Make.com workflow documentation (operational, separate from code).
+- Media retention policy (deferred per 4.8 spec).
+- Idempotency for submission retry (deferred; trigger: first observed duplicate).
+- Rate limiting on submit endpoint (deferred; trigger: >100 submissions/day).
+- Admin replay UI for failed forwards (deferred; trigger: ops team need).
+- Second client deployment (Step 6 candidate; trigger: business decision).
+
+## Critical context
+
+- The plugin is a template, not a feature plugin. It assumes the WordPress
+  install is clean (no conflicting existing content at `/services`, `/contact`,
+  etc., and either no front page configured or Sample Page only).
+- Every step from this point forward includes operational verification, not
+  just code gates. See planning discipline addition in `docs/technical-debt.md`.
+
+## Completed Steps
 
 - Step 4.0 — UX shell (design-system primitives: Button, Input, IconButton, Skeleton, Tooltip)
 - Step 4.1 — Config schema + validation architecture (Zod schemas, cross-reference validation, fencing fixture)
@@ -12,32 +55,10 @@ _Last updated: 2026-06-04_
 - Step 4.5 — Vertical registry + config resolution (closed registry, resolveVertical, PublicConfig v2, wizardId)
 - Step 4.6 — WordPress REST submission adapter — Phase 4 CLOSED
 - Step 4.7 — Service abstraction layer
-- **Step 4.8 — Photo upload pipeline (browser compression + server validation)**
-- **Step 5.0 — Site shell + reference pages**
-- **Step 5.1 — WordPress page mapping + production routing**
-
-## Current Step
-
-**Step 4.8 complete.** The wizard now supports multi-photo upload fields.
-Browser-side: `compressImage` (canvas, 2000 px max, JPEG 0.85), `PhotoStore`
-(volatile base64 map, not persisted to sessionStorage), `PhotoField` (thumbnails,
-remove, re-attach indicator). Server-side: `MediaValidator` (6-step: size,
-total, MIME, base64 decode, magic-byte, dimensions), `media_json LONGTEXT NULL`
-column on `wp_goqw_submissions`, Forwarder carries media array to Make.com.
-No new JS dependencies — all native canvas API.
-
-Next: operational work — real client deployment, or Phase 6 (second client cycle).
-
-## Test Count
-
-**384 Vitest tests passing** (24 test files, +22 from Step 4.8).
-PHP Pest: **82 tests passing, 2 skipped** (GD extension unavailable for real JPEG
-generation in the test environment; all server-side validation logic exercised).
-Breakdown: 2 Example + 7 PublicConfig + 3 Settings + 10 SubmissionController
-
-- 8 MediaValidator (6 pass, 2 skip) + 17 SiteRoutes + 1 CrossLanguage
-- 9 SiteRootPage + 8 FrontPagePolicy + 3 RewriteRegistrar
-- 7 RouteInterceptor + 4 SelfHealer + 2 SettingsTest.
+- Step 4.8 — Photo upload pipeline (browser compression + server validation)
+- Step 5.0 — Site shell + reference pages
+- Step 5.1 — WordPress page mapping + production routing
+- **Step 5.2 — OV-001 remediation (F5+F6 code fixes; F1+F3 operational; F2+F4 deferred with triggers)**
 
 ## Key Architectural Facts
 
@@ -65,21 +86,10 @@ Strict ordering: validate → persist → forward → respond.
 | 500         | DB failure; nothing forwarded                         |
 | 502         | Persisted but forward failed; data is safe            |
 
-- `httpSubmissionPort`: production port; uses `restUrl` + `restNonce` from PublicConfig.
+- `httpSubmissionPort`: production port; appends `/submit` to `restUrl` namespace base (ADR-0015 amendment 2026-06-05).
 - `devSubmissionPort`: fallback when `config.restUrl === ''` (standalone Vite dev).
 - `WizardStore.buildRequest()`: builds `SubmissionRequest` including pricing snapshot
   and `clientTimestamp: new Date().toISOString()`.
-
-### SubmissionPort interface (redesigned in 4.6)
-
-```typescript
-submit(request: SubmissionRequest): Promise<SubmissionPortResult>
-// Never throws; SubmissionPortResult = { ok: true, reference } | { ok: false, error }
-```
-
-### SubmissionErrorCode (expanded in 4.6)
-
-`'network_unreachable' | 'request_timeout' | 'forwarder_unavailable' | 'bad_response' | 'validation_failed' | 'unauthorized' | 'server_error'`
 
 ### Vertical registry (`src/domain/registry/**`)
 
@@ -97,38 +107,7 @@ submit(request: SubmissionRequest): Promise<SubmissionPortResult>
 - PHP: `PublicConfig::CONTRACT_VERSION = 2`, `goqw_wizard_id` option seeded on activation
 - Lockstep requirement: PHP plugin and JS bundle must be upgraded together
 
-### Domain layer (`src/domain/**`)
-
-- Pure, React-free, framework-agnostic
-- `transition(state, event, config): WizardState` — total, pure, no side effects
-- `computePrice(answers, wizard, pricing): PricingResult` — integer pence only, deterministic
-- Pricing gate: `validating + SUBMIT_REQUESTED → answering (invalid) or submitting (valid)`
-
-### Runtime layer (`src/runtime/**`)
-
-- `WizardStore`: bridges FSM to React via `useSyncExternalStore`
-- `httpSubmissionPort`: production submission adapter (Step 4.6)
-- `sessionStorageAdapter`: persists answers across page reloads within tab
-- `devSubmissionPort` in QuotePage: fallback when `restUrl` is empty
-
-### PHP layer (`plugins/quote-wizard/`)
-
-- `SubmissionController`: validate → persist → forward → respond (ADR-0015)
-- `SubmissionRepository`: `INSERT` + `mark_forwarded` / `mark_forward_failed`
-- `Forwarder`: synchronous `wp_remote_post` to Make.com webhook (10 s timeout)
-- `Schema`: redesigned for 4.6 wire contract (`wizard_id`, `answers_json`, etc.)
-- PHP toolchain: pest 2.33.2 / phpunit 10.5.9 (PHP 8.1 compatibility)
-
-### Service selection layer (Step 4.7 — ADR-0013 amendment)
-
-- Two reference verticals: `fencing` (£325/m base) and `decking` (£250/m base).
-- `listEnabledServiceIds(override?)`: returns all registry services or filters by `PublicConfig.enabledServiceIds`.
-- `resolveService(id)`: alias of `resolveVertical` for selection-layer code.
-- `QuotePage`: shows `ServiceSelector` when multiple services enabled; auto-selects and bypasses selector when exactly one service is enabled; falls back to `resolveFallbackVertical()` when all configured ids are unknown.
-- `ServiceSelector` + `ServiceCard`: minimal accessible selection UI; moved to QuotePage in Step 5.0.
-- `goqw_enabled_services` WP option: CSV of enabled service ids; empty = all services offered.
-
-## WordPress Routing Layer (Step 5.1)
+### WordPress Routing Layer (Step 5.1)
 
 | Class                      | What                                                                                     |
 | -------------------------- | ---------------------------------------------------------------------------------------- |
@@ -141,37 +120,10 @@ submit(request: SubmissionRequest): Promise<SubmissionPortResult>
 | `Routing\SiteRenderer`     | `the_content` filter (priority 5) — outputs `<div id="qw-root" data-initial-path="...">` |
 | `CrossLanguageRoutesTest`  | Parses routes.ts and asserts it matches SiteRoutes::PATHS exactly                        |
 
-Option seeded on activation: `goqw_site_root_page_id` (11th option total).
-
-## Approved Decisions
-
-- ADR-0010 amendment: WordPress page mapping strategy (Step 5.1)
-- ADR-0016: Site shell and reference pages (Step 5.0)
-- ADR-0014 amendment: concrete pages, not schema-driven (Step 5.0)
-- ADR-0015: Submission pipeline architecture (strict ordering, wire contract)
-- ADR-0015 amendment: wizardId/service equivalence (Step 4.7)
-- ADR-0013: Closed in-repo vertical registry
-- ADR-0013 amendment: per-session service selection, service/vertical synonymy (Step 4.7)
-- ADR-0014: Reference template product scope
-- ADR-0009 amendment: PublicConfig v2 hard bump for `wizardId`
-- ADR-0009 amendment: `enabledServiceIds` optional additive field (Step 4.7)
-- ADR-0005 amendment: 502 wire contract with `forwarder_unavailable` error code
-- ADR-0001 amendment: persist-before-forward formalised with status lifecycle
-
-## Deferred / Known Gaps
-
-- Component tests (StepRenderer, ServiceSelector, ServiceCard) — require jsdom Vitest config
-- Idempotency key for SUBMIT_RETRY duplicates (see ADR-0015 future work)
-- Rate limiting on `qw/v1/submit` (see ADR-0015 future work)
-- `h-10` Tailwind utility: used in primitives; spacing scale only defines keys 0–16
-- Analytics, autosave beyond session scope — Phase 5+
-- Media retention policy — photos stored indefinitely (see technical-debt.md)
-- Photo preview thumbnails in sessionStorage — UX polish, currently shows re-attach indicator
-
 ## Required Gates
 
 - lint (`pnpm lint` → 0 errors, 0 warnings)
 - typecheck (`pnpm typecheck`)
-- vitest (`pnpm test` → 384/384)
+- vitest (`pnpm test` → 390/390)
 - build (`pnpm -r build`)
 - PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 82/82 (2 skipped)
