@@ -404,3 +404,60 @@ All six OV-001 findings resolved or formally deferred. See
 
 Criterion 21 is hereby recorded as met. Step 5.3 (Adaptation Runbook) is no
 longer gated and may proceed.
+
+---
+
+## Step 5.3 — Adaptation Runbook (June 6, 2026)
+
+Documentation-only step. Single commit. No code changes.
+
+### What landed
+
+New file `docs/adaptation-runbook.md` — the complete clone-and-customize
+workflow for adapting the template to a new client using capabilities present as
+of post-5.2. Sections: prerequisites, architecture overview, eight-step
+adaptation procedure, deferred capabilities, common pitfalls, and a file-map
+reference table.
+
+Updated supporting documents: `docs/current-state.md` (5.3 complete),
+`docs/handoff.md` (status block and next-step pointer to 5.4, runbook added to
+reading list), `docs/roadmap.md` (step status updated), `docs/onboarding.md`
+(cross-reference callout at top of document).
+
+### Verification
+
+**V1 — Paths exist:** Every file path and WordPress option name in the runbook
+verified against the current repository state. All paths confirmed present:
+`site-content.ts`, `services-content.ts`, `work-content.ts`, `verticals.ts`,
+`fencing.config.ts`, `decking.config.ts`, `wizard-config.ts`, `pricing.ts`,
+`config-loader.ts`. All WP option names (`goqw_wizard_id`, `goqw_enabled_services`,
+`goqw_primary_color`, `goqw_webhook_url`) confirmed by reading `onboarding.md`
+and `public-config.ts`. No broken references found.
+
+**V2 — Worked example schema-valid:** A temporary
+`apps/wizard/src/domain/fixtures/boiler-installation.config.ts` was created
+containing the exact code from the runbook's worked example (Riverside Plumbing
+boiler installation vertical). `pnpm typecheck` passed with 0 errors — the
+config satisfies both `WizardConfig` and `PricingConfig` TypeScript types. The
+file was deleted before committing; only the runbook text remains.
+
+**V3 — Cross-document consistency:** `current-state.md`, `handoff.md`,
+`roadmap.md`, `onboarding.md`, and `adaptation-runbook.md` tell a consistent
+story: 5.3 complete, 5.4 up next, adaptation runbook is the canonical cloning
+guide.
+
+### Gate state
+
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: 0 errors
+- `pnpm test`: 390/390 (unchanged)
+- `pnpm build-plugin`: clean
+- `composer test`: 82/82 (unchanged)
+
+No code files modified — git diff confirms only `docs/` paths in commit c129d1a.
+
+### Out of scope (deferred per spec)
+
+- Make.com integration documentation → Step 5.4
+- Visual customization beyond primary color → Step 5.6+
+- Production deployment to IONOS → Step 6.0
