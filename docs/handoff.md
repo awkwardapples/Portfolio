@@ -4,9 +4,17 @@ _Last updated: 2026-06-05_
 
 ## Status
 
-Phase 4 functionally complete. Phase 5 in progress (5.0 + 5.1 + 5.2 done).
-System verified end-to-end in WordPress via OV-001 (June 2026). Six findings
-addressed in 5.2.
+Phase 4 complete. Phase 5 in progress.
+
+- 5.0, 5.1, 5.2 complete and verified end-to-end in WordPress (OV-001, June 2026).
+- 5.3 (Adaptation Runbook) is up next.
+
+The system is functionally complete for a single-client deployment. The remaining
+work is template adaptation, visual customization (driven by real client
+feedback), and production deployment for the first client.
+
+See `docs/roadmap.md` for the full sequence and `docs/product-vision.md` for
+the medium-term product direction.
 
 ## What to read first if you're new
 
@@ -37,23 +45,25 @@ If you are starting a new step:
   technical-debt, roadmap, relevant ADRs) reflects reality.
 - Do not skip the deploy procedure in `onboarding.md`. The OV-001 episode (June 2026) demonstrated what happens when redeployment is improvised.
 
-## Next candidate steps (in order of recommendation)
+## Next candidate steps
 
-1. **Step 5.3 — Adaptation runbook.** Now that OV-001 is closed, document the
-   complete workflow for cloning this template for a new client. This is the
-   step that turns "we have a template" into "a person can deploy it."
-   _Gated on: 5.2 completion + OV-001 criterion 21 (operational verification)._
+The roadmap is sequenced explicitly. See `docs/roadmap.md` for full detail.
 
-2. **Step 5.4 — Make.com workflow documentation.** Operational, not code.
-   Captures how a deployer configures the downstream automation.
+**Immediate next step:** Step 5.3 — Adaptation Runbook. Documents the clone-and-
+customize workflow using existing capabilities. No new code.
 
-3. **Step 6 — Second client deployment.** The empirical test of the template.
+**After 5.3:**
 
-Other candidate steps (deferred until triggered):
+- 5.4: Make.com integration documentation (operational).
+- 5.5: First client adaptation (handyman, priority subset of their services).
+- 5.6: Visual customization v1 (driven by 5.5 feedback).
+- 5.7: Handyman service expansion.
+- 6.0: First client production deployment to IONOS.
+- 6.1+: Second client onboarding.
 
-- FrontPagePolicy heuristic refinement (OV-001-F2 trigger).
-- Idempotency / rate limiting / replay UI (operational hardening; deferred).
-- Media retention policy (deferred per 4.8 spec).
+Each step is sized small and verified before the next begins. See
+`docs/roadmap.md` "Step rationale and dependencies" for why each step is
+shaped the way it is.
 
 ## Core Architecture
 

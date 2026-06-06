@@ -46,17 +46,22 @@ request URL) at the moment of failure.
 
 ---
 
-### OV-001-F5 — Submission POST URL wrong (RESOLVED in 5.2)
+### OV-001-F5 — Submission POST URL wrong (RESOLVED in 5.2, VERIFIED in OV-001 closure)
 
 **Status:** Fixed in 5.2 (TS appends `/submit` to namespace base URL).
+Verified June 5, 2026 in OV-001: three test submissions persisted to
+`wp_goqw_submissions` with the expected shape and content.
 See ADR-0015 amendment 2026-06-05 for the contract clarification.
 
 ---
 
-### OV-001-F6 — Fencing reference wizard had no photo step (RESOLVED in 5.2)
+### OV-001-F6 — Fencing reference wizard had no photo step (RESOLVED in 5.2, VERIFIED in OV-001 closure)
 
 **Status:** Fixed in 5.2 (`site_photos` step added to `fencing.config.ts`).
-**Trigger to revisit:** None. Capability is now exercised in the reference
+Verified June 5, 2026 in OV-001: photo upload renders, thumbnails display,
+remove works, photos land in `media_json` of the persisted submission row.
+
+**Trigger to revisit:** None. Capability is exercised in the reference
 deployment.
 
 ---
@@ -208,3 +213,56 @@ one Site Root page per site vs a shared one) are not handled.
 requirement.
 
 **Trigger:** A client requires the plugin on a WordPress multisite network.
+
+---
+
+## Interactive Pricing Configuration Tool (deferred from pre-5.3 planning)
+
+**What was skipped:** A possible future tool that would let a client (or deployer)
+set pricing per service via an interactive interface, rather than editing TypeScript
+config files directly. Considered during the 5.3 planning phase and deferred.
+
+**Why deferred:** Direct config-file editing with TypeScript type-checking has not
+yet been a bottleneck. Adding a pricing UI introduces significant scope: schema
+design, admin UI, data sync, validation tooling. Not justified without observed pain.
+
+**Alternative considered:** A pricing spreadsheet template the client fills out; the
+developer copies values into the config file. Lower-effort alternative if direct
+editing proves friction-heavy.
+
+**Trigger:** Direct config-file editing becomes a real bottleneck after multiple
+client adaptations have been completed.
+
+---
+
+## Visual Customization System (deferred to Step 5.6)
+
+**What was skipped:** Navbar style variants, background color/image tinting,
+layout variants on the landing page, and optional widgets (Google reviews badge,
+call-now bar). The current site shell uses a single default visual treatment.
+
+**Why deferred:** Visual variation requirements are client-specific. Building
+generalized variation surfaces before seeing what the first client actually needs
+would produce the wrong abstraction. Step 5.5 (first client adaptation) will surface
+what real variation is needed; Step 5.6 builds exactly that.
+
+**Trigger:** Step 5.6, after Step 5.5 (first client adaptation) has surfaced what
+visual variations are actually needed. Scope of 5.6 is driven by real first-client
+feedback, not anticipation. See `docs/product-vision.md` for the intended variation
+surface.
+
+---
+
+## Per-Client Service Expansion (ongoing, driven by client engagements)
+
+**What was skipped:** The handyman first client offers many services beyond the
+two reference verticals (fencing, decking). Each new service requires its own
+wizard config and pricing config in the registry.
+
+**Why deferred:** Services are added as needed, not in bulk in anticipation.
+The registry was designed for incremental addition (one PR per vertical per ADR-0013).
+
+**Trigger:** Continuously, driven by each client engagement. Step 5.5 adds the
+handyman's priority subset (2-3 services). Step 5.7 expands the handyman's
+offerings based on which services are generating customer interest. Future clients
+trigger their own service additions.

@@ -341,3 +341,66 @@ Record results here when complete.
 - `docs/handoff.md` — reoriented for post-OV-001 reality
 - `docs/roadmap.md` — 5.2 complete, 5.3 gated, deferred section updated
 - `docs/phase-5-evidence.md` — this section
+
+---
+
+## OV-001 Verification — Closed (June 5, 2026)
+
+Manual operational verification of the Step 5.2 deployed artifact against a real
+WordPress install (LocalWP, `fencing-lead-platform-dev.local`). Performed by the
+project owner using the deploy procedure documented in `docs/onboarding.md`.
+
+### Result
+
+All Criterion 21 sub-criteria met. The system has been verified end-to-end in
+WordPress for the first time across the project.
+
+### Verified observations
+
+- The five reference routes (`/`, `/services`, `/our-work`, `/contact`, `/quote`)
+  all render the correct React page.
+- SPA navigation between routes works without full reload.
+- Browser back/forward works correctly.
+- Service selector renders on `/quote` and offers fencing + decking.
+- Fencing wizard completes end-to-end: dimensions → extras → site photos → contact → review.
+- Photo step renders. File selection works. Browser-side compression executes.
+  Thumbnails display. Remove controls work. Review step shows photo summary.
+- Submission POSTs to the correct endpoint URL: `/wp-json/qw/v1/submit`. The F5 fix is verified.
+- Submission receives HTTP 502 response with the documented forwarder-unavailable
+  message, because Make.com is not yet configured. This is the architecturally
+  designed behaviour.
+- Three test submissions landed in `wp_goqw_submissions` with:
+  - `status = 'forward_failed'`
+  - `answers_size ≈ 587,816 bytes`
+  - `media_size ≈ 587,654 bytes`
+  - `media_json` containing well-formed entries: `{fieldKey, files:[{fileId, originalName, mimeType, sizeBytes, width, height, dataBase64}]}`
+- `wp-admin` loads without fatal errors.
+
+### Known-acceptable console noise
+
+- `AbortError: Transition was skipped` — expected; the FSM cancelling intermediate
+  transitions when submission resolves to failure.
+- `Form submission canceled because the form is not connected` — Chrome's standard
+  handling of dispatched-then-unmounted form events during the submitting screen
+  lifecycle.
+
+Both are recorded for future reference. Neither requires investigation.
+
+### Findings (from full OV-001 episode)
+
+All six OV-001 findings resolved or formally deferred. See
+`docs/technical-debt.md` for the catalog.
+
+| ID        | Title                                                      | Status                                       |
+| --------- | ---------------------------------------------------------- | -------------------------------------------- |
+| OV-001-F1 | Plugin deployment procedure                                | Resolved (documented in onboarding.md)       |
+| OV-001-F2 | FrontPagePolicy mistakes Sample Page for deliberate config | Deferred with trigger                        |
+| OV-001-F3 | Plugin version not tracking releases                       | Resolved (bumped to 0.2.0)                   |
+| OV-001-F4 | Transient corrupted URL symptom                            | Resolved (not recurring; cause: stale cache) |
+| OV-001-F5 | Submission POST URL wrong                                  | Resolved and verified end-to-end             |
+| OV-001-F6 | Fencing reference wizard had no photo step                 | Resolved and verified end-to-end             |
+
+### Gate clearance
+
+Criterion 21 is hereby recorded as met. Step 5.3 (Adaptation Runbook) is no
+longer gated and may proceed.

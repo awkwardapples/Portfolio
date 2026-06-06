@@ -23,9 +23,12 @@ _Last updated: 2026-06-05 (post Step 5.2)_
 
 ## OV-001 verification
 
-Completed June 2026. Six findings; all resolved or formally deferred. See
-`docs/technical-debt.md` for the catalog. The system has been verified end-to-end
-in a real WordPress install (LocalWP).
+**Closed June 5, 2026.** End-to-end functional verification of the system in a
+real WordPress install (LocalWP). All Criterion 21 sub-criteria met. See
+`docs/phase-5-evidence.md` for the full verification record.
+
+The system is now verified to work end-to-end in WordPress for the first time
+across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 
 ## What's NOT yet built
 
