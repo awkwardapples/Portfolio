@@ -461,3 +461,56 @@ No code files modified — git diff confirms only `docs/` paths in commit c129d1
 - Make.com integration documentation → Step 5.4
 - Visual customization beyond primary color → Step 5.6+
 - Production deployment to IONOS → Step 6.0
+
+---
+
+## Step 5.4 — Make.com Integration Documentation (June 6, 2026)
+
+Single-substantive-commit documentation step. New file
+`docs/make-com-integration.md` captures the complete webhook integration
+workflow for client deployments using existing system capabilities as of
+post-5.3.
+
+### What landed
+
+- **New:** `docs/make-com-integration.md` — complete guide: technical
+  contract, webhook URL configuration (wp-cli + constant override),
+  recommended baseline workflow, photo handling, error handling and
+  monitoring, security considerations (including GDPR context), verification
+  checklist, 10 common pitfalls, code reference table.
+- **Modified:** `docs/adaptation-runbook.md` — all "Step 5.4 when it lands"
+  placeholders replaced with direct references to `make-com-integration.md`.
+- **Modified:** `docs/current-state.md`, `docs/handoff.md`, `docs/roadmap.md`
+  — 5.4 recorded as complete; 5.5 set as next.
+- **Modified:** `docs/technical-debt.md` — admin settings page for
+  `goqw_webhook_url` added as a deferred item with trigger condition.
+
+### Verification
+
+- **V1 (Forwarder.php matches documented contract):** verified. Forwarder
+  reads `goqw_webhook_url` option (`GOQW_MAKE_WEBHOOK_URL` constant takes
+  precedence — undocumented in spec, found in code, documented in guide
+  Section 2). Returns `webhook_not_configured` when empty. POSTs JSON with
+  `Content-Type: application/json`, 10-second timeout, failure on any
+  non-2xx. All seven payload fields confirmed in code.
+- **V2 (cross-document consistency):** six touched docs tell consistent
+  stories. 5.4 complete, 5.5 up next. Adaptation runbook points directly at
+  `make-com-integration.md`; no placeholder text remains.
+- **V3 (no code modified):** confirmed; only `docs/` paths in the diff
+  (`git diff --stat HEAD~1 HEAD` shows 6 files, all in `docs/`).
+
+### Gate state
+
+390/390 Vitest (25 test files), 82/82 PHP Pest (2 skipped), lint 0/0,
+typecheck 0 errors, build clean (~73 kB gzip). Unchanged from Step 5.3.
+
+### Out of scope, deferred per spec
+
+- Make.com account creation walkthrough — deferred to Make.com's own
+  documentation.
+- Admin settings page for `goqw_webhook_url` — recorded as deferred in
+  `docs/technical-debt.md` with trigger.
+- Alternate webhook target documentation (Zapier, n8n, custom) — the
+  technical contract section makes the integration target-agnostic, but
+  baseline workflow is Make.com-specific.
+- First client adaptation — Step 5.5.
