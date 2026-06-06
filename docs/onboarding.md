@@ -1,5 +1,11 @@
 # Engineer Onboarding — Growth Ops Quote Wizard
 
+> **Adapting the template for a new client?** See `docs/adaptation-runbook.md`
+> for the complete clone-and-customize workflow. This file covers the local
+> development environment and the plugin deployment procedure; the adaptation
+> runbook covers per-client content, services, wizard configuration, and
+> WordPress options.
+
 This guide takes you from a fresh clone to a running wizard on your machine in about 30 minutes. It is written PowerShell-first because the first client environment runs on Windows + LocalWP, but every project script is cross-platform, so macOS/Linux engineers can follow the same steps with their own shell.
 
 It reflects the system as it actually exists after the Phase 3 scaffold work (Steps 3A–3G). The wizard UI itself is still a placeholder card at this stage — Phase 4 builds the real wizard. What you are setting up here is the full development loop: build the React app, package it into the WordPress plugin, run it inside WordPress, and understand what the CI gates check.

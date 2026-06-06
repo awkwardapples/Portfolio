@@ -22,8 +22,8 @@ A single-page, structural view of project state. Update on every completed step.
 | 5.0  | Complete | Site shell + 5 reference pages                            |
 | 5.1  | Complete | WordPress page mapping + production routing               |
 | 5.2  | Complete | OV-001 remediation (verified end-to-end in WordPress)     |
-| 5.3  | Up next  | Adaptation runbook (documentation of clone-and-customize) |
-| 5.4  | Planned  | Make.com integration documentation                        |
+| 5.3  | Complete | Adaptation runbook (documentation of clone-and-customize) |
+| 5.4  | Up next  | Make.com integration documentation                        |
 | 5.5  | Planned  | First client adaptation (handyman, priority services)     |
 | 5.6  | Planned  | Visual customization v1 (driven by 5.5 client feedback)   |
 | 5.7  | Planned  | Handyman additional services (driven by lead patterns)    |
