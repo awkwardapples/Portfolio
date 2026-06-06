@@ -1,6 +1,6 @@
 # Handoff
 
-_Last updated: 2026-06-06_
+_Last updated: 2026-06-06 (post Step 5.4)_
 
 ## Status
 
@@ -9,7 +9,9 @@ Phase 4 complete. Phase 5 in progress.
 - 5.0, 5.1, 5.2 complete and verified end-to-end in WordPress (OV-001, June 2026).
 - 5.3 (Adaptation Runbook) complete — `docs/adaptation-runbook.md` is the
   authoritative guide for cloning and adapting the template for a new client.
-- 5.4 (Make.com integration documentation) is up next.
+- 5.4 (Make.com integration documentation) complete — `docs/make-com-integration.md`
+  covers the full webhook configuration workflow for a deployed client install.
+- 5.5 (First client adaptation) is now up next.
 
 The system is functionally complete for a single-client deployment. The remaining
 work is template adaptation, visual customization (driven by real client
@@ -26,7 +28,9 @@ the medium-term product direction.
 4. `docs/onboarding.md` — how to develop, build, and deploy.
 5. `docs/adaptation-runbook.md` — how to clone and adapt the template for a
    new client. Read this before Step 5.5.
-6. ADRs in `docs/decisions/` in numerical order — record of every architectural
+6. `docs/make-com-integration.md` — how to configure Make.com to receive
+   quote submissions from a deployed install. Read this alongside 5.5.
+7. ADRs in `docs/decisions/` in numerical order — record of every architectural
    decision. Read 0014 first if you want to understand the product direction
    (template-clone repository, not multi-tenant SaaS, not operator-editing CMS).
 
@@ -53,13 +57,13 @@ If you are starting a new step:
 
 The roadmap is sequenced explicitly. See `docs/roadmap.md` for full detail.
 
-**Immediate next step:** Step 5.4 — Make.com integration documentation.
-Operational step; no code changes.
+**Immediate next step:** Step 5.5 — First client adaptation (handyman,
+priority subset of their services). The adaptation runbook
+(`docs/adaptation-runbook.md`) and Make.com integration guide
+(`docs/make-com-integration.md`) are the guides for this step.
 
-**After 5.4:**
+**After 5.5:**
 
-- 5.5: First client adaptation (handyman, priority subset of their services).
-  The adaptation runbook (`docs/adaptation-runbook.md`) is the guide for this.
 - 5.6: Visual customization v1 (driven by 5.5 feedback).
 - 5.7: Handyman service expansion.
 - 6.0: First client production deployment to IONOS.

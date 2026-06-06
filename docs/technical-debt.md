@@ -114,6 +114,27 @@ indicator causes meaningful drop-off or confusion.
 
 ---
 
+## Admin Settings Page for `goqw_webhook_url` (deferred from Step 5.4)
+
+**What was skipped:** A wp-admin settings page that allows a deployer to set
+the Make.com webhook URL via the WordPress admin UI, rather than via wp-cli or
+a `wp-config.php` constant.
+
+**Why deferred:** Configuring Make.com is a developer activity, not a
+client-operator activity. The wp-cli approach is adequate for the current
+deployment model where the developer is also the deployer. Adding a settings
+page introduces UI surface (form field, sanitization, capability check, nonce
+handling) that is not yet justified by observed friction.
+
+**Trigger to revisit:** First real deployment requiring non-CLI configuration —
+specifically, a deployer (or a client's IT contact) who needs to configure or
+change the webhook URL but does not have wp-cli access to the WordPress install.
+
+**Cross-reference:** Documented during Step 5.4 planning. The current
+configuration workflow is in `docs/make-com-integration.md` Section 2.
+
+---
+
 ## Admin Replay UI for Failed Sends (deferred from Step 4.6)
 
 **What was skipped:** A wp-admin screen listing `wp_goqw_submissions` rows with

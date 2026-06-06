@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-06-06 (post Step 5.3)_
+_Last updated: 2026-06-06 (post Step 5.4)_
 
 ## What's working
 
@@ -32,7 +32,6 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 
 ## What's NOT yet built
 
-- Make.com workflow documentation (Step 5.4 candidate; operational, no code).
 - Media retention policy (deferred per 4.8 spec).
 - Idempotency for submission retry (deferred; trigger: first observed duplicate).
 - Rate limiting on submit endpoint (deferred; trigger: >100 submissions/day).
@@ -62,6 +61,7 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 - Step 5.1 — WordPress page mapping + production routing
 - **Step 5.2 — OV-001 remediation (F5+F6 code fixes; F1+F3 operational; F2+F4 deferred with triggers)**
 - **Step 5.3 — Adaptation runbook (`docs/adaptation-runbook.md`; documentation only)**
+- **Step 5.4 — Make.com integration guide (`docs/make-com-integration.md`; documentation only)**
 
 ## Key Architectural Facts
 

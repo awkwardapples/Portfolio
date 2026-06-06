@@ -13,7 +13,7 @@ deployment.
 
 **Out of scope:**
 
-- Make.com workflow setup (Step 5.4 documentation — not yet written).
+- Make.com workflow setup. See `docs/make-com-integration.md`.
 - Visual customization beyond primary color: navbar variants, background tinting,
   layout variants, optional widgets (Google Reviews badge, call-now bar). These
   arrive in Step 5.6+, scoped by real first-client feedback.
@@ -48,7 +48,8 @@ Before starting, have these ready:
   - Primary brand color (hex)
 
 You do not need Make.com credentials, IONOS hosting credentials, or production
-access at this stage. Those come in Steps 5.4 and 6.0.
+access at this stage. Make.com configuration is covered in
+`docs/make-com-integration.md`; production hosting deployment is Step 6.0.
 
 ---
 
@@ -848,7 +849,7 @@ alongside them.
 
 These options live in the WordPress install, not in the code. They control
 per-deployment behavior: which services to offer, what color the buttons are,
-and (when Step 5.4 is complete) where submissions go.
+and where submissions go (Make.com webhook URL).
 
 Set them via WP-CLI from LocalWP's site shell (the "Open site shell" button in
 the LocalWP UI). All `goqw_*` options are seeded with safe defaults when the
@@ -861,7 +862,7 @@ plugin is activated.
 | `goqw_wizard_id`        | The vertical to use as the default when only one service is enabled, or as the fallback when `wizardId` in the request is unresolvable | `'fencing'` (template default; update for each client) |
 | `goqw_enabled_services` | Comma-separated list of vertical IDs to offer. Empty string = offer all registered verticals                                           | `''` (all)                                             |
 | `goqw_primary_color`    | Primary brand color applied to CTA buttons and interactive elements                                                                    | `'#0F4C81'`                                            |
-| `goqw_webhook_url`      | Make.com webhook URL for forwarding submissions                                                                                        | `''` (disabled; set in Step 5.4)                       |
+| `goqw_webhook_url`      | Make.com webhook URL for forwarding submissions                                                                                        | `''` (disabled; see `docs/make-com-integration.md`)    |
 
 **Example — Riverside Plumbing with a single boiler service:**
 
@@ -998,16 +999,16 @@ recent `created_at` timestamp.
 The submission endpoint returns `502` when `goqw_webhook_url` is empty —
 this is correct. The row is persisted in `wp_goqw_submissions` and is safe.
 The `502` response means "persisted, but forward to Make.com failed." This is
-the expected state for all test submissions until Step 5.4 configures Make.com.
+the expected state for all test submissions until Make.com is configured (see `docs/make-com-integration.md`).
 
 ---
 
 ## What's deferred in this runbook
 
-**Make.com configuration (Step 5.4):** Connecting each submission to a Make.com
-workflow (notifications, CRM entry, spreadsheet logging) is not covered here. Set
-`goqw_webhook_url` to the Make.com webhook URL when Step 5.4 documentation is
-available. Until then, submissions are safely held in `wp_goqw_submissions`.
+**Make.com configuration:** Connecting each submission to a Make.com workflow
+(notifications, CRM entry, spreadsheet logging) is not covered here. See
+`docs/make-com-integration.md` for the complete setup guide. Until Make.com is
+configured, submissions are safely held in `wp_goqw_submissions`.
 
 **Visual customization beyond primary color (Step 5.6+):** Navbar style variants
 (light/dark), background image or tinting, layout variants on the Home page,
@@ -1118,7 +1119,7 @@ alone to confirm a config is valid.
 | Default wizard for this WordPress install                 | WP option `goqw_wizard_id`                                           |
 | Which verticals are offered on this WordPress install     | WP option `goqw_enabled_services` (empty = all)                      |
 | Primary brand color                                       | WP option `goqw_primary_color`                                       |
-| Make.com webhook destination                              | WP option `goqw_webhook_url` (configure in Step 5.4)                 |
+| Make.com webhook destination                              | WP option `goqw_webhook_url` (see `docs/make-com-integration.md`)    |
 | Plugin deploy procedure                                   | `docs/onboarding.md` → "Deploying the plugin to a WordPress install" |
 | Site structure, routing, ESLint boundary rules            | `docs/onboarding.md` → "Site structure (Step 5.0)"                   |
 | Adding a new site page (not covered in this runbook)      | `docs/onboarding.md` → "Adding a new site page"                      |
@@ -1128,6 +1129,7 @@ alone to confirm a config is valid.
 
 ---
 
-_This runbook reflects the system as of Step 5.3 (June 2026). When later steps
-add new capabilities (Step 5.4 Make.com docs, Step 5.6 visual customization),
-this runbook will be amended in the same commit as those additions._
+_This runbook reflects the system as of Step 5.4 (June 2026). When later steps
+add new capabilities (Step 5.6 visual customization, Step 6.0 production
+deployment), this runbook will be amended in the same commit as those
+additions._
