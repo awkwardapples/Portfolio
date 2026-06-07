@@ -66,15 +66,16 @@ it can substitute for Make.com without WordPress-side changes.
 When a quote wizard submission is successfully validated and persisted,
 WordPress POSTs to the configured webhook URL with a JSON body containing:
 
-| Field              | Type           | Description                                                                                                                                                            |
-| ------------------ | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `submission_id`    | integer        | The WordPress-side submission row ID. Stable; useful for cross-referencing back to the `wp_goqw_submissions` table if a deployer needs to investigate or replay later. |
-| `wizard_id`        | string         | The service vertical that produced this submission (e.g. `'fencing'`, `'decking'`, or a client-specific service ID such as `'boiler-installation'`).                   |
-| `schema_version`   | integer        | The wizard schema version used to produce this payload.                                                                                                                |
-| `answers`          | object         | The decoded answers payload. Keys are field IDs as defined in the wizard config; values are the user's responses.                                                      |
-| `pricing`          | object \| null | The pricing summary if one was computed (price range, total in pence). Null if the wizard has no pricing config or pricing did not run.                                |
-| `client_timestamp` | string         | ISO-8601 timestamp from the client at submission time.                                                                                                                 |
-| `media`            | array \| null  | Photo entries, if any. See Section 4 for the full structure. Null if the wizard config had no photo step or the user uploaded nothing.                                 |
+| Field              | Type           | Description                                                                                                                                                                     |
+| ------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `submission_id`    | integer        | The WordPress-side submission row ID. Stable; useful for cross-referencing back to the `wp_goqw_submissions` table if a deployer needs to investigate or replay later.          |
+| `wizard_id`        | string         | The service vertical that produced this submission (e.g. `'fencing'`, `'decking'`, or a client-specific service ID such as `'boiler-installation'`).                            |
+| `schema_version`   | integer        | The wizard schema version used to produce this payload.                                                                                                                         |
+| `quote_mode`       | string         | `'instant'` or `'manual'`. Instant submissions include a `pricing` block; manual submissions do not (the contractor prices the job). Added in Step 5.5a.                        |
+| `answers`          | object         | The decoded answers payload. Keys are field IDs as defined in the wizard config; values are the user's responses.                                                               |
+| `pricing`          | object \| null | The pricing summary if one was computed (price range, total in pence). Always null for `quote_mode: 'manual'` submissions. Null for instant submissions if pricing did not run. |
+| `client_timestamp` | string         | ISO-8601 timestamp from the client at submission time.                                                                                                                          |
+| `media`            | array \| null  | Photo entries, if any. See Section 4 for the full structure. Null if the wizard config had no photo step or the user uploaded nothing.                                          |
 
 The POST is sent with `Content-Type: application/json` and a 10-second
 timeout (see ADR-0005).

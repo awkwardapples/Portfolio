@@ -24,6 +24,7 @@ A single-page, structural view of project state. Update on every completed step.
 | 5.2  | Complete | OV-001 remediation (verified end-to-end in WordPress)     |
 | 5.3  | Complete | Adaptation runbook (documentation of clone-and-customize) |
 | 5.4  | Complete | Make.com integration documentation                        |
+| 5.5a | Complete | Template capabilities (category nav + manual-quote mode)  |
 | 5.5  | Up next  | First client adaptation (handyman, priority services)     |
 | 5.6  | Planned  | Visual customization v1 (driven by 5.5 client feedback)   |
 | 5.7  | Planned  | Handyman additional services (driven by lead patterns)    |
@@ -38,6 +39,11 @@ the variation points listed in `docs/product-vision.md`.
 
 **5.4 — Make.com docs.** Operational, not code. Covers webhook configuration
 and downstream workflow design. Can run in parallel with 5.5.
+
+**5.5a — Template capabilities.** Adds two opt-in capabilities: category
+navigation (optional phase before service selection) and manual-quote mode
+(bypasses instant pricing for complex services). Wire contract bumped to v3.
+Acme Fencing demo unchanged. See ADR-0017.
 
 **5.5 — First client adaptation.** Empirical test of the 5.3 runbook. Applies
 it to the handyman client. Builds the priority subset of the handyman's

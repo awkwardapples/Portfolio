@@ -1,6 +1,6 @@
 # Handoff
 
-_Last updated: 2026-06-06 (post Step 5.4)_
+_Last updated: 2026-06-07 (post Step 5.5a)_
 
 ## Status
 
@@ -11,6 +11,9 @@ Phase 4 complete. Phase 5 in progress.
   authoritative guide for cloning and adapting the template for a new client.
 - 5.4 (Make.com integration documentation) complete — `docs/make-com-integration.md`
   covers the full webhook configuration workflow for a deployed client install.
+- 5.5a (Template Capabilities) complete — category navigation and manual-quote
+  mode added as opt-in capabilities; wire contract v3; ADR-0017. 421/421 Vitest,
+  88/88 PHP. Acme Fencing demo unchanged.
 - 5.5 (First client adaptation) is now up next.
 
 The system is functionally complete for a single-client deployment. The remaining
@@ -59,8 +62,9 @@ The roadmap is sequenced explicitly. See `docs/roadmap.md` for full detail.
 
 **Immediate next step:** Step 5.5 — First client adaptation (handyman,
 priority subset of their services). The adaptation runbook
-(`docs/adaptation-runbook.md`) and Make.com integration guide
-(`docs/make-com-integration.md`) are the guides for this step.
+(`docs/adaptation-runbook.md`), Make.com integration guide
+(`docs/make-com-integration.md`), and the new 5.5a capabilities (category
+navigation and manual-quote mode) are the guides for this step.
 
 **After 5.5:**
 

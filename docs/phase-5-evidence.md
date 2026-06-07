@@ -514,3 +514,51 @@ typecheck 0 errors, build clean (~73 kB gzip). Unchanged from Step 5.3.
   technical contract section makes the integration target-agnostic, but
   baseline workflow is Make.com-specific.
 - First client adaptation — Step 5.5.
+
+---
+
+## Step 5.5a — Template Capabilities (2026-06-07)
+
+### Overview
+
+Two reusable template capabilities added: (1) optional category navigation phase
+before service selection; (2) manual-quote service routing that bypasses instant
+pricing. Both are opt-in — the Acme Fencing demo is unchanged. Implemented
+across 9 commits (ADR-0017, amendments to ADR-0013 and ADR-0015).
+
+### Gate state
+
+| Gate             | Before (5.4) | After (5.5a) | Delta |
+| ---------------- | ------------ | ------------ | ----- |
+| Vitest tests     | 390 / 390    | 421 / 421    | +31   |
+| PHP Pest tests   | 82 / 82      | 88 / 88      | +6    |
+| `pnpm typecheck` | 0 errors     | 0 errors     | —     |
+| `pnpm lint`      | 0 / 0        | 0 / 0        | —     |
+
+### Key acceptance criteria verified
+
+- `quoteMode: 'instant' | 'manual'` on WizardConfig — optional, default 'instant'.
+- `category_selection` WizardPhase and `CATEGORY_SELECTED` event defined in FSM.
+- `SUBMIT_REQUESTED` in validating phase bypasses `computePrice` when `quoteMode === 'manual'`.
+- `ContractVersion` bumped 2 → 3 in both TypeScript and PHP (lockstep deploy).
+- `enableCategoryNavigation` in PublicConfig (TS + PHP); WP option seeded.
+- `SubmissionRequest.quoteMode` always present; `buildRequest()` skips pricing call for manual.
+- `CategorySelector` and `useCategorySelection` hook in UI layer.
+- `ServiceSelector.filterByCategoryId` narrows services by Vertical.categoryId.
+- WizardShell suppresses PriceSummary for manual quoteMode.
+- PHP `SubmissionController` requires v3 and validates quoteMode; Forwarder includes quote_mode.
+- Acme Fencing demo (existing behavior) unchanged — all existing tests pass unmodified.
+
+### Commits
+
+| Commit    | Description                                                                                 |
+| --------- | ------------------------------------------------------------------------------------------- |
+| `504b2b5` | docs(adr): ADR-0017 category navigation + manual quote; amend 0013, 0015                    |
+| `0953d83` | feat(registry): CategoryConfig, CATEGORIES registry, categoryId on Vertical                 |
+| `72dd742` | feat(config): wizard-config adds optional quoteMode; reference configs declare 'instant'    |
+| `e6d57d9` | feat(config): contractVersion 2→3; PublicConfig gains enableCategoryNavigation              |
+| `ba493a4` | feat(fsm): category_selection phase, CATEGORY_SELECTED event, manual-quote bypass           |
+| `1e11ab4` | feat(submission): SubmissionRequest gains quoteMode; buildRequest skips pricing for manual  |
+| `f68e670` | feat(ui): CategorySelector, useCategorySelection, ServiceSelector filter, WizardShell guard |
+| `984841e` | feat(php): contract v3, enableCategoryNavigation, quoteMode validation and forwarding       |
+| _(this)_  | docs: Step 5.5a evidence + runbook additions                                                |

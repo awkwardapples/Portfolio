@@ -1,11 +1,13 @@
 # Current State
 
-_Last updated: 2026-06-06 (post Step 5.4)_
+_Last updated: 2026-06-07 (post Step 5.5a)_
 
 ## What's working
 
 - Wizard engine (FSM, validation, navigation, persistence).
 - Pricing engine (computePrice, gate enforcement).
+- Manual-quote routing: wizards with `quoteMode: 'manual'` bypass pricing and go directly to submission.
+- Category navigation (optional): CategorySelector phase before service selection when `enableCategoryNavigation` is true.
 - Submission pipeline end-to-end in WordPress (validate → persist → forward → respond).
 - Site shell with 5 routes (Home, Services, Our Work, Contact, Quote).
 - Service abstraction (fencing + decking verticals).
@@ -16,9 +18,9 @@ _Last updated: 2026-06-06 (post Step 5.4)_
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors
-- `pnpm test`: 390/390 (+6 from 5.2: 2 URL construction, 4 fencing config)
+- `pnpm test`: 421/421 (31 new from 5.5a)
 - `pnpm build`: clean, ~73 kB gzip bundle
-- `composer test`: passing (82 tests at last count)
+- `composer test`: passing (88 tests, 6 new from 5.5a)
 - `composer analyse`: clean
 
 ## OV-001 verification

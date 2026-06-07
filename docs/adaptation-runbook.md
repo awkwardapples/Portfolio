@@ -1105,6 +1105,141 @@ alone to confirm a config is valid.
 
 ---
 
+## Configuring categories (optional — Step 5.5a)
+
+Category navigation lets users pick a broad category (e.g. "Outdoor structures")
+before seeing the service list. It is **off by default** and only makes sense
+when a client has enough verticals that a flat list becomes unwieldy (typically
+≥6 services).
+
+### When to use
+
+Enable category navigation when:
+
+- The client has six or more wizard verticals and the service selector becomes
+  visually crowded.
+- Services naturally group into 2–4 distinct categories.
+
+For most deployments the flat ServiceSelector (current default) is cleaner.
+
+### Step 1 — Populate CATEGORIES
+
+Open `apps/wizard/src/domain/registry/categories.ts`. The canonical template
+ships with an empty `CATEGORIES` record. Add one entry per category:
+
+```typescript
+export const CATEGORIES: Readonly<Record<CategoryId, CategoryConfig>> = Object.freeze({
+  outdoor: {
+    id: 'outdoor',
+    label: 'Outdoor structures',
+    description: 'Fencing, decking, and garden buildings.',
+    displayOrder: 1,
+  },
+  interior: {
+    id: 'interior',
+    label: 'Interior work',
+    description: 'Flooring, plastering, and painting.',
+    displayOrder: 2,
+  },
+});
+```
+
+Rules:
+
+- `id` must be kebab-case, stable (it's a contract).
+- `displayOrder` controls sort order in the UI (ascending).
+- `description` is optional but recommended.
+
+### Step 2 — Assign verticals to categories
+
+In each vertical definition in `apps/wizard/src/domain/registry/verticals.ts`,
+add the optional `categoryId` field:
+
+```typescript
+{
+  id: 'fencing',
+  label: 'Fencing',
+  categoryId: 'outdoor',   // ← new
+  wizard: fencingWizardConfig,
+  pricing: fencingPricingConfig,
+  schemaVersion: 1,
+}
+```
+
+Verticals without a `categoryId` are hidden when a category is selected but
+category navigation is enabled. Assign all verticals to a category before
+enabling the flag.
+
+### Step 3 — Enable the flag in WordPress
+
+In the WordPress admin (or via WP-CLI):
+
+```bash
+wp option update goqw_enable_category_navigation 1
+```
+
+This toggles the category navigation phase on for all visitors. The React app
+reads `window.GOQW_CONFIG.enableCategoryNavigation` and renders CategorySelector
+before ServiceSelector when it is `true`.
+
+---
+
+## Manual-quote services (optional — Step 5.5a)
+
+Some services are too complex or too variable for instant pricing. Instead of
+computing a price during the wizard flow, the wizard collects the job details and
+routes the submission for the contractor to assess manually.
+
+### When to use
+
+Use `quoteMode: 'manual'` for a vertical when:
+
+- The price depends on a site visit (e.g. bespoke joinery, specialist plastering).
+- The range of possible prices is too wide to be meaningful to the user.
+- You do not have enough data to calibrate the pricing engine for this service.
+
+### How to configure
+
+In the vertical's wizard config (`apps/wizard/src/domain/fixtures/<vertical>.config.ts`),
+add `quoteMode: 'manual'`:
+
+```typescript
+export const bespokeCarpentryConfig: WizardConfig = {
+  schemaVersion: 1,
+  id: 'bespoke-carpentry',
+  quoteMode: 'manual', // ← no instant pricing
+  title: 'Bespoke carpentry quote',
+  steps: [
+    /* ... */
+  ],
+};
+```
+
+**What changes at runtime:**
+
+- The pricing gate (`computePrice`) is skipped entirely — the wizard goes
+  directly from validation to submission.
+- The PriceSummary component is not rendered (WizardShell checks quoteMode).
+- The submission payload includes `quoteMode: 'manual'` and no `pricing` block.
+- The PHP controller accepts the submission without a pricing block.
+- The Make.com webhook payload includes `"quote_mode": "manual"`.
+
+**What stays the same:**
+
+- All form steps and field validation work identically.
+- The success/failure screens are the same.
+- Persistence (sessionStorage draft) works the same way.
+
+### Make.com side
+
+In your Make.com scenario, add a branch on the `quote_mode` field:
+
+- `instant` → use the `pricing` object to populate the quote email.
+- `manual` → omit the pricing block; include a "Quote requested — contractor to
+  price manually" note in the email.
+
+---
+
 ## Reference: file map
 
 | Variation point                                           | Where to edit                                                        |
@@ -1115,9 +1250,13 @@ alone to confirm a config is valid.
 | Which wizard verticals are registered in the bundle       | `apps/wizard/src/domain/registry/verticals.ts`                       |
 | Per-vertical wizard steps, fields, and conditions         | `apps/wizard/src/domain/fixtures/<vertical>.config.ts`               |
 | Per-vertical pricing rules (base rate, modifiers, extras) | Same file as wizard config (two exports per file)                    |
+| Per-vertical quoteMode (instant / manual)                 | `quoteMode` field in the vertical's WizardConfig                     |
+| Category definitions (optional)                           | `apps/wizard/src/domain/registry/categories.ts`                      |
+| Category assignment per vertical (optional)               | `categoryId` field in `verticals.ts` vertical entries                |
 | The fallback vertical when none can be resolved           | `FALLBACK_VERTICAL_ID` in `verticals.ts`                             |
 | Default wizard for this WordPress install                 | WP option `goqw_wizard_id`                                           |
 | Which verticals are offered on this WordPress install     | WP option `goqw_enabled_services` (empty = all)                      |
+| Category navigation enabled for this install              | WP option `goqw_enable_category_navigation` (0 = off, 1 = on)        |
 | Primary brand color                                       | WP option `goqw_primary_color`                                       |
 | Make.com webhook destination                              | WP option `goqw_webhook_url` (see `docs/make-com-integration.md`)    |
 | Plugin deploy procedure                                   | `docs/onboarding.md` → "Deploying the plugin to a WordPress install" |
@@ -1129,7 +1268,7 @@ alone to confirm a config is valid.
 
 ---
 
-_This runbook reflects the system as of Step 5.4 (June 2026). When later steps
-add new capabilities (Step 5.6 visual customization, Step 6.0 production
-deployment), this runbook will be amended in the same commit as those
+_This runbook reflects the system as of Step 5.5a (June 2026). When later steps
+add new capabilities (Step 5.5b branding, Step 5.6 visual customization, Step 6.0
+production deployment), this runbook will be amended in the same commit as those
 additions._
