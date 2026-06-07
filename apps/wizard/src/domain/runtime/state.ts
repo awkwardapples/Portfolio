@@ -19,6 +19,7 @@ import type { AnswerMap } from '@/domain/runtime/answer-types';
 export type WizardPhase =
   | 'idle'
   | 'hydrating'
+  | 'category_selection'
   | 'answering'
   | 'validating'
   | 'submitting'
@@ -141,6 +142,13 @@ export interface WizardState {
    * Null in idle and in terminal phases (submit_success, submit_failure).
    */
   readonly currentStepId: string | null;
+  /**
+   * The category selected by the user before service selection.
+   * Null until CATEGORY_SELECTED is dispatched. Set by the page-level
+   * category navigator (QuotePage.tsx) and forwarded into the FSM for
+   * downstream components that need to read it from state.
+   */
+  readonly selectedCategoryId: string | null;
   /** All field answers collected this session, keyed by field.key. */
   readonly answers: AnswerMap;
   /**
@@ -182,6 +190,8 @@ export interface WizardState {
 export interface SessionConfig {
   readonly wizard: WizardConfig;
   readonly pricing: PricingConfig;
+  /** Mirrors PublicConfig.enableCategoryNavigation (ADR-0017). Optional so existing tests don't break. */
+  readonly enableCategoryNavigation?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -204,6 +214,7 @@ export function createInitialState(config: WizardConfig): WizardState {
   return {
     phase: 'idle',
     currentStepId: null,
+    selectedCategoryId: null,
     answers: {},
     validationByStep: {},
     visitedStepIds: [],

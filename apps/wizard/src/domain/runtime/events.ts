@@ -97,6 +97,18 @@ export type SubmitRetryEvent = {
   readonly type: 'SUBMIT_RETRY';
 };
 
+/**
+ * Records the category the user selected before service selection (ADR-0017).
+ *
+ * Dispatched by the page-level category navigator (QuotePage.tsx) so that
+ * downstream components can read selectedCategoryId from wizard state without
+ * needing separate prop-drilling.
+ */
+export type CategorySelectedEvent = {
+  readonly type: 'CATEGORY_SELECTED';
+  readonly categoryId: string;
+};
+
 // ---------------------------------------------------------------------------
 // Union type
 // ---------------------------------------------------------------------------
@@ -104,6 +116,7 @@ export type SubmitRetryEvent = {
 export type WizardEvent =
   | HydrateEvent
   | AnswerSetEvent
+  | CategorySelectedEvent
   | StepNextEvent
   | StepBackEvent
   | StepGotoEvent

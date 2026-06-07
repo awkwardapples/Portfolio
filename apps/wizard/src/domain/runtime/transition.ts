@@ -3,6 +3,7 @@ import { buildFieldKeyMap } from '@/domain/runtime/condition-evaluator';
 import { computePrice } from '@/domain/pricing/pricing-engine';
 import type {
   AnswerSetEvent,
+  CategorySelectedEvent,
   HydrateEvent,
   StepGotoEvent,
   SubmitFailedEvent,
@@ -154,15 +155,29 @@ function handleValidateStep(
   };
 }
 
+function handleCategorySelected(state: WizardState, event: CategorySelectedEvent): WizardState {
+  if (state.phase === 'category_selection') {
+    return { ...state, phase: 'answering', selectedCategoryId: event.categoryId };
+  }
+  if (state.phase === 'answering') {
+    return { ...state, selectedCategoryId: event.categoryId };
+  }
+  return state;
+}
+
 function handleSubmitRequested(
   state: WizardState,
   config: SessionConfig,
   fieldKeyById: ReadonlyMap<string, string>,
 ): WizardState {
-  // validating + SUBMIT_REQUESTED → submitting, but only when pricing is valid.
-  // The pricing engine is the sole gatekeeper here; validation already passed
-  // on the answering → validating transition.
+  // validating + SUBMIT_REQUESTED → submitting.
+  // For 'instant' quoteMode the pricing engine gates the transition; for
+  // 'manual' the pricing gate is bypassed entirely (ADR-0017).
   if (state.phase === 'validating') {
+    const quoteMode = config.wizard.quoteMode ?? 'instant';
+    if (quoteMode === 'manual') {
+      return { ...state, phase: 'submitting' };
+    }
     const pricingResult = computePrice(state.answers, config.wizard, config.pricing);
     if (!pricingResult.valid) {
       return { ...state, phase: 'answering' };
@@ -247,6 +262,8 @@ export function transition(
       return handleHydrate(state, event, config, fieldKeyById);
     case 'ANSWER_SET':
       return handleAnswerSet(state, event);
+    case 'CATEGORY_SELECTED':
+      return handleCategorySelected(state, event);
     case 'STEP_NEXT':
       return handleStepNext(state, config, fieldKeyById);
     case 'STEP_BACK':

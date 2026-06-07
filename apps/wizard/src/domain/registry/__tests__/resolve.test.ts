@@ -46,6 +46,16 @@ describe('listVerticalIds', () => {
   });
 });
 
+describe('Vertical.categoryId', () => {
+  it('fencing vertical has no categoryId (canonical template has no category assignments)', () => {
+    expect(VERTICALS['fencing']?.categoryId).toBeUndefined();
+  });
+
+  it('decking vertical has no categoryId', () => {
+    expect(VERTICALS['decking']?.categoryId).toBeUndefined();
+  });
+});
+
 describe('registry structural validity', () => {
   it('resolved fencing SessionConfig passes validateWizardConfig', () => {
     const result = resolveVertical('fencing');
