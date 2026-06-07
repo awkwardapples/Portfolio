@@ -106,3 +106,25 @@ This step does NOT introduce a multi-engine architecture. The FSM
 persistence, and submission pipeline are identical regardless of which service
 is active. Only the `WizardConfig` and `PricingConfig` data differ between
 services.
+
+---
+
+## Amendment — Step 5.5a (June 7, 2026)
+
+The registry supports an optional **category dimension**. Two additions:
+
+1. A new `CategoryConfig` type and `CATEGORIES` registry in
+   `src/domain/registry/categories.ts`. Categories are independent records;
+   each vertical declares which category it belongs to via an optional
+   `categoryId` field on `Vertical`. The registry is empty in the canonical
+   template; each client fork populates it.
+
+2. The `Vertical` type gains two optional fields:
+   - `categoryId?: string` — links this vertical to a category.
+   - Neither field affects resolution or fallback logic; both are purely metadata
+     for the category-navigation layer.
+
+The `FALLBACK_VERTICAL_ID` continues to apply and is unaffected. A vertical
+without a `categoryId` is still valid and fully functional.
+
+See ADR-0017 for the category navigation capability rationale.

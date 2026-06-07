@@ -261,3 +261,41 @@ with `/submit`, preventing regression.
 Future endpoints in the `qw/v1` namespace (idempotency, status query, etc.) will
 follow the same pattern: PHP emits the namespace; TypeScript appends the per-
 endpoint path.
+
+---
+
+## Amendment — Step 5.5a (June 7, 2026): wire contract version 3
+
+`contractVersion` bumps from 2 to 3. The bump is additive: all existing fields
+are preserved.
+
+**New request fields (contractVersion 3):**
+
+```json
+{
+  "contractVersion": 3,
+  "wizardId": "string",
+  "schemaVersion": 1,
+  "quoteMode": "instant | manual",
+  "answers": {},
+  "pricing": { "totalPence": 0, "lowPence": 0, "highPence": 0, "currency": "GBP" },
+  "clientTimestamp": "ISO-8601"
+}
+```
+
+- `quoteMode` (required): `"instant"` or `"manual"`. Drives PHP validation of
+  the pricing field.
+- `pricing`: null/absent is accepted when `quoteMode = "manual"`. When
+  `quoteMode = "instant"`, pricing must be present and valid (existing
+  constraint, now enforced explicitly per quoteMode).
+
+**Webhook payload (Forwarder → Make.com):** `quoteMode` is now forwarded in
+the webhook body alongside the existing fields. Make.com workflows can branch
+on `quoteMode` to route manual-quote submissions differently from instant
+quotes.
+
+**Lockstep requirement:** The PHP plugin and JS bundle must be deployed
+together. The `SubmissionController` rejects requests with
+`contractVersion !== 3` (400).
+
+See ADR-0017 for the quoteMode capability rationale.
