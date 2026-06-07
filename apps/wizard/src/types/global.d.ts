@@ -18,7 +18,7 @@
 declare global {
   interface GoqwPublicConfig {
     /** Hard-bumps when fields are renamed/removed or semantics change. */
-    contractVersion: 2;
+    contractVersion: 3;
 
     /** Selects which wizard vertical this deployment runs. */
     wizardId: string;
@@ -29,6 +29,9 @@ declare global {
      * See ADR-0009 amendment and ADR-0013 amendment.
      */
     enabledServiceIds?: string[];
+
+    /** When true, a category-selection phase precedes service selection (ADR-0017). */
+    enableCategoryNavigation: boolean;
 
     /** Public business display info (appears in the wizard UI). */
     businessName: string;

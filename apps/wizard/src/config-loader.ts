@@ -29,6 +29,7 @@ import { FALLBACK_VERTICAL_ID } from '@/domain/registry';
 const DEFAULT_CONFIG: GoqwPublicConfig = {
   contractVersion: CONTRACT_VERSION,
   wizardId: FALLBACK_VERTICAL_ID,
+  enableCategoryNavigation: false,
   businessName: '',
   businessPhone: '',
   businessEmail: '',

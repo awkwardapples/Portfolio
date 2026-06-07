@@ -9,10 +9,10 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { FALLBACK_VERTICAL_ID } from '@/domain/registry';
 
-// Helper — build a minimal valid v2 config object.
-function validV2Config(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+// Helper — build a minimal valid v3 config object.
+function validV3Config(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
-    contractVersion: 2,
+    contractVersion: 3,
     wizardId: 'fencing',
     businessName: 'Test Biz',
     businessPhone: '01234 567890',
@@ -42,7 +42,7 @@ describe('config-loader', () => {
 
   it('logs a warning and returns defaults when window.GOQW_CONFIG is malformed', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-    vi.stubGlobal('window', { GOQW_CONFIG: { contractVersion: 1 } });
+    vi.stubGlobal('window', { GOQW_CONFIG: { contractVersion: 2 } });
 
     const { config } = await import('@/config-loader');
 
@@ -51,13 +51,13 @@ describe('config-loader', () => {
     warnSpy.mockRestore();
   });
 
-  it('merges a valid v2 payload and preserves its wizardId', async () => {
-    vi.stubGlobal('window', { GOQW_CONFIG: validV2Config({ wizardId: 'fencing' }) });
+  it('merges a valid v3 payload and preserves its wizardId', async () => {
+    vi.stubGlobal('window', { GOQW_CONFIG: validV3Config({ wizardId: 'fencing' }) });
 
     const { config } = await import('@/config-loader');
 
     expect(config.wizardId).toBe('fencing');
-    expect(config.contractVersion).toBe(2);
+    expect(config.contractVersion).toBe(3);
     expect(config.businessName).toBe('Test Biz');
   });
 });

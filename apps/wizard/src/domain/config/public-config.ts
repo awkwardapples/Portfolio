@@ -22,7 +22,7 @@
 
 import { z } from 'zod';
 
-export const CONTRACT_VERSION = 2 as const;
+export const CONTRACT_VERSION = 3 as const;
 
 export const PublicConfigSchema = z.object({
   contractVersion: z.literal(CONTRACT_VERSION),
@@ -30,6 +30,8 @@ export const PublicConfigSchema = z.object({
   enabledServiceIds: z
     .array(z.string().min(1, 'Service ids must be non-empty strings.'))
     .optional(),
+  /** Opts this deployment into the category-navigation phase (ADR-0017). */
+  enableCategoryNavigation: z.boolean().default(false),
   businessName: z.string(),
   businessPhone: z.string(),
   businessEmail: z.string(),

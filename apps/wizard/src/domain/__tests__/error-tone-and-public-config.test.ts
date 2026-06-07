@@ -65,7 +65,7 @@ describe('validation error tone', () => {
 
 describe('PublicConfig validation + fallback contract', () => {
   const valid = {
-    contractVersion: 2,
+    contractVersion: 3,
     wizardId: 'fencing',
     businessName: 'Test Fencing',
     businessPhone: '01234 567890',
@@ -79,7 +79,7 @@ describe('PublicConfig validation + fallback contract', () => {
     buildTimestamp: '2026-05-25T00:00:00.000Z',
   };
 
-  it('accepts a well-formed v2 public config', () => {
+  it('accepts a well-formed v3 public config', () => {
     expect(validatePublicConfig(valid).ok).toBe(true);
   });
 
@@ -88,8 +88,8 @@ describe('PublicConfig validation + fallback contract', () => {
     expect(validatePublicConfig(withExtra).ok).toBe(true);
   });
 
-  it('rejects contractVersion v1 (superseded by v2)', () => {
-    const bad = { ...valid, contractVersion: 1 };
+  it('rejects contractVersion v2 (superseded by v3)', () => {
+    const bad = { ...valid, contractVersion: 2 };
     expect(validatePublicConfig(bad).ok).toBe(false);
   });
 
