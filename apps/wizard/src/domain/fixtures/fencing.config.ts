@@ -31,6 +31,7 @@ import type { PricingConfig } from '@/domain/config/pricing';
 export const fencingWizardConfig: WizardConfig = {
   schemaVersion: 1,
   id: 'fencing',
+  quoteMode: 'instant',
   title: 'Fencing quote',
   steps: [
     {

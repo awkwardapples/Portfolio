@@ -35,6 +35,7 @@ import type { PricingConfig } from '@/domain/config/pricing';
 export const deckingWizardConfig: WizardConfig = {
   schemaVersion: 1,
   id: 'decking',
+  quoteMode: 'instant',
   title: 'Decking quote',
   steps: [
     {

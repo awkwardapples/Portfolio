@@ -131,6 +131,16 @@ export const WizardConfigSchema = z.strictObject({
   schemaVersion: z.literal(1),
   id: idSchema,
   title: z.string().min(1),
+  /**
+   * Controls how this wizard computes and presents a quote (ADR-0017).
+   *   - 'instant': pricing is computed and shown to the user before submission.
+   *   - 'manual': pricing is bypassed; the submission is routed as a quote
+   *     request for the contractor to assess and price manually.
+   *
+   * Optional for backward compatibility. Absent is treated as 'instant'
+   * by the runtime (config.wizard.quoteMode ?? 'instant').
+   */
+  quoteMode: z.enum(['instant', 'manual']).optional(),
   steps: z.array(StepSchema).min(1, 'A wizard must contain at least one step.'),
 });
 
