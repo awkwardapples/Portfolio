@@ -72,6 +72,7 @@ final class Activator {
 		add_option( 'goqw_plugin_version', GOQW_VERSION );
 		add_option( 'goqw_wizard_id', 'fencing' );
 		add_option( 'goqw_enabled_services', '' );
+		add_option( 'goqw_enable_category_navigation', 0 );
 		add_option( SiteRootPage::OPTION_KEY, 0 );
 	}
 

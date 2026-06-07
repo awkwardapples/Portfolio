@@ -26,7 +26,7 @@ afterEach(
 );
 
 it(
-	'emits contractVersion 2 in the public config',
+	'emits contractVersion 3 in the public config',
 	function (): void {
 		Functions\when( 'get_option' )->justReturn( '' );
 		Functions\when( 'esc_url_raw' )->returnArg();
@@ -35,7 +35,21 @@ it(
 
 		$config = PublicConfig::build();
 
-		expect( $config['contractVersion'] )->toBe( 2 );
+		expect( $config['contractVersion'] )->toBe( 3 );
+	}
+);
+
+it(
+	'emits enableCategoryNavigation as false when the option is absent',
+	function (): void {
+		Functions\when( 'get_option' )->justReturn( '' );
+		Functions\when( 'esc_url_raw' )->returnArg();
+		Functions\when( 'rest_url' )->justReturn( 'https://example.test/wp-json/qw/v1' );
+		Functions\when( 'wp_create_nonce' )->justReturn( 'test-nonce' );
+
+		$config = PublicConfig::build();
+
+		expect( $config['enableCategoryNavigation'] )->toBeFalse();
 	}
 );
 

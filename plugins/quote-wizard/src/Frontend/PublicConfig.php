@@ -37,7 +37,7 @@ final class PublicConfig {
 	 * The current contract version. Bump if any field is renamed, removed,
 	 * or changes semantics. Adding a new optional field does NOT require a bump.
 	 */
-	public const CONTRACT_VERSION = 2;
+	public const CONTRACT_VERSION = 3;
 
 	/**
 	 * Build the public configuration array.
@@ -74,6 +74,9 @@ final class PublicConfig {
 			'pluginVersion'   => GOQW_VERSION,
 			'buildTimestamp'  => self::build_timestamp(),
 		);
+
+		// Category navigation flag (ADR-0017). Always emitted; defaults to false.
+		$config['enableCategoryNavigation'] = (bool) get_option( 'goqw_enable_category_navigation', false );
 
 		// Emit enabledServiceIds only when non-empty (additive, optional field).
 		$ids = self::enabled_service_ids();

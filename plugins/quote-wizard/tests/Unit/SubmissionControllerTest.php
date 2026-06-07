@@ -30,9 +30,10 @@ use Brain\Monkey\Functions;
 function valid_payload( array $overrides = [] ): array {
 	return array_merge(
 		array(
-			'contractVersion' => 2,
+			'contractVersion' => 3,
 			'wizardId'        => 'fencing',
 			'schemaVersion'   => 1,
+			'quoteMode'       => 'instant',
 			'answers'         => array( 'fence_type' => 'wooden' ),
 			'pricing'         => array(
 				'totalPence' => 50000,
@@ -265,6 +266,90 @@ it(
 
 		expect( $response->get_status() )->toBe( 400 );
 		expect( $repo->inserts )->toBeEmpty();
+	}
+);
+
+it(
+	'returns 400 when contractVersion is 2 (superseded by v3)',
+	function (): void {
+		$repo    = spy_repository();
+		$fwd     = spy_forwarder( ForwardResult::success() );
+		$ctrl    = new SubmissionController( $repo, $fwd );
+		$request = make_request( valid_payload( array( 'contractVersion' => 2 ) ) );
+
+		$response = $ctrl->handle( $request );
+
+		expect( $response->get_status() )->toBe( 400 );
+		expect( $repo->inserts )->toBeEmpty();
+	}
+);
+
+it(
+	'accepts contractVersion 3 and returns 200',
+	function (): void {
+		$repo    = spy_repository( 1 );
+		$fwd     = spy_forwarder( ForwardResult::success() );
+		$ctrl    = new SubmissionController( $repo, $fwd );
+		$request = make_request( valid_payload( array( 'contractVersion' => 3 ) ) );
+
+		$response = $ctrl->handle( $request );
+
+		expect( $response->get_status() )->toBe( 200 );
+	}
+);
+
+it(
+	'returns 400 when quoteMode is missing from the payload',
+	function (): void {
+		$repo    = spy_repository();
+		$fwd     = spy_forwarder( ForwardResult::success() );
+		$ctrl    = new SubmissionController( $repo, $fwd );
+		$payload = valid_payload();
+		unset( $payload['quoteMode'] );
+		$request = make_request( $payload );
+
+		$response = $ctrl->handle( $request );
+
+		expect( $response->get_status() )->toBe( 400 );
+		expect( $repo->inserts )->toBeEmpty();
+	}
+);
+
+it(
+	'accepts quoteMode manual without pricing and returns 200',
+	function (): void {
+		$repo    = spy_repository( 5 );
+		$fwd     = spy_forwarder( ForwardResult::success() );
+		$ctrl    = new SubmissionController( $repo, $fwd );
+		$payload = valid_payload(
+			array(
+				'quoteMode' => 'manual',
+				'pricing'   => null,
+			)
+		);
+		$request = make_request( $payload );
+
+		$response = $ctrl->handle( $request );
+
+		expect( $response->get_status() )->toBe( 200 );
+		expect( $repo->inserts[0]['pricing_json'] )->toBeNull();
+	}
+);
+
+it(
+	'stores null pricing_json for instant quoteMode when pricing is absent from payload',
+	function (): void {
+		$repo    = spy_repository( 6 );
+		$fwd     = spy_forwarder( ForwardResult::success() );
+		$ctrl    = new SubmissionController( $repo, $fwd );
+		$payload = valid_payload();
+		unset( $payload['pricing'] );
+		$request = make_request( $payload );
+
+		$response = $ctrl->handle( $request );
+
+		expect( $response->get_status() )->toBe( 200 );
+		expect( $repo->inserts[0]['pricing_json'] )->toBeNull();
 	}
 );
 

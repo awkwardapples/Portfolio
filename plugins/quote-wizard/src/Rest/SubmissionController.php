@@ -134,8 +134,13 @@ final class SubmissionController {
 			return new WP_Error( 'invalid_payload', 'Payload must be a JSON object.' );
 		}
 
-		if ( ( $payload['contractVersion'] ?? null ) !== 2 ) {
+		if ( ( $payload['contractVersion'] ?? null ) !== 3 ) {
 			return new WP_Error( 'contract_version', 'Contract version mismatch.' );
+		}
+
+		$quote_mode = $payload['quoteMode'] ?? null;
+		if ( ! in_array( $quote_mode, array( 'instant', 'manual' ), true ) ) {
+			return new WP_Error( 'quote_mode', 'quoteMode must be instant or manual.' );
 		}
 
 		$wizard_id = $payload['wizardId'] ?? null;
@@ -148,8 +153,10 @@ final class SubmissionController {
 			return new WP_Error( 'answers', 'answers must be an object.' );
 		}
 
+		// For 'manual' quoteMode the pricing block is not expected and is ignored
+		// even if present. For 'instant', pricing is validated when supplied.
 		$pricing = null;
-		if ( isset( $payload['pricing'] ) && is_array( $payload['pricing'] ) ) {
+		if ( 'instant' === $quote_mode && isset( $payload['pricing'] ) && is_array( $payload['pricing'] ) ) {
 			$p = $payload['pricing'];
 			if (
 				isset( $p['totalPence'], $p['lowPence'], $p['highPence'], $p['currency'] )
@@ -177,6 +184,7 @@ final class SubmissionController {
 			'schema_version'   => isset( $payload['schemaVersion'] ) && is_int( $payload['schemaVersion'] )
 				? $payload['schemaVersion']
 				: 1,
+			'quote_mode'       => $quote_mode,
 			'answers_json'     => wp_json_encode( $answers ),
 			'pricing_json'     => null !== $pricing ? wp_json_encode( $pricing ) : null,
 			'media_json'       => $this->extract_media_json( $answers ),

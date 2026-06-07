@@ -48,6 +48,7 @@ class Forwarder {
 				'submission_id'    => $submission_id,
 				'wizard_id'        => $payload['wizard_id'],
 				'schema_version'   => $payload['schema_version'],
+				'quote_mode'       => $payload['quote_mode'] ?? 'instant',
 				'answers'          => json_decode( $payload['answers_json'], true ),
 				'pricing'          => null !== $payload['pricing_json']
 					? json_decode( $payload['pricing_json'], true )
