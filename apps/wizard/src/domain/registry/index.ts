@@ -7,3 +7,5 @@ export {
 } from '@/domain/registry/resolve';
 export { listEnabledServiceIds, resolveService } from '@/domain/registry/services';
 export type { Vertical, SessionConfig, ServiceId, ServiceConfig } from '@/domain/registry/types';
+export { CATEGORIES, listCategories, resolveCategory } from '@/domain/registry/categories';
+export type { CategoryId, CategoryConfig } from '@/domain/registry/categories';

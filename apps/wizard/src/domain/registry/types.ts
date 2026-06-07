@@ -21,6 +21,13 @@ export interface Vertical {
   readonly pricing: PricingConfig;
   /** Matches the 4.1 schema version; bumps if and when those schemas bump. */
   readonly schemaVersion: 1;
+  /**
+   * Optional category this vertical belongs to (Step 5.5a / ADR-0017).
+   * Used by the category-navigation layer when enableCategoryNavigation is true.
+   * Absent means this vertical has no category assignment; it is still fully
+   * functional and visible when category navigation is disabled.
+   */
+  readonly categoryId?: string;
 }
 
 /**
