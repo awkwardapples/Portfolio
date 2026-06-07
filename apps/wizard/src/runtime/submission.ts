@@ -8,7 +8,13 @@ import type { SubmissionErrorCode, SubmissionErrorInfo } from '@/domain/runtime/
 export interface SubmissionRequest {
   readonly wizardId: string;
   readonly schemaVersion?: number;
+  /** Propagated from WizardConfig.quoteMode (ADR-0017). Absent is treated as 'instant' by the server. */
+  readonly quoteMode: 'instant' | 'manual';
   readonly answers: AnswerMap;
+  /**
+   * Present for 'instant' quoteMode when the pricing engine produces a valid result.
+   * Absent for 'manual' quoteMode — the contractor prices the job manually.
+   */
   readonly pricing?: {
     readonly totalPence: number;
     readonly lowPence: number;

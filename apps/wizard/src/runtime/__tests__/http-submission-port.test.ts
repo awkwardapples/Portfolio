@@ -14,6 +14,7 @@ const BASE_OPTIONS = {
 const VALID_REQUEST: SubmissionRequest = {
   wizardId: 'fencing',
   schemaVersion: 1,
+  quoteMode: 'instant',
   answers: { fence_type: 'wooden', length_m: 10 },
   pricing: { totalPence: 50000, lowPence: 45000, highPence: 55000, currency: 'GBP' },
   clientTimestamp: '2026-05-29T12:00:00.000Z',

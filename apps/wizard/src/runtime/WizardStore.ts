@@ -114,23 +114,32 @@ export function createWizardStore(
 // ---------------------------------------------------------------------------
 
 function buildRequest(state: WizardState, config: SessionConfig): SubmissionRequest {
-  const pricing = computePrice(state.answers, config.wizard, config.pricing);
-  return {
-    wizardId: state.configMeta.wizardId,
-    schemaVersion: state.configMeta.schemaVersion,
-    answers: state.answers,
-    pricing:
+  const quoteMode = config.wizard.quoteMode ?? 'instant';
+
+  let pricingPayload: SubmissionRequest['pricing'];
+  if (quoteMode === 'instant') {
+    const pricing = computePrice(state.answers, config.wizard, config.pricing);
+    if (
       pricing.valid &&
       pricing.totalPence !== null &&
       pricing.rangeMinPence !== null &&
       pricing.rangeMaxPence !== null
-        ? {
-            totalPence: pricing.totalPence,
-            lowPence: pricing.rangeMinPence,
-            highPence: pricing.rangeMaxPence,
-            currency: 'GBP',
-          }
-        : undefined,
+    ) {
+      pricingPayload = {
+        totalPence: pricing.totalPence,
+        lowPence: pricing.rangeMinPence,
+        highPence: pricing.rangeMaxPence,
+        currency: 'GBP',
+      };
+    }
+  }
+
+  return {
+    wizardId: state.configMeta.wizardId,
+    schemaVersion: state.configMeta.schemaVersion,
+    quoteMode,
+    answers: state.answers,
+    pricing: pricingPayload,
     clientTimestamp: new Date().toISOString(),
   };
 }
