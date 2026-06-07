@@ -59,7 +59,8 @@ export function WizardShell(): JSX.Element {
   const isFirst = currentIndex === 0;
   const isLast = currentIndex === visibleSteps.length - 1;
 
-  const price = selectPrice(state, config);
+  const quoteMode = config.wizard.quoteMode ?? 'instant';
+  const price = quoteMode === 'instant' ? selectPrice(state, config) : null;
 
   return (
     <>
@@ -72,7 +73,8 @@ export function WizardShell(): JSX.Element {
       <main id="wizard-main" className="mx-auto max-w-xl space-y-4 p-6">
         <ProgressBar current={currentIndex + 1} total={visibleSteps.length} />
         <StepRenderer key={currentStep.id} step={currentStep} isFirst={isFirst} isLast={isLast} />
-        {price.valid &&
+        {price !== null &&
+          price.valid &&
           price.totalPence !== null &&
           price.rangeMinPence !== null &&
           price.rangeMaxPence !== null && (

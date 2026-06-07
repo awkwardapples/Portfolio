@@ -1,7 +1,12 @@
 import { useState, useMemo, type ReactElement } from 'react';
 
 import { config } from '@/config-loader';
-import { listEnabledServiceIds, resolveService, resolveFallbackVertical } from '@/domain/registry';
+import {
+  listEnabledServiceIds,
+  listCategories,
+  resolveService,
+  resolveFallbackVertical,
+} from '@/domain/registry';
 import type { ServiceConfig } from '@/domain/registry';
 import {
   createWizardStore,
@@ -12,7 +17,8 @@ import {
 import type { SubmissionPort } from '@/runtime';
 import { PhotoStore } from '@/runtime/photos-store';
 import { createPhotoEnrichedPort } from '@/runtime/submission-media';
-import { ServiceSelector } from '@/components/selection';
+import { useCategorySelection } from '@/runtime/hooks/useCategorySelection';
+import { ServiceSelector, CategorySelector } from '@/components/selection';
 import { WizardShell } from '@/components/WizardShell';
 
 const devSubmissionPort: SubmissionPort = {
@@ -32,6 +38,7 @@ const enabledIds = listEnabledServiceIds(config.enabledServiceIds);
 const services = enabledIds
   .map((id) => resolveService(id))
   .filter((s): s is ServiceConfig => s !== null);
+const categories = listCategories();
 
 /**
  * The Quote page. Per-session service selection — state is local to this
@@ -45,6 +52,7 @@ const services = enabledIds
  * NOTE: wizard wiring moved from App.tsx during Step 5.0 without modification.
  */
 export function QuotePage(): ReactElement {
+  const { selectedCategoryId, selectCategory } = useCategorySelection();
   const [selectedId, setSelectedId] = useState<string | null>(
     services.length === 1 ? (services[0]?.id ?? null) : null,
   );
@@ -91,9 +99,21 @@ export function QuotePage(): ReactElement {
   }
 
   if (selectedId === null) {
+    // Category navigation phase (ADR-0017): show CategorySelector first when enabled.
+    if (config.enableCategoryNavigation && categories.length > 0 && selectedCategoryId === null) {
+      return (
+        <div className="mx-auto max-w-3xl px-6 py-12">
+          <CategorySelector categories={categories} onSelect={selectCategory} />
+        </div>
+      );
+    }
     return (
       <div className="mx-auto max-w-3xl px-6 py-12">
-        <ServiceSelector services={services} onSelect={setSelectedId} />
+        <ServiceSelector
+          services={services}
+          onSelect={setSelectedId}
+          filterByCategoryId={selectedCategoryId ?? undefined}
+        />
       </div>
     );
   }
@@ -101,7 +121,11 @@ export function QuotePage(): ReactElement {
   if (wizardResources === null) {
     return (
       <div className="mx-auto max-w-3xl px-6 py-12">
-        <ServiceSelector services={services} onSelect={setSelectedId} />
+        <ServiceSelector
+          services={services}
+          onSelect={setSelectedId}
+          filterByCategoryId={selectedCategoryId ?? undefined}
+        />
       </div>
     );
   }
