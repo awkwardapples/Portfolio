@@ -117,3 +117,32 @@ checks for contractVersion 3.
 - ADR-0014 (Reference Template Product Scope) — capabilities benefit all client
   forks, not only the first client.
 - ADR-0015 (Submission Pipeline Architecture) — payload widened; amendment below.
+
+---
+
+## Amendment — Wire contract gap discovered post-acceptance (Step 5.5a-remediation, 2026-06-08)
+
+Step 5.5a was accepted on the basis of reported gates (421/421 Vitest, 88/88
+PHP). Criterion 26 (operational verification on a real WordPress install) was
+listed as mandatory in the spec but was not actually performed before the step
+was marked complete.
+
+During Step 5.5a-remediation, the first real deployment returned HTTP 400 on
+every submission. Investigation found:
+
+- `PublicConfig.ts` correctly exported `CONTRACT_VERSION = 3`.
+- The PHP `PublicConfig::CONTRACT_VERSION` constant was correctly `3`.
+- The TypeScript submission payload builder (`http-submission-port.ts`)
+  hardcoded `contractVersion: 2`, sending the obsolete value with every
+  submission.
+- The `quoteMode` field, required by `SubmissionController` post-5.5a, was
+  absent from the wire payload entirely.
+
+The root cause was a spec oversight: the 5.5a spec called out the contract
+version bump in `PublicConfig` but did not call out that `http-submission-port.ts`
+carries a separate hardcoded version literal. Two locations carry the version;
+only one was updated.
+
+Step 5.5a-remediation corrected both gaps and established ADR-0018 (Wire
+Contract Change Discipline) to prevent recurrence. The substantive decisions
+in this ADR are unaffected.
