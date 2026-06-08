@@ -1,3 +1,4 @@
+import { CONTRACT_VERSION } from '@/domain/config/public-config';
 import type { MediaIssue, SubmissionErrorInfo } from '@/domain/runtime/state';
 import type { SubmissionPort, SubmissionPortResult, SubmissionRequest } from '@/runtime/submission';
 
@@ -24,7 +25,8 @@ export interface HttpPortOptions {
 interface WirePayload {
   readonly wizardId: string;
   readonly schemaVersion: number;
-  readonly contractVersion: 2;
+  readonly contractVersion: typeof CONTRACT_VERSION;
+  readonly quoteMode: 'instant' | 'manual';
   readonly answers: Record<string, unknown>;
   readonly pricing: {
     readonly totalPence: number;
@@ -114,7 +116,8 @@ function buildPayload(request: SubmissionRequest): WirePayload {
   return {
     wizardId: request.wizardId,
     schemaVersion: request.schemaVersion ?? 1,
-    contractVersion: 2,
+    contractVersion: CONTRACT_VERSION,
+    quoteMode: request.quoteMode,
     answers: request.answers as Record<string, unknown>,
     pricing: request.pricing ?? null,
     clientTimestamp: request.clientTimestamp ?? new Date().toISOString(),

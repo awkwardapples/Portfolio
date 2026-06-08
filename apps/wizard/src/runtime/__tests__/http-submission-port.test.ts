@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { CONTRACT_VERSION } from '@/domain/config/public-config';
 import { httpSubmissionPort } from '@/runtime/http-submission-port';
 import type { SubmissionRequest } from '@/runtime/submission';
 
@@ -159,15 +160,31 @@ describe('httpSubmissionPort — wire contract', () => {
     expect(headers['Content-Type']).toBe('application/json');
   });
 
-  it('payload includes contractVersion:2, wizardId, answers, pricing, clientTimestamp', async () => {
+  it('payload includes contractVersion, quoteMode, wizardId, answers, pricing, clientTimestamp', async () => {
     await portWithMock(spy).submit(VALID_REQUEST);
     const [, init] = spy.mock.calls[0] as [string, RequestInit];
     const body = JSON.parse(init.body as string) as Record<string, unknown>;
-    expect(body['contractVersion']).toBe(2);
+    expect(body['contractVersion']).toBe(CONTRACT_VERSION);
+    expect(body['quoteMode']).toBe('instant');
     expect(body['wizardId']).toBe('fencing');
     expect(body['answers']).toEqual(VALID_REQUEST.answers);
     expect(body['pricing']).toEqual(VALID_REQUEST.pricing);
     expect(body['clientTimestamp']).toBe(VALID_REQUEST.clientTimestamp);
+  });
+
+  it('emits quoteMode:manual and null pricing for manual submissions', async () => {
+    const manualRequest: SubmissionRequest = {
+      wizardId: 'painting',
+      schemaVersion: 1,
+      quoteMode: 'manual',
+      answers: { description: 'repaint kitchen', contact_name: 'Test' },
+      clientTimestamp: '2026-06-08T00:00:00.000Z',
+    };
+    await portWithMock(spy).submit(manualRequest);
+    const [, init] = spy.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(init.body as string) as Record<string, unknown>;
+    expect(body['quoteMode']).toBe('manual');
+    expect(body['pricing']).toBeNull();
   });
 
   it('fetch is called exactly once per submit (no internal retry)', async () => {
