@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-06-07 (post Step 5.5a)_
+_Last updated: 2026-06-08 (post Step 5.5a-remediation)_
 
 ## What's working
 
@@ -18,7 +18,7 @@ _Last updated: 2026-06-07 (post Step 5.5a)_
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors
-- `pnpm test`: 421/421 (31 new from 5.5a)
+- `pnpm test`: 425/425 (31 new from 5.5a, 4 new from 5.5a-remediation)
 - `pnpm build`: clean, ~73 kB gzip bundle
 - `composer test`: passing (88 tests, 6 new from 5.5a)
 - `composer analyse`: clean
@@ -104,13 +104,15 @@ Strict ordering: validate → persist → forward → respond.
 - `QuotePage` resolves the vertical from `config.wizardId` (set by PHP → `window.GOQW_CONFIG`)
 - Adding a vertical = one PR (new fixture + registry entry)
 
-### PublicConfig v2 contract
+### PublicConfig v3 contract
 
-- `contractVersion: 2` (bumped from 1 in Step 4.5)
+- `contractVersion: 3` (bumped from 2 in Step 5.5a; wire payload fix in 5.5a-remediation)
 - `wizardId: string` (selects the vertical)
+- `enableCategoryNavigation: boolean` (defaults false; opt-in from 5.5a)
 - `restUrl`, `restNonce` (used by `httpSubmissionPort`)
-- PHP: `PublicConfig::CONTRACT_VERSION = 2`, `goqw_wizard_id` option seeded on activation
+- PHP: `PublicConfig::CONTRACT_VERSION = 3`, `goqw_wizard_id` option seeded on activation
 - Lockstep requirement: PHP plugin and JS bundle must be upgraded together
+- Wire payload must include `quoteMode: 'instant' | 'manual'` (validated by SubmissionController)
 
 ### WordPress Routing Layer (Step 5.1)
 
@@ -129,6 +131,6 @@ Strict ordering: validate → persist → forward → respond.
 
 - lint (`pnpm lint` → 0 errors, 0 warnings)
 - typecheck (`pnpm typecheck`)
-- vitest (`pnpm test` → 390/390)
+- vitest (`pnpm test` → 425/425)
 - build (`pnpm -r build`)
 - PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 82/82 (2 skipped)

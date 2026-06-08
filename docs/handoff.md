@@ -1,6 +1,6 @@
 # Handoff
 
-_Last updated: 2026-06-07 (post Step 5.5a)_
+_Last updated: 2026-06-08 (post Step 5.5a-remediation)_
 
 ## Status
 
@@ -14,7 +14,11 @@ Phase 4 complete. Phase 5 in progress.
 - 5.5a (Template Capabilities) complete — category navigation and manual-quote
   mode added as opt-in capabilities; wire contract v3; ADR-0017. 421/421 Vitest,
   88/88 PHP. Acme Fencing demo unchanged.
-- 5.5 (First client adaptation) is now up next.
+- 5.5a-remediation complete — wire contract drift fix (contractVersion hardcoded 2→3,
+  quoteMode added to wire payload). Wire-contract integration test added. GOQW_VERSION
+  bumped to 0.3.0. ADR-0018. 425/425 Vitest, 88/88 PHP. Operational verification
+  pending (blocking for this step per ADR-0018 — see phase-5-evidence.md).
+- 5.5b (Operational fork procedure documentation) is now up next.
 
 The system is functionally complete for a single-client deployment. The remaining
 work is template adaptation, visual customization (driven by real client
@@ -60,15 +64,17 @@ If you are starting a new step:
 
 The roadmap is sequenced explicitly. See `docs/roadmap.md` for full detail.
 
-**Immediate next step:** Step 5.5 — First client adaptation (handyman,
-priority subset of their services). The adaptation runbook
-(`docs/adaptation-runbook.md`), Make.com integration guide
-(`docs/make-com-integration.md`), and the new 5.5a capabilities (category
-navigation and manual-quote mode) are the guides for this step.
+**Immediate next step:** Step 5.5b — Operational fork procedure documentation.
+Capture the fork mechanics demonstrated during the SCB Handyman clone work
+(the clone exists; the procedure hasn't been formally documented), plus the
+operational verification lessons from 5.5a-remediation. ADR-0018 discipline
+must be applied: deploy both LocalWP sites with the remediation bundle and
+record the evidence before 5.5a-remediation is fully closed.
 
-**After 5.5:**
+**After 5.5b:**
 
-- 5.6: Visual customization v1 (driven by 5.5 feedback).
+- 5.5 (or 5.5c): First client adaptation (handyman, priority services).
+- 5.6: Visual customization v1 (driven by first-client feedback).
 - 5.7: Handyman service expansion.
 - 6.0: First client production deployment to IONOS.
 - 6.1+: Second client onboarding.

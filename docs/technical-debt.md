@@ -4,6 +4,30 @@ This file records conscious deferral decisions: things we knowingly skipped
 and the trigger condition that should prompt revisiting them. It is not a
 backlog; it is a record of trade-offs made deliberately.
 
+## Standing discipline: wire contract changes require operational verification (ADR-0018)
+
+Per ADR-0018, any step that modifies the wire contract between PHP and TypeScript
+is subject to two blocking requirements before completion:
+
+1. **An integration test** asserting payload shape matches controller expectations
+   must exist and run in CI. See
+   `apps/wizard/src/runtime/__tests__/wire-contract-integration.test.ts`.
+2. **Operational verification** must be performed and recorded in
+   `phase-N-evidence.md` using the discipline language:
+   _"Submitted a wizard end-to-end on [site] on [date]. Observed HTTP [status]
+   response. Confirmed database row [id] with [fields]."_
+
+The "wire contract" includes: PublicConfig shape (PHP emit or TS schema),
+submission payload shape (TS construction or PHP validation), response shape,
+`contractVersion` value, and any field name, type, or required-ness on the above.
+
+This rule has teeth: a step that changes the wire contract without satisfying
+both requirements is not complete, regardless of green code gates. The project
+has paid the cost of skipping this discipline three times (OV-001-F5,
+5.5a wire contract drift, first SCB clone deploy).
+
+---
+
 ## OV-001 findings (from manual WordPress verification, June 2026)
 
 ### OV-001-F1 — Plugin deployment procedure (RESOLVED in 5.2)

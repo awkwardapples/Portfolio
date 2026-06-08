@@ -15,21 +15,23 @@ A single-page, structural view of project state. Update on every completed step.
 
 ## Step status
 
-| Step | Status   | What                                                      |
-| ---- | -------- | --------------------------------------------------------- |
-| 4.7  | Complete | Service abstraction + decking vertical                    |
-| 4.8  | Complete | Photo upload capability + tests                           |
-| 5.0  | Complete | Site shell + 5 reference pages                            |
-| 5.1  | Complete | WordPress page mapping + production routing               |
-| 5.2  | Complete | OV-001 remediation (verified end-to-end in WordPress)     |
-| 5.3  | Complete | Adaptation runbook (documentation of clone-and-customize) |
-| 5.4  | Complete | Make.com integration documentation                        |
-| 5.5a | Complete | Template capabilities (category nav + manual-quote mode)  |
-| 5.5  | Up next  | First client adaptation (handyman, priority services)     |
-| 5.6  | Planned  | Visual customization v1 (driven by 5.5 client feedback)   |
-| 5.7  | Planned  | Handyman additional services (driven by lead patterns)    |
-| 6.0  | Planned  | First client production deployment to IONOS               |
-| 6.1+ | Future   | Second client onboarding (validates template)             |
+| Step   | Status   | What                                                      |
+| ------ | -------- | --------------------------------------------------------- |
+| 4.7    | Complete | Service abstraction + decking vertical                    |
+| 4.8    | Complete | Photo upload capability + tests                           |
+| 5.0    | Complete | Site shell + 5 reference pages                            |
+| 5.1    | Complete | WordPress page mapping + production routing               |
+| 5.2    | Complete | OV-001 remediation (verified end-to-end in WordPress)     |
+| 5.3    | Complete | Adaptation runbook (documentation of clone-and-customize) |
+| 5.4    | Complete | Make.com integration documentation                        |
+| 5.5a   | Complete | Template capabilities (category nav + manual-quote mode)  |
+| 5.5a-r | Complete | Wire contract drift fix; ADR-0018; GOQW_VERSION 0.3.0     |
+| 5.5b   | Up next  | Operational fork procedure documentation                  |
+| 5.5    | Planned  | First client adaptation (handyman, priority services)     |
+| 5.6    | Planned  | Visual customization v1 (driven by 5.5 client feedback)   |
+| 5.7    | Planned  | Handyman additional services (driven by lead patterns)    |
+| 6.0    | Planned  | First client production deployment to IONOS               |
+| 6.1+   | Future   | Second client onboarding (validates template)             |
 
 ## Step rationale and dependencies
 
@@ -44,6 +46,19 @@ and downstream workflow design. Can run in parallel with 5.5.
 navigation (optional phase before service selection) and manual-quote mode
 (bypasses instant pricing for complex services). Wire contract bumped to v3.
 Acme Fencing demo unchanged. See ADR-0017.
+
+**5.5a-remediation — Wire contract drift fix.** Corrects the omission that
+5.5a's code gates passed while the submission payload builder still hardcoded
+`contractVersion: 2` and omitted `quoteMode`. Adds wire-contract integration
+tests (ADR-0018) to prevent recurrence. Bumps GOQW_VERSION to 0.3.0. The
+discipline gap (Criterion 26 not performed before 5.5a was marked complete) is
+recorded honestly in evidence and in ADR-0017's amendment.
+
+**5.5b — Operational fork procedure documentation.** Captures the fork
+mechanics demonstrated by the SCB Handyman clone and the operational
+verification process required by ADR-0018. Gated on completing the ADR-0018
+operational verification for 5.5a-remediation (deploy both LocalWP sites,
+observe 502, confirm database rows).
 
 **5.5 — First client adaptation.** Empirical test of the 5.3 runbook. Applies
 it to the handyman client. Builds the priority subset of the handyman's

@@ -561,4 +561,89 @@ across 9 commits (ADR-0017, amendments to ADR-0013 and ADR-0015).
 | `1e11ab4` | feat(submission): SubmissionRequest gains quoteMode; buildRequest skips pricing for manual  |
 | `f68e670` | feat(ui): CategorySelector, useCategorySelection, ServiceSelector filter, WizardShell guard |
 | `984841e` | feat(php): contract v3, enableCategoryNavigation, quoteMode validation and forwarding       |
-| _(this)_  | docs: Step 5.5a evidence + runbook additions                                                |
+| `9f2fab1` | docs: Step 5.5a evidence, runbook additions (category nav + manual-quote), status updates   |
+
+---
+
+## Step 5.5a-Remediation — Wire Contract Drift Fix (2026-06-08)
+
+### Background
+
+Step 5.5a was marked complete on 2026-06-07 with reported gates 421/421 Vitest
+and 88/88 PHP. Step 5.5a Criterion 26 (operational verification on a real
+WordPress install) was listed as mandatory in the spec but was not performed
+before the step was marked complete.
+
+During subsequent work, the first deployed plugin returned HTTP 400 on every
+submission. Investigation found:
+
+- `PublicConfig.ts` correctly exported `CONTRACT_VERSION = 3`.
+- PHP `PublicConfig::CONTRACT_VERSION` was correctly `3`.
+- `http-submission-port.ts` `buildPayload()` hardcoded `contractVersion: 2`,
+  sending the obsolete value with every submission.
+- The `quoteMode` field, required by `SubmissionController` post-5.5a, was
+  absent from the wire payload.
+
+Root cause: two locations carry the version literal; the spec called out
+PublicConfig but not the submission payload builder.
+
+### Remediation actions
+
+1. `http-submission-port.ts`: replaced hardcoded `contractVersion: 2` with
+   `CONTRACT_VERSION` import; added `quoteMode` to `WirePayload` type and
+   `buildPayload()`.
+2. `http-submission-port.test.ts`: updated contract-version assertion (2 → 3),
+   added `quoteMode` assertion, added manual-quoteMode test.
+3. New `wire-contract-integration.test.ts`: 3 tests covering the full payload
+   shape expected by PHP controller, plus a canary on `CONTRACT_VERSION === 3`.
+4. GOQW_VERSION bumped from 0.2.0 to 0.3.0 in `quote-wizard.php`.
+5. ADR-0018 created: wire contract changes require integration test + operational
+   verification as blocking acceptance criteria.
+6. `technical-debt.md` updated with the ADR-0018 discipline rule.
+
+### Gate state (code gates)
+
+| Gate             | Result                                     |
+| ---------------- | ------------------------------------------ |
+| `pnpm lint`      | 0 errors, 0 warnings                       |
+| `pnpm typecheck` | 0 errors (production + test tsconfig)      |
+| `pnpm test`      | **425 / 425 passing** (32 test files)      |
+| `pnpm build`     | Clean. Bundle size unchanged (~73 kB gzip) |
+| `composer test`  | 88 / 88 passing (unchanged)                |
+| `composer lint`  | 0 errors, 0 warnings                       |
+
+### Operational verification (ADR-0018 blocking requirement)
+
+**Canonical template site (fencing-lead-platform-dev.local):**
+_Pending — to be performed before 5.5a-remediation is closed. Record here:_
+"Submitted a wizard end-to-end on fencing-lead-platform-dev.local on [date].
+Observed HTTP [status] response. Confirmed database row [id] with [fields]."
+
+**SCB Handyman site (scb-handyman.local):**
+_Pending — to be performed before 5.5a-remediation is closed. Record here:_
+"Submitted a wizard end-to-end on scb-handyman.local on [date]. Observed
+HTTP [status] response. Confirmed database row [id] with [fields]."
+
+Both verifications require the remediation bundle to be deployed to the
+respective LocalWP sites per `docs/onboarding.md` before recording.
+
+### New test breakdown
+
+| Suite                                | File                                                      | New tests |
+| ------------------------------------ | --------------------------------------------------------- | --------- |
+| http-submission-port (extended)      | `src/runtime/__tests__/http-submission-port.test.ts`      | +1        |
+| wire contract integration (new file) | `src/runtime/__tests__/wire-contract-integration.test.ts` | +3        |
+| **Total new**                        |                                                           | **+4**    |
+
+Previous total (Step 5.5a): 421 Vitest + 88 PHP
+Current total: **425 Vitest** + **88 PHP** (unchanged)
+
+### Commits
+
+| Commit    | Description                                                                           |
+| --------- | ------------------------------------------------------------------------------------- |
+| `4885c6b` | docs: ADR-0018 (wire contract discipline); ADR-0017 amendment                         |
+| `bcc987e` | fix(wizard): submission payload uses CONTRACT_VERSION constant and includes quoteMode |
+| `26547c3` | test(wizard): wire contract integration test (ADR-0018)                               |
+| `da956e8` | chore(plugin): bump GOQW_VERSION 0.2.0 → 0.3.0                                        |
+| _(this)_  | docs: 5.5a-remediation evidence, discipline rule, documentation set update            |
