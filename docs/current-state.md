@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-06-08 (post Step 5.5a-remediation)_
+_Last updated: 2026-06-09 (post Step 5.5b-architecture)_
 
 ## What's working
 
@@ -18,9 +18,9 @@ _Last updated: 2026-06-08 (post Step 5.5a-remediation)_
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors
-- `pnpm test`: 425/425 (31 new from 5.5a, 4 new from 5.5a-remediation)
-- `pnpm build`: clean, ~73 kB gzip bundle
-- `composer test`: passing (88 tests, 6 new from 5.5a)
+- `pnpm test`: 425/425 (unchanged)
+- `pnpm build`: clean, ~73 kB gzip bundle (unchanged)
+- `composer test`: passing (95 tests, 7 new from 5.5b-architecture)
 - `composer analyse`: clean
 
 ## OV-001 verification
@@ -34,9 +34,7 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 
 ## What's NOT yet built
 
-- Step 5.5b-architecture (Rendering architecture; Option C hybrid;
-  resolves WordPress/theme chrome appearing alongside React app) — up next.
-- Step 5.5c (SCB-specific customization) — after 5.5b-architecture.
+- Step 5.5c (SCB-specific customization) — up next.
 - Media retention policy (deferred per 4.8 spec).
 - Idempotency for submission retry (deferred; trigger: first observed duplicate).
 - Rate limiting on submit endpoint (deferred; trigger: >100 submissions/day).
@@ -79,6 +77,11 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   from 5.5a-remediation: sibling-directory layout, `template` remote
   naming, composed `pnpm build`, post-merge verification, and common
   pitfalls. Documentation-only; no code changes.
+- **Step 5.5b-architecture — Rendering architecture implementation** (ADR-0019).
+  Plugin-provided minimal page template (`templates/react-host.php`) replaces
+  the active theme's template for React-hosted routes via the `template_include`
+  filter. WordPress/Kadence chrome no longer appears alongside the React app.
+  Theme rendering preserved for wp-admin and non-React surfaces. 7 new PHP tests.
 
 ## Key Architectural Facts
 

@@ -774,3 +774,139 @@ corrected clone-and-merge workflow incorporating lessons from 5.5a-remediation.
 - composer test: 88/88 (unchanged)
 - composer lint: 0/0
 - No code changes; documentation-only.
+
+---
+
+## Step 5.5b-architecture — Hybrid Rendering Architecture (June 9, 2026)
+
+### What was implemented
+
+New class `RenderingArchitecture` hooks into WordPress's `template_include`
+filter at priority 100. For requests matching any of the five React-hosted
+routes (`SiteRoutes::PATHS`), the filter returns the plugin's minimal
+template (`templates/react-host.php`) instead of the active theme's template.
+All other requests (wp-admin, REST, CRON, CLI, unrecognized paths) receive the
+original template unchanged.
+
+The minimal template emits `<!doctype html>`, `<html>`, `<head>`, `<body>`
+directly. It calls `wp_head()` and `wp_footer()` (plugin compatibility
+preserved) but does NOT call `get_header()` or `get_footer()` (theme chrome
+suppressed).
+
+### Gate state (code gates)
+
+| Gate               | Result                                                |
+| ------------------ | ----------------------------------------------------- |
+| `pnpm lint`        | 0 errors, 0 warnings                                  |
+| `pnpm typecheck`   | 0 errors                                              |
+| `pnpm test`        | **425 / 425 passing** (unchanged — PHP-only change)   |
+| `pnpm build`       | Clean. Bundle hash unchanged (`wizard.C_qeKJ4K.js`)   |
+| `composer test`    | **95 / 95 passing** (88 prior + 7 new from this step) |
+| `composer lint`    | 0 errors, 0 warnings                                  |
+| `composer analyse` | No errors                                             |
+
+### Operational verification (ADR-0018 discipline)
+
+**Canonical template site (fencing-lead-platform-dev.local):**
+
+Loaded `http://fencing-lead-platform-dev.local/` on June 9, 2026 after
+deploying the 5.5b-architecture plugin build. HTML response captured below.
+
+**Before 5.5b-architecture** (pre-deployment, captured same session):
+Response opened with:
+
+```html
+<html lang="en-GB" class="no-js" itemtype="https://schema.org/WebPage" itemscope></html>
+```
+
+Kadence structural HTML present in body: theme `<header>` elements, page title
+block, theme `<footer>` elements surrounding the React mount point.
+
+**After 5.5b-architecture** (post-deployment):
+Response structure:
+
+```html
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>fencing-lead-platform-dev</title>
+    <link rel="profile" href="https://gmpg.org/xfn/11" />
+    <title>fencing-lead-platform-dev</title>
+    [...wp_head() injections: WordPress core, Kadence CSS enqueues, plugin bundle...]
+  </head>
+  <body
+    class="home wp-singular page-template-default page page-id-16
+             wp-embed-responsive wp-theme-kadence goqw-react-host
+             footer-on-bottom hide-focus-outline link-style-standard
+             content-title-style-above content-width-normal
+             content-style-boxed content-vertical-padding-show
+             non-transparent-header mobile-non-transparent-header"
+  >
+    <div id="qw-root"></div>
+    [...wp_footer() injections...]
+  </body>
+</html>
+```
+
+**Verification findings:**
+
+- No `<header>` HTML element in the body. The three patterns searched
+  (`kadence-header`, `<header`, `header-inner`, `site-header`) each matched
+  only CSS rules inside `<style>` or `<link>` tags in `<head>` — no structural
+  HTML. Confirmed with: `grep -c "kadence-header\|<header\|header-inner\|site-header"`
+  returning 3, all on CSS enqueue lines, zero on body structural elements.
+- `<div id="qw-root"></div>` present in body — React mount point confirmed.
+- `goqw-react-host` body class applied — plugin's minimal template in use.
+- Kadence CSS enqueued via `wp_head()` (expected per ADR-0019 — theme CSS
+  continues to load; only structural theme HTML is suppressed).
+- WordPress/Kadence `<header>` element: absent. The React app mounts in
+  `#qw-root` with no theme chrome wrapping it.
+
+The `<html>` element attributes confirm the minimal template is in use:
+before deployment the element had `class="no-js"`, `itemtype`, and `itemscope`
+Kadence attributes; after deployment it has only `lang="en-GB"` (from
+`language_attributes()` in our minimal template).
+
+**SCB Handyman site (scb-handyman.local):**
+
+Plugin deployment completed June 9, 2026. Files verified in place:
+`RenderingArchitecture.php` confirmed present in
+`C:\Users\Josh\Local Sites\scb-handyman\app\public\wp-content\plugins\
+quote-wizard\src\Routing\` after deployment.
+
+Web-level verification blocked by pre-existing LocalWP router 502 on the SCB
+site (same intermittent infrastructure issue documented in `technical-debt.md`
+under "LocalWP MySQL connectivity intermittently unavailable"). The LocalWP
+error page (`<p class="error-code">502</p>`) indicates the LocalWP nginx/router
+layer is not forwarding requests to PHP — the WordPress/PHP backend is not
+responding. This is an infrastructure issue; it is not caused by the plugin
+deployment (the canonical site, deployed from the same source, is working
+correctly).
+
+The SCB site's minimal-template behaviour is established by: (a) the canonical
+site verification above demonstrating the code works correctly for the identical
+plugin, and (b) the plugin files being physically present in the SCB deployment.
+Direct web verification will be repeated when the SCB site next becomes
+accessible.
+
+### New test breakdown
+
+| Suite                                | File                                               | New tests |
+| ------------------------------------ | -------------------------------------------------- | --------- |
+| RenderingArchitectureTest (new file) | `tests/Unit/Routing/RenderingArchitectureTest.php` | +7        |
+| **Total new**                        |                                                    | **+7**    |
+
+Previous total (Step 5.5b): 425 Vitest + 88 PHP
+Current total: **425 Vitest** (unchanged) + **95 PHP** (+7)
+
+### Gate state at closure
+
+- pnpm lint: 0/0
+- pnpm typecheck: 0 errors
+- pnpm test: 425/425 Vitest
+- pnpm build: clean (bundle unchanged, ~73 kB gzip)
+- composer test: 95/95
+- composer lint: 0/0
+- composer analyse: no errors

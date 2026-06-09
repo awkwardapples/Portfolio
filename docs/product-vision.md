@@ -127,6 +127,15 @@ yet. See `docs/technical-debt.md` for the formal catalog.
 - **Internationalization.** Out of scope unless a multi-language client
   requirement emerges.
 
+## Rendering architecture (implemented in Step 5.5b-architecture)
+
+React-hosted routes render via a plugin-provided minimal page template
+(`templates/react-host.php`), bypassing the active theme's header, footer, and
+page title chrome. This satisfies the "visually distinct, not
+template-derivative" constraint by ensuring no theme-specific structural HTML
+appears alongside the React app. `wp_head()` and `wp_footer()` are preserved
+for plugin compatibility. See ADR-0019.
+
 ## Discipline commitments
 
 These commitments shape every implementation step:
