@@ -26,7 +26,7 @@ A single-page, structural view of project state. Update on every completed step.
 | 5.4               | Complete     | Make.com integration documentation                                                                      |
 | 5.5a              | Complete     | Template capabilities (category nav + manual-quote mode)                                                |
 | 5.5a-remediation  | Complete     | Wire contract drift fix; operational verification under ADR-0018; build-pipeline composition correction |
-| 5.5b              | Up next      | Operational fork procedure documentation                                                                |
+| 5.5b              | Complete     | Operational fork procedure documentation                                                                |
 | 5.5b-architecture | After 5.5b   | Rendering architecture implementation (Option C hybrid)                                                 |
 | 5.5c              | After 5.5b-a | SCB-specific customization                                                                              |
 | 5.5               | Planned      | First client adaptation (handyman, priority services)                                                   |

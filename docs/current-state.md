@@ -34,10 +34,8 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 
 ## What's NOT yet built
 
-- Step 5.5b (Operational fork procedure documentation) — up next.
 - Step 5.5b-architecture (Rendering architecture; Option C hybrid;
-  resolves WordPress/theme chrome appearing alongside React app) —
-  after 5.5b.
+  resolves WordPress/theme chrome appearing alongside React app) — up next.
 - Step 5.5c (SCB-specific customization) — after 5.5b-architecture.
 - Media retention policy (deferred per 4.8 spec).
 - Idempotency for submission retry (deferred; trigger: first observed duplicate).
@@ -76,6 +74,11 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   command is now composed to run both Vite build and plugin-staging in
   one step, preventing the build-pipeline gap that caused multiple
   debugging episodes during verification.
+- **Step 5.5b — Operational fork procedure documentation** (`docs/fork-procedure.md`).
+  Captures the corrected clone-and-merge workflow incorporating lessons
+  from 5.5a-remediation: sibling-directory layout, `template` remote
+  naming, composed `pnpm build`, post-merge verification, and common
+  pitfalls. Documentation-only; no code changes.
 
 ## Key Architectural Facts
 

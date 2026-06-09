@@ -31,6 +31,11 @@ can be used as a quick lookup.
 
 ## Prerequisites
 
+> **First time forking the template for a new client?** See
+> `docs/fork-procedure.md` for the clone-and-merge workflow. This document
+> (`adaptation-runbook.md`) assumes the clone already exists and is
+> operational; it covers customization, not creation.
+
 Before starting, have these ready:
 
 - Git access to the template repository and push rights for the client's repo.

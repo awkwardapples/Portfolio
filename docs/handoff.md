@@ -1,16 +1,18 @@
 # Handoff
 
-_Last updated: 2026-06-08 (post Step 5.5a-remediation)_
+_Last updated: 2026-06-09 (post Step 5.5b)_
 
 ## Status
 
 - Step 5.5a-remediation complete and operationally verified (June 8, 2026).
+- Step 5.5b complete (June 9, 2026): fork procedure documented in
+  `docs/fork-procedure.md` with all 5.5a-remediation lessons captured.
 - Both LocalWP sites confirmed running the correct wire contract.
 - Build pipeline corrected: `pnpm build` now composes Vite build with
   plugin staging in one command.
 - Fork-and-customize architecture demonstrated end-to-end: template
   improvements propagated to the SCB client clone via standard merge.
-- Step 5.5b (operational fork procedure documentation) is now up next.
+- Step 5.5b-architecture (rendering architecture implementation) is now up next.
 
 The system is functionally complete for a single-client deployment. The remaining
 work is template adaptation, visual customization (driven by real client
@@ -56,12 +58,9 @@ If you are starting a new step:
 
 The roadmap is sequenced explicitly. See `docs/roadmap.md` for full detail.
 
-**Immediate next step:** Step 5.5b — Operational fork procedure documentation.
-Captures the corrected fork procedure based on 5.5a-remediation lessons.
-
-**Then:** Step 5.5b-architecture — Rendering architecture implementation.
-Removes the WordPress/Kadence chrome from React-hosted routes via a
-plugin-provided minimal page template (Option C hybrid).
+**Immediate next step:** Step 5.5b-architecture — Rendering architecture
+implementation. Removes the WordPress/Kadence chrome from React-hosted routes
+via a plugin-provided minimal page template (Option C hybrid).
 
 **Then:** Step 5.5c — SCB-specific customization. Apply SCB Handyman's
 content, branding, and initial service set against the now-clean rendering
