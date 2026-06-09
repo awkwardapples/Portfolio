@@ -57,19 +57,17 @@ If you are starting a new step:
 The roadmap is sequenced explicitly. See `docs/roadmap.md` for full detail.
 
 **Immediate next step:** Step 5.5b — Operational fork procedure documentation.
-Captures the fork mechanics demonstrated by the SCB Handyman clone (the clone
-exists; the procedure is not yet formally documented), plus the ADR-0018
-verification process and the common pitfalls from 5.5a-remediation.
+Captures the corrected fork procedure based on 5.5a-remediation lessons.
 
-**After 5.5b:**
+**Then:** Step 5.5b-architecture — Rendering architecture implementation.
+Removes the WordPress/Kadence chrome from React-hosted routes via a
+plugin-provided minimal page template (Option C hybrid).
 
-- 5.5c: SCB-specific configuration (gated on 5.5b — fork procedure must be
-  documented before SCB configuration work begins).
-- 5.5: First client adaptation (handyman, priority services).
-- 5.6: Visual customization v1 (driven by first-client feedback).
-- 5.7: Handyman service expansion.
-- 6.0: First client production deployment to IONOS.
-- 6.1+: Second client onboarding.
+**Then:** Step 5.5c — SCB-specific customization. Apply SCB Handyman's
+content, branding, and initial service set against the now-clean rendering
+canvas.
+
+After 5.5c: Step 5.6 (visual customization v1) and beyond.
 
 Each step is sized small and verified before the next begins. See
 `docs/roadmap.md` "Step rationale and dependencies" for why each step is

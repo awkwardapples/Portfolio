@@ -15,24 +15,25 @@ A single-page, structural view of project state. Update on every completed step.
 
 ## Step status
 
-| Step             | Status   | What                                                                                                    |
-| ---------------- | -------- | ------------------------------------------------------------------------------------------------------- |
-| 4.7              | Complete | Service abstraction + decking vertical                                                                  |
-| 4.8              | Complete | Photo upload capability + tests                                                                         |
-| 5.0              | Complete | Site shell + 5 reference pages                                                                          |
-| 5.1              | Complete | WordPress page mapping + production routing                                                             |
-| 5.2              | Complete | OV-001 remediation (verified end-to-end in WordPress)                                                   |
-| 5.3              | Complete | Adaptation runbook (documentation of clone-and-customize)                                               |
-| 5.4              | Complete | Make.com integration documentation                                                                      |
-| 5.5a             | Complete | Template capabilities (category nav + manual-quote mode)                                                |
-| 5.5a-remediation | Complete | Wire contract drift fix; operational verification under ADR-0018; build-pipeline composition correction |
-| 5.5b             | Up next  | Operational fork procedure documentation                                                                |
-| 5.5c             | Planned  | SCB-specific configuration (gated on 5.5b)                                                              |
-| 5.5              | Planned  | First client adaptation (handyman, priority services)                                                   |
-| 5.6              | Planned  | Visual customization v1 (driven by 5.5 client feedback)                                                 |
-| 5.7              | Planned  | Handyman additional services (driven by lead patterns)                                                  |
-| 6.0              | Planned  | First client production deployment to IONOS                                                             |
-| 6.1+             | Future   | Second client onboarding (validates template)                                                           |
+| Step              | Status       | What                                                                                                    |
+| ----------------- | ------------ | ------------------------------------------------------------------------------------------------------- |
+| 4.7               | Complete     | Service abstraction + decking vertical                                                                  |
+| 4.8               | Complete     | Photo upload capability + tests                                                                         |
+| 5.0               | Complete     | Site shell + 5 reference pages                                                                          |
+| 5.1               | Complete     | WordPress page mapping + production routing                                                             |
+| 5.2               | Complete     | OV-001 remediation (verified end-to-end in WordPress)                                                   |
+| 5.3               | Complete     | Adaptation runbook (documentation of clone-and-customize)                                               |
+| 5.4               | Complete     | Make.com integration documentation                                                                      |
+| 5.5a              | Complete     | Template capabilities (category nav + manual-quote mode)                                                |
+| 5.5a-remediation  | Complete     | Wire contract drift fix; operational verification under ADR-0018; build-pipeline composition correction |
+| 5.5b              | Up next      | Operational fork procedure documentation                                                                |
+| 5.5b-architecture | After 5.5b   | Rendering architecture implementation (Option C hybrid)                                                 |
+| 5.5c              | After 5.5b-a | SCB-specific customization                                                                              |
+| 5.5               | Planned      | First client adaptation (handyman, priority services)                                                   |
+| 5.6               | Planned      | Visual customization v1 (driven by 5.5 client feedback)                                                 |
+| 5.7               | Planned      | Handyman additional services (driven by lead patterns)                                                  |
+| 6.0               | Planned      | First client production deployment to IONOS                                                             |
+| 6.1+              | Future       | Second client onboarding (validates template)                                                           |
 
 ## Step rationale and dependencies
 
@@ -55,11 +56,19 @@ tests (ADR-0018) to prevent recurrence. Bumps GOQW_VERSION to 0.3.0. The
 discipline gap (Criterion 26 not performed before 5.5a was marked complete) is
 recorded honestly in evidence and in ADR-0017's amendment.
 
-**5.5b — Operational fork procedure documentation.** Captures the fork
-mechanics demonstrated by the SCB Handyman clone and the operational
-verification process required by ADR-0018. Gated on completing the ADR-0018
-operational verification for 5.5a-remediation (deploy both LocalWP sites,
-observe 502, confirm database rows).
+**5.5b — Operational fork procedure documentation.** Captures the
+clone-and-merge procedure for client onboarding, including the corrections
+discovered during 5.5a-remediation: sibling-directory layout, `template`
+remote naming, the composed `pnpm build`, and post-merge verification.
+Empirically tested when 6.1 (second client onboarding) arrives; refined then
+if gaps surface.
+
+**5.5b-architecture — Rendering architecture implementation.** Establishes
+the hybrid rendering model: plugin-provided minimal page template for
+React-hosted routes, theme rendering preserved for wp-admin and non-React
+surfaces. Resolves the visible "double header" problem where WordPress/theme
+chrome wraps the React app. Foundational decision affecting all client
+deployments; not SCB-specific. See ADR-0019.
 
 **5.5 — First client adaptation.** Empirical test of the 5.3 runbook. Applies
 it to the handyman client. Builds the priority subset of the handyman's

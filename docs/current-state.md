@@ -34,6 +34,11 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 
 ## What's NOT yet built
 
+- Step 5.5b (Operational fork procedure documentation) — up next.
+- Step 5.5b-architecture (Rendering architecture; Option C hybrid;
+  resolves WordPress/theme chrome appearing alongside React app) —
+  after 5.5b.
+- Step 5.5c (SCB-specific customization) — after 5.5b-architecture.
 - Media retention policy (deferred per 4.8 spec).
 - Idempotency for submission retry (deferred; trigger: first observed duplicate).
 - Rate limiting on submit endpoint (deferred; trigger: >100 submissions/day).
