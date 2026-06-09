@@ -13,6 +13,7 @@ use Agency\QuoteWizard\Frontend\AssetLoader;
 use Agency\QuoteWizard\Frontend\Shortcode;
 use Agency\QuoteWizard\Rest\SubmissionController;
 use Agency\QuoteWizard\Routing\FrontPagePolicy;
+use Agency\QuoteWizard\Routing\RenderingArchitecture;
 use Agency\QuoteWizard\Routing\RewriteRegistrar;
 use Agency\QuoteWizard\Routing\RouteInterceptor;
 use Agency\QuoteWizard\Routing\SelfHealer;
@@ -47,6 +48,9 @@ final class Plugin {
 		add_action( 'init', array( $healer, 'check' ) );
 		add_action( 'admin_notices', array( $policy, 'maybe_render_notice' ) );
 		add_filter( 'the_content', array( $renderer, 'filter_content' ), 5 );
+
+		// Rendering architecture: plugin-provided minimal template for React routes (ADR-0019).
+		RenderingArchitecture::register();
 
 		// Frontend: shortcode that renders the wizard mount point.
 		add_shortcode( Shortcode::TAG, array( Shortcode::class, 'render' ) );
