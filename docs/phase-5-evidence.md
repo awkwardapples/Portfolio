@@ -720,3 +720,57 @@ Current total: **425 Vitest** + **88 PHP** (unchanged)
 | `26547c3` | test(wizard): wire contract integration test (ADR-0018)                               |
 | `da956e8` | chore(plugin): bump GOQW_VERSION 0.2.0 → 0.3.0                                        |
 | `42dc92b` | docs: 5.5a-remediation evidence, discipline rule, documentation set update            |
+
+---
+
+## Step 5.5b — Fork Procedure Documentation (June 9, 2026)
+
+Documentation-only step. New file `docs/fork-procedure.md` captures the
+corrected clone-and-merge workflow incorporating lessons from 5.5a-remediation.
+
+### What was documented
+
+- **Sibling-directory layout:** template and all client clones live as siblings
+  under a common parent directory. The local-path `git clone` from the parent
+  makes cloning unambiguous and the `template` remote path portable.
+- **`template` remote naming:** the step that renames `origin` to `template`
+  immediately after cloning is now the first action taken after `git clone`.
+  The rationale (preventing accidental pushes to the template) is made explicit
+  in the document.
+- **Composed `pnpm build`:** the procedure specifies `pnpm build` exclusively
+  (never `pnpm -r build` alone). The two-stage explanation is included so
+  developers understand why the composed command exists.
+- **Post-merge verification:** gates to run after `git merge template/main`
+  are specified. `git status` check for merge completion is explicit.
+- **Five common pitfalls:** `pnpm -r build` only, forgotten in-progress merge,
+  `origin` pointing at template, LocalWP MySQL connectivity, stale browser cache.
+
+### Verification performed
+
+- V1 (paths exist): all file paths and commands referenced in the document
+  (`docs/onboarding.md`, `docs/adaptation-runbook.md`,
+  `docs/make-com-integration.md`, `docs/technical-debt.md`) verified to exist
+  in the repository.
+- V2 (cross-document consistency): five touched documents (`fork-procedure.md`,
+  `adaptation-runbook.md`, `current-state.md`, `handoff.md`, `roadmap.md`)
+  tell consistent stories about 5.5b status and next steps.
+- V3 (procedure read-through): steps are sequential, unambiguous, and reference
+  only conventions that are currently in place. No step assumes knowledge a
+  developer following the document cold would not have.
+
+### Out of scope, deferred per spec
+
+- Empirical test of the documented procedure — performed when Step 6.1 (second
+  client onboarding) arrives and the procedure is exercised for the first time
+  with a genuinely new client. The document will be refined at that point if
+  gaps surface.
+
+### Gate state
+
+- pnpm lint: 0/0
+- pnpm typecheck: 0 errors
+- pnpm test: 425/425 Vitest (unchanged)
+- pnpm build: clean
+- composer test: 88/88 (unchanged)
+- composer lint: 0/0
+- No code changes; documentation-only.
