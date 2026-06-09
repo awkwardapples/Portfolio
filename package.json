@@ -17,6 +17,7 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck",
+    "build": "pnpm -r build && pnpm build-plugin",
     "build-plugin": "node ./scripts/build-plugin.mjs",
     "package-plugin": "node ./scripts/package-plugin.mjs",
     "prepare": "husky"

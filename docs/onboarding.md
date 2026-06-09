@@ -456,17 +456,41 @@ affects the bundle or the PHP plugin source.
 
 ### Procedure
 
-1. **Build the artifact from a clean working tree.**
+1. **Build the plugin artifact from a clean working tree.**
 
    From the project root:
 
    ```powershell
    pnpm install
-   pnpm -r build
+   pnpm build
    ```
 
-   This produces the React bundle in `apps/wizard/dist/` and copies it into
-   `plugins/quote-wizard/assets/dist/` via the existing build-plugin script.
+   `pnpm build` is a composed script that runs both stages of the plugin
+   build in sequence:
+   1. `pnpm -r build` invokes Vite (via `apps/wizard`'s build script) to
+      compile the TypeScript/React source into `apps/wizard/dist/`.
+   2. `pnpm build-plugin` stages the compiled output into
+      `plugins/quote-wizard/assets/dist/`, which is the directory the
+      WordPress plugin loads its assets from.
+
+   Running only `pnpm -r build` does NOT stage the output for the plugin.
+   The plugin directory's `assets/dist/` will remain stale, and the
+   deployed bundle will not reflect recent source changes. The composed
+   `pnpm build` exists specifically to prevent this gap, which previously
+   caused multiple debugging episodes during operational verification
+   work.
+
+   If you ever need to run the stages separately (for debugging, profiling,
+   or inspecting intermediate output), the underlying commands remain
+   available:
+
+   ```powershell
+   pnpm -r build        # produces apps/wizard/dist/
+   pnpm build-plugin    # stages into plugins/quote-wizard/assets/dist/
+   ```
+
+   This separation is useful for diagnosing whether a build failure is in
+   the Vite compilation step or the staging step.
 
 2. **Verify the manifest contains relative paths.**
 
