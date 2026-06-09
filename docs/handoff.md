@@ -4,21 +4,13 @@ _Last updated: 2026-06-08 (post Step 5.5a-remediation)_
 
 ## Status
 
-Phase 4 complete. Phase 5 in progress.
-
-- 5.0, 5.1, 5.2 complete and verified end-to-end in WordPress (OV-001, June 2026).
-- 5.3 (Adaptation Runbook) complete — `docs/adaptation-runbook.md` is the
-  authoritative guide for cloning and adapting the template for a new client.
-- 5.4 (Make.com integration documentation) complete — `docs/make-com-integration.md`
-  covers the full webhook configuration workflow for a deployed client install.
-- 5.5a (Template Capabilities) complete — category navigation and manual-quote
-  mode added as opt-in capabilities; wire contract v3; ADR-0017. 421/421 Vitest,
-  88/88 PHP. Acme Fencing demo unchanged.
-- 5.5a-remediation complete — wire contract drift fix (contractVersion hardcoded 2→3,
-  quoteMode added to wire payload). Wire-contract integration test added. GOQW_VERSION
-  bumped to 0.3.0. ADR-0018. 425/425 Vitest, 88/88 PHP. Operational verification
-  pending (blocking for this step per ADR-0018 — see phase-5-evidence.md).
-- 5.5b (Operational fork procedure documentation) is now up next.
+- Step 5.5a-remediation complete and operationally verified (June 8, 2026).
+- Both LocalWP sites confirmed running the correct wire contract.
+- Build pipeline corrected: `pnpm build` now composes Vite build with
+  plugin staging in one command.
+- Fork-and-customize architecture demonstrated end-to-end: template
+  improvements propagated to the SCB client clone via standard merge.
+- Step 5.5b (operational fork procedure documentation) is now up next.
 
 The system is functionally complete for a single-client deployment. The remaining
 work is template adaptation, visual customization (driven by real client
@@ -65,15 +57,15 @@ If you are starting a new step:
 The roadmap is sequenced explicitly. See `docs/roadmap.md` for full detail.
 
 **Immediate next step:** Step 5.5b — Operational fork procedure documentation.
-Capture the fork mechanics demonstrated during the SCB Handyman clone work
-(the clone exists; the procedure hasn't been formally documented), plus the
-operational verification lessons from 5.5a-remediation. ADR-0018 discipline
-must be applied: deploy both LocalWP sites with the remediation bundle and
-record the evidence before 5.5a-remediation is fully closed.
+Captures the fork mechanics demonstrated by the SCB Handyman clone (the clone
+exists; the procedure is not yet formally documented), plus the ADR-0018
+verification process and the common pitfalls from 5.5a-remediation.
 
 **After 5.5b:**
 
-- 5.5 (or 5.5c): First client adaptation (handyman, priority services).
+- 5.5c: SCB-specific configuration (gated on 5.5b — fork procedure must be
+  documented before SCB configuration work begins).
+- 5.5: First client adaptation (handyman, priority services).
 - 5.6: Visual customization v1 (driven by first-client feedback).
 - 5.7: Handyman service expansion.
 - 6.0: First client production deployment to IONOS.

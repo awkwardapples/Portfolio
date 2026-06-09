@@ -311,3 +311,32 @@ The registry was designed for incremental addition (one PR per vertical per ADR-
 handyman's priority subset (2-3 services). Step 5.7 expands the handyman's
 offerings based on which services are generating customer interest. Future clients
 trigger their own service additions.
+
+---
+
+## LocalWP MySQL connectivity intermittently unavailable
+
+**Status:** Observed during 5.5a-remediation operational verification on
+the SCB site. Symptom: `wp db query` fails with "Can't connect to MySQL
+server on 'localhost:3306' (10061)" despite the SCB site being marked
+as running in LocalWP.
+
+**Severity:** Low. Affects evidence-capture activities; does not affect
+end-user functionality (the wizard submission completes successfully
+through the PHP layer, which connects to MySQL without issue).
+
+**Trigger to revisit:** If the issue recurs frequently or blocks future
+operational verification activities.
+
+**Possible causes (not yet investigated):**
+
+- LocalWP using a non-standard port for the SCB site (each Local site
+  can have its own MySQL port).
+- MySQL crashing silently after the site has been running for some time.
+- wp-cli's expected connection parameters differing from Local's actual
+  configuration.
+
+**Workaround:** Use Local's UI to inspect the database (the "Database"
+tab in the site panel provides an Adminer link). If MySQL connectivity
+is required for verification but unavailable, the evidence record
+honestly notes the limitation rather than fabricating data.

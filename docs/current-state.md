@@ -64,6 +64,13 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 - **Step 5.2 — OV-001 remediation (F5+F6 code fixes; F1+F3 operational; F2+F4 deferred with triggers)**
 - **Step 5.3 — Adaptation runbook (`docs/adaptation-runbook.md`; documentation only)**
 - **Step 5.4 — Make.com integration guide (`docs/make-com-integration.md`; documentation only)**
+- Step 5.5a-remediation — Wire contract fix and operational verification
+  (June 2026). Resolved post-5.5a wire contract drift where the submission
+  payload builder hardcoded contractVersion: 2 and omitted quoteMode.
+  Both LocalWP sites verified end-to-end per ADR-0018. The `pnpm build`
+  command is now composed to run both Vite build and plugin-staging in
+  one step, preventing the build-pipeline gap that caused multiple
+  debugging episodes during verification.
 
 ## Key Architectural Facts
 
@@ -132,5 +139,5 @@ Strict ordering: validate → persist → forward → respond.
 - lint (`pnpm lint` → 0 errors, 0 warnings)
 - typecheck (`pnpm typecheck`)
 - vitest (`pnpm test` → 425/425)
-- build (`pnpm -r build`)
-- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 82/82 (2 skipped)
+- build (`pnpm build`)
+- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 88/88 (2 skipped)

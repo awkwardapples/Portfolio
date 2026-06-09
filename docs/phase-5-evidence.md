@@ -612,20 +612,93 @@ PublicConfig but not the submission payload builder.
 | `composer test`  | 88 / 88 passing (unchanged)                |
 | `composer lint`  | 0 errors, 0 warnings                       |
 
-### Operational verification (ADR-0018 blocking requirement)
+### Operational verification (ADR-0018 — first enforcement)
+
+This is the first operational verification performed under ADR-0018's
+discipline requirements. Per ADR-0018, the verification language used
+here is precise and falsifiable.
 
 **Canonical template site (fencing-lead-platform-dev.local):**
-_Pending — to be performed before 5.5a-remediation is closed. Record here:_
-"Submitted a wizard end-to-end on fencing-lead-platform-dev.local on [date].
-Observed HTTP [status] response. Confirmed database row [id] with [fields]."
+
+Submitted a wizard end-to-end on fencing-lead-platform-dev.local on
+June 8, 2026. Observed HTTP 502 response with the documented forwarder-
+unavailable message ("Your submission was saved. We could not notify our
+team automatically. Please try again or call us directly."). Confirmed
+database row id=6 in wp_goqw_submissions with wizard_id='fencing',
+status='forward_failed', length(answers_json)=158, length(media_json)=NULL,
+created_at='2026-06-08 20:59:26'.
+
+The 502 response confirms the wire contract is functioning correctly:
+the post-remediation bundle sends contractVersion=3 (via the
+`CONTRACT_VERSION` constant import) and the `quoteMode` field. The server
+accepts the payload, persists the row, and returns 502 because Make.com
+is not configured (architecturally-correct failure per ADR-0005 and
+ADR-0015).
 
 **SCB Handyman site (scb-handyman.local):**
-_Pending — to be performed before 5.5a-remediation is closed. Record here:_
-"Submitted a wizard end-to-end on scb-handyman.local on [date]. Observed
-HTTP [status] response. Confirmed database row [id] with [fields]."
 
-Both verifications require the remediation bundle to be deployed to the
-respective LocalWP sites per `docs/onboarding.md` before recording.
+Submitted a wizard end-to-end on scb-handyman.local on June 8, 2026.
+Observed HTTP 502 response with the documented forwarder-unavailable
+message. Submission row persisted to wp_goqw_submissions (specific row
+id and field lengths not captured due to LocalWP MySQL connectivity
+issue during evidence recording session; see technical-debt.md).
+Deployed bundle confirmed to contain the 5.5a-remediation fix via
+direct file inspection of `wizard.*.js` in the SCB plugin's assets/dist/,
+which shows `contractVersion:Ua` and `Ua=3` (the minified form of the
+`CONTRACT_VERSION` constant).
+
+This is the first demonstration of the fork-and-customize architecture
+(ADR-0014) propagating template improvements to a client clone. The
+template's 5.5a-remediation commits were brought into the SCB clone via
+`git fetch template && git merge template/main`. The merge commit in
+the SCB clone is `2537ecc`, with parents `966b415` (SCB initialization
+commit) and `42dc92b` (template's main HEAD after 5.5a-remediation).
+
+### Procedural findings recorded
+
+Two procedural gaps were identified during operational verification and
+corrected as part of this closure.
+
+**Finding 1 — `pnpm -r build` does not stage the plugin bundle.**
+
+The plugin's runtime bundle is staged into `plugins/quote-wizard/assets/dist/`
+by `scripts/build-plugin.mjs`, invoked via the `pnpm build-plugin` script.
+Running `pnpm -r build` alone produces Vite output in `apps/wizard/dist/`
+but does NOT copy it into the plugin directory. The deployed plugin
+therefore loads from a stale bundle. This caused multiple debugging
+rounds during 5.5a-remediation when fresh source changes appeared not
+to take effect after rebuild.
+
+**Resolution:** The root `package.json` now defines a composed `build`
+script: `pnpm -r build && pnpm build-plugin`. The `onboarding.md` deploy
+procedure explicitly specifies `pnpm build` as the command to use, with
+explanation of the two-stage build. Running stages separately remains
+possible for diagnosis.
+
+**Finding 2 — SCB clone's remote was misnamed `origin`.**
+
+The initial SCB clone (operational improvisation pre-5.5b documentation)
+configured the canonical template repo as `origin`. This is the inverse
+of the fork-and-customize convention: `template` is for upstream fetches,
+`origin` is for the client's own repository. With `origin` pointing at
+the template, any accidental push from SCB would have polluted the
+template with client-specific content.
+
+**Resolution:** The SCB clone's remote was renamed: `git remote rename
+origin template`. SCB now has only a `template` remote. When SCB acquires
+its own repository (likely as part of Step 6.0 production prep), that
+will be added as `origin`. The 5.5b documentation will specify this
+convention from the start so future client forks set it up correctly.
+
+### Gate state at closure
+
+- pnpm lint: 0/0
+- pnpm typecheck: 0 errors
+- pnpm test: 425/425 Vitest
+- pnpm build: clean (composed script verified)
+- composer test: 88/88
+- composer lint: 0/0
+- Bundle: ~73 KB gzip
 
 ### New test breakdown
 
@@ -646,4 +719,4 @@ Current total: **425 Vitest** + **88 PHP** (unchanged)
 | `bcc987e` | fix(wizard): submission payload uses CONTRACT_VERSION constant and includes quoteMode |
 | `26547c3` | test(wizard): wire contract integration test (ADR-0018)                               |
 | `da956e8` | chore(plugin): bump GOQW_VERSION 0.2.0 → 0.3.0                                        |
-| _(this)_  | docs: 5.5a-remediation evidence, discipline rule, documentation set update            |
+| `42dc92b` | docs: 5.5a-remediation evidence, discipline rule, documentation set update            |
