@@ -94,3 +94,33 @@ Generic verification language ("redeployed and tested") is not sufficient.
   discipline protects
 - ADR-0017 (Category Navigation and Manual-Quote) — the most recent change
   to the wire contract; the first enforcement target of this ADR
+
+## Amendment (2026-06-12): Visible-UI Render Verification
+
+**Context:** Step 5.5b-architecture introduced the minimal page template
+(`templates/react-host.php`). Post-deployment operational verification
+confirmed the correct HTML structure (minimal template rendering, no Kadence
+chrome) but stopped at HTML shape verification. The JavaScript bundle was not
+loading and the React app never mounted — pages rendered blank. This went
+undetected because operational verification checked HTML response shape only.
+
+**Root cause:** `AssetLoader::current_page_has_shortcode()` gates bundle
+enqueueing on the `[quote_wizard]` shortcode in page content. The minimal
+template renders `<div id="qw-root">` directly, bypassing `the_content()` and
+shortcode evaluation. The gate returned false; the bundle was never enqueued.
+The HTML structure was correct; the React app was absent.
+
+**Amendment:** For any step that affects the UI rendering path — template
+selection, asset enqueueing, or React mount behavior — operational verification
+must confirm **visible React UI render**, not just HTML response shape. The
+verification entry in `phase-N-evidence.md` must include language such as:
+
+> "Navigated to [route] in browser on [site] on [date]. Observed React UI
+> rendered (wizard/page content visible, not blank page)."
+
+HTML structure verification (checking for expected DOM elements via `curl`)
+is necessary but not sufficient. A blank page with correct HTML scaffold is a
+failed verification.
+
+This requirement is in addition to — not a replacement for — the wire contract
+operational verification in the original ADR.

@@ -140,3 +140,31 @@ client review.
 - `docs/product-vision.md` — design constraints driving this decision.
 - `docs/phase-5-evidence.md` — 5.5b-architecture verification recording the
   first operational enforcement of this architecture.
+
+## Amendment (2026-06-12): Asset Enqueue Gate Bug (Step 5.5b-architecture-fix)
+
+**Bug discovered post-deployment:** React-hosted routes rendered blank pages.
+The JavaScript bundle was not enqueued; the React app never mounted.
+
+**Root cause:** `AssetLoader::current_page_has_shortcode()` was the sole gate
+controlling bundle enqueueing. Under the minimal template (`react-host.php`),
+WordPress's `the_content()` is never called and shortcode evaluation never
+fires. The gate always returned false for React routes; the bundle was never
+enqueued regardless of request path.
+
+**Fix:** A shared helper `SiteRoutes::is_current_request_react_route()` is
+added. It consolidates the scope guards (admin, REST, CRON, CLI) and path
+recognition into a single callable method. `AssetLoader` gains a private
+`should_enqueue_for_request()` method that returns
+`SiteRoutes::is_current_request_react_route() || self::current_page_has_shortcode()`.
+`maybe_enqueue()` is updated to call `should_enqueue_for_request()` instead
+of `current_page_has_shortcode()` directly.
+
+**Refactor:** `RenderingArchitecture::filter_template_for_react_routes()` and
+`RouteInterceptor::maybe_intercept()` are updated to delegate their inline
+scope guards to `SiteRoutes::is_current_request_react_route()`. Behavior is
+preserved; guard duplication is eliminated.
+
+**Lesson recorded in ADR-0018:** Operational verification must confirm visible
+React UI render, not just HTML response shape. See ADR-0018 amendment
+(2026-06-12).
