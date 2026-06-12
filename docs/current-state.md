@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-06-09 (post Step 5.5b-architecture)_
+_Last updated: 2026-06-12 (post Step 5.5b-architecture-fix)_
 
 ## What's working
 
@@ -20,7 +20,7 @@ _Last updated: 2026-06-09 (post Step 5.5b-architecture)_
 - `pnpm typecheck`: 0 errors
 - `pnpm test`: 425/425 (unchanged)
 - `pnpm build`: clean, ~73 kB gzip bundle (unchanged)
-- `composer test`: passing (95 tests, 7 new from 5.5b-architecture)
+- `composer test`: 101 passed, 2 skipped (6 new from 5.5b-architecture-fix)
 - `composer analyse`: clean
 
 ## OV-001 verification
@@ -34,7 +34,7 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 
 ## What's NOT yet built
 
-- Step 5.5c (SCB-specific customization) — up next.
+- Step 5.5c (SCB-specific customization) — up next after 5.5b-architecture-fix.
 - Media retention policy (deferred per 4.8 spec).
 - Idempotency for submission retry (deferred; trigger: first observed duplicate).
 - Rate limiting on submit endpoint (deferred; trigger: >100 submissions/day).
@@ -82,6 +82,14 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   the active theme's template for React-hosted routes via the `template_include`
   filter. WordPress/Kadence chrome no longer appears alongside the React app.
   Theme rendering preserved for wp-admin and non-React surfaces. 7 new PHP tests.
+- **Step 5.5b-architecture-fix — Asset enqueue gate fix** (June 2026).
+  `AssetLoader` was gating bundle enqueueing on `current_page_has_shortcode()`,
+  which never fired under the minimal template (no `the_content()` call). React
+  never mounted; pages rendered blank. Fix: `SiteRoutes::is_current_request_react_route()`
+  added as shared helper; `AssetLoader::should_enqueue_for_request()` returns
+  true on React routes regardless of shortcode. `RenderingArchitecture` and
+  `RouteInterceptor` inline guard chains refactored to delegate to the helper.
+  ADR-0018 and ADR-0019 amended. 6 new PHP tests.
 
 ## Key Architectural Facts
 
@@ -134,16 +142,16 @@ Strict ordering: validate → persist → forward → respond.
 
 ### WordPress Routing Layer (Step 5.1)
 
-| Class                      | What                                                                                     |
-| -------------------------- | ---------------------------------------------------------------------------------------- |
-| `Routing\SiteRoutes`       | PHP copy of the 5 recognized paths; `normalize()` + `is_recognized()` match routes.ts    |
-| `Routing\SiteRootPage`     | Idempotent lifecycle for the single WP page backing all routes                           |
-| `Routing\FrontPagePolicy`  | Sets Site Root as front page if not already configured; admin notice otherwise           |
-| `Routing\RewriteRegistrar` | Registers WP rewrite rules for the 4 non-root paths; exposes `goqw_route` query var      |
-| `Routing\RouteInterceptor` | `pre_get_posts` filter — rewrites main query to Site Root for recognized paths           |
-| `Routing\SelfHealer`       | `init` check — recreates Site Root if manually deleted                                   |
-| `Routing\SiteRenderer`     | `the_content` filter (priority 5) — outputs `<div id="qw-root" data-initial-path="...">` |
-| `CrossLanguageRoutesTest`  | Parses routes.ts and asserts it matches SiteRoutes::PATHS exactly                        |
+| Class                      | What                                                                                                     |
+| -------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `Routing\SiteRoutes`       | PHP copy of the 5 recognized paths; `normalize()`, `is_recognized()`, `is_current_request_react_route()` |
+| `Routing\SiteRootPage`     | Idempotent lifecycle for the single WP page backing all routes                                           |
+| `Routing\FrontPagePolicy`  | Sets Site Root as front page if not already configured; admin notice otherwise                           |
+| `Routing\RewriteRegistrar` | Registers WP rewrite rules for the 4 non-root paths; exposes `goqw_route` query var                      |
+| `Routing\RouteInterceptor` | `pre_get_posts` filter — rewrites main query to Site Root for recognized paths                           |
+| `Routing\SelfHealer`       | `init` check — recreates Site Root if manually deleted                                                   |
+| `Routing\SiteRenderer`     | `the_content` filter (priority 5) — outputs `<div id="qw-root" data-initial-path="...">`                 |
+| `CrossLanguageRoutesTest`  | Parses routes.ts and asserts it matches SiteRoutes::PATHS exactly                                        |
 
 ## Required Gates
 
@@ -151,4 +159,4 @@ Strict ordering: validate → persist → forward → respond.
 - typecheck (`pnpm typecheck`)
 - vitest (`pnpm test` → 425/425)
 - build (`pnpm build`)
-- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 88/88 (2 skipped)
+- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 101 passed (2 skipped)

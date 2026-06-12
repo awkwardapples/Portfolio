@@ -15,25 +15,26 @@ A single-page, structural view of project state. Update on every completed step.
 
 ## Step status
 
-| Step              | Status   | What                                                                                                    |
-| ----------------- | -------- | ------------------------------------------------------------------------------------------------------- |
-| 4.7               | Complete | Service abstraction + decking vertical                                                                  |
-| 4.8               | Complete | Photo upload capability + tests                                                                         |
-| 5.0               | Complete | Site shell + 5 reference pages                                                                          |
-| 5.1               | Complete | WordPress page mapping + production routing                                                             |
-| 5.2               | Complete | OV-001 remediation (verified end-to-end in WordPress)                                                   |
-| 5.3               | Complete | Adaptation runbook (documentation of clone-and-customize)                                               |
-| 5.4               | Complete | Make.com integration documentation                                                                      |
-| 5.5a              | Complete | Template capabilities (category nav + manual-quote mode)                                                |
-| 5.5a-remediation  | Complete | Wire contract drift fix; operational verification under ADR-0018; build-pipeline composition correction |
-| 5.5b              | Complete | Operational fork procedure documentation                                                                |
-| 5.5b-architecture | Complete | Rendering architecture implementation (Option C hybrid)                                                 |
-| 5.5c              | Up next  | SCB-specific customization                                                                              |
-| 5.5               | Planned  | First client adaptation (handyman, priority services)                                                   |
-| 5.6               | Planned  | Visual customization v1 (driven by 5.5 client feedback)                                                 |
-| 5.7               | Planned  | Handyman additional services (driven by lead patterns)                                                  |
-| 6.0               | Planned  | First client production deployment to IONOS                                                             |
-| 6.1+              | Future   | Second client onboarding (validates template)                                                           |
+| Step                  | Status   | What                                                                                                    |
+| --------------------- | -------- | ------------------------------------------------------------------------------------------------------- |
+| 4.7                   | Complete | Service abstraction + decking vertical                                                                  |
+| 4.8                   | Complete | Photo upload capability + tests                                                                         |
+| 5.0                   | Complete | Site shell + 5 reference pages                                                                          |
+| 5.1                   | Complete | WordPress page mapping + production routing                                                             |
+| 5.2                   | Complete | OV-001 remediation (verified end-to-end in WordPress)                                                   |
+| 5.3                   | Complete | Adaptation runbook (documentation of clone-and-customize)                                               |
+| 5.4                   | Complete | Make.com integration documentation                                                                      |
+| 5.5a                  | Complete | Template capabilities (category nav + manual-quote mode)                                                |
+| 5.5a-remediation      | Complete | Wire contract drift fix; operational verification under ADR-0018; build-pipeline composition correction |
+| 5.5b                  | Complete | Operational fork procedure documentation                                                                |
+| 5.5b-architecture     | Complete | Rendering architecture implementation (Option C hybrid)                                                 |
+| 5.5b-architecture-fix | Complete | Asset enqueue gate fix; React app now mounts and renders on React routes                                |
+| 5.5c                  | Up next  | SCB-specific customization                                                                              |
+| 5.5                   | Planned  | First client adaptation (handyman, priority services)                                                   |
+| 5.6                   | Planned  | Visual customization v1 (driven by 5.5 client feedback)                                                 |
+| 5.7                   | Planned  | Handyman additional services (driven by lead patterns)                                                  |
+| 6.0                   | Planned  | First client production deployment to IONOS                                                             |
+| 6.1+                  | Future   | Second client onboarding (validates template)                                                           |
 
 ## Step rationale and dependencies
 
@@ -69,6 +70,16 @@ React-hosted routes, theme rendering preserved for wp-admin and non-React
 surfaces. Resolves the visible "double header" problem where WordPress/theme
 chrome wraps the React app. Foundational decision affecting all client
 deployments; not SCB-specific. See ADR-0019.
+
+**5.5b-architecture-fix — Asset enqueue gate fix.** Discovered post-deployment
+that `AssetLoader::current_page_has_shortcode()` never fired under the minimal
+template — `the_content()` is never called, so shortcodes are never evaluated.
+The React bundle was never enqueued; pages rendered blank. Fix adds
+`SiteRoutes::is_current_request_react_route()` as a shared helper and updates
+`AssetLoader` to enqueue on React routes regardless of shortcode. Also refactors
+`RenderingArchitecture` and `RouteInterceptor` to use the helper, eliminating
+duplicated guard chains. ADR-0018 and ADR-0019 amended with lessons learned
+(visible-UI verification requirement). See both ADRs.
 
 **5.5 — First client adaptation.** Empirical test of the 5.3 runbook. Applies
 it to the handyman client. Builds the priority subset of the handyman's

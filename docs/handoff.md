@@ -1,6 +1,6 @@
 # Handoff
 
-_Last updated: 2026-06-09 (post Step 5.5b-architecture)_
+_Last updated: 2026-06-12 (post Step 5.5b-architecture-fix)_
 
 ## Status
 
@@ -10,6 +10,10 @@ _Last updated: 2026-06-09 (post Step 5.5b-architecture)_
 - Step 5.5b-architecture complete (June 9, 2026): plugin-provided minimal
   page template for React-hosted routes; WordPress/Kadence chrome no longer
   appears alongside the React app. ADR-0019 accepted.
+- Step 5.5b-architecture-fix complete (June 12, 2026): asset enqueue gate bug
+  fixed. `AssetLoader` now enqueues the React bundle on recognized routes
+  regardless of shortcode presence. React app mounts and renders visible UI.
+  ADR-0018 and ADR-0019 amended with lessons learned.
 - Build pipeline corrected: `pnpm build` composes Vite build and plugin
   staging in one command.
 - Fork-and-customize architecture demonstrated end-to-end.
@@ -61,7 +65,8 @@ The roadmap is sequenced explicitly. See `docs/roadmap.md` for full detail.
 
 **Immediate next step:** Step 5.5c — SCB-specific customization. Apply SCB
 Handyman's content, branding, and initial service set against the now-clean
-rendering canvas (5.5b-architecture complete; no theme chrome to work around).
+rendering canvas (5.5b-architecture and 5.5b-architecture-fix both complete;
+no theme chrome, bundle loads correctly, React UI visible).
 
 After 5.5c: Step 5.6 (visual customization v1) and beyond.
 

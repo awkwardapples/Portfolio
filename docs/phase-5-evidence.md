@@ -910,3 +910,86 @@ Current total: **425 Vitest** (unchanged) + **95 PHP** (+7)
 - composer test: 95/95
 - composer lint: 0/0
 - composer analyse: no errors
+
+---
+
+## Step 5.5b-architecture-fix — Evidence (2026-06-12)
+
+### Bug report
+
+Post-deployment verification of Step 5.5b-architecture confirmed the minimal
+template was rendering (correct HTML structure, `<div id="qw-root">` present,
+no Kadence chrome). However, the React app never mounted — pages were visually
+blank. The JavaScript bundle was not being enqueued.
+
+**Root cause:** `AssetLoader::current_page_has_shortcode()` was the sole gate
+controlling bundle enqueueing. Under the minimal template (`react-host.php`),
+`the_content()` is never called and WordPress's shortcode evaluation pipeline
+never fires. The gate always returned false for React routes. The bundle was
+never injected into `wp_head()`.
+
+### Fix
+
+1. `SiteRoutes::is_current_request_react_route()` added — consolidates scope
+   guards (admin, REST, CRON, CLI) and path recognition into a single callable.
+2. `AssetLoader::should_enqueue_for_request()` added — returns
+   `SiteRoutes::is_current_request_react_route() || self::current_page_has_shortcode()`.
+   `maybe_enqueue()` now calls this instead of `current_page_has_shortcode()`.
+3. `RenderingArchitecture::filter_template_for_react_routes()` and
+   `RouteInterceptor::maybe_intercept()` refactored to delegate inline guard
+   chains to `SiteRoutes::is_current_request_react_route()`. Behavior-preserving.
+
+### Gate results
+
+| Gate               | Result                                              |
+| ------------------ | --------------------------------------------------- |
+| `pnpm lint`        | 0/0                                                 |
+| `pnpm typecheck`   | 0 errors                                            |
+| `pnpm test`        | 425/425 Vitest (unchanged)                          |
+| `pnpm build`       | Clean; bundle hash unchanged (`wizard.C_qeKJ4K.js`) |
+| `composer test`    | 101 passed, 2 skipped (+6 new tests)                |
+| `composer lint`    | 0/0                                                 |
+| `composer analyse` | No errors                                           |
+
+### New test breakdown
+
+| Suite                      | File                                      | New tests |
+| -------------------------- | ----------------------------------------- | --------- |
+| SiteRoutesTest (additions) | `tests/Unit/Routing/SiteRoutesTest.php`   | +3        |
+| AssetLoaderTest (new file) | `tests/Unit/Frontend/AssetLoaderTest.php` | +3        |
+| **Total new**              |                                           | **+6**    |
+
+Previous total (Step 5.5b-architecture): 425 Vitest + 95 PHP
+Current total: **425 Vitest** (unchanged) + **101 PHP** (+6)
+
+### Operational verification
+
+**Operational verification criterion (ADR-0018 amendment, 2026-06-12):** For
+steps affecting the UI rendering path, visible React UI render must be confirmed
+in a browser — not just HTML response shape.
+
+Canonical site (`fencing-lead-platform-dev.local`):
+
+1. Deployed updated plugin files to LocalWP canonical site.
+2. Navigated to `http://fencing-lead-platform-dev.local/` in browser. Observed
+   React UI rendered — the full site shell was visible including header
+   navigation, hero content, and "Get a Free Quote" CTA button.
+3. Navigated to `http://fencing-lead-platform-dev.local/quote` in browser.
+   Observed React UI rendered — the Quote Wizard UI was visible with service
+   selection step presented.
+4. Confirmed no Kadence chrome present (no WordPress page title bar, no theme
+   header/footer structural HTML visible alongside React app).
+5. Opened browser developer tools Network panel. Confirmed `wizard.C_qeKJ4K.js`
+   bundle present in network requests with HTTP 200.
+
+SCB site: LocalWP router 502 persists (same pre-existing infrastructure issue
+documented in `technical-debt.md`). Canonical verification establishes the fix
+is correct; SCB re-verification deferred to next time that site is accessible.
+
+### ADR amendments
+
+- **ADR-0018 (2026-06-12):** Added visible-UI render verification requirement.
+  HTML shape verification alone is insufficient; React UI must be visible in
+  browser before a rendering-path step is marked complete.
+- **ADR-0019 (2026-06-12):** Recorded the asset enqueue gate bug, fix
+  mechanism, and cross-reference to ADR-0018 amendment.
