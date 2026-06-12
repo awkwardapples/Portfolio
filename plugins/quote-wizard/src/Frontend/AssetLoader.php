@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace Agency\QuoteWizard\Frontend;
 
+use Agency\QuoteWizard\Routing\SiteRoutes;
 use Agency\QuoteWizard\Support\Logger;
 
 defined( 'ABSPATH' ) || exit;
@@ -43,14 +44,26 @@ final class AssetLoader {
 	private static bool $enqueue_attempted = false;
 
 	/**
-	 * Fast-path enqueue for classic templates.
+	 * Fast-path enqueue: triggers on React routes and on shortcode-containing pages.
 	 */
 	public static function maybe_enqueue(): void {
-		if ( ! self::current_page_has_shortcode() ) {
+		if ( ! self::should_enqueue_for_request() ) {
 			return;
 		}
 
 		self::ensure_enqueued();
+	}
+
+	/**
+	 * Should assets be enqueued for the current request?
+	 *
+	 * Returns true when the request is a recognized React route (covers the
+	 * minimal template path where the_content() is never called and shortcodes
+	 * are never evaluated) OR when the page content contains the shortcode
+	 * (classic-template embedded usage).
+	 */
+	private static function should_enqueue_for_request(): bool {
+		return SiteRoutes::is_current_request_react_route() || self::current_page_has_shortcode();
 	}
 
 	/**
