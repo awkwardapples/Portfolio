@@ -40,24 +40,10 @@ final class RouteInterceptor {
 	 * @param \WP_Query $query The current query.
 	 */
 	public function maybe_intercept( \WP_Query $query ): void {
-		if ( is_admin() ) {
-			return;
-		}
-		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
-			return;
-		}
-		if ( defined( 'DOING_CRON' ) && DOING_CRON ) {
-			return;
-		}
-		if ( defined( 'WP_CLI' ) && WP_CLI ) {
-			return;
-		}
 		if ( ! $query->is_main_query() ) {
 			return;
 		}
-
-		$request_path = SiteRoutes::current_request_path();
-		if ( ! SiteRoutes::is_recognized( $request_path ) ) {
+		if ( ! SiteRoutes::is_current_request_react_route() ) {
 			return;
 		}
 

@@ -43,23 +43,7 @@ final class RenderingArchitecture {
 	 * @return string The path to use for rendering.
 	 */
 	public static function filter_template_for_react_routes( string $template ): string {
-		// Skip if not a real frontend request (admin, REST, CRON, CLI).
-		if ( is_admin() ) {
-			return $template;
-		}
-		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
-			return $template;
-		}
-		if ( defined( 'DOING_CRON' ) && DOING_CRON ) {
-			return $template;
-		}
-		if ( defined( 'WP_CLI' ) && WP_CLI ) {
-			return $template;
-		}
-
-		// Resolve and match the current request path against React-hosted routes.
-		$current_path = SiteRoutes::current_request_path();
-		if ( ! SiteRoutes::is_recognized( $current_path ) ) {
+		if ( ! SiteRoutes::is_current_request_react_route() ) {
 			return $template;
 		}
 
