@@ -8,6 +8,8 @@
 declare( strict_types=1 );
 
 use Agency\QuoteWizard\Routing\SiteRoutes;
+use Brain\Monkey;
+use Brain\Monkey\Functions;
 
 it( 'PATHS contains exactly 5 entries', function (): void {
 	expect( SiteRoutes::PATHS )->toHaveCount( 5 );
@@ -90,4 +92,42 @@ it( 'current_request_path returns path from URI with fragment', function (): voi
 	$_SERVER['REQUEST_URI'] = '/contact#section';
 	// parse_url extracts path only, fragment is not part of REQUEST_URI from nginx/apache but test the pure logic.
 	expect( SiteRoutes::current_request_path() )->toBe( '/contact' );
+} );
+
+// ---------------------------------------------------------------------------
+// is_current_request_react_route
+// ---------------------------------------------------------------------------
+
+describe( 'is_current_request_react_route', function (): void {
+
+	beforeEach(
+		function (): void {
+			Monkey\setUp();
+		}
+	);
+
+	afterEach(
+		function (): void {
+			Monkey\tearDown();
+			unset( $_SERVER['REQUEST_URI'] );
+		}
+	);
+
+	it( 'returns true for a recognized route when not in admin context', function (): void {
+		Functions\when( 'is_admin' )->justReturn( false );
+		$_SERVER['REQUEST_URI'] = '/quote';
+		expect( SiteRoutes::is_current_request_react_route() )->toBeTrue();
+	} );
+
+	it( 'returns false for an unrecognized route', function (): void {
+		Functions\when( 'is_admin' )->justReturn( false );
+		$_SERVER['REQUEST_URI'] = '/some-other-page';
+		expect( SiteRoutes::is_current_request_react_route() )->toBeFalse();
+	} );
+
+	it( 'returns false in the admin context even for a recognized route', function (): void {
+		Functions\when( 'is_admin' )->justReturn( true );
+		$_SERVER['REQUEST_URI'] = '/quote';
+		expect( SiteRoutes::is_current_request_react_route() )->toBeFalse();
+	} );
 } );

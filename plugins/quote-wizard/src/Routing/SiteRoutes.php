@@ -49,6 +49,29 @@ final class SiteRoutes {
 	}
 
 	/**
+	 * Is the current request a React-hosted route?
+	 *
+	 * Consolidates scope guards (admin, REST, CRON, CLI) and path recognition
+	 * into a single callable. Use this instead of duplicating the guard chain
+	 * in each consumer (AssetLoader, RenderingArchitecture, RouteInterceptor).
+	 */
+	public static function is_current_request_react_route(): bool {
+		if ( is_admin() ) {
+			return false;
+		}
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+			return false;
+		}
+		if ( defined( 'DOING_CRON' ) && DOING_CRON ) {
+			return false;
+		}
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			return false;
+		}
+		return self::is_recognized( self::current_request_path() );
+	}
+
+	/**
 	 * Extract the path portion of the current request URI without query string.
 	 *
 	 * Shared between RouteInterceptor and SiteRenderer to avoid duplication.
