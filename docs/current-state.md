@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-06-12 (post Step 5.5b-architecture-fix)_
+_Last updated: 2026-06-14 (post Step 5.6 — product vision rewrite)_
 
 ## What's working
 
@@ -34,7 +34,9 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 
 ## What's NOT yet built
 
-- Step 5.5c (SCB-specific customization) — up next after 5.5b-architecture-fix.
+- Steps 5.7-5.11 (section library, footer, wizard service library, SEO,
+  customization tooling) — the template-completeness sequence up next.
+- Step 5.12 (SCB-specific deployment) — gated on 5.7-5.11.
 - Media retention policy (deferred per 4.8 spec).
 - Idempotency for submission retry (deferred; trigger: first observed duplicate).
 - Rate limiting on submit endpoint (deferred; trigger: >100 submissions/day).
@@ -90,6 +92,13 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   true on React routes regardless of shortcode. `RenderingArchitecture` and
   `RouteInterceptor` inline guard chains refactored to delegate to the helper.
   ADR-0018 and ADR-0019 amended. 6 new PHP tests.
+- **Step 5.6 — Product vision rewrite + roadmap revision** (June 2026).
+  Updated `docs/product-vision.md` with the comprehensive template definition:
+  7-section homepage library, behavioral/visual layer separation principle,
+  9-service wizard library, manual-quote flow, SEO Layers 1-4, per-client
+  customization model, 21st.dev workflow, and deployment lifecycle. Revised
+  roadmap to reflect template-completeness sequence (5.7-5.11) before
+  SCB-specific deployment (5.12). Documentation-only; no code or test changes.
 
 ## Key Architectural Facts
 

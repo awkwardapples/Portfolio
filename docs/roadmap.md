@@ -27,14 +27,17 @@ A single-page, structural view of project state. Update on every completed step.
 | 5.5a                  | Complete | Template capabilities (category nav + manual-quote mode)                                                |
 | 5.5a-remediation      | Complete | Wire contract drift fix; operational verification under ADR-0018; build-pipeline composition correction |
 | 5.5b                  | Complete | Operational fork procedure documentation                                                                |
-| 5.5b-architecture     | Complete | Rendering architecture implementation (Option C hybrid)                                                 |
+| 5.5b-architecture     | Complete | Rendering architecture implementation (Option C hybrid; ADR-0019)                                       |
 | 5.5b-architecture-fix | Complete | Asset enqueue gate fix; React app now mounts and renders on React routes                                |
-| 5.5c                  | Up next  | SCB-specific customization                                                                              |
-| 5.5                   | Planned  | First client adaptation (handyman, priority services)                                                   |
-| 5.6                   | Planned  | Visual customization v1 (driven by 5.5 client feedback)                                                 |
-| 5.7                   | Planned  | Handyman additional services (driven by lead patterns)                                                  |
-| 6.0                   | Planned  | First client production deployment to IONOS                                                             |
-| 6.1+                  | Future   | Second client onboarding (validates template)                                                           |
+| 5.6                   | Complete | Product vision rewrite + roadmap revision                                                               |
+| 5.7                   | Up next  | Section library: composition mechanism + 7 sections                                                     |
+| 5.8                   | Planned  | Footer: template structure + per-client content slots                                                   |
+| 5.9                   | Planned  | Wizard service library: 9 services (5 instant, 4 manual)                                                |
+| 5.10                  | Planned  | SEO infrastructure: Layers 1-4                                                                          |
+| 5.11                  | Planned  | Per-client customization tooling refinement                                                             |
+| 5.12                  | Planned  | SCB-specific deployment (first real client)                                                             |
+| 6.0                   | Planned  | Production IONOS deployment                                                                             |
+| 6.1+                  | Future   | Second and subsequent clients                                                                           |
 
 ## Step rationale and dependencies
 
@@ -81,24 +84,52 @@ The React bundle was never enqueued; pages rendered blank. Fix adds
 duplicated guard chains. ADR-0018 and ADR-0019 amended with lessons learned
 (visible-UI verification requirement). See both ADRs.
 
-**5.5 — First client adaptation.** Empirical test of the 5.3 runbook. Applies
-it to the handyman client. Builds the priority subset of the handyman's
-services (2-3 services initially). Uses the existing visual default; visual
-customization comes in 5.6 based on actual client feedback.
+**5.6 — Product vision rewrite + roadmap revision.** Replaces the earlier
+product-vision.md (which described intended variation points and deferred
+capabilities) with a comprehensive template definition: the 7-section homepage
+library, the behavioral/visual layer separation principle, the 9-service wizard
+library (5 instant, 4 manual), the manual-quote flow, SEO infrastructure
+layers, the per-client customization model, and the 21st.dev workflow.
+Documentation-only; no code, no tests. Establishes the reference document
+for all subsequent implementation steps.
 
-**5.6 — Visual customization v1.** Builds the navbar variants, color/background
-system, layout variants, and optional widgets specified in
-`docs/product-vision.md`. Scoped based on what 5.5 actually surfaces. Driven
-by real first-client feedback, not anticipation.
+**5.7 — Section library.** Implements the composition mechanism (Pattern A:
+single composition file per page, array of `{ section, config }` entries) and
+all 7 standard sections (Hero, Intro, Services Preview, Process, Projects, Why
+Choose Us, FAQ). Each section follows the behavioral/visual layer separation
+(Pattern B: `Section/index.tsx` + `Section/Layout.tsx`). Default section order
+established. Home page composed from the library.
 
-**5.7 — Service expansion.** Adds more of the handyman's services to the wizard
-registry. Driven by which services are getting customer interest, not in bulk.
+**5.8 — Footer.** Implements the template-fixed footer structure with per-client
+content slots. All content slots documented and configurable from a single
+footer content file. Footer appears on all five routes.
 
-**6.0 — Production deployment.** First real client goes live on IONOS hosting.
-Operational, gated on 5.6 + 5.7 reaching a state the client is happy with.
+**5.9 — Wizard service library.** Builds the remaining 7 services (3 instant:
+painting & decorating, patio/paving/driveways, pressure washing; 4 manual:
+general repairs, plumbing, electrical, carpentry). Fencing and decking already
+exist. After 5.9 the library has all 9 services.
+
+**5.10 — SEO infrastructure.** Implements Layers 1-4: per-page meta tags (title,
+description, canonical, OG, Twitter card); LocalBusiness JSON-LD; Service
+JSON-LD per enabled service; sitemap.xml and robots.txt generation. PHP plugin
+emits Layers 1-2-4 into wp_head(); Layer 3 placement finalized in this step.
+
+**5.11 — Per-client customization tooling refinement.** Validates and refines
+the per-client customization workflow against an actual adaptation pass. Ensures
+the composition file, section content config, service selection, and footer
+config are ergonomic. May introduce helper types or developer tooling if the
+workflow surfaces friction. Empirical (do the adaptation, find the gaps, fix).
+
+**5.12 — SCB-specific deployment.** First real client adaptation. Applies the
+5.7-5.11 template to SCB Handyman. Selects SCB's services, composes SCB's home
+page, provides SCB's business content, applies visual customization per SCB's
+brand. Operational verification per ADR-0018.
+
+**6.0 — Production IONOS deployment.** First real client goes live. Operational,
+gated on 5.12 reaching a state the client is satisfied with.
 
 **6.1+ — Second client onboarding.** Validates the template against a different
-trade business. Triggers visual variation refinements, possible structural
+trade business. Triggers visual variation refinements and possible structural
 adjustments based on real cross-client experience.
 
 ## Gating
@@ -108,10 +139,11 @@ June 5, 2026. See `docs/phase-5-evidence.md`.
 
 No remaining gating clauses for Step 5.3 itself.
 
-Future steps maintain their natural ordering dependencies (5.5 depends on 5.3
-runbook; 5.6 depends on 5.5 feedback; etc.). Each step's start is gated on
-the prior step's verification — not just gate clearance but operational
-verification where the step affects WordPress deployment.
+Future steps maintain their natural ordering dependencies (5.7 depends on the
+5.6 product vision; 5.9 depends on the 5.7 section library; 5.12 depends on
+5.7-5.11 template completeness). Each step's start is gated on the prior
+step's verification — not just gate clearance but operational verification
+where the step affects WordPress deployment.
 
 ## Triggers (deferred work)
 

@@ -1,6 +1,6 @@
 # Handoff
 
-_Last updated: 2026-06-12 (post Step 5.5b-architecture-fix)_
+_Last updated: 2026-06-14 (post Step 5.6 — product vision rewrite)_
 
 ## Status
 
@@ -14,14 +14,18 @@ _Last updated: 2026-06-12 (post Step 5.5b-architecture-fix)_
   fixed. `AssetLoader` now enqueues the React bundle on recognized routes
   regardless of shortcode presence. React app mounts and renders visible UI.
   ADR-0018 and ADR-0019 amended with lessons learned.
+- Step 5.6 complete (June 14, 2026): product vision rewritten with the full
+  template definition — 7-section homepage library, behavioral/visual layer
+  separation, 9-service wizard library, SEO layers, per-client customization
+  model, 21st.dev workflow. Roadmap revised to reflect template-completeness
+  sequence (5.7-5.11) before SCB-specific deployment (5.12).
 - Build pipeline corrected: `pnpm build` composes Vite build and plugin
   staging in one command.
 - Fork-and-customize architecture demonstrated end-to-end.
-- Step 5.5c (SCB-specific customization) is now up next.
 
 The system is functionally complete for a single-client deployment. The remaining
-work is template adaptation, visual customization (driven by real client
-feedback), and production deployment for the first client.
+work is template completeness (section library, footer, wizard service library,
+SEO infrastructure), followed by SCB-specific deployment, then production.
 
 See `docs/roadmap.md` for the full sequence and `docs/product-vision.md` for
 the medium-term product direction.
@@ -63,12 +67,21 @@ If you are starting a new step:
 
 The roadmap is sequenced explicitly. See `docs/roadmap.md` for full detail.
 
-**Immediate next step:** Step 5.5c — SCB-specific customization. Apply SCB
-Handyman's content, branding, and initial service set against the now-clean
-rendering canvas (5.5b-architecture and 5.5b-architecture-fix both complete;
-no theme chrome, bundle loads correctly, React UI visible).
+**Immediate next step:** Step 5.7 — Section library. Implement the composition
+mechanism (Pattern A: single composition file per page) and all 7 standard
+sections (Hero, Intro, Services Preview, Process, Projects, Why Choose Us,
+FAQ), each following the behavioral/visual layer separation (Pattern B:
+`Section/index.tsx` + `Section/Layout.tsx`).
 
-After 5.5c: Step 5.6 (visual customization v1) and beyond.
+**Then:** Step 5.8 — Footer template structure + per-client content slots.
+
+**Then:** Step 5.9 — Wizard service library (9 services: 5 instant, 4 manual).
+
+**Then:** Step 5.10 — SEO infrastructure (Layers 1-4).
+
+**Then:** Step 5.11 — Per-client customization tooling refinement.
+
+**Then:** Step 5.12 — SCB-specific deployment (first real client).
 
 Each step is sized small and verified before the next begins. See
 `docs/roadmap.md` "Step rationale and dependencies" for why each step is
