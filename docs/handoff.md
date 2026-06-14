@@ -1,6 +1,6 @@
 # Handoff
 
-_Last updated: 2026-06-14 (post Step 5.6 — product vision rewrite)_
+_Last updated: 2026-06-14 (post Step 5.7 — section library)_
 
 ## Status
 
@@ -19,13 +19,19 @@ _Last updated: 2026-06-14 (post Step 5.6 — product vision rewrite)_
   separation, 9-service wizard library, SEO layers, per-client customization
   model, 21st.dev workflow. Roadmap revised to reflect template-completeness
   sequence (5.7-5.11) before SCB-specific deployment (5.12).
+- Step 5.7 complete (June 14, 2026): section library implemented. ADR-0020
+  accepted. 7 sections built (Hero, Intro, ServicesPreview, Process, Projects,
+  WhyChooseUs, FAQ) following behavioral/visual layer separation. `home-page-content.ts`
+  established as the per-client composition file. `HomePage.tsx` replaced with
+  composition renderer. 30 new Vitest tests; 455/455 total; 75.69 kB gzip.
+  Operational verification pending (OV-5.7-1 through OV-5.7-6).
 - Build pipeline corrected: `pnpm build` composes Vite build and plugin
   staging in one command.
 - Fork-and-customize architecture demonstrated end-to-end.
 
 The system is functionally complete for a single-client deployment. The remaining
-work is template completeness (section library, footer, wizard service library,
-SEO infrastructure), followed by SCB-specific deployment, then production.
+work is template completeness (footer, wizard service library, SEO infrastructure,
+customization tooling), followed by SCB-specific deployment, then production.
 
 See `docs/roadmap.md` for the full sequence and `docs/product-vision.md` for
 the medium-term product direction.

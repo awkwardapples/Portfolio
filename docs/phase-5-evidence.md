@@ -993,3 +993,79 @@ is correct; SCB re-verification deferred to next time that site is accessible.
   browser before a rendering-path step is marked complete.
 - **ADR-0019 (2026-06-12):** Recorded the asset enqueue gate bug, fix
   mechanism, and cross-reference to ADR-0018 amendment.
+
+---
+
+## Step 5.7 — Section Library (2026-06-14)
+
+### What was built
+
+Seven section components following the behavioral/visual layer separation
+established by ADR-0020:
+
+| Section         | Folder                               |
+| --------------- | ------------------------------------ |
+| Hero            | `src/site/sections/Hero/`            |
+| Intro           | `src/site/sections/Intro/`           |
+| ServicesPreview | `src/site/sections/ServicesPreview/` |
+| Process         | `src/site/sections/Process/`         |
+| Projects        | `src/site/sections/Projects/`        |
+| WhyChooseUs     | `src/site/sections/WhyChooseUs/`     |
+| FAQ             | `src/site/sections/FAQ/`             |
+
+Each section has `index.tsx` (behavioral), `Layout.tsx` (visual), `types.ts`
+(content type), and `__tests__/` (unit tests).
+
+The `SectionConfig` discriminated union (`src/site/sections/types.ts`) is the
+type contract for composition. `home-page-content.ts` is the per-client
+composition file (section selection, order, and content). `HomePage.tsx` was
+replaced with a composition renderer using switch-case dispatch over the
+discriminated union.
+
+### Gate results
+
+| Gate               | Result                                  |
+| ------------------ | --------------------------------------- |
+| `pnpm lint`        | 0/0                                     |
+| `pnpm typecheck`   | 0 errors                                |
+| `pnpm test`        | 455/455 (+30 from section library)      |
+| `pnpm build`       | Clean, 75.69 kB gzip (+2.7 kB baseline) |
+| `composer test`    | 101 passed, 2 skipped (unchanged)       |
+| `composer analyse` | No errors                               |
+
+### New tests breakdown
+
+| Test file                             | Count | What                              |
+| ------------------------------------- | ----- | --------------------------------- |
+| `Hero/__tests__/hero.test.ts`         | 4     | HeroContent type contract         |
+| `Intro/__tests__/intro.test.ts`       | 4     | IntroContent, bullets, CTA        |
+| `ServicesPreview/__tests__/…test.ts`  | 4     | ServicesPreviewContent, items     |
+| `Process/__tests__/process.test.ts`   | 3     | ProcessContent, step ordering     |
+| `Projects/__tests__/projects.test.ts` | 3     | ProjectsContent, image items      |
+| `WhyChooseUs/__tests__/…test.ts`      | 3     | WhyChooseUsContent, valueProps    |
+| `FAQ/__tests__/faq.test.ts`           | 4     | FAQContent, toggle algorithm      |
+| `pages/__tests__/home-page.test.ts`   | 5     | Composition structure, IDs, order |
+
+### ADR
+
+- **ADR-0020 (2026-06-14):** Section library architecture accepted. Formalises
+  behavioral/visual layer separation, per-section folder pattern, and Pattern A
+  composition.
+
+### Operational verification
+
+**Required per ADR-0018 (visible-UI render).** To be performed after deployment
+to canonical LocalWP site.
+
+Criteria to record:
+
+- OV-5.7-1: `http://fencing-lead-platform-dev.local/` renders all 7 sections
+  in expected order (Hero → Intro → ServicesPreview → Process → Projects →
+  WhyChooseUs → FAQ).
+- OV-5.7-2: Hero section shows "Acme Fencing" heading, primary CTA
+  "Get a free quote", and secondary CTA "Call us now".
+- OV-5.7-3: FAQ collapsibles toggle open/closed on click.
+- OV-5.7-4: Primary CTAs on home page link to `/quote`.
+- OV-5.7-5: At 375px width, all sections render without horizontal scroll.
+- OV-5.7-6: Wizard on `/quote` still submits successfully end-to-end (smoke
+  test confirming section library work did not affect wizard pipeline).

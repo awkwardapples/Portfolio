@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-06-14 (post Step 5.6 — product vision rewrite)_
+_Last updated: 2026-06-14 (post Step 5.7 — section library)_
 
 ## What's working
 
@@ -18,9 +18,9 @@ _Last updated: 2026-06-14 (post Step 5.6 — product vision rewrite)_
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors
-- `pnpm test`: 425/425 (unchanged)
-- `pnpm build`: clean, ~73 kB gzip bundle (unchanged)
-- `composer test`: 101 passed, 2 skipped (6 new from 5.5b-architecture-fix)
+- `pnpm test`: 455/455 (+30 from 5.7 section library)
+- `pnpm build`: clean, 75.69 kB gzip bundle (+2.7 kB from sections)
+- `composer test`: 101 passed, 2 skipped (unchanged)
 - `composer analyse`: clean
 
 ## OV-001 verification
@@ -34,9 +34,9 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 
 ## What's NOT yet built
 
-- Steps 5.7-5.11 (section library, footer, wizard service library, SEO,
-  customization tooling) — the template-completeness sequence up next.
-- Step 5.12 (SCB-specific deployment) — gated on 5.7-5.11.
+- Steps 5.8-5.11 (footer, wizard service library, SEO, customization tooling)
+  — the remaining template-completeness steps.
+- Step 5.12 (SCB-specific deployment) — gated on 5.8-5.11.
 - Media retention policy (deferred per 4.8 spec).
 - Idempotency for submission retry (deferred; trigger: first observed duplicate).
 - Rate limiting on submit endpoint (deferred; trigger: >100 submissions/day).
@@ -99,6 +99,12 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   customization model, 21st.dev workflow, and deployment lifecycle. Revised
   roadmap to reflect template-completeness sequence (5.7-5.11) before
   SCB-specific deployment (5.12). Documentation-only; no code or test changes.
+- **Step 5.7 — Section library** (June 2026). ADR-0020 accepted.
+  7 sections built (Hero, Intro, ServicesPreview, Process, Projects,
+  WhyChooseUs, FAQ), each following behavioral/visual layer separation.
+  `home-page-content.ts` established as the per-client composition file.
+  `HomePage.tsx` replaced with a composition renderer. 30 new Vitest tests.
+  Bundle: 75.69 kB gzip. Operational verification pending (OV-5.7-1 to 6).
 
 ## Key Architectural Facts
 

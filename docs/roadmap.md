@@ -30,8 +30,8 @@ A single-page, structural view of project state. Update on every completed step.
 | 5.5b-architecture     | Complete | Rendering architecture implementation (Option C hybrid; ADR-0019)                                       |
 | 5.5b-architecture-fix | Complete | Asset enqueue gate fix; React app now mounts and renders on React routes                                |
 | 5.6                   | Complete | Product vision rewrite + roadmap revision                                                               |
-| 5.7                   | Up next  | Section library: composition mechanism + 7 sections                                                     |
-| 5.8                   | Planned  | Footer: template structure + per-client content slots                                                   |
+| 5.7                   | Complete | Section library: composition mechanism + 7 sections                                                     |
+| 5.8                   | Up next  | Footer: template structure + per-client content slots                                                   |
 | 5.9                   | Planned  | Wizard service library: 9 services (5 instant, 4 manual)                                                |
 | 5.10                  | Planned  | SEO infrastructure: Layers 1-4                                                                          |
 | 5.11                  | Planned  | Per-client customization tooling refinement                                                             |
