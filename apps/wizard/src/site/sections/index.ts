@@ -1,6 +1,8 @@
 export { Hero } from './Hero';
 export { Intro } from './Intro';
 export { ServicesPreview } from './ServicesPreview';
+export { Process } from './Process';
+export { WhyChooseUs } from './WhyChooseUs';
 
 export type { SectionConfig, SectionKind, BaseSectionConfig } from './types';
 export type { HeroContent } from './Hero/types';
