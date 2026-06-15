@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-06-14 (post Step 5.7 — section library)_
+_Last updated: 2026-06-15 (post Step 5.7-remediation — CTA routing + canonical redirect + sizing)_
 
 ## What's working
 
@@ -18,9 +18,9 @@ _Last updated: 2026-06-14 (post Step 5.7 — section library)_
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors
-- `pnpm test`: 455/455 (+30 from 5.7 section library)
-- `pnpm build`: clean, 75.69 kB gzip bundle (+2.7 kB from sections)
-- `composer test`: 101 passed, 2 skipped (unchanged)
+- `pnpm test`: 458/458 (+3 from 5.7-remediation SectionLink)
+- `pnpm build`: clean, 75.82 kB gzip
+- `composer test`: 104 passed, 2 skipped (+3 from CanonicalRedirectGuard)
 - `composer analyse`: clean
 
 ## OV-001 verification
@@ -104,7 +104,13 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   WhyChooseUs, FAQ), each following behavioral/visual layer separation.
   `home-page-content.ts` established as the per-client composition file.
   `HomePage.tsx` replaced with a composition renderer. 30 new Vitest tests.
-  Bundle: 75.69 kB gzip. Operational verification pending (OV-5.7-1 to 6).
+- **Step 5.7-remediation — CTA routing, canonical redirect, viewport sizing**
+  (June 2026). Three OV findings resolved: WordPress canonical redirect
+  suppressed for React routes (`CanonicalRedirectGuard`); section Layouts use
+  `SectionLink` for client-side navigation; Hero gains `lg:min-h-screen` and
+  content sections gain spacing upgrades within the closed token set.
+  ADR-0020 amended. OV-5.7R-1 through OV-5.7R-9 pending operational
+  verification.
 
 ## Key Architectural Facts
 

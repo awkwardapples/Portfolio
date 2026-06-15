@@ -259,6 +259,40 @@ from the composition-file config to the Layout as props. There is no
 indirection via a content context or a data-fetching layer. This keeps the
 section's data flow readable at a glance in the composition file.
 
+#### Section link rule
+
+Section Layout components use the `SectionLink` helper
+(`@/site/routing/SectionLink`) for all links. `SectionLink` uses the site
+router's `Link` for internal hrefs (starting with `/`) and a plain `<a>` for
+external hrefs (`tel:`, `mailto:`, `https://`). Plain `<a>` tags are not used
+in section Layouts for internal paths — they bypass the client-side router and
+cause full-page reloads. See ADR-0020 amendment (5.7-remediation).
+
+#### Section library verification pattern (from 5.7-remediation lessons)
+
+Operational verification for section-library work must include:
+
+1. **Direct URL access.** Each React route (`/`, `/services`, `/our-work`,
+   `/contact`, `/quote`) returns HTTP 200 when accessed directly (curl or
+   browser address bar). A 301 redirect indicates a WordPress canonical
+   redirect problem — check `CanonicalRedirectGuard`.
+
+2. **CTA routing.** Each section CTA, when clicked, performs correct
+   navigation. Internal CTAs (e.g., `/quote`) trigger client-side navigation
+   (URL bar updates, no full page reload, no flash of unstyled content).
+   External CTAs (`tel:`, `mailto:`) trigger appropriate browser behavior.
+
+3. **Vertical sizing.** Hero section fills approximately viewport height on
+   desktop; content sections have generous vertical spacing; mobile renders
+   with appropriate content-determined heights.
+
+4. **Visible UI render.** Per amended ADR-0018 — observe each section
+   renders visible content; do not rely solely on HTML structure or test pass.
+
+5. **Wizard interaction.** Wizard on `/quote` still submits end-to-end after
+   any section-library change; this confirms section work did not affect the
+   submission pipeline.
+
 ### Handyman wizard service library
 
 The template provides nine wizard configurations covering the most common

@@ -1,6 +1,6 @@
 # Handoff
 
-_Last updated: 2026-06-14 (post Step 5.7 — section library)_
+_Last updated: 2026-06-15 (post Step 5.7-remediation)_
 
 ## Status
 
@@ -23,15 +23,24 @@ _Last updated: 2026-06-14 (post Step 5.7 — section library)_
   accepted. 7 sections built (Hero, Intro, ServicesPreview, Process, Projects,
   WhyChooseUs, FAQ) following behavioral/visual layer separation. `home-page-content.ts`
   established as the per-client composition file. `HomePage.tsx` replaced with
-  composition renderer. 30 new Vitest tests; 455/455 total; 75.69 kB gzip.
-  Operational verification pending (OV-5.7-1 through OV-5.7-6).
+  composition renderer. 30 new Vitest tests.
+- Step 5.7-remediation complete (June 15, 2026): three OV findings resolved.
+  (1) `CanonicalRedirectGuard` PHP class suppresses WordPress canonical redirect
+  for React routes — direct URL access to /quote, /services, /our-work, /contact
+  now returns 200. (2) All section Layouts use `SectionLink` for client-side
+  navigation on internal hrefs. (3) Hero gains `lg:min-h-screen`; content
+  sections gain internal spacing upgrades within the closed token set. ADR-0020
+  amended. 458/458 Vitest; 104/104 PHP; 75.82 kB gzip.
+  Operational verification pending (OV-5.7R-1 through OV-5.7R-9).
 - Build pipeline corrected: `pnpm build` composes Vite build and plugin
   staging in one command.
 - Fork-and-customize architecture demonstrated end-to-end.
 
-The system is functionally complete for a single-client deployment. The remaining
-work is template completeness (footer, wizard service library, SEO infrastructure,
-customization tooling), followed by SCB-specific deployment, then production.
+The system is functionally complete for a single-client deployment. All React
+routes are accessible via direct URL. Section CTAs use client-side navigation.
+The remaining work is template completeness (footer, wizard service library,
+SEO infrastructure, customization tooling), followed by SCB-specific deployment,
+then production.
 
 See `docs/roadmap.md` for the full sequence and `docs/product-vision.md` for
 the medium-term product direction.
@@ -73,11 +82,10 @@ If you are starting a new step:
 
 The roadmap is sequenced explicitly. See `docs/roadmap.md` for full detail.
 
-**Immediate next step:** Step 5.7 — Section library. Implement the composition
-mechanism (Pattern A: single composition file per page) and all 7 standard
-sections (Hero, Intro, Services Preview, Process, Projects, Why Choose Us,
-FAQ), each following the behavioral/visual layer separation (Pattern B:
-`Section/index.tsx` + `Section/Layout.tsx`).
+**Immediate next action:** Operational verification (OV-5.7R-1 through OV-5.7R-9)
+per amended ADR-0018. Deploy to canonical LocalWP site, run curl tests for each
+React route, verify section rendering and CTA routing in-browser, submit wizard
+end-to-end. See `docs/phase-5-evidence.md` Step 5.7-remediation for the criteria.
 
 **Then:** Step 5.8 — Footer template structure + per-client content slots.
 

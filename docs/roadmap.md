@@ -31,6 +31,7 @@ A single-page, structural view of project state. Update on every completed step.
 | 5.5b-architecture-fix | Complete | Asset enqueue gate fix; React app now mounts and renders on React routes                                |
 | 5.6                   | Complete | Product vision rewrite + roadmap revision                                                               |
 | 5.7                   | Complete | Section library: composition mechanism + 7 sections                                                     |
+| 5.7-remediation       | Complete | CTA routing (SectionLink); canonical redirect fix; viewport sizing                                      |
 | 5.8                   | Up next  | Footer: template structure + per-client content slots                                                   |
 | 5.9                   | Planned  | Wizard service library: 9 services (5 instant, 4 manual)                                                |
 | 5.10                  | Planned  | SEO infrastructure: Layers 1-4                                                                          |
@@ -99,6 +100,14 @@ all 7 standard sections (Hero, Intro, Services Preview, Process, Projects, Why
 Choose Us, FAQ). Each section follows the behavioral/visual layer separation
 (Pattern B: `Section/index.tsx` + `Section/Layout.tsx`). Default section order
 established. Home page composed from the library.
+
+**5.7-remediation — CTA routing, canonical redirect, viewport sizing.** Three
+findings from 5.7 operational verification: (1) WordPress `redirect_canonical`
+intercepted React routes — fixed by `CanonicalRedirectGuard` PHP class; (2)
+plain `<a>` tags in section Layouts caused full-page reloads — fixed by
+`SectionLink` helper that uses the site router for internal paths; (3) sections
+were cramped — fixed by Hero `lg:min-h-screen` + internal spacing upgrades.
+ADR-0020 amended. 4 implementation commits.
 
 **5.8 — Footer.** Implements the template-fixed footer structure with per-client
 content slots. All content slots documented and configurable from a single

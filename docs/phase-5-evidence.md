@@ -1069,3 +1069,98 @@ Criteria to record:
 - OV-5.7-5: At 375px width, all sections render without horizontal scroll.
 - OV-5.7-6: Wizard on `/quote` still submits successfully end-to-end (smoke
   test confirming section library work did not affect wizard pipeline).
+
+---
+
+## Step 5.7-remediation — CTA Routing, Section Sizing, Canonical Redirect (2026-06-15)
+
+### Background
+
+Operational verification of Step 5.7 surfaced three distinct findings:
+
+**Finding 1 — Canonical redirect.** WordPress's `redirect_canonical` logic
+redirected `/quote`, `/services`, `/our-work`, and `/contact` to `/`.
+Because the loaded WP_Post for every React route is Site Root
+(post_name=`goqw-site-root`), WordPress concluded the canonical URL was `/`
+and issued HTTP 301. Direct URL access to any React route except `/` was
+broken; only in-app navigation (which doesn't hit WordPress) worked.
+
+**Finding 2 — Section CTAs used plain `<a>` tags.** Combined with the redirect
+issue, section CTAs triggered full-page navigation that landed on the home page.
+Even after the redirect was fixed, plain `<a>` tags produced a full page reload
+and flash of unstyled content rather than smooth client-side navigation.
+
+**Finding 3 — Section sizing was cramped.** Each section rendered at its minimum
+content height, producing a dense home page with weak visual hierarchy. The
+hero did not dominate; sections felt crowded.
+
+### Fixes
+
+**Fix 1 — CanonicalRedirectGuard.** New PHP class
+(`src/Routing/CanonicalRedirectGuard.php`) hooks the `redirect_canonical` filter
+and returns `false` for React routes, suppressing the redirect. WordPress's
+standard canonical behaviour is preserved for all other URLs. Registered in
+`Plugin::boot()` alongside `RenderingArchitecture::register()`.
+
+**Fix 2 — SectionLink helper.** New React component
+(`src/site/routing/SectionLink.tsx`) decides at render time whether to use the
+site router's `Link` (internal hrefs starting with `/`) or a plain `<a>`
+(external hrefs: `tel:`, `mailto:`, `https://`). All seven section Layout
+components refactored to use `SectionLink`. ADR-0020 amended.
+
+**Fix 3 — Viewport-aware sizing.** Hero section gains `flex items-center` +
+`lg:min-h-screen` (fills viewport on large screens; auto-height on mobile).
+Content sections gain internal spacing upgrades within the closed token set:
+subheading gap `mt-2 → mt-4`, section-to-grid/list `mt-8 → mt-12`, CTA
+`mt-8 → mt-12`, grid item gaps `gap-6 → gap-8` (ServicesPreview, Projects,
+WhyChooseUs). No arbitrary Tailwind values used.
+
+**Bonus Fix — Projects image fallback.** Projects behavioral component
+(`Projects/index.tsx`) now manages `imageErrors: Set<string>` state and passes
+it to `ProjectsLayout`, which renders an "Image coming soon" placeholder for
+broken or missing images. Behavioral/visual separation preserved: state is in
+`index.tsx`; render decision is in `Layout.tsx`.
+
+### Gate results
+
+| Gate               | Result                                                 |
+| ------------------ | ------------------------------------------------------ |
+| `pnpm lint`        | 0/0                                                    |
+| `pnpm typecheck`   | 0 errors                                               |
+| `pnpm test`        | 458/458 (+3 from SectionLink isInternalLink)           |
+| `pnpm build`       | Clean, 75.82 kB gzip (+0.13 kB from SectionLink)       |
+| `composer lint`    | 0/0                                                    |
+| `composer analyse` | No errors                                              |
+| `composer test`    | 104 passed (+3 from CanonicalRedirectGuard), 2 skipped |
+
+### Commits
+
+| Commit    | What                                                                |
+| --------- | ------------------------------------------------------------------- |
+| `19573eb` | feat(php): CanonicalRedirectGuard suppresses canonical redirect     |
+| `def0659` | feat(site/routing): SectionLink helper                              |
+| `62489db` | refactor(site/sections): all 7 Layouts use SectionLink; image error |
+| `e24fca2` | feat(site/sections): viewport-aware sizing                          |
+
+### Operational verification
+
+**Required per amended ADR-0018 (visible-UI render). Pending.**
+
+Criteria to record:
+
+- OV-5.7R-1: `curl -I http://fencing-lead-platform-dev.local/quote` returns
+  HTTP 200 (not 301).
+- OV-5.7R-2: `curl -I http://fencing-lead-platform-dev.local/services` returns
+  HTTP 200.
+- OV-5.7R-3: `curl -I http://fencing-lead-platform-dev.local/our-work` and
+  `/contact` both return HTTP 200.
+- OV-5.7R-4: Hero section fills approximately viewport height on desktop; each
+  subsequent section has clear vertical breathing room.
+- OV-5.7R-5: Clicking "Get a free quote" CTA in the hero navigates to `/quote`
+  via client-side routing (URL bar updates; no full page reload; no flash).
+- OV-5.7R-6: All section CTAs route correctly (internal: client-side; external:
+  browser-native).
+- OV-5.7R-7: Wizard submits end-to-end on canonical site; database row recorded.
+- OV-5.7R-8: At 375px width, all sections render without horizontal scroll.
+- OV-5.7R-9: SCB Handyman site: same direct-URL, CTA-routing, sizing, and
+  submission tests pass.

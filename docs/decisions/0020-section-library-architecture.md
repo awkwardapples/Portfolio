@@ -118,3 +118,31 @@ Model) targets `Layout.tsx` exclusively with prompts that explicitly state:
 - `docs/product-vision.md` §Template Capabilities → Homepage section library
 - `docs/product-vision.md` §Architectural Principles → Behavioral/visual layer separation
 - `docs/product-vision.md` §Per-Client Customization Model → 21st.dev workflow
+
+---
+
+## Amendment — Section internal links (June 2026, Step 5.7-remediation)
+
+The original ADR-0020 did not specify how section components handle internal
+links. The 5.7 implementation used plain `<a href={...}>` tags throughout,
+which caused two operational problems discovered during 5.7 OV:
+
+1. WordPress's `redirect_canonical` intercepted React route requests and
+   redirected them to `/` (because the loaded post is always Site Root). This
+   was fixed separately by `CanonicalRedirectGuard` (PHP routing layer).
+
+2. Even with the redirect fixed, plain `<a>` tags trigger a full-page reload
+   rather than client-side navigation, producing a visible flash and losing
+   React state.
+
+**This amendment specifies:** section Layout components MUST use the
+`SectionLink` helper (`@/site/routing/SectionLink`) for any link. `SectionLink`
+uses the site router's `Link` component for internal hrefs (starting with `/`)
+and a plain `<a>` for external hrefs (`tel:`, `mailto:`, `https://`, etc.).
+
+This applies to all 7 standard sections and any future sections added to the
+library. The `SectionLink` component is NOT imported in behavioral `index.tsx`
+files — link rendering is a visual concern that belongs in `Layout.tsx`.
+
+The `isInternalLink(href: string): boolean` helper is exported from
+`SectionLink.tsx` for unit testing.
