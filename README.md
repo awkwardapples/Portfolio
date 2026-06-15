@@ -2,7 +2,7 @@
 
 A WordPress-based lead generation platform with an embedded React quote wizard, built for local trades businesses. This repository is the source of truth for the React engine, the WordPress plugin, the Make.com automation blueprints, and all supporting documentation.
 
-> **Status:** Phase 4.0 — Design-System Foundation Layer. This README is updated as later phases land.
+> **Status:** Closing Phase 5 - Wired the WordPress plugin to do real work and ready to connect to Make.com, HubSpot, and email.. This README is updated as later phases land.
 
 ---
 
