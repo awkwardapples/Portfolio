@@ -26,8 +26,8 @@ const FAQLayout = ({
     <section id={sectionId} className={`bg-surface-sunken py-16 ${extraClassName}`}>
       <div className="mx-auto max-w-5xl px-6">
         <h2 className="text-xl font-semibold text-text">{heading}</h2>
-        {subheading && <p className="mt-2 text-base text-text-muted">{subheading}</p>}
-        <dl className="mt-8 divide-y divide-border">
+        {subheading && <p className="mt-4 text-base text-text-muted">{subheading}</p>}
+        <dl className="mt-12 divide-y divide-border">
           {items.map((item) => {
             const isOpen = openItemIds.has(item.id);
             return (
@@ -51,7 +51,7 @@ const FAQLayout = ({
           })}
         </dl>
         {cta && (
-          <div className="mt-8">
+          <div className="mt-12">
             <SectionLink
               href={cta.href}
               className="inline-block rounded border border-primary bg-primary px-4 py-2 text-sm font-medium text-text-inverse"

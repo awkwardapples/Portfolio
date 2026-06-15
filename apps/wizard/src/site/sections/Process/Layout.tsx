@@ -22,8 +22,8 @@ const ProcessLayout = ({
     <section id={sectionId} className={`bg-surface py-16 ${extraClassName}`}>
       <div className="mx-auto max-w-5xl px-6">
         <h2 className="text-xl font-semibold text-text">{heading}</h2>
-        {subheading && <p className="mt-2 text-base text-text-muted">{subheading}</p>}
-        <ol className="mt-8 flex flex-col gap-8 lg:flex-row" role="list">
+        {subheading && <p className="mt-4 text-base text-text-muted">{subheading}</p>}
+        <ol className="mt-12 flex flex-col gap-8 lg:flex-row" role="list">
           {steps.map((step) => (
             <li key={step.stepNumber} className="flex-1">
               <span className="text-2xl font-semibold text-primary">
@@ -35,7 +35,7 @@ const ProcessLayout = ({
           ))}
         </ol>
         {cta && (
-          <div className="mt-8">
+          <div className="mt-12">
             <SectionLink
               href={cta.href}
               className="inline-block rounded border border-primary bg-primary px-4 py-2 text-sm font-medium text-text-inverse"

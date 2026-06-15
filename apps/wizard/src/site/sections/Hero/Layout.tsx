@@ -22,7 +22,10 @@ const HeroLayout = ({
   extraClassName = '',
 }: HeroLayoutProps) => {
   return (
-    <section id={sectionId} className={`relative bg-primary py-16 ${extraClassName}`}>
+    <section
+      id={sectionId}
+      className={`relative flex items-center bg-primary py-16 lg:min-h-screen ${extraClassName}`}
+    >
       {backgroundImage && (
         <img
           src={backgroundImage}
@@ -31,10 +34,10 @@ const HeroLayout = ({
           aria-hidden={!backgroundImageAlt || undefined}
         />
       )}
-      <div className="relative mx-auto max-w-5xl px-6">
+      <div className="relative mx-auto w-full max-w-5xl px-6">
         <h1 className="text-2xl font-semibold text-text-inverse">{heading}</h1>
-        <p className="mt-4 text-lg text-text-inverse">{subheading}</p>
-        <div className="mt-8 flex flex-wrap gap-4">
+        <p className="mt-6 text-lg text-text-inverse">{subheading}</p>
+        <div className="mt-12 flex flex-wrap gap-4">
           <SectionLink
             href={primaryCta.href}
             className="inline-block rounded border border-text-inverse bg-text-inverse px-4 py-2 text-sm font-medium text-primary"
