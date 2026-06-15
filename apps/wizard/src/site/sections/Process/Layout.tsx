@@ -1,3 +1,4 @@
+import { SectionLink } from '@/site/routing/SectionLink';
 import type { ProcessStep } from './types';
 
 export interface ProcessLayoutProps {
@@ -35,12 +36,12 @@ const ProcessLayout = ({
         </ol>
         {cta && (
           <div className="mt-8">
-            <a
+            <SectionLink
               href={cta.href}
               className="inline-block rounded border border-primary bg-primary px-4 py-2 text-sm font-medium text-text-inverse"
             >
               {cta.label}
-            </a>
+            </SectionLink>
           </div>
         )}
       </div>

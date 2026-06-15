@@ -1,3 +1,4 @@
+import { SectionLink } from '@/site/routing/SectionLink';
 import type { ProjectItem } from './types';
 
 export interface ProjectsLayoutProps {
@@ -5,6 +6,8 @@ export interface ProjectsLayoutProps {
   subheading?: string;
   projects: ProjectItem[];
   cta?: { label: string; href: string };
+  imageErrors: Set<string>;
+  onImageError: (projectId: string) => void;
   sectionId?: string;
   extraClassName?: string;
 }
@@ -14,6 +17,8 @@ const ProjectsLayout = ({
   subheading,
   projects,
   cta,
+  imageErrors,
+  onImageError,
   sectionId,
   extraClassName = '',
 }: ProjectsLayoutProps) => {
@@ -25,12 +30,19 @@ const ProjectsLayout = ({
         <ul className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3" role="list">
           {projects.map((project) => (
             <li key={project.id} className="overflow-hidden rounded border border-border">
-              <img
-                src={project.imageUrl}
-                alt={project.imageAlt}
-                className="h-full w-full object-cover"
-                loading="lazy"
-              />
+              {imageErrors.has(project.id) ? (
+                <div className="flex h-12 items-center justify-center bg-surface text-sm text-text-muted">
+                  Image coming soon
+                </div>
+              ) : (
+                <img
+                  src={project.imageUrl}
+                  alt={project.imageAlt}
+                  onError={() => onImageError(project.id)}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              )}
               {project.description && (
                 <div className="p-4">
                   <p className="text-sm font-medium text-text">{project.name}</p>
@@ -42,12 +54,12 @@ const ProjectsLayout = ({
         </ul>
         {cta && (
           <div className="mt-8">
-            <a
+            <SectionLink
               href={cta.href}
               className="inline-block rounded border border-primary bg-primary px-4 py-2 text-sm font-medium text-text-inverse"
             >
               {cta.label}
-            </a>
+            </SectionLink>
           </div>
         )}
       </div>
