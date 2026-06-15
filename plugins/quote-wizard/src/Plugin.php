@@ -12,6 +12,7 @@ namespace Agency\QuoteWizard;
 use Agency\QuoteWizard\Frontend\AssetLoader;
 use Agency\QuoteWizard\Frontend\Shortcode;
 use Agency\QuoteWizard\Rest\SubmissionController;
+use Agency\QuoteWizard\Routing\CanonicalRedirectGuard;
 use Agency\QuoteWizard\Routing\FrontPagePolicy;
 use Agency\QuoteWizard\Routing\RenderingArchitecture;
 use Agency\QuoteWizard\Routing\RewriteRegistrar;
@@ -51,6 +52,8 @@ final class Plugin {
 
 		// Rendering architecture: plugin-provided minimal template for React routes (ADR-0019).
 		RenderingArchitecture::register();
+		// Suppress WordPress canonical redirect for React routes (ADR-0020 amendment).
+		CanonicalRedirectGuard::register();
 
 		// Frontend: shortcode that renders the wizard mount point.
 		add_shortcode( Shortcode::TAG, array( Shortcode::class, 'render' ) );
