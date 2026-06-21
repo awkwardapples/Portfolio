@@ -1,6 +1,7 @@
 import type { ReactNode, ReactElement } from 'react';
 import { Header } from '@/site/layout/Header';
-import { Footer } from '@/site/layout/Footer';
+import { Footer } from '@/site/Footer';
+import { footerContent } from '@/site/pages/footer-content';
 import { SkipLink } from '@/site/layout/SkipLink';
 
 interface SiteShellProps {
@@ -21,7 +22,7 @@ export function SiteShell({ currentPath, children }: SiteShellProps): ReactEleme
       <main id="main" className="flex-1">
         {children}
       </main>
-      <Footer />
+      <Footer content={footerContent} />
     </div>
   );
 }
