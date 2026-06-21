@@ -32,8 +32,8 @@ A single-page, structural view of project state. Update on every completed step.
 | 5.6                   | Complete | Product vision rewrite + roadmap revision                                                               |
 | 5.7                   | Complete | Section library: composition mechanism + 7 sections                                                     |
 | 5.7-remediation       | Complete | CTA routing (SectionLink); canonical redirect fix; viewport sizing                                      |
-| 5.8                   | Up next  | Footer: template structure + per-client content slots                                                   |
-| 5.9                   | Planned  | Wizard service library: 9 services (5 instant, 4 manual)                                                |
+| 5.8                   | Complete | Footer: template structure + per-client content slots                                                   |
+| 5.9                   | Up next  | Wizard service library: 9 services (5 instant, 4 manual)                                                |
 | 5.10                  | Planned  | SEO infrastructure: Layers 1-4                                                                          |
 | 5.11                  | Planned  | Per-client customization tooling refinement                                                             |
 | 5.12                  | Planned  | SCB-specific deployment (first real client)                                                             |

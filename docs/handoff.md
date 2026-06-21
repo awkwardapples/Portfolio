@@ -1,6 +1,6 @@
 # Handoff
 
-_Last updated: 2026-06-15 (post Step 5.7-remediation)_
+_Last updated: 2026-06-21 (post Step 5.8 — footer template)_
 
 ## Status
 
@@ -32,6 +32,13 @@ _Last updated: 2026-06-15 (post Step 5.7-remediation)_
   sections gain internal spacing upgrades within the closed token set. ADR-0020
   amended. 458/458 Vitest; 104/104 PHP; 75.82 kB gzip.
   Operational verification pending (OV-5.7R-1 through OV-5.7R-9).
+- Step 5.8 complete (June 21, 2026): footer template implemented. Footer follows
+  behavioral/visual layer separation (ADR-0020 amended). `Footer/index.tsx` +
+  `Footer/Layout.tsx` + `FooterContent` type + 4 inline SVG social icons.
+  Per-client content in `footer-content.ts`. Responsive grid (4-col lg / 2-col
+  md / stacked mobile). Footer rendered by `SiteShell` on every React route.
+  8 new Vitest tests (466/466). Bundle 75.77 kB gzip.
+  Operational verification pending (OV-5.8-1 through OV-5.8-12).
 - Build pipeline corrected: `pnpm build` composes Vite build and plugin
   staging in one command.
 - Fork-and-customize architecture demonstrated end-to-end.
@@ -82,12 +89,12 @@ If you are starting a new step:
 
 The roadmap is sequenced explicitly. See `docs/roadmap.md` for full detail.
 
-**Immediate next action:** Operational verification (OV-5.7R-1 through OV-5.7R-9)
-per amended ADR-0018. Deploy to canonical LocalWP site, run curl tests for each
-React route, verify section rendering and CTA routing in-browser, submit wizard
-end-to-end. See `docs/phase-5-evidence.md` Step 5.7-remediation for the criteria.
-
-**Then:** Step 5.8 — Footer template structure + per-client content slots.
+**Immediate next action:** Operational verification (OV-5.8-1 through OV-5.8-12)
+per amended ADR-0018. Deploy to canonical LocalWP site, verify footer renders on
+all five React routes, check visual layout at desktop + mobile breakpoints, confirm
+legal link routes client-side, submit wizard end-to-end. See
+`docs/phase-5-evidence.md` Step 5.8 for the criteria. Also complete OV-5.7R-1
+through OV-5.7R-9 if not yet recorded.
 
 **Then:** Step 5.9 — Wizard service library (9 services: 5 instant, 4 manual).
 

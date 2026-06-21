@@ -146,3 +146,32 @@ files — link rendering is a visual concern that belongs in `Layout.tsx`.
 
 The `isInternalLink(href: string): boolean` helper is exported from
 `SectionLink.tsx` for unit testing.
+
+---
+
+## Amendment — Footer follows the same pattern, outside the section library (June 2026, Step 5.8)
+
+Step 5.8 introduces the site footer as a fixed template element. While the
+footer is NOT part of the composable section library (per product-vision §3.6),
+it follows the same behavioral/visual layer separation pattern established for
+sections in this ADR:
+
+- `Footer/index.tsx` — behavioral component; accepts `content: FooterContent`.
+- `Footer/Layout.tsx` — visual layer; per-client customizable via the 21st.dev
+  workflow.
+- `Footer/types.ts` — `FooterContent` type (required: businessName,
+  copyrightYear, copyrightText; optional: address, phones, emails, hours,
+  serviceArea, social, legalLinks).
+
+The footer is rendered by `SiteShell` (below `<main>`) and appears on every
+route. Per-client content lives in
+`apps/wizard/src/site/pages/footer-content.ts`.
+
+The same internal-link discipline applies: footer uses `SectionLink` for
+internal links (e.g., legal links starting with `/`); plain `<a>` for `tel:`,
+`mailto:`, and social media (external) URLs.
+
+Four inline SVG social icons (Facebook, Instagram, Twitter, LinkedIn) live in
+`Footer/icons/`. No icon library is introduced.
+
+This amendment lands as Step 5.8, June 2026.

@@ -1164,3 +1164,96 @@ Criteria to record:
 - OV-5.7R-8: At 375px width, all sections render without horizontal scroll.
 - OV-5.7R-9: SCB Handyman site: same direct-URL, CTA-routing, sizing, and
   submission tests pass.
+
+---
+
+## Step 5.8 — Footer (2026-06-21)
+
+### What was built
+
+Template-fixed footer with per-client content slots. Follows the same
+behavioral/visual layer separation as the section library (ADR-0020 amended).
+
+**New files:**
+
+| File                                                   | Purpose                                          |
+| ------------------------------------------------------ | ------------------------------------------------ |
+| `apps/wizard/src/site/Footer/types.ts`                 | `FooterContent` type (required + optional slots) |
+| `apps/wizard/src/site/Footer/index.tsx`                | Behavioral component; accepts `content` prop     |
+| `apps/wizard/src/site/Footer/Layout.tsx`               | Visual layout; responsive grid + copyright row   |
+| `apps/wizard/src/site/Footer/icons/*.tsx`              | Facebook, Instagram, Twitter, LinkedIn SVGs      |
+| `apps/wizard/src/site/Footer/icons/index.ts`           | Icon barrel export                               |
+| `apps/wizard/src/site/Footer/__tests__/footer.test.ts` | 8 pure TS tests                                  |
+| `apps/wizard/src/site/pages/footer-content.ts`         | Default Acme Fencing content                     |
+
+**Modified:**
+
+| File                                        | Change                                                 |
+| ------------------------------------------- | ------------------------------------------------------ |
+| `apps/wizard/src/site/layout/SiteShell.tsx` | Imports Footer from new location; passes footerContent |
+| `apps/wizard/src/site/layout/Footer.tsx`    | **Deleted** — replaced by Footer/ folder               |
+
+**Phase 0 finding:** `layout/Footer.tsx` existed (basic; read from `siteContent`).
+Removed in commit 3. `siteContent.contact` left in place (still used by
+`ContactPage.tsx`).
+
+**Layout:** 4-column grid (lg) / 2-column (md) / stacked (mobile).
+Columns: Business identity · Contact (phones + emails) · Hours · Social.
+Columns omitted entirely when the corresponding optional content is absent.
+Bottom row: copyright text and legal links in a flex row (stacked on mobile).
+
+**SectionLink usage:** legal links use `SectionLink` (internal routing for
+`/`-prefixed hrefs). Phone, email, and social links use plain `<a>` with
+`tel:`, `mailto:`, and `https://` respectively.
+
+### Spec deviations
+
+| Spec said            | Actual               | Reason                                                                    |
+| -------------------- | -------------------- | ------------------------------------------------------------------------- |
+| `bg-surface-muted`   | `bg-surface-sunken`  | No `surface-muted` token in Tailwind config                               |
+| `gap-10`             | `gap-8`              | 10 not in spacing scale (`{0,1,2,3,4,6,8,12,16}`)                         |
+| `mt-16 lg:mt-24`     | `mt-12 lg:mt-16`     | 24 not in spacing scale; 16 is the maximum                                |
+| `.test.tsx` with RTL | `.test.ts` pure TS   | Vitest uses `environment: 'node'`; `@testing-library/react` not installed |
+| Modify SiteApp.tsx   | Modify SiteShell.tsx | Footer rendering lives in SiteShell in actual architecture                |
+
+### Gate results
+
+| Gate               | Result                                   |
+| ------------------ | ---------------------------------------- |
+| `pnpm lint`        | 0/0                                      |
+| `pnpm typecheck`   | 0 errors                                 |
+| `pnpm test`        | 466/466 (+8 from Footer pure TS tests)   |
+| `pnpm build`       | Clean, 75.77 kB gzip (-0.05 kB vs 5.7-R) |
+| `composer lint`    | 0/0                                      |
+| `composer analyse` | No errors                                |
+| `composer test`    | 104 passed, 2 skipped (unchanged)        |
+
+Bundle: `wizard.2AIvu-YG.js` / `wizard.BzgE-nQh.css`.
+
+### Commits
+
+| Commit    | What                                                                            |
+| --------- | ------------------------------------------------------------------------------- |
+| `ce8f439` | feat(site/Footer): types + behavioral component + icons                         |
+| `a9c883b` | feat(site/Footer): Layout with responsive grid + pure TS tests                  |
+| `1f28f91` | feat(site): footer integration — footer-content + SiteShell + remove old footer |
+
+### Operational verification
+
+**Required per amended ADR-0018 (visible-UI render). Pending.**
+
+Criteria to record:
+
+- OV-5.8-1: `/` renders with footer visible at bottom of page, below all 7 sections.
+- OV-5.8-2: Footer shows business name "Acme Fencing" in business identity column.
+- OV-5.8-3: Phone number "01234 567 890" renders; clicking opens `tel:` handler.
+- OV-5.8-4: Email "hello@example.com" renders; clicking opens `mailto:` handler.
+- OV-5.8-5: Facebook and Instagram icons visible (2 social icons per default content).
+- OV-5.8-6: "Privacy Policy" link navigates client-side to `/privacy` (URL bar updates;
+  destination 404 is acceptable — route not yet defined).
+- OV-5.8-7: Copyright "© 2026 Acme Fencing. All rights reserved." visible in bottom row.
+- OV-5.8-8: Footer appears on `/services` — footer below services content.
+- OV-5.8-9: Footer appears on `/our-work`, `/contact`, `/quote`.
+- OV-5.8-10: Mobile (375px DevTools): footer stacks single-column; all content readable.
+- OV-5.8-11: Desktop (1280px): footer renders in multi-column grid.
+- OV-5.8-12: Wizard submits end-to-end on canonical site; database row recorded (smoke test).

@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-06-15 (post Step 5.7-remediation — CTA routing + canonical redirect + sizing)_
+_Last updated: 2026-06-21 (post Step 5.8 — footer template)_
 
 ## What's working
 
@@ -18,9 +18,9 @@ _Last updated: 2026-06-15 (post Step 5.7-remediation — CTA routing + canonical
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors
-- `pnpm test`: 458/458 (+3 from 5.7-remediation SectionLink)
-- `pnpm build`: clean, 75.82 kB gzip
-- `composer test`: 104 passed, 2 skipped (+3 from CanonicalRedirectGuard)
+- `pnpm test`: 466/466 (+8 from 5.8 Footer pure TS tests)
+- `pnpm build`: clean, 75.77 kB gzip
+- `composer test`: 104 passed, 2 skipped (unchanged)
 - `composer analyse`: clean
 
 ## OV-001 verification
@@ -34,7 +34,7 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 
 ## What's NOT yet built
 
-- Steps 5.8-5.11 (footer, wizard service library, SEO, customization tooling)
+- Steps 5.9-5.11 (wizard service library, SEO, customization tooling)
   — the remaining template-completeness steps.
 - Step 5.12 (SCB-specific deployment) — gated on 5.8-5.11.
 - Media retention policy (deferred per 4.8 spec).
@@ -111,6 +111,14 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   content sections gain spacing upgrades within the closed token set.
   ADR-0020 amended. OV-5.7R-1 through OV-5.7R-9 pending operational
   verification.
+- **Step 5.8 — Footer template** (June 2026). Template-fixed footer with
+  per-client content slots. Follows behavioral/visual layer separation pattern
+  from ADR-0020. `Footer/index.tsx` (behavioral) + `Footer/Layout.tsx` (visual)
+  - `Footer/types.ts` + `Footer/icons/` (4 inline SVG social icons).
+    Per-client content in `footer-content.ts`. Responsive grid (4-col lg / 2-col
+    md / stacked mobile). `SiteShell` renders Footer below Router — appears on
+    every React route. 8 new pure TS tests. OV-5.8-1 through OV-5.8-12 pending
+    operational verification.
 
 ## Key Architectural Facts
 
@@ -120,7 +128,8 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   services-content.ts, work-content.ts). Edit to adapt for a new client.
 - `src/site/routing/` — hand-rolled router. `Link.tsx` dispatches `goqw:navigate`;
   `Router.tsx` is a pure function of `pathname` prop; `routes.ts` is the static table.
-- `src/site/layout/` — `SiteShell`, `Header`, `Nav`, `Footer`, `SkipLink`.
+- `src/site/layout/` — `SiteShell`, `Header`, `Nav`, `SkipLink`.
+- `src/site/Footer/` — `Footer` behavioral component, `Layout.tsx`, `types.ts`, `icons/`.
 - `src/site/pages/` — five concrete page components. `QuotePage` owns the wizard
   selection/mount (moved from App.tsx in 5.0).
 - `SiteApp` owns pathname state + event subscriptions; renders `SiteShell → Router`.
@@ -178,6 +187,6 @@ Strict ordering: validate → persist → forward → respond.
 
 - lint (`pnpm lint` → 0 errors, 0 warnings)
 - typecheck (`pnpm typecheck`)
-- vitest (`pnpm test` → 425/425)
+- vitest (`pnpm test` → 466/466)
 - build (`pnpm build`)
-- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 101 passed (2 skipped)
+- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 104 passed (2 skipped)
