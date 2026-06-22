@@ -6,8 +6,7 @@
  * step before service selection, and services declare their categoryId.
  *
  * Categories are pure data — no behavior, no special rendering rules.
- * The CATEGORIES map is empty in the canonical template; each client fork
- * populates it alongside their service assignments.
+ * Populated in Step 5.9 with the 4 standard handyman template categories.
  */
 
 /** Stable identifier for a category. Same constraints as service IDs. */
@@ -27,15 +26,39 @@ export interface CategoryConfig {
 /**
  * The closed category registry.
  *
- * Empty in the canonical template. Each client fork declares its own
- * categories here and assigns services to them via the categoryId field
- * on each Vertical in verticals.ts.
+ * Four standard categories for a handyman template (ADR-0021).
+ * Category navigation is disabled by default (enableCategoryNavigation: false).
+ * Client forks enable it via PublicConfig when their service breadth warrants it.
  */
-export const CATEGORIES: Readonly<Record<CategoryId, CategoryConfig>> = Object.freeze({});
+export const CATEGORIES: Readonly<Record<CategoryId, CategoryConfig>> = Object.freeze({
+  landscaping: {
+    id: 'landscaping',
+    label: 'Landscaping',
+    description: 'Outdoor structures, fencing, patios, and driveways.',
+    displayOrder: 1,
+  },
+  decorating: {
+    id: 'decorating',
+    label: 'Decorating',
+    description: 'Interior painting and decoration.',
+    displayOrder: 2,
+  },
+  'exterior-cleaning': {
+    id: 'exterior-cleaning',
+    label: 'Exterior Cleaning',
+    description: 'Pressure washing and outdoor surface cleaning.',
+    displayOrder: 3,
+  },
+  handyman: {
+    id: 'handyman',
+    label: 'Handyman Services',
+    description: 'General repairs and trades work around the home.',
+    displayOrder: 4,
+  },
+});
 
 /**
  * Return all categories sorted by displayOrder ascending.
- * Returns an empty array when no categories are registered.
  */
 export function listCategories(): readonly CategoryConfig[] {
   return Object.values(CATEGORIES).sort((a, b) => a.displayOrder - b.displayOrder);
