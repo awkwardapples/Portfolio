@@ -1257,3 +1257,94 @@ Criteria to record:
 - OV-5.8-10: Mobile (375px DevTools): footer stacks single-column; all content readable.
 - OV-5.8-11: Desktop (1280px): footer renders in multi-column grid.
 - OV-5.8-12: Wizard submits end-to-end on canonical site; database row recorded (smoke test).
+
+---
+
+## Step 5.9 — Wizard Service Library
+
+_Completed: 2026-06-22_
+
+### What was built
+
+- **9 new wizard service configurations** in `apps/wizard/src/domain/fixtures/`:
+  - Instant-quote (5): painting, patio, driveway, steps, jetwash
+  - Manual-quote (4): general-repairs, plumbing, electrical, carpentry
+- **Shared manual-quote pricing stub** (`manual-quote-pricing-stub.ts`): satisfies the
+  `Vertical` type for services that bypass the pricing gate entirely per ADR-0017.
+- **4 standard categories** populated in `registry/categories.ts` (landscaping,
+  decorating, exterior-cleaning, handyman). Category navigation remains disabled by
+  default; all 11 verticals carry `categoryId` assignments.
+- **11 inline SVG service icons** in `site/sections/ServicesPreview/icons/`; ICON_MAP
+  maps service ID strings to components. ServicesPreview Layout updated to render icons.
+- **services-content.ts** expanded from 2 to 11 services (all categories).
+- **home-page-content.ts** ServicesPreview updated to show 6 services with icons.
+- **ADR-0021** accepted: single-file config pattern, manual-quote stub, uniform
+  manual-quote field set, placeholder pricing, string-keyed icon map.
+
+### File table
+
+| File                                            | Status   | Notes                                           |
+| ----------------------------------------------- | -------- | ----------------------------------------------- |
+| `domain/fixtures/painting.config.ts`            | NEW      | Instant-quote, 5 steps, room_count quantity     |
+| `domain/fixtures/patio.config.ts`               | NEW      | Instant-quote, area_m2 quantity, 3 materials    |
+| `domain/fixtures/driveway.config.ts`            | NEW      | Instant-quote, area_m2, block paving materials  |
+| `domain/fixtures/steps.config.ts`               | NEW      | Instant-quote, step_count quantity, 5 materials |
+| `domain/fixtures/jetwash.config.ts`             | NEW      | Instant-quote, area_m2, surface_type modifier   |
+| `domain/fixtures/general-repairs.config.ts`     | NEW      | Manual-quote, 7-step uniform structure          |
+| `domain/fixtures/plumbing.config.ts`            | NEW      | Manual-quote, 7-step uniform structure          |
+| `domain/fixtures/electrical.config.ts`          | NEW      | Manual-quote, 7-step uniform structure          |
+| `domain/fixtures/carpentry.config.ts`           | NEW      | Manual-quote, 7-step uniform structure          |
+| `domain/fixtures/manual-quote-pricing-stub.ts`  | NEW      | Shared stub — never evaluated                   |
+| `domain/registry/categories.ts`                 | MODIFIED | 4 categories populated (was empty)              |
+| `domain/registry/verticals.ts`                  | MODIFIED | 9 new verticals, all 11 carry categoryId        |
+| `site/sections/ServicesPreview/icons/`          | NEW      | 11 SVG icons + ICON_MAP barrel                  |
+| `site/sections/ServicesPreview/Layout.tsx`      | MODIFIED | Icon rendering via ICON_MAP                     |
+| `site/content/services-content.ts`              | MODIFIED | 11 services (was 2)                             |
+| `site/pages/home-page-content.ts`               | MODIFIED | ServicesPreview: 6 services with icons          |
+| `docs/decisions/0021-wizard-service-library.md` | NEW      | ADR-0021                                        |
+
+### Gate results
+
+| Gate             | Result                                                        |
+| ---------------- | ------------------------------------------------------------- |
+| `pnpm lint`      | 0 errors, 0 warnings                                          |
+| `pnpm typecheck` | 0 errors                                                      |
+| `pnpm test`      | **550 / 550** (45 test files, +84 new tests)                  |
+| `pnpm build`     | Clean. 81.12 kB gzip (+5.35 kB from 5.8 baseline of 75.77 kB) |
+| `composer test`  | 104 passed, 2 skipped (unchanged)                             |
+
+Bundle growth: 75.77 → 81.12 kB gzip (+5.35 kB). Well within 180 kB total budget.
+
+### Spec deviation
+
+| Spec said                              | Actual                              | Reason                                                                                                                                                    |
+| -------------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 9 total services (5 instant, 4 manual) | 11 total (7 instant, 4 manual)      | User-provided content for patio, driveway, and steps mapped to 3 separate instant-quote services rather than 1 composite "patio/paving/driveways" service |
+| Categories empty in canonical template | Categories populated (4 categories) | ADR-0021 Decision 4 — template-level categories enable per-client opt-in without per-fork category files                                                  |
+
+### Operational verification
+
+**Required per amended ADR-0018 (visible-UI render). Pending.**
+
+Criteria to record:
+
+- OV-5.9-1: `/services` lists all 11 services with correct names and icons visible.
+- OV-5.9-2: Home page `/` ServicesPreview shows 6 services with icons.
+- OV-5.9-3: Painting wizard: room_count entry, what_to_paint checkboxes, details
+  step (room_size / ceiling_height / paint_type), photos, contact, review — all render.
+- OV-5.9-4: Patio wizard: area_m2 input, material select (3 options), extras step
+  (drainage_m / edging / include_steps), photos, contact, review — all render.
+- OV-5.9-5: Driveway wizard: area_m2, material select (3 driveway materials), extras,
+  photos, contact, review — all render.
+- OV-5.9-6: Steps wizard: shape + material + step_count on design step; threads/risers
+  on extras step; photos, contact, review — all render.
+- OV-5.9-7: Jetwash wizard: area_m2 + surface_type, photos, contact, review — all render.
+- OV-5.9-8: General repairs wizard: description textarea (7 steps total) → manual-quote
+  terminal screen renders ("We'll review your request and contact you with a custom quote").
+- OV-5.9-9: Plumbing wizard: description prompt mentions "plumbing" — 7 steps render.
+- OV-5.9-10: Electrical wizard: description prompt mentions "electrical" — 7 steps render.
+- OV-5.9-11: Carpentry wizard: description prompt mentions "carpentry" — 7 steps render.
+- OV-5.9-12: Manual-quote submission (any manual service) → 502 + database row recorded.
+- OV-5.9-13: Instant-quote submission (fencing regression check) still works end-to-end.
+- OV-5.9-14: Mobile (375px): /services renders all 11 services in readable stacked layout.
+- OV-5.9-15: Pricing estimates shown for instant-quote services are plausible (not £0 or £50,000 for a typical job).

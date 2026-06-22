@@ -33,8 +33,8 @@ A single-page, structural view of project state. Update on every completed step.
 | 5.7                   | Complete | Section library: composition mechanism + 7 sections                                                     |
 | 5.7-remediation       | Complete | CTA routing (SectionLink); canonical redirect fix; viewport sizing                                      |
 | 5.8                   | Complete | Footer: template structure + per-client content slots                                                   |
-| 5.9                   | Up next  | Wizard service library: 9 services (5 instant, 4 manual)                                                |
-| 5.10                  | Planned  | SEO infrastructure: Layers 1-4                                                                          |
+| 5.9                   | Complete | Wizard service library: 11 services (5 instant + 4 manual + 2 original)                                 |
+| 5.10                  | Up next  | SEO infrastructure: Layers 1-4                                                                          |
 | 5.11                  | Planned  | Per-client customization tooling refinement                                                             |
 | 5.12                  | Planned  | SCB-specific deployment (first real client)                                                             |
 | 6.0                   | Planned  | Production IONOS deployment                                                                             |
@@ -113,10 +113,13 @@ ADR-0020 amended. 4 implementation commits.
 content slots. All content slots documented and configurable from a single
 footer content file. Footer appears on all five routes.
 
-**5.9 — Wizard service library.** Builds the remaining 7 services (3 instant:
-painting & decorating, patio/paving/driveways, pressure washing; 4 manual:
-general repairs, plumbing, electrical, carpentry). Fencing and decking already
-exist. After 5.9 the library has all 9 services.
+**5.9 — Wizard service library.** Built 9 new service configs. Spec planned
+patio/paving/driveways as one config; content cleanly mapped to 3 separate
+instant-quote configs (patio, driveway, steps), yielding 11 total services.
+5 instant-quote (painting, patio, driveway, steps, jetwash) + 4 manual-quote
+(general-repairs, plumbing, electrical, carpentry) + 2 original (fencing, decking).
+4 categories, 11 SVG icons, string-keyed ICON_MAP. ADR-0021 documents
+architectural decisions. OV-5.9-1 through OV-5.9-15 pending.
 
 **5.10 — SEO infrastructure.** Implements Layers 1-4: per-page meta tags (title,
 description, canonical, OG, Twitter card); LocalBusiness JSON-LD; Service

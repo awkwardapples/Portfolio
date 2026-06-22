@@ -1,6 +1,6 @@
 # Handoff
 
-_Last updated: 2026-06-21 (post Step 5.8 — footer template)_
+_Last updated: 2026-06-22 (post Step 5.9 — wizard service library)_
 
 ## Status
 
@@ -39,6 +39,16 @@ _Last updated: 2026-06-21 (post Step 5.8 — footer template)_
   md / stacked mobile). Footer rendered by `SiteShell` on every React route.
   8 new Vitest tests (466/466). Bundle 75.77 kB gzip.
   Operational verification pending (OV-5.8-1 through OV-5.8-12).
+- Step 5.9 complete (June 22, 2026): wizard service library implemented. ADR-0021
+  accepted. 11 total services (9 new + 2 existing). 5 instant-quote services
+  (painting, patio, driveway, steps, jetwash) + 4 manual-quote services
+  (general-repairs, plumbing, electrical, carpentry). Shared `manualQuotePricingStub`.
+  4 categories in `registry/categories.ts`. 11 inline SVG icons in
+  `ServicesPreview/icons/` with string-keyed `ICON_MAP`. `services-content.ts`
+  expanded to 11; `home-page-content.ts` ServicesPreview shows 6 with icons.
+  84 new Vitest tests (466→550). Bundle 81.12 kB gzip. Spec deviation: 11 services
+  implemented (vs 9 planned) — patio/driveway/steps split into 3 separate configs.
+  Operational verification pending (OV-5.9-1 through OV-5.9-15).
 - Build pipeline corrected: `pnpm build` composes Vite build and plugin
   staging in one command.
 - Fork-and-customize architecture demonstrated end-to-end.
@@ -89,14 +99,13 @@ If you are starting a new step:
 
 The roadmap is sequenced explicitly. See `docs/roadmap.md` for full detail.
 
-**Immediate next action:** Operational verification (OV-5.8-1 through OV-5.8-12)
-per amended ADR-0018. Deploy to canonical LocalWP site, verify footer renders on
-all five React routes, check visual layout at desktop + mobile breakpoints, confirm
-legal link routes client-side, submit wizard end-to-end. See
-`docs/phase-5-evidence.md` Step 5.8 for the criteria. Also complete OV-5.7R-1
-through OV-5.7R-9 if not yet recorded.
-
-**Then:** Step 5.9 — Wizard service library (9 services: 5 instant, 4 manual).
+**Immediate next action:** Operational verification — OV-5.9-1 through OV-5.9-15
+per ADR-0021. Deploy to canonical LocalWP site; verify all 11 services appear on
+`/services`, the 6-service home preview renders with icons, instant-quote and
+manual-quote flows complete end-to-end for representative services. See
+`docs/phase-5-evidence.md` Step 5.9 for the criteria. Also complete OV-5.8-1
+through OV-5.8-12 (footer) and OV-5.7R-1 through OV-5.7R-9 (remediation) if
+not yet recorded.
 
 **Then:** Step 5.10 — SEO infrastructure (Layers 1-4).
 

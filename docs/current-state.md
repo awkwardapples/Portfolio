@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-06-21 (post Step 5.8 — footer template)_
+_Last updated: 2026-06-22 (post Step 5.9 — wizard service library)_
 
 ## What's working
 
@@ -18,8 +18,8 @@ _Last updated: 2026-06-21 (post Step 5.8 — footer template)_
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors
-- `pnpm test`: 466/466 (+8 from 5.8 Footer pure TS tests)
-- `pnpm build`: clean, 75.77 kB gzip
+- `pnpm test`: 550/550 (+84 from 5.9 wizard service library — 45 test files)
+- `pnpm build`: clean, 81.12 kB gzip
 - `composer test`: 104 passed, 2 skipped (unchanged)
 - `composer analyse`: clean
 
@@ -34,7 +34,7 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 
 ## What's NOT yet built
 
-- Steps 5.9-5.11 (wizard service library, SEO, customization tooling)
+- Steps 5.10-5.11 (SEO infrastructure, customization tooling)
   — the remaining template-completeness steps.
 - Step 5.12 (SCB-specific deployment) — gated on 5.8-5.11.
 - Media retention policy (deferred per 4.8 spec).
@@ -119,6 +119,17 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
     md / stacked mobile). `SiteShell` renders Footer below Router — appears on
     every React route. 8 new pure TS tests. OV-5.8-1 through OV-5.8-12 pending
     operational verification.
+- **Step 5.9 — Wizard service library** (June 2026). ADR-0021 accepted.
+  11 total services (9 new + 2 existing): 5 instant-quote (painting, patio,
+  driveway, steps, jetwash) + 4 manual-quote (general-repairs, plumbing,
+  electrical, carpentry). Shared `manualQuotePricingStub` for manual services.
+  4 categories populated in `registry/categories.ts` (landscaping, decorating,
+  exterior-cleaning, handyman). 11 inline SVG service icons in
+  `ServicesPreview/icons/` with string-keyed `ICON_MAP`. `ServicesPreview/Layout.tsx`
+  resolves icon keys at render time. `services-content.ts` expanded to 11 services.
+  `home-page-content.ts` ServicesPreview shows 6 services with icons. 84 new
+  pure TS tests (466→550, 45 test files). Bundle 81.12 kB gzip.
+  OV-5.9-1 through OV-5.9-15 pending operational verification.
 
 ## Key Architectural Facts
 
@@ -129,7 +140,8 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 - `src/site/routing/` — hand-rolled router. `Link.tsx` dispatches `goqw:navigate`;
   `Router.tsx` is a pure function of `pathname` prop; `routes.ts` is the static table.
 - `src/site/layout/` — `SiteShell`, `Header`, `Nav`, `SkipLink`.
-- `src/site/Footer/` — `Footer` behavioral component, `Layout.tsx`, `types.ts`, `icons/`.
+- `src/site/Footer/` — `Footer` behavioral component, `Layout.tsx`, `types.ts`, `icons/` (4 social SVGs).
+- `src/site/sections/ServicesPreview/icons/` — 11 inline SVG service icons + `ICON_MAP`.
 - `src/site/pages/` — five concrete page components. `QuotePage` owns the wizard
   selection/mount (moved from App.tsx in 5.0).
 - `SiteApp` owns pathname state + event subscriptions; renders `SiteShell → Router`.
@@ -187,6 +199,6 @@ Strict ordering: validate → persist → forward → respond.
 
 - lint (`pnpm lint` → 0 errors, 0 warnings)
 - typecheck (`pnpm typecheck`)
-- vitest (`pnpm test` → 466/466)
+- vitest (`pnpm test` → 550/550)
 - build (`pnpm build`)
 - PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 104 passed (2 skipped)
