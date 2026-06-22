@@ -10,6 +10,20 @@ import {
   VERTICALS,
 } from '@/domain/registry';
 
+const ALL_VERTICAL_IDS = [
+  'fencing',
+  'decking',
+  'painting',
+  'patio',
+  'driveway',
+  'steps',
+  'jetwash',
+  'general-repairs',
+  'plumbing',
+  'electrical',
+  'carpentry',
+];
+
 describe('resolveVertical', () => {
   it("resolves 'fencing' to a SessionConfig with the fencing wizard and pricing", () => {
     const result = resolveVertical('fencing');
@@ -41,18 +55,38 @@ describe('resolveFallbackVertical', () => {
 });
 
 describe('listVerticalIds', () => {
-  it("returns ['fencing', 'decking'] in registry insertion order", () => {
-    expect(listVerticalIds()).toEqual(['fencing', 'decking']);
+  it('returns all 11 services in registry insertion order', () => {
+    expect(listVerticalIds()).toEqual(ALL_VERTICAL_IDS);
   });
 });
 
 describe('Vertical.categoryId', () => {
-  it('fencing vertical has no categoryId (canonical template has no category assignments)', () => {
-    expect(VERTICALS['fencing']?.categoryId).toBeUndefined();
+  it('fencing vertical has categoryId: landscaping (Step 5.9)', () => {
+    expect(VERTICALS['fencing']?.categoryId).toBe('landscaping');
   });
 
-  it('decking vertical has no categoryId', () => {
-    expect(VERTICALS['decking']?.categoryId).toBeUndefined();
+  it('decking vertical has categoryId: landscaping', () => {
+    expect(VERTICALS['decking']?.categoryId).toBe('landscaping');
+  });
+
+  it('painting vertical has categoryId: decorating', () => {
+    expect(VERTICALS['painting']?.categoryId).toBe('decorating');
+  });
+
+  it('jetwash vertical has categoryId: exterior-cleaning', () => {
+    expect(VERTICALS['jetwash']?.categoryId).toBe('exterior-cleaning');
+  });
+
+  it('general-repairs vertical has categoryId: handyman', () => {
+    expect(VERTICALS['general-repairs']?.categoryId).toBe('handyman');
+  });
+
+  it.each(['patio', 'driveway', 'steps'])('%s vertical has categoryId: landscaping', (id) => {
+    expect(VERTICALS[id]?.categoryId).toBe('landscaping');
+  });
+
+  it.each(['plumbing', 'electrical', 'carpentry'])('%s vertical has categoryId: handyman', (id) => {
+    expect(VERTICALS[id]?.categoryId).toBe('handyman');
   });
 });
 
@@ -71,5 +105,11 @@ describe('registry structural validity', () => {
 
   it('VERTICALS object is frozen at runtime', () => {
     expect(Object.isFrozen(VERTICALS)).toBe(true);
+  });
+
+  it('all 11 verticals resolve to non-null', () => {
+    for (const id of ALL_VERTICAL_IDS) {
+      expect(resolveVertical(id)).not.toBeNull();
+    }
   });
 });

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { ServicesPreviewContent, ServicesPreviewItem } from '../types';
+import { ICON_MAP } from '../icons';
 
 describe('ServicesPreviewContent', () => {
   it('requires heading and a services array', () => {
@@ -39,5 +40,34 @@ describe('ServicesPreviewContent', () => {
     };
     expect(content.cta).toBeUndefined();
     expect(content.subheading).toBeUndefined();
+  });
+});
+
+describe('ICON_MAP', () => {
+  it('contains all 11 service icon keys', () => {
+    const expected = [
+      'fencing',
+      'decking',
+      'painting',
+      'patio',
+      'driveway',
+      'steps',
+      'jetwash',
+      'general-repairs',
+      'plumbing',
+      'electrical',
+      'carpentry',
+    ];
+    expect(Object.keys(ICON_MAP)).toEqual(expected);
+  });
+
+  it('every icon in ICON_MAP is a function (React component)', () => {
+    for (const [key, icon] of Object.entries(ICON_MAP)) {
+      expect(typeof icon, `${key} icon should be a function`).toBe('function');
+    }
+  });
+
+  it('ICON_MAP is frozen (immutable)', () => {
+    expect(Object.isFrozen(ICON_MAP)).toBe(true);
   });
 });
