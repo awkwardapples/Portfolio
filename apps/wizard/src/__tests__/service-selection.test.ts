@@ -12,9 +12,13 @@ import { listEnabledServiceIds } from '@/domain/registry/services';
  */
 
 describe('service selection helper logic', () => {
-  it('returns all services when override is absent (single-service deployments still list all)', () => {
+  it('returns all services when override is absent (all 11 registered services)', () => {
     const ids = listEnabledServiceIds();
-    expect(ids).toEqual(['fencing', 'decking']);
+    expect(ids.length).toBe(11);
+    expect(ids[0]).toBe('fencing');
+    expect(ids).toContain('decking');
+    expect(ids).toContain('painting');
+    expect(ids).toContain('general-repairs');
   });
 
   it('auto-bypass condition: length === 1 when override restricts to one service', () => {
