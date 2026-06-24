@@ -146,3 +146,35 @@ only one was updated.
 Step 5.5a-remediation corrected both gaps and established ADR-0018 (Wire
 Contract Change Discipline) to prevent recurrence. The substantive decisions
 in this ADR are unaffected.
+
+---
+
+## Amendment — Category navigation PHP default changed to true (Step 5.9-Remediation, R1, 2026-06-24)
+
+Operational verification (OV-5.9-R1) found that the canonical demo (`plugins/quote-wizard`)
+did not show the category selector on a fresh WordPress install because
+`get_option('goqw_enable_category_navigation', false)` defaults to `false` and no WP option
+had been set.
+
+**Change:** `PublicConfig.php` line previously reading `false` now reads `true`:
+
+```php
+// Before
+$config['enableCategoryNavigation'] = (bool) get_option( 'goqw_enable_category_navigation', false );
+
+// After
+$config['enableCategoryNavigation'] = (bool) get_option( 'goqw_enable_category_navigation', true );
+```
+
+The JS `DEFAULT_CONFIG.enableCategoryNavigation` in `config-loader.ts` remains `false`; that
+value is used only in local Vite dev mode, where no WordPress instance is present and
+category navigation is not meaningful.
+
+**Rationale:** The template ships with 11 services across 4 categories. A flat service list
+without category filtering is difficult to navigate. Category navigation on by default is the
+correct canonical experience; operators who prefer a flat list can disable it via WP option.
+
+**Impact:** Existing deployments that have not set the `goqw_enable_category_navigation` WP
+option will see category navigation enabled after updating the plugin. Operators who want the
+flat list should add `update_option('goqw_enable_category_navigation', false)` to their
+site's setup or set it in WP Admin → Settings.

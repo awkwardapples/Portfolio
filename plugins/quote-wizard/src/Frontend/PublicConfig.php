@@ -75,8 +75,9 @@ final class PublicConfig {
 			'buildTimestamp'  => self::build_timestamp(),
 		);
 
-		// Category navigation flag (ADR-0017). Always emitted; defaults to false.
-		$config['enableCategoryNavigation'] = (bool) get_option( 'goqw_enable_category_navigation', false );
+		// Category navigation flag (ADR-0017, amended 5.9-R). Defaults to true so canonical
+		// installs enable category navigation without manual WP option configuration.
+		$config['enableCategoryNavigation'] = (bool) get_option( 'goqw_enable_category_navigation', true );
 
 		// Emit enabledServiceIds only when non-empty (additive, optional field).
 		$ids = self::enabled_service_ids();

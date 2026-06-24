@@ -60,4 +60,20 @@ describe('config-loader', () => {
     expect(config.contractVersion).toBe(3);
     expect(config.businessName).toBe('Test Biz');
   });
+
+  it('enableCategoryNavigation defaults to false in dev mode (no injected config)', async () => {
+    // The JS default is false (dev/local mode). The PHP plugin default is true
+    // (canonical WordPress install, ADR-0017 amendment, 5.9-R1).
+    vi.stubGlobal('window', {});
+    const { config } = await import('@/config-loader');
+    expect(config.enableCategoryNavigation).toBe(false);
+  });
+
+  it('enableCategoryNavigation is true when the injected payload sets it', async () => {
+    vi.stubGlobal('window', {
+      GOQW_CONFIG: validV3Config({ enableCategoryNavigation: true }),
+    });
+    const { config } = await import('@/config-loader');
+    expect(config.enableCategoryNavigation).toBe(true);
+  });
 });
