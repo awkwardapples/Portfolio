@@ -1,6 +1,6 @@
 # Handoff
 
-_Last updated: 2026-06-24 (post Step 5.10a)_
+_Last updated: 2026-06-24 (post Step 5.10a-docs)_
 
 ## Status
 
@@ -66,6 +66,13 @@ _Last updated: 2026-06-24 (post Step 5.10a)_
   ships in plugin assets. `ServiceSelector` category back button ("← All categories")
   shown when category filter is active. 3 Vitest + 15 PHP tests (598 Vitest, 119 PHP).
   Operational verification pending (OV-5.10a-1 through OV-5.10a-13).
+- Step 5.10a-docs complete (June 24, 2026): SEO Adaptation Guide (Layer 1).
+  New `docs/seo-adaptation-guide.md` provides practical, per-client usage
+  documentation for the Layer 1 SEO infrastructure. Covers all 11 `goqw_seo_*`
+  option keys, a 4-step per-client setup checklist (titles, descriptions, OG image,
+  verification), common patterns, troubleshooting, and codebase reference. Cross-
+  referenced from `onboarding.md` and `fork-procedure.md`. Documentation-only;
+  all gates unchanged (598 Vitest, 119 PHP).
 - Build pipeline corrected: `pnpm build` composes Vite build and plugin
   staging in one command.
 - Fork-and-customize architecture demonstrated end-to-end.
@@ -123,7 +130,8 @@ and OV-5.7R-1 through OV-5.7R-9 (section library). Deploy to canonical LocalWP s
 and record all outstanding verification criteria in `docs/phase-5-evidence.md`.
 
 **Then:** Step 5.10b — SEO infrastructure Layers 2-4 (LocalBusiness schema, Service
-schema, sitemap.xml, robots.txt).
+schema, sitemap.xml, robots.txt). After implementation, `docs/seo-adaptation-guide.md`
+will be extended with usage instructions for Layers 2-4.
 
 **Then:** Step 5.11 — Per-client customization tooling refinement.
 

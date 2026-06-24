@@ -261,6 +261,14 @@ After the fork is verified working, proceed to adapt the clone for the specific
 client: site content, services, branding, wizard configs. See
 `docs/adaptation-runbook.md` for the complete customization workflow.
 
+### SEO setup (Layer 1)
+
+Per-client SEO customization is documented separately in
+`docs/seo-adaptation-guide.md`. Complete the per-client SEO checklist
+during initial customization to ensure each route has appropriate titles
+and descriptions before deployment. The plugin ships with Acme Fencing
+demo copy — this must be replaced for every real client.
+
 ---
 
 ## What this procedure does NOT cover

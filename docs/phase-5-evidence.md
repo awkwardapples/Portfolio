@@ -1485,3 +1485,48 @@ Six OV findings from post-5.9 operational review, resolved in 6 commits.
 - OV-5.10a-11: Click "← All categories" → returns to category selection.
 - OV-5.10a-12: Wizard still submits end-to-end (no regression in submission pipeline).
 - OV-5.10a-13: At 375px (DevTools) — category back button visible and clickable.
+
+---
+
+## Step 5.10a-docs — SEO Adaptation Guide (Layer 1) (June 24, 2026)
+
+Single-commit documentation step. New file `docs/seo-adaptation-guide.md`
+(~370 lines) captures practical per-client usage of the SEO Layer 1
+infrastructure landed in 5.10a.
+
+### Contents covered
+
+- What Layer 1 SEO provides (titles, descriptions, canonical, OG, Twitter cards)
+- The five React routes with default content reference
+- Three-tier resolution explained (per-client option > template default > fallback)
+- Route-to-slug mapping table (`/our-work` → `our_work`, etc.)
+- All 11 `goqw_seo_*` option keys with purpose and default values
+- Per-client setup checklist: Step 1 (titles), Step 2 (descriptions), Step 3
+  (OG image), Step 4 (verification with view-source and OG preview tools)
+- Common patterns: title length, description length, local SEO, brand voice,
+  OG image best practices, og:type
+- Verification workflow after each change
+- Reverting individual options to template defaults
+- "Coming next" section — Layers 2-4 explicitly flagged as NOT yet available
+- Codebase reference table (ADR-0023, SEORouteContent.php, SEOMetaEmitter.php,
+  og-image-default.png, Plugin.php)
+- Troubleshooting: title not showing, title shows blog name, OG cache, wrong
+  canonical, missing description
+
+### Verification performed
+
+- V1 (cross-reference consistency): All file paths in the guide verified to
+  exist in the repo. ADR-0023, SEORouteContent.php, SEOMetaEmitter.php,
+  og-image-default.png all present. Cross-references in onboarding.md and
+  fork-procedure.md added and resolve correctly.
+- V2 (option key accuracy): All 11 `goqw_seo_*` option keys verified against
+  actual `SEORouteContent::get_content()` implementation (`goqw_seo_title_{$slug}`,
+  `goqw_seo_description_{$slug}`, `goqw_seo_og_image`). Slug derivation verified
+  against `route_to_slug()` method.
+- V3 (Layer 2-4 honesty): "Coming next" section clearly states these capabilities
+  are NOT available. No instructions for unbuilt features. No behavioral predictions.
+
+### Gate state at closure
+
+598/598 Vitest, 119 passed/2 skipped PHP, lint 0/0, typecheck 0 errors, build clean.
+Documentation-only commit; no code changes.

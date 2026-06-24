@@ -151,6 +151,12 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   `goqw_seo_og_image` option. `ServiceSelector` gains category back button ("← All
   categories") shown when `filterByCategoryId` is set. 3 Vitest + 15 PHP tests
   (595→598 Vitest, 104→119 PHP). OV-5.10a-1 through OV-5.10a-13 pending.
+- **Step 5.10a-docs — SEO Adaptation Guide (Layer 1)** (June 2026). New
+  `docs/seo-adaptation-guide.md` documents how per-client deployments use and
+  customize Layer 1 SEO. Covers: all 11 `goqw_seo_*` option keys, per-client setup
+  checklist (titles, descriptions, OG image), verification steps, common patterns,
+  troubleshooting, and codebase reference. Cross-referenced from `onboarding.md`,
+  `fork-procedure.md`, and ADR-0023. Documentation-only; all gates unchanged.
 
 ## Key Architectural Facts
 

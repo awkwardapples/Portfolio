@@ -36,6 +36,7 @@ A single-page, structural view of project state. Update on every completed step.
 | 5.9                   | Complete | Wizard service library: 11 services (5 instant + 4 manual + 2 original)                                 |
 | 5.9-remediation       | Complete | 6 OV findings: pre-step, back-button fix, UK validators, category nav default, copy, ADR-0022           |
 | 5.10a                 | Complete | SEO Layer 1: per-route titles, meta, canonical, OG/Twitter; category back button; ADR-0023              |
+| 5.10a-docs            | Complete | SEO Adaptation Guide (Layer 1) for per-client deployments                                               |
 | 5.10b                 | Up next  | SEO Layers 2-4: LocalBusiness schema, Service schema, sitemap.xml, robots.txt                           |
 | 5.11                  | Planned  | Per-client customization tooling refinement                                                             |
 | 5.12                  | Planned  | SCB-specific deployment (first real client)                                                             |

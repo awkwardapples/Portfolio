@@ -553,6 +553,11 @@ affects the bundle or the PHP plugin source.
 
    Visit the front of the site and confirm the React app loads.
 
+> **Per-client SEO customization:** After deploying for a new client,
+> follow `docs/seo-adaptation-guide.md` to set per-client SEO content
+> (titles, descriptions, Open Graph image). The plugin ships with Acme
+> Fencing demo copy by default; this must be replaced for every real client.
+
 ### Common pitfalls
 
 - **Stale caches.** Browser caching, page caching plugins, and CDN caching can
