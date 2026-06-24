@@ -53,7 +53,7 @@ const categories = listCategories();
  * NOTE: wizard wiring moved from App.tsx during Step 5.0 without modification.
  */
 export function QuotePage(): ReactElement {
-  const { selectedCategoryId, selectCategory } = useCategorySelection();
+  const { selectedCategoryId, selectCategory, resetCategory } = useCategorySelection();
   const [selectedId, setSelectedId] = useState<string | null>(
     services.length === 1 ? (services[0]?.id ?? null) : null,
   );
@@ -114,6 +114,7 @@ export function QuotePage(): ReactElement {
           services={services}
           onSelect={setSelectedId}
           filterByCategoryId={selectedCategoryId ?? undefined}
+          onReturnToCategorySelection={resetCategory}
         />
       </div>
     );
@@ -126,6 +127,7 @@ export function QuotePage(): ReactElement {
           services={services}
           onSelect={setSelectedId}
           filterByCategoryId={selectedCategoryId ?? undefined}
+          onReturnToCategorySelection={resetCategory}
         />
       </div>
     );

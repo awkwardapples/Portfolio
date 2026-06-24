@@ -22,3 +22,12 @@ export function useCategorySelection(): CategorySelectionState {
     resetCategory: () => setSelectedCategoryId(null),
   };
 }
+
+/**
+ * Returns true when a category filter is active (i.e., the user has selected
+ * a category and the service list is filtered to that category). Used to
+ * determine whether the "← All categories" back button should be displayed.
+ */
+export function isCategoryFilterActive(categoryId: CategoryId | null): boolean {
+  return categoryId !== null;
+}
