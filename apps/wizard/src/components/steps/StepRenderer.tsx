@@ -14,6 +14,8 @@ interface StepRendererProps {
   step: Step;
   isFirst: boolean;
   isLast: boolean;
+  /** Called when Back is pressed on the first step — routes to the service selector. */
+  onFirstBack?: () => void;
 }
 
 /**
@@ -26,7 +28,12 @@ interface StepRendererProps {
  * clicks Next/Submit (showAllErrors). Errors come from validationByStep in
  * FSM state — this component never duplicates validation logic.
  */
-export function StepRenderer({ step, isFirst, isLast }: StepRendererProps): JSX.Element {
+export function StepRenderer({
+  step,
+  isFirst,
+  isLast,
+  onFirstBack,
+}: StepRendererProps): JSX.Element {
   const { state, dispatch } = useWizard();
   const photoStore = usePhotoStore();
   const [touched, setTouched] = useState<ReadonlySet<string>>(new Set());
@@ -76,7 +83,11 @@ export function StepRenderer({ step, isFirst, isLast }: StepRendererProps): JSX.
   }
 
   function handleBack(): void {
-    dispatch({ type: 'STEP_BACK' });
+    if (isFirst && onFirstBack) {
+      onFirstBack();
+    } else {
+      dispatch({ type: 'STEP_BACK' });
+    }
   }
 
   const errorCount = showAllErrors && snapshot && !snapshot.valid ? snapshot.issues.length : 0;
@@ -113,7 +124,6 @@ export function StepRenderer({ step, isFirst, isLast }: StepRendererProps): JSX.
         <NavigationControls
           onBack={handleBack}
           onNext={handleNext}
-          isFirst={isFirst}
           isLast={isLast}
           disabled={hasMissingPhotos}
         />

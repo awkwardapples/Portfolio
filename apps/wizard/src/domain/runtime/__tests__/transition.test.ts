@@ -277,10 +277,10 @@ describe('transition — STEP_BACK', () => {
     expect(back.currentStepId).toBe('s1');
   });
 
-  it('appends the previous step to visitedStepIds', () => {
-    const atS3 = onS3State();
+  it('pops the current step from visitedStepIds (does not append)', () => {
+    const atS3 = onS3State(); // history: [s1, s3]
     const back = transition(atS3, { type: 'STEP_BACK' }, config);
-    expect(back.visitedStepIds).toEqual(['s1', 's3', 's1']);
+    expect(back.visitedStepIds).toEqual(['s1']);
   });
 
   it('is a no-op when there is no previous step in history', () => {
@@ -300,17 +300,17 @@ describe('transition — STEP_BACK', () => {
     expect(back.phase).toBe('answering');
   });
 
-  it('handles back-and-forth correctly (uses last occurrence)', () => {
-    // s1 → s3 → s1 → s3; back from s3 should return s1
+  it('handles back-and-forth correctly (pop keeps history clean)', () => {
+    // s1 → s3 → back to s1 → s3 again; back from s3 should still return s1
     const s3a = transition(s1ValidState(), { type: 'STEP_NEXT' }, config); // [s1,s3]
-    const backToS1 = transition(s3a, { type: 'STEP_BACK' }, config); // [s1,s3,s1]
+    const backToS1 = transition(s3a, { type: 'STEP_BACK' }, config); // [s1] (popped s3)
     // Fill a again (cleared by navigation)
     const refilled = transition(
       backToS1,
       { type: 'ANSWER_SET', fieldKey: 'a', value: 'x' },
       config,
     );
-    const s3b = transition(refilled, { type: 'STEP_NEXT' }, config); // [s1,s3,s1,s3]
+    const s3b = transition(refilled, { type: 'STEP_NEXT' }, config); // [s1,s3]
     expect(s3b.currentStepId).toBe('s3');
     const back2 = transition(s3b, { type: 'STEP_BACK' }, config);
     expect(back2.currentStepId).toBe('s1');
@@ -318,6 +318,44 @@ describe('transition — STEP_BACK', () => {
 
   it('idle + STEP_BACK is a no-op', () => {
     expect(transition(idle, { type: 'STEP_BACK' }, config)).toBe(idle);
+  });
+
+  it('second Back from s1 after returning is a no-op (history is [s1] after pop)', () => {
+    // After popping, history is [s1]; pressing Back again from s1 should be a no-op.
+    const s3a = transition(s1ValidState(), { type: 'STEP_NEXT' }, config); // [s1,s3]
+    const backToS1 = transition(s3a, { type: 'STEP_BACK' }, config); // [s1]
+    const secondBack = transition(backToS1, { type: 'STEP_BACK' }, config);
+    expect(secondBack.currentStepId).toBe('s1'); // unchanged
+    expect(secondBack.visitedStepIds).toEqual(['s1']); // unchanged
+  });
+
+  it('Back does not go forward when pressed twice in a row (the original bug)', () => {
+    // Bug: appending prevId caused getPreviousStepId to find the appended entry
+    // on a second press, navigating to s3 instead of staying at s1.
+    const atS3 = onS3State(); // history: [s1, s3]
+    const back1 = transition(atS3, { type: 'STEP_BACK' }, config); // should be s1, history [s1]
+    expect(back1.currentStepId).toBe('s1');
+    const back2 = transition(back1, { type: 'STEP_BACK' }, config); // no-op, still s1
+    expect(back2.currentStepId).toBe('s1');
+    expect(back2).toBe(back1); // same reference (no-op returns identical state)
+  });
+
+  it('visitedStepIds after NEXT→BACK is symmetric: same as before NEXT', () => {
+    const before = s1ValidState(); // [s1]
+    const afterNext = transition(before, { type: 'STEP_NEXT' }, config); // [s1, s3]
+    const afterBack = transition(afterNext, { type: 'STEP_BACK' }, config); // [s1]
+    expect(afterBack.visitedStepIds).toEqual(before.visitedStepIds);
+  });
+
+  it('multiple steps back reduces history one step at a time', () => {
+    // Build history s1→s3 with a conditional step skipped.
+    const atS3 = onS3State(); // [s1, s3]
+    const back1 = transition(atS3, { type: 'STEP_BACK' }, config); // [s1]
+    expect(back1.visitedStepIds).toEqual(['s1']);
+    expect(back1.currentStepId).toBe('s1');
+    // Can't go further back (s1 is the initial step).
+    const back2 = transition(back1, { type: 'STEP_BACK' }, config);
+    expect(back2.currentStepId).toBe('s1');
   });
 });
 

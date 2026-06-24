@@ -122,11 +122,20 @@ function handleStepBack(state: WizardState): WizardState {
   const prevId = getPreviousStepId(state.currentStepId, state.visitedStepIds);
   if (prevId === null) return state;
 
+  // Pop the last occurrence of currentStepId from history rather than appending
+  // prevId. Appending caused forward navigation on a second Back press because
+  // getPreviousStepId's last-occurrence lookup would find the appended entry.
+  const lastIdx = state.visitedStepIds.lastIndexOf(state.currentStepId ?? '');
+  const newVisited =
+    lastIdx >= 0
+      ? [...state.visitedStepIds.slice(0, lastIdx), ...state.visitedStepIds.slice(lastIdx + 1)]
+      : [...state.visitedStepIds];
+
   return {
     ...state,
     phase: 'answering',
     currentStepId: prevId,
-    visitedStepIds: [...state.visitedStepIds, prevId],
+    visitedStepIds: newVisited,
   };
 }
 

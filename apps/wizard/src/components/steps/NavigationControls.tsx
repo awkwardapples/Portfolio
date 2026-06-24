@@ -3,7 +3,6 @@ import { Button } from '@/components/primitives';
 interface NavigationControlsProps {
   onBack: () => void;
   onNext: () => void;
-  isFirst: boolean;
   isLast: boolean;
   /** Disable the primary action button. Used on the submit step when photos need re-attaching. */
   disabled?: boolean;
@@ -13,19 +12,14 @@ interface NavigationControlsProps {
 export function NavigationControls({
   onBack,
   onNext,
-  isFirst,
   isLast,
   disabled = false,
 }: NavigationControlsProps): JSX.Element {
   return (
     <div className="mt-6 flex items-center justify-between">
-      {isFirst ? (
-        <div aria-hidden="true" />
-      ) : (
-        <Button type="button" variant="secondary" onClick={onBack}>
-          Back
-        </Button>
-      )}
+      <Button type="button" variant="secondary" onClick={onBack}>
+        Back
+      </Button>
       <Button type="submit" variant="primary" onClick={onNext} disabled={disabled}>
         {isLast ? 'Submit' : 'Next'}
       </Button>

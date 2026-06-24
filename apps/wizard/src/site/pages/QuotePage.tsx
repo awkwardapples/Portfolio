@@ -134,7 +134,7 @@ export function QuotePage(): ReactElement {
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
       <WizardProvider store={wizardResources.store} photoStore={wizardResources.photoStore}>
-        <WizardShell />
+        <WizardShell onReturnToSelector={() => setSelectedId(null)} />
       </WizardProvider>
     </div>
   );
