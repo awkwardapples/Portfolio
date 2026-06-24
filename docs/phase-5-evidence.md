@@ -1414,3 +1414,74 @@ Six OV findings from post-5.9 operational review, resolved in 6 commits.
 - OV-5.9-R4: Back button visible on every wizard step. Back from first step returns to service selector.
 - OV-5.9-R5: Pressing Back twice from second step returns to first step (not forward to second).
 - OV-5.9-R6: All 11 wizard headers show clean trade names (e.g., "Fencing", not "Fencing quote").
+
+---
+
+## Step 5.10a — On-Page SEO (Layer 1) + Category Back Button (2026-06-24)
+
+### Files changed
+
+| File                                                       | Change                                             |
+| ---------------------------------------------------------- | -------------------------------------------------- |
+| `plugins/quote-wizard/src/SEO/SEORouteContent.php`         | New — per-route content map + option resolution    |
+| `plugins/quote-wizard/src/SEO/SEOMetaEmitter.php`          | New — wp_head hook + pre_get_document_title hook   |
+| `plugins/quote-wizard/src/Plugin.php`                      | Modified — registers SEOMetaEmitter in boot()      |
+| `plugins/quote-wizard/templates/react-host.php`            | Modified — removes hard-coded title                |
+| `plugins/quote-wizard/assets/og-image-default.png`         | New — 1200x630 placeholder OG image (13 KB)        |
+| `apps/wizard/src/components/selection/ServiceSelector.tsx` | Modified — adds category back button               |
+| `apps/wizard/src/runtime/hooks/useCategorySelection.ts`    | Modified — adds isCategoryFilterActive             |
+| `apps/wizard/src/site/pages/QuotePage.tsx`                 | Modified — passes resetCategory to ServiceSelector |
+| `docs/decisions/0023-seo-infrastructure.md`                | New — ADR-0023                                     |
+
+### Gate results
+
+| Gate               | Result                                                              |
+| ------------------ | ------------------------------------------------------------------- |
+| `pnpm lint`        | 0 errors, 0 warnings                                                |
+| `pnpm typecheck`   | 0 errors                                                            |
+| `pnpm test`        | **598/598 passing** (48 test files, +3 from isCategoryFilterActive) |
+| `pnpm build`       | Clean                                                               |
+| `composer test`    | 119 passed, 2 skipped (+15 from SEORouteContent + SEOMetaEmitter)   |
+| `composer analyse` | No errors                                                           |
+
+### Acceptance criteria (code gates)
+
+| #   | Criterion                                                       | Status          |
+| --- | --------------------------------------------------------------- | --------------- |
+| 1   | Phase 0 audit docs exist                                        | ✅ Committed    |
+| 2   | SEORouteContent defines 5 route entries                         | ✅ Tests        |
+| 3   | SEORouteContent supports per-client option overrides            | ✅ Tests        |
+| 4   | SEORouteContent has default OG image URL fallback               | ✅ Tests        |
+| 5   | SEOMetaEmitter emits meta description on React routes           | ✅ Tests        |
+| 6   | SEOMetaEmitter emits canonical URL                              | ✅ Tests        |
+| 7   | SEOMetaEmitter emits all 6 Open Graph tags                      | ✅ Tests        |
+| 8   | SEOMetaEmitter emits all 4 Twitter card tags                    | ✅ Tests        |
+| 9   | SEOMetaEmitter skips emission for non-React routes              | ✅ Tests        |
+| 10  | SEOMetaEmitter overrides title via pre_get_document_title       | ✅ Tests        |
+| 11  | react-host.php removes hard-coded title                         | ✅ Code review  |
+| 12  | Plugin.php registers SEOMetaEmitter                             | ✅ Code review  |
+| 13  | og-image-default.png ships in plugin assets (1200×630, 13 KB)   | ✅ File present |
+| 14  | ServiceSelector renders back button when filterByCategoryId set | ✅ Tests        |
+| 15  | ServiceSelector hides back button when no category              | ✅ Tests        |
+| 16  | isCategoryFilterActive returns true for non-null category       | ✅ Tests        |
+| 17  | All 595 prior Vitest tests pass                                 | ✅ 598/598      |
+| 18  | All 119 PHP tests pass (104 prior + 15 new)                     | ✅ 119/119      |
+| 19  | ADR-0023 documents SEO infrastructure design                    | ✅ Committed    |
+
+### Operational verification
+
+**OV-5.10a-1 through OV-5.10a-13 pending deployment to canonical LocalWP site.**
+
+- OV-5.10a-1: View source on `/` — `<title>` is "Acme Fencing — Professional Fencing Services".
+- OV-5.10a-2: View source on `/` — `<meta name="description">` present and matches default.
+- OV-5.10a-3: View source on `/` — `<link rel="canonical">` is `http://fencing-lead-platform-dev.local/`.
+- OV-5.10a-4: View source on `/` — all 6 `og:*` tags present (type, title, description, url, image, site_name).
+- OV-5.10a-5: View source on `/` — all 4 `twitter:*` tags present.
+- OV-5.10a-6: View source on `/quote` — `<title>` is "Get a Free Quote — Acme Fencing".
+- OV-5.10a-7: OG image URL resolves in browser (placeholder image loads).
+- OV-5.10a-8: `wp option update goqw_seo_title_home "Test Override"` → view-source shows "Test Override".
+- OV-5.10a-9: After `wp option delete goqw_seo_title_home` → view-source returns to default.
+- OV-5.10a-10: On `/quote`, select a category (e.g., Landscaping) → "← All categories" button visible.
+- OV-5.10a-11: Click "← All categories" → returns to category selection.
+- OV-5.10a-12: Wizard still submits end-to-end (no regression in submission pipeline).
+- OV-5.10a-13: At 375px (DevTools) — category back button visible and clickable.

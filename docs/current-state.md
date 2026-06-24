@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-06-24 (post Step 5.9-Remediation)_
+_Last updated: 2026-06-24 (post Step 5.10a)_
 
 ## What's working
 
@@ -18,9 +18,9 @@ _Last updated: 2026-06-24 (post Step 5.9-Remediation)_
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors
-- `pnpm test`: 595/595 (+45 from 5.9-remediation — 47 test files)
-- `pnpm build`: clean, 81.12 kB gzip
-- `composer test`: 104 passed, 2 skipped (unchanged)
+- `pnpm test`: 598/598 (+3 from 5.10a — 48 test files)
+- `pnpm build`: clean (bundle size unchanged from 5.9-remediation)
+- `composer test`: 119 passed, 2 skipped (+15 from 5.10a)
 - `composer analyse`: clean
 
 ## OV-001 verification
@@ -34,8 +34,9 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 
 ## What's NOT yet built
 
-- Steps 5.10-5.11 (SEO infrastructure, customization tooling)
-  — the remaining template-completeness steps.
+- Step 5.10b (SEO Layers 2-4: LocalBusiness schema, Service schema, sitemap.xml, robots.txt)
+  — the remainder of the SEO infrastructure step.
+- Step 5.11 (per-client customization tooling) — template-completeness.
 - Step 5.12 (SCB-specific deployment) — gated on 5.8-5.11.
 - Media retention policy (deferred per 4.8 spec).
 - Idempotency for submission retry (deferred; trigger: first observed duplicate).
@@ -140,6 +141,16 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   "quote"/"quote request" suffixes removed from all 11 wizard titles. ADR-0022
   accepted. 45 new tests (550→595, 47 test files).
   OV-5.9-R1 through OV-5.9-R6 pending operational verification.
+- **Step 5.10a — On-Page SEO (Layer 1) + Category Back Button** (June 2026).
+  ADR-0023 accepted. `SEOMetaEmitter` hooks `wp_head` (priority 5) to emit per-route
+  meta description, canonical URL, 6 OG tags, 4 Twitter card tags. `pre_get_document_title`
+  filter overrides title for each React route via `SEORouteContent` (5 routes, default
+  Acme Fencing content, per-client goqw option overrides). `react-host.php` hard-coded
+  `<title>` removed; now emitted by WordPress `_wp_render_title_tag()` inside `wp_head()`.
+  `og-image-default.png` (1200×630, 13 KB) ships as placeholder; replaced via
+  `goqw_seo_og_image` option. `ServiceSelector` gains category back button ("← All
+  categories") shown when `filterByCategoryId` is set. 3 Vitest + 15 PHP tests
+  (595→598 Vitest, 104→119 PHP). OV-5.10a-1 through OV-5.10a-13 pending.
 
 ## Key Architectural Facts
 
@@ -209,6 +220,6 @@ Strict ordering: validate → persist → forward → respond.
 
 - lint (`pnpm lint` → 0 errors, 0 warnings)
 - typecheck (`pnpm typecheck`)
-- vitest (`pnpm test` → 595/595)
+- vitest (`pnpm test` → 598/598)
 - build (`pnpm build`)
-- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 104 passed (2 skipped)
+- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 119 passed (2 skipped)

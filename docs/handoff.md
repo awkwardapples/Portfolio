@@ -1,6 +1,6 @@
 # Handoff
 
-_Last updated: 2026-06-24 (post Step 5.9-Remediation)_
+_Last updated: 2026-06-24 (post Step 5.10a)_
 
 ## Status
 
@@ -58,6 +58,14 @@ _Last updated: 2026-06-24 (post Step 5.9-Remediation)_
   `answer-validation.ts` via `FORMAT_VALIDATORS` map. R5: "quote"/"quote request"
   removed from all 11 wizard titles. 45 new Vitest tests (550→595, 47 test files).
   Operational verification pending (OV-5.9-R1 through OV-5.9-R6).
+- Step 5.10a complete (June 24, 2026): SEO Layer 1 (on-page basics) + category
+  back button. ADR-0023 accepted. `SEORouteContent` + `SEOMetaEmitter` PHP module
+  emits per-route titles (via `pre_get_document_title`), meta descriptions, canonical
+  URLs, 6 OG tags, 4 Twitter card tags into `wp_head()`. `react-host.php`
+  hard-coded `<title>` removed. `og-image-default.png` placeholder (1200×630, 13 KB)
+  ships in plugin assets. `ServiceSelector` category back button ("← All categories")
+  shown when category filter is active. 3 Vitest + 15 PHP tests (598 Vitest, 119 PHP).
+  Operational verification pending (OV-5.10a-1 through OV-5.10a-13).
 - Build pipeline corrected: `pnpm build` composes Vite build and plugin
   staging in one command.
 - Fork-and-customize architecture demonstrated end-to-end.
@@ -108,13 +116,14 @@ If you are starting a new step:
 
 The roadmap is sequenced explicitly. See `docs/roadmap.md` for full detail.
 
-**Immediate next action:** Operational verification — OV-5.9-R1 through OV-5.9-R6
-(remediation), OV-5.9-1 through OV-5.9-15 (service library), OV-5.8-1 through
-OV-5.8-12 (footer), and OV-5.7R-1 through OV-5.7R-9 (section library). Deploy to
-canonical LocalWP site and record all outstanding verification criteria in
-`docs/phase-5-evidence.md`.
+**Immediate next action:** Operational verification — OV-5.10a-1 through OV-5.10a-13
+(SEO Layer 1 + category back button), OV-5.9-R1 through OV-5.9-R6 (remediation),
+OV-5.9-1 through OV-5.9-15 (service library), OV-5.8-1 through OV-5.8-12 (footer),
+and OV-5.7R-1 through OV-5.7R-9 (section library). Deploy to canonical LocalWP site
+and record all outstanding verification criteria in `docs/phase-5-evidence.md`.
 
-**Then:** Step 5.10 — SEO infrastructure (Layers 1-4).
+**Then:** Step 5.10b — SEO infrastructure Layers 2-4 (LocalBusiness schema, Service
+schema, sitemap.xml, robots.txt).
 
 **Then:** Step 5.11 — Per-client customization tooling refinement.
 

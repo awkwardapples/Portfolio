@@ -35,7 +35,8 @@ A single-page, structural view of project state. Update on every completed step.
 | 5.8                   | Complete | Footer: template structure + per-client content slots                                                   |
 | 5.9                   | Complete | Wizard service library: 11 services (5 instant + 4 manual + 2 original)                                 |
 | 5.9-remediation       | Complete | 6 OV findings: pre-step, back-button fix, UK validators, category nav default, copy, ADR-0022           |
-| 5.10                  | Up next  | SEO infrastructure: Layers 1-4                                                                          |
+| 5.10a                 | Complete | SEO Layer 1: per-route titles, meta, canonical, OG/Twitter; category back button; ADR-0023              |
+| 5.10b                 | Up next  | SEO Layers 2-4: LocalBusiness schema, Service schema, sitemap.xml, robots.txt                           |
 | 5.11                  | Planned  | Per-client customization tooling refinement                                                             |
 | 5.12                  | Planned  | SCB-specific deployment (first real client)                                                             |
 | 6.0                   | Planned  | Production IONOS deployment                                                                             |
@@ -130,10 +131,16 @@ details before every wizard (ADR-0022). R4: UK format validators for postcode,
 email, phone wired into `answer-validation.ts` via `FORMAT_VALIDATORS`. R5:
 "quote"/"quote request" copy stripped from all 11 wizard titles.
 
-**5.10 — SEO infrastructure.** Implements Layers 1-4: per-page meta tags (title,
-description, canonical, OG, Twitter card); LocalBusiness JSON-LD; Service
-JSON-LD per enabled service; sitemap.xml and robots.txt generation. PHP plugin
-emits Layers 1-2-4 into wp_head(); Layer 3 placement finalized in this step.
+**5.10a — SEO Layer 1 + category back button.** PHP-emitted, route-aware SEO: per-route
+titles via `pre_get_document_title`, meta descriptions, canonical URLs, Open Graph (6 tags),
+Twitter cards (4 tags). `SEORouteContent` + `SEOMetaEmitter` PHP module registered in
+`Plugin::boot()`. `react-host.php` hard-coded title removed; emitted by WordPress's
+`_wp_render_title_tag()`. `og-image-default.png` placeholder ships. `ServiceSelector` gains
+category back button. 3 Vitest + 15 PHP tests. ADR-0023 accepted.
+
+**5.10b — SEO Layers 2-4.** LocalBusiness JSON-LD (Layer 2); Service JSON-LD per
+enabled service (Layer 3); sitemap.xml and robots.txt generation (Layer 4). PHP plugin
+emits all into `wp_head()` or via rewrite rules.
 
 **5.11 — Per-client customization tooling refinement.** Validates and refines
 the per-client customization workflow against an actual adaptation pass. Ensures
