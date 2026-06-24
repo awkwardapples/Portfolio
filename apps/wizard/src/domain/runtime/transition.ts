@@ -1,3 +1,4 @@
+import type { WizardConfig } from '@/domain/config/wizard-config';
 import { validateStep } from '@/domain/runtime/answer-validation';
 import { buildFieldKeyMap } from '@/domain/runtime/condition-evaluator';
 import { computePrice } from '@/domain/pricing/pricing-engine';
@@ -18,6 +19,23 @@ import {
   isStepVisible,
 } from '@/domain/runtime/navigation';
 import type { SessionConfig, StepValidationSnapshot, WizardState } from '@/domain/runtime/state';
+
+// ---------------------------------------------------------------------------
+// Config helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns a WizardConfig that prepends any engine-level preSteps to the
+ * wizard's own steps (ADR-0022). When preSteps is absent or empty, returns
+ * config.wizard unchanged (same reference, no allocation).
+ *
+ * Call once at the top of transition() so all handlers operate on a
+ * consistent merged view without re-computing per handler.
+ */
+export function getMergedWizard(config: SessionConfig): WizardConfig {
+  if (!config.preSteps || config.preSteps.length === 0) return config.wizard;
+  return { ...config.wizard, steps: [...config.preSteps, ...config.wizard.steps] };
+}
 
 // ---------------------------------------------------------------------------
 // Per-event handlers
@@ -255,25 +273,29 @@ export function transition(
   event: WizardEvent,
   config: SessionConfig,
 ): WizardState {
-  const fieldKeyById = buildFieldKeyMap(config.wizard);
+  // Merge engine-level preSteps into the wizard once; all handlers use this.
+  const mergedWizard = getMergedWizard(config);
+  const effective: SessionConfig =
+    mergedWizard !== config.wizard ? { ...config, wizard: mergedWizard } : config;
+  const fieldKeyById = buildFieldKeyMap(effective.wizard);
 
   switch (event.type) {
     case 'HYDRATE':
-      return handleHydrate(state, event, config, fieldKeyById);
+      return handleHydrate(state, event, effective, fieldKeyById);
     case 'ANSWER_SET':
       return handleAnswerSet(state, event);
     case 'CATEGORY_SELECTED':
       return handleCategorySelected(state, event);
     case 'STEP_NEXT':
-      return handleStepNext(state, config, fieldKeyById);
+      return handleStepNext(state, effective, fieldKeyById);
     case 'STEP_BACK':
       return handleStepBack(state);
     case 'STEP_GOTO':
-      return handleStepGoto(state, event, config, fieldKeyById);
+      return handleStepGoto(state, event, effective, fieldKeyById);
     case 'VALIDATE_STEP':
-      return handleValidateStep(state, event, config, fieldKeyById);
+      return handleValidateStep(state, event, effective, fieldKeyById);
     case 'SUBMIT_REQUESTED':
-      return handleSubmitRequested(state, config, fieldKeyById);
+      return handleSubmitRequested(state, effective, fieldKeyById);
     case 'SUBMIT_SUCCEEDED':
       return handleSubmitSucceeded(state, event);
     case 'SUBMIT_FAILED':

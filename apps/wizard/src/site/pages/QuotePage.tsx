@@ -18,6 +18,7 @@ import type { SubmissionPort } from '@/runtime';
 import { PhotoStore } from '@/runtime/photos-store';
 import { createPhotoEnrichedPort } from '@/runtime/submission-media';
 import { useCategorySelection } from '@/runtime/hooks/useCategorySelection';
+import { addressPreStep } from '@/domain/wizards/address-prestep';
 import { ServiceSelector, CategorySelector } from '@/components/selection';
 import { WizardShell } from '@/components/WizardShell';
 
@@ -64,7 +65,7 @@ export function QuotePage(): ReactElement {
     const photoStore = new PhotoStore();
     const enrichedPort = createPhotoEnrichedPort(baseSubmissionPort, photoStore);
     const store = createWizardStore(
-      { wizard: service.wizard, pricing: service.pricing },
+      { wizard: service.wizard, pricing: service.pricing, preSteps: [addressPreStep] },
       sessionStorageAdapter,
       enrichedPort,
     );
@@ -85,7 +86,7 @@ export function QuotePage(): ReactElement {
     }
     const fallbackPhotoStore = new PhotoStore();
     const fallbackStore = createWizardStore(
-      { wizard: fallback.wizard, pricing: fallback.pricing },
+      { wizard: fallback.wizard, pricing: fallback.pricing, preSteps: [addressPreStep] },
       sessionStorageAdapter,
       createPhotoEnrichedPort(baseSubmissionPort, fallbackPhotoStore),
     );

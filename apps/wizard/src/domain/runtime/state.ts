@@ -1,5 +1,5 @@
 import type { PricingConfig } from '@/domain/config/pricing';
-import type { WizardConfig } from '@/domain/config/wizard-config';
+import type { Step, WizardConfig } from '@/domain/config/wizard-config';
 
 import type { AnswerMap } from '@/domain/runtime/answer-types';
 
@@ -192,6 +192,13 @@ export interface SessionConfig {
   readonly pricing: PricingConfig;
   /** Mirrors PublicConfig.enableCategoryNavigation (ADR-0017). Optional so existing tests don't break. */
   readonly enableCategoryNavigation?: boolean;
+  /**
+   * Engine-level steps prepended to every wizard at runtime (ADR-0022).
+   * Keys shared with service contact/address steps enable automatic answer
+   * pre-fill: the user's answers here carry forward to matching service fields.
+   * Service configs are unchanged; injection happens in getMergedWizard().
+   */
+  readonly preSteps?: readonly Step[];
 }
 
 // ---------------------------------------------------------------------------

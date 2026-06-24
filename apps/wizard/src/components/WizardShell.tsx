@@ -1,5 +1,6 @@
 import { buildFieldKeyMap } from '@/domain/runtime/condition-evaluator';
 import { getVisibleSteps } from '@/domain/runtime/navigation';
+import { getMergedWizard } from '@/domain/runtime/transition';
 import { selectPrice } from '@/domain/pricing';
 import { useWizard } from '@/runtime/useWizard';
 import { useWizardStore } from '@/runtime/WizardProvider';
@@ -46,8 +47,9 @@ export function WizardShell(): JSX.Element {
   }
 
   // phase === 'answering' | 'validating'
-  const fieldKeyById = buildFieldKeyMap(config.wizard);
-  const visibleSteps = getVisibleSteps(config.wizard, state.answers, fieldKeyById);
+  const wizard = getMergedWizard(config);
+  const fieldKeyById = buildFieldKeyMap(wizard);
+  const visibleSteps = getVisibleSteps(wizard, state.answers, fieldKeyById);
   const currentStep = visibleSteps.find((s) => s.id === state.currentStepId);
 
   if (currentStep === undefined) {
@@ -59,7 +61,7 @@ export function WizardShell(): JSX.Element {
   const isFirst = currentIndex === 0;
   const isLast = currentIndex === visibleSteps.length - 1;
 
-  const quoteMode = config.wizard.quoteMode ?? 'instant';
+  const quoteMode = wizard.quoteMode ?? 'instant';
   const price = quoteMode === 'instant' ? selectPrice(state, config) : null;
 
   return (
