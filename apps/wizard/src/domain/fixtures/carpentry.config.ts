@@ -12,7 +12,7 @@ export const carpentryWizardConfig: WizardConfig = {
   schemaVersion: 1,
   id: 'carpentry',
   quoteMode: 'manual',
-  title: 'Carpentry quote request',
+  title: 'Carpentry',
   steps: [
     {
       id: 'description',

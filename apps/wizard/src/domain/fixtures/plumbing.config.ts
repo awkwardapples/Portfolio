@@ -12,7 +12,7 @@ export const plumbingWizardConfig: WizardConfig = {
   schemaVersion: 1,
   id: 'plumbing',
   quoteMode: 'manual',
-  title: 'Plumbing quote request',
+  title: 'Plumbing',
   steps: [
     {
       id: 'description',

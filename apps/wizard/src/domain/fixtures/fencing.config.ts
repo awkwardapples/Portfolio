@@ -32,7 +32,7 @@ export const fencingWizardConfig: WizardConfig = {
   schemaVersion: 1,
   id: 'fencing',
   quoteMode: 'instant',
-  title: 'Fencing quote',
+  title: 'Fencing',
   steps: [
     {
       id: 'dimensions',

@@ -16,7 +16,7 @@ export const generalRepairsWizardConfig: WizardConfig = {
   schemaVersion: 1,
   id: 'general-repairs',
   quoteMode: 'manual',
-  title: 'General repairs quote request',
+  title: 'General repairs',
   steps: [
     {
       id: 'description',

@@ -21,7 +21,7 @@ export const paintingWizardConfig: WizardConfig = {
   schemaVersion: 1,
   id: 'painting',
   quoteMode: 'instant',
-  title: 'Painting & decorating quote',
+  title: 'Painting & decorating',
   steps: [
     {
       id: 'rooms',

@@ -19,7 +19,7 @@ export const stepsWizardConfig: WizardConfig = {
   schemaVersion: 1,
   id: 'steps',
   quoteMode: 'instant',
-  title: 'Garden steps quote',
+  title: 'Garden steps',
   steps: [
     {
       id: 'design',

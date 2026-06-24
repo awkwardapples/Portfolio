@@ -20,7 +20,7 @@ export const patioWizardConfig: WizardConfig = {
   schemaVersion: 1,
   id: 'patio',
   quoteMode: 'instant',
-  title: 'Patio & paving quote',
+  title: 'Patio & paving',
   steps: [
     {
       id: 'area_and_material',

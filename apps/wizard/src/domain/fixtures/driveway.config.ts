@@ -14,7 +14,7 @@ export const drivewayWizardConfig: WizardConfig = {
   schemaVersion: 1,
   id: 'driveway',
   quoteMode: 'instant',
-  title: 'Driveway quote',
+  title: 'Driveway',
   steps: [
     {
       id: 'area_and_material',

@@ -36,7 +36,7 @@ export const deckingWizardConfig: WizardConfig = {
   schemaVersion: 1,
   id: 'decking',
   quoteMode: 'instant',
-  title: 'Decking quote',
+  title: 'Decking',
   steps: [
     {
       id: 'dimensions',

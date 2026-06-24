@@ -14,7 +14,7 @@ export const jetwashWizardConfig: WizardConfig = {
   schemaVersion: 1,
   id: 'jetwash',
   quoteMode: 'instant',
-  title: 'Pressure washing quote',
+  title: 'Pressure washing',
   steps: [
     {
       id: 'area',

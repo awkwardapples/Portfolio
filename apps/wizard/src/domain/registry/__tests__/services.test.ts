@@ -95,3 +95,22 @@ describe('resolveService', () => {
     expect(resolveService('')).toBeNull();
   });
 });
+
+// Copy audit (R5): wizard titles must not include "quote" or "request".
+describe('wizard config titles — copy audit', () => {
+  it('no instant-quote wizard title contains the word "quote"', () => {
+    for (const id of ['fencing', 'decking', 'painting', 'patio', 'driveway', 'steps', 'jetwash']) {
+      const service = resolveService(id);
+      expect(service?.wizard.title.toLowerCase()).not.toContain('quote');
+    }
+  });
+
+  it('no manual-quote wizard title contains "quote" or "request"', () => {
+    for (const id of ['general-repairs', 'plumbing', 'electrical', 'carpentry']) {
+      const service = resolveService(id);
+      const title = service?.wizard.title.toLowerCase() ?? '';
+      expect(title).not.toContain('quote');
+      expect(title).not.toContain('request');
+    }
+  });
+});
