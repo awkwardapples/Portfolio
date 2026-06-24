@@ -1348,3 +1348,69 @@ Criteria to record:
 - OV-5.9-13: Instant-quote submission (fencing regression check) still works end-to-end.
 - OV-5.9-14: Mobile (375px): /services renders all 11 services in readable stacked layout.
 - OV-5.9-15: Pricing estimates shown for instant-quote services are plausible (not £0 or £50,000 for a typical job).
+
+---
+
+## Step 5.9-Remediation (June 2026)
+
+Six OV findings from post-5.9 operational review, resolved in 6 commits.
+
+### What landed
+
+| Finding  | Summary                                                                                                                                                                                                    |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1       | PHP `get_option('goqw_enable_category_navigation', false)` → `true`; ADR-0017 amended                                                                                                                      |
+| R2       | Back-button bug fixed: `handleStepBack` pops `visitedStepIds` instead of appending. `NavigationControls` always renders Back; first-step Back routes to service selector via `onReturnToSelector`.         |
+| R3       | Engine-level pre-step (`addressPreStep`) injected via `SessionConfig.preSteps`. Collects `contact_name`, `postcode`, `contact_phone`, `contact_email` before service steps. Key sharing enables auto-fill. |
+| R4       | UK format validators: `validatePostcode`, `validateEmail`, `validatePhone`; `FORMAT_VALIDATORS` map wired into `answer-validation.ts`. No `FieldSchema` changes needed.                                    |
+| R5       | Copy: removed "quote"/"quote request" suffixes from all 11 wizard config titles.                                                                                                                           |
+| ADR-0022 | New ADR documenting the pre-step injection mechanism via `SessionConfig.preSteps` + `getMergedWizard()`.                                                                                                   |
+
+### File table
+
+| File                                                          | Status   | Notes                                                              |
+| ------------------------------------------------------------- | -------- | ------------------------------------------------------------------ |
+| `plugins/quote-wizard/src/Frontend/PublicConfig.php`          | MODIFIED | Category nav default: false → true (R1)                            |
+| `domain/runtime/transition.ts`                                | MODIFIED | `getMergedWizard()` + `handleStepBack` pop fix (R2+R3)             |
+| `domain/runtime/state.ts`                                     | MODIFIED | `SessionConfig.preSteps?: readonly Step[]` (R3)                    |
+| `domain/wizards/address-prestep.ts`                           | NEW      | Pre-step Step object with 4 contact/address fields (R3)            |
+| `domain/wizards/__tests__/address-prestep.test.ts`            | NEW      | 5 tests: shape, field types, required, key names (R3)              |
+| `domain/wizards/NAVIGATION-AUDIT.md`                          | NEW      | Phase 0 audit: back-button bug trace + fix strategy                |
+| `domain/wizards/COPY-AUDIT.md`                                | NEW      | Phase 0 audit: all 11 title current→proposed names                 |
+| `domain/validation/address-validator.ts`                      | NEW      | `validatePostcode` + `ValidationResult` type (R4)                  |
+| `domain/validation/email-validator.ts`                        | NEW      | `validateEmail` (R4)                                               |
+| `domain/validation/phone-validator.ts`                        | NEW      | `validatePhone` UK normalisation (R4)                              |
+| `domain/validation/format-validators.ts`                      | NEW      | `FORMAT_VALIDATORS` map: postcode/contact_email/contact_phone (R4) |
+| `domain/validation/__tests__/format-validators.test.ts`       | NEW      | 32 tests covering validators + map (R4)                            |
+| `domain/runtime/answer-validation.ts`                         | MODIFIED | `validateField` text case applies `FORMAT_VALIDATORS` (R4)         |
+| `domain/runtime/__tests__/transition.test.ts`                 | MODIFIED | 1 updated assertion + 4 new back-button tests (R2)                 |
+| `domain/registry/__tests__/services.test.ts`                  | MODIFIED | 2 new copy-audit tests: no "quote" in any title (R5)               |
+| `components/steps/NavigationControls.tsx`                     | MODIFIED | Always renders Back button; removed `isFirst` prop (R2)            |
+| `components/steps/StepRenderer.tsx`                           | MODIFIED | `onFirstBack?` prop; first-step Back routes to it (R2)             |
+| `components/WizardShell.tsx`                                  | MODIFIED | `onReturnToSelector?` prop; `getMergedWizard` for progress (R2+R3) |
+| `site/pages/QuotePage.tsx`                                    | MODIFIED | Passes `preSteps:[addressPreStep]` + `onReturnToSelector` (R2+R3)  |
+| `__tests__/config-loader.test.ts`                             | MODIFIED | 2 new `enableCategoryNavigation` tests (R1)                        |
+| 11 × `domain/fixtures/*.config.ts`                            | MODIFIED | Titles stripped of "quote"/"quote request" (R5)                    |
+| `docs/decisions/0022-wizard-prestep-mechanism.md`             | NEW      | ADR-0022                                                           |
+| `docs/decisions/0017-category-navigation-and-manual-quote.md` | MODIFIED | Amendment: PHP default changed to true (R1)                        |
+
+### Gate results
+
+| Gate             | Result                                                        |
+| ---------------- | ------------------------------------------------------------- |
+| `pnpm lint`      | 0 errors, 0 warnings                                          |
+| `pnpm typecheck` | 0 errors                                                      |
+| `pnpm test`      | **595 / 595** (47 test files, +45 new tests from remediation) |
+| `pnpm build`     | Clean (bundle size unchanged from 5.9; no new UI components)  |
+| `composer test`  | 104 passed, 2 skipped (unchanged)                             |
+
+### Operational verification
+
+**OV-5.9-R1 through OV-5.9-R6 pending deployment to canonical LocalWP site.**
+
+- OV-5.9-R1: Category selector appears immediately on `/quote` with no prior WP option set.
+- OV-5.9-R2: Wizard starts with "Your details" pre-step (name, postcode, phone, email).
+- OV-5.9-R3: Postcode validation rejects "INVALID"; accepts "SW1A 1AA" and "M1 1AA" (with/without space).
+- OV-5.9-R4: Back button visible on every wizard step. Back from first step returns to service selector.
+- OV-5.9-R5: Pressing Back twice from second step returns to first step (not forward to second).
+- OV-5.9-R6: All 11 wizard headers show clean trade names (e.g., "Fencing", not "Fencing quote").

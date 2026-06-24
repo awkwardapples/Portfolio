@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-06-22 (post Step 5.9 — wizard service library)_
+_Last updated: 2026-06-24 (post Step 5.9-Remediation)_
 
 ## What's working
 
@@ -18,7 +18,7 @@ _Last updated: 2026-06-22 (post Step 5.9 — wizard service library)_
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors
-- `pnpm test`: 550/550 (+84 from 5.9 wizard service library — 45 test files)
+- `pnpm test`: 595/595 (+45 from 5.9-remediation — 47 test files)
 - `pnpm build`: clean, 81.12 kB gzip
 - `composer test`: 104 passed, 2 skipped (unchanged)
 - `composer analyse`: clean
@@ -130,6 +130,16 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   `home-page-content.ts` ServicesPreview shows 6 services with icons. 84 new
   pure TS tests (466→550, 45 test files). Bundle 81.12 kB gzip.
   OV-5.9-1 through OV-5.9-15 pending operational verification.
+- **Step 5.9-Remediation** (June 2026). 6 OV findings resolved in 6 commits.
+  R1: category nav PHP default → true (ADR-0017 amended). R2: back-button bug
+  fixed (pop not append) + Back always visible + first-step Back returns to selector.
+  R3: engine-level pre-step (`addressPreStep`) via `SessionConfig.preSteps` +
+  `getMergedWizard()` — collects contact details before service steps with
+  shared keys for auto-fill. R4: UK format validators (`validatePostcode`,
+  `validateEmail`, `validatePhone`) wired via `FORMAT_VALIDATORS` map. R5:
+  "quote"/"quote request" suffixes removed from all 11 wizard titles. ADR-0022
+  accepted. 45 new tests (550→595, 47 test files).
+  OV-5.9-R1 through OV-5.9-R6 pending operational verification.
 
 ## Key Architectural Facts
 
@@ -199,6 +209,6 @@ Strict ordering: validate → persist → forward → respond.
 
 - lint (`pnpm lint` → 0 errors, 0 warnings)
 - typecheck (`pnpm typecheck`)
-- vitest (`pnpm test` → 550/550)
+- vitest (`pnpm test` → 595/595)
 - build (`pnpm build`)
 - PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 104 passed (2 skipped)

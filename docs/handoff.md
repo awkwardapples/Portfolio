@@ -1,6 +1,6 @@
 # Handoff
 
-_Last updated: 2026-06-22 (post Step 5.9 — wizard service library)_
+_Last updated: 2026-06-24 (post Step 5.9-Remediation)_
 
 ## Status
 
@@ -49,6 +49,15 @@ _Last updated: 2026-06-22 (post Step 5.9 — wizard service library)_
   84 new Vitest tests (466→550). Bundle 81.12 kB gzip. Spec deviation: 11 services
   implemented (vs 9 planned) — patio/driveway/steps split into 3 separate configs.
   Operational verification pending (OV-5.9-1 through OV-5.9-15).
+- Step 5.9-Remediation complete (June 24, 2026): 6 OV findings resolved. R1:
+  category nav PHP default → true (ADR-0017 amended). R2: back-button bug fixed
+  (pop not append); Back always visible; first-step Back returns to service
+  selector. R3: engine-level pre-step collects name/postcode/phone/email before
+  service steps via `SessionConfig.preSteps` + `getMergedWizard()` (ADR-0022).
+  R4: UK format validators for postcode, email, phone wired into
+  `answer-validation.ts` via `FORMAT_VALIDATORS` map. R5: "quote"/"quote request"
+  removed from all 11 wizard titles. 45 new Vitest tests (550→595, 47 test files).
+  Operational verification pending (OV-5.9-R1 through OV-5.9-R6).
 - Build pipeline corrected: `pnpm build` composes Vite build and plugin
   staging in one command.
 - Fork-and-customize architecture demonstrated end-to-end.
@@ -99,13 +108,11 @@ If you are starting a new step:
 
 The roadmap is sequenced explicitly. See `docs/roadmap.md` for full detail.
 
-**Immediate next action:** Operational verification — OV-5.9-1 through OV-5.9-15
-per ADR-0021. Deploy to canonical LocalWP site; verify all 11 services appear on
-`/services`, the 6-service home preview renders with icons, instant-quote and
-manual-quote flows complete end-to-end for representative services. See
-`docs/phase-5-evidence.md` Step 5.9 for the criteria. Also complete OV-5.8-1
-through OV-5.8-12 (footer) and OV-5.7R-1 through OV-5.7R-9 (remediation) if
-not yet recorded.
+**Immediate next action:** Operational verification — OV-5.9-R1 through OV-5.9-R6
+(remediation), OV-5.9-1 through OV-5.9-15 (service library), OV-5.8-1 through
+OV-5.8-12 (footer), and OV-5.7R-1 through OV-5.7R-9 (section library). Deploy to
+canonical LocalWP site and record all outstanding verification criteria in
+`docs/phase-5-evidence.md`.
 
 **Then:** Step 5.10 — SEO infrastructure (Layers 1-4).
 

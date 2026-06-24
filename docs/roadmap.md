@@ -34,6 +34,7 @@ A single-page, structural view of project state. Update on every completed step.
 | 5.7-remediation       | Complete | CTA routing (SectionLink); canonical redirect fix; viewport sizing                                      |
 | 5.8                   | Complete | Footer: template structure + per-client content slots                                                   |
 | 5.9                   | Complete | Wizard service library: 11 services (5 instant + 4 manual + 2 original)                                 |
+| 5.9-remediation       | Complete | 6 OV findings: pre-step, back-button fix, UK validators, category nav default, copy, ADR-0022           |
 | 5.10                  | Up next  | SEO infrastructure: Layers 1-4                                                                          |
 | 5.11                  | Planned  | Per-client customization tooling refinement                                                             |
 | 5.12                  | Planned  | SCB-specific deployment (first real client)                                                             |
@@ -120,6 +121,14 @@ instant-quote configs (patio, driveway, steps), yielding 11 total services.
 (general-repairs, plumbing, electrical, carpentry) + 2 original (fencing, decking).
 4 categories, 11 SVG icons, string-keyed ICON_MAP. ADR-0021 documents
 architectural decisions. OV-5.9-1 through OV-5.9-15 pending.
+
+**5.9-remediation — 6 OV findings.** R1: category nav PHP default → true (ADR-0017
+amended). R2: double-Back bug fixed in `handleStepBack` (pop not append) + Back
+always visible + first-step Back returns to service selector. R3: engine-level
+pre-step via `SessionConfig.preSteps` and `getMergedWizard()` collects contact
+details before every wizard (ADR-0022). R4: UK format validators for postcode,
+email, phone wired into `answer-validation.ts` via `FORMAT_VALIDATORS`. R5:
+"quote"/"quote request" copy stripped from all 11 wizard titles.
 
 **5.10 — SEO infrastructure.** Implements Layers 1-4: per-page meta tags (title,
 description, canonical, OG, Twitter card); LocalBusiness JSON-LD; Service
