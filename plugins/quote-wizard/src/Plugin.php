@@ -15,6 +15,7 @@ use Agency\QuoteWizard\Rest\SubmissionController;
 use Agency\QuoteWizard\Routing\CanonicalRedirectGuard;
 use Agency\QuoteWizard\Routing\FrontPagePolicy;
 use Agency\QuoteWizard\Routing\RenderingArchitecture;
+use Agency\QuoteWizard\SEO\SEOMetaEmitter;
 use Agency\QuoteWizard\Routing\RewriteRegistrar;
 use Agency\QuoteWizard\Routing\RouteInterceptor;
 use Agency\QuoteWizard\Routing\SelfHealer;
@@ -54,6 +55,8 @@ final class Plugin {
 		RenderingArchitecture::register();
 		// Suppress WordPress canonical redirect for React routes (ADR-0020 amendment).
 		CanonicalRedirectGuard::register();
+		// SEO: per-route meta tags, canonical, OG, Twitter card (ADR-0023).
+		SEOMetaEmitter::register();
 
 		// Frontend: shortcode that renders the wizard mount point.
 		add_shortcode( Shortcode::TAG, array( Shortcode::class, 'render' ) );
