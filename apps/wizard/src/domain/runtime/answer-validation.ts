@@ -5,6 +5,7 @@ import { evaluateCondition } from '@/domain/runtime/condition-evaluator';
 import { isStepVisible } from '@/domain/runtime/navigation';
 import { isPhotoAnswerValue } from '@/domain/runtime/photos';
 import type { StepValidationFieldIssue, StepValidationSnapshot } from '@/domain/runtime/state';
+import { FORMAT_VALIDATORS } from '@/domain/validation/format-validators';
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -32,9 +33,15 @@ function validateField(field: Field, answer: AnswerValue | undefined): string | 
 
   switch (field.type) {
     case 'text':
-    case 'textarea':
+    case 'textarea': {
       if (typeof answer !== 'string') return 'Expected a text value.';
+      const fmtValidator = FORMAT_VALIDATORS.get(field.key);
+      if (fmtValidator) {
+        const result = fmtValidator(answer);
+        if (!result.valid) return result.errorMessage ?? 'Invalid format.';
+      }
       return null;
+    }
 
     case 'photo':
       if (!isPhotoAnswerValue(answer)) return 'Expected a photo answer.';
