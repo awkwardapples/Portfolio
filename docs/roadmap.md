@@ -37,7 +37,7 @@ A single-page, structural view of project state. Update on every completed step.
 | 5.9-remediation       | Complete | 6 OV findings: pre-step, back-button fix, UK validators, category nav default, copy, ADR-0022           |
 | 5.10a                 | Complete | SEO Layer 1: per-route titles, meta, canonical, OG/Twitter; category back button; ADR-0023              |
 | 5.10a-docs            | Complete | SEO Adaptation Guide (Layer 1) for per-client deployments                                               |
-| 5.10b                 | Up next  | SEO Layers 2-4: LocalBusiness schema, Service schema, sitemap.xml, robots.txt                           |
+| 5.10b                 | Complete | SEO Layers 2-4: LocalBusiness schema, Service schema, sitemap.xml, robots.txt                           |
 | 5.11                  | Planned  | Per-client customization tooling refinement                                                             |
 | 5.12                  | Planned  | SCB-specific deployment (first real client)                                                             |
 | 6.0                   | Planned  | Production IONOS deployment                                                                             |
@@ -139,9 +139,15 @@ Twitter cards (4 tags). `SEORouteContent` + `SEOMetaEmitter` PHP module register
 `_wp_render_title_tag()`. `og-image-default.png` placeholder ships. `ServiceSelector` gains
 category back button. 3 Vitest + 15 PHP tests. ADR-0023 accepted.
 
-**5.10b — SEO Layers 2-4.** LocalBusiness JSON-LD (Layer 2); Service JSON-LD per
-enabled service (Layer 3); sitemap.xml and robots.txt generation (Layer 4). PHP plugin
-emits all into `wp_head()` or via rewrite rules.
+**5.10b — SEO Layers 2-4.** LocalBusiness JSON-LD (Layer 2) via `LocalBusinessSchemaEmitter`
+at `wp_head` priority 10; reads 8 new `goqw_business_*` / `goqw_social_*` options seeded
+in Activator; PostalAddress parsed from multi-line text or JSON override. Service JSON-LD
+per enabled service (Layer 3) via `ServiceSchemaEmitter` at priority 11; static PHP
+`SERVICES` constant mirrors `services-content.ts`; filtered by `goqw_enabled_services`.
+Custom `/sitemap.xml` (Layer 4) via `SitemapGenerator`; WP core sitemap disabled.
+`robots.txt` Sitemap directive (Layer 4) via `RobotsTxtCustomizer`; respects `blog_public`.
+24 new PHP tests (119→143). ADR-0023 amended. `seo-adaptation-guide.md` extended with
+Layers 2-4 usage instructions. OV-5.10b-1 through OV-5.10b-17 pending.
 
 **5.11 — Per-client customization tooling refinement.** Validates and refines
 the per-client customization workflow against an actual adaptation pass. Ensures

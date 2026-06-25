@@ -1,6 +1,6 @@
 # Handoff
 
-_Last updated: 2026-06-24 (post Step 5.10a-docs)_
+_Last updated: 2026-06-25 (post Step 5.10b)_
 
 ## Status
 
@@ -73,6 +73,18 @@ _Last updated: 2026-06-24 (post Step 5.10a-docs)_
   verification), common patterns, troubleshooting, and codebase reference. Cross-
   referenced from `onboarding.md` and `fork-procedure.md`. Documentation-only;
   all gates unchanged (598 Vitest, 119 PHP).
+- Step 5.10b complete (June 25, 2026): SEO Layers 2-4. ADR-0023 amended.
+  `LocalBusinessSchemaEmitter` (Layer 2) emits LocalBusiness JSON-LD with name,
+  address (PostalAddress heuristic), phone, email, hours, sameAs social links.
+  8 new `goqw_business_*` / `goqw_social_*` options seeded in Activator.
+  `ServiceSchemaEmitter` (Layer 3) emits one Service JSON-LD block per active service
+  (11 services, static PHP constant mirroring services-content.ts, filtered by
+  `goqw_enabled_services`). `SitemapGenerator` (Layer 4) serves custom `/sitemap.xml`
+  with all 5 React routes; disables WP core sitemap. `RobotsTxtCustomizer` (Layer 4)
+  appends `Sitemap:` directive to `robots.txt`, respecting `blog_public` setting.
+  24 new PHP tests (143 total). `docs/seo-adaptation-guide.md` extended with Layers 2-4
+  usage instructions, options reference, and troubleshooting.
+  Operational verification pending (OV-5.10b-1 through OV-5.10b-17).
 - Build pipeline corrected: `pnpm build` composes Vite build and plugin
   staging in one command.
 - Fork-and-customize architecture demonstrated end-to-end.
@@ -123,15 +135,11 @@ If you are starting a new step:
 
 The roadmap is sequenced explicitly. See `docs/roadmap.md` for full detail.
 
-**Immediate next action:** Operational verification — OV-5.10a-1 through OV-5.10a-13
-(SEO Layer 1 + category back button), OV-5.9-R1 through OV-5.9-R6 (remediation),
-OV-5.9-1 through OV-5.9-15 (service library), OV-5.8-1 through OV-5.8-12 (footer),
-and OV-5.7R-1 through OV-5.7R-9 (section library). Deploy to canonical LocalWP site
-and record all outstanding verification criteria in `docs/phase-5-evidence.md`.
-
-**Then:** Step 5.10b — SEO infrastructure Layers 2-4 (LocalBusiness schema, Service
-schema, sitemap.xml, robots.txt). After implementation, `docs/seo-adaptation-guide.md`
-will be extended with usage instructions for Layers 2-4.
+**Immediate next action:** Operational verification — OV-5.10b-1 through OV-5.10b-17
+(SEO Layers 2-4: LocalBusiness schema in view-source, Service schema blocks, sitemap.xml
+accessible, robots.txt Sitemap directive, Google Rich Results Test), plus the backlog of
+outstanding OVs (OV-5.10a-1 through OV-5.10a-13, OV-5.9-R1 through OV-5.9-R6, etc.).
+Deploy to canonical LocalWP site and record all criteria in `docs/phase-5-evidence.md`.
 
 **Then:** Step 5.11 — Per-client customization tooling refinement.
 

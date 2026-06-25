@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-06-24 (post Step 5.10a)_
+_Last updated: 2026-06-25 (post Step 5.10b)_
 
 ## What's working
 
@@ -13,15 +13,20 @@ _Last updated: 2026-06-24 (post Step 5.10a)_
 - Service abstraction (fencing + decking verticals).
 - Photo upload (multi-photo, browser compression, server-side validation, base64 in payload).
 - WordPress page mapping (single root page + rewrite rules + non-invasive front-page policy).
+- SEO Layer 1: per-route titles, meta descriptions, canonical URLs, Open Graph tags, Twitter cards.
+- SEO Layer 2: LocalBusiness JSON-LD schema (name, address, phone, email, hours, sameAs).
+- SEO Layer 3: Service JSON-LD schema per active service (11 services, filterable by goqw_enabled_services).
+- SEO Layer 4: custom `/sitemap.xml` (5 React routes); `robots.txt` Sitemap directive.
 
 ## Gate state (last verified)
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors
-- `pnpm test`: 598/598 (+3 from 5.10a — 48 test files)
-- `pnpm build`: clean (bundle size unchanged from 5.9-remediation)
-- `composer test`: 119 passed, 2 skipped (+15 from 5.10a)
-- `composer analyse`: clean
+- `pnpm test`: 598/598 (48 test files, unchanged — no JS changes in 5.10b)
+- `pnpm build`: clean (bundle size unchanged)
+- `composer test`: 143 passed, 2 skipped (+24 from 5.10b — 4 new test files)
+- `composer analyse`: clean (PHPStan level 8, no errors)
+- `composer lint`: 0/0 (PHPCS)
 
 ## OV-001 verification
 
@@ -34,8 +39,6 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 
 ## What's NOT yet built
 
-- Step 5.10b (SEO Layers 2-4: LocalBusiness schema, Service schema, sitemap.xml, robots.txt)
-  — the remainder of the SEO infrastructure step.
 - Step 5.11 (per-client customization tooling) — template-completeness.
 - Step 5.12 (SCB-specific deployment) — gated on 5.8-5.11.
 - Media retention policy (deferred per 4.8 spec).
@@ -157,6 +160,17 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   checklist (titles, descriptions, OG image), verification steps, common patterns,
   troubleshooting, and codebase reference. Cross-referenced from `onboarding.md`,
   `fork-procedure.md`, and ADR-0023. Documentation-only; all gates unchanged.
+- **Step 5.10b — SEO Layers 2-4** (June 2026). ADR-0023 amended.
+  `LocalBusinessSchemaEmitter` emits LocalBusiness JSON-LD at `wp_head` priority 10;
+  reads from 8 new `goqw_business_*` / `goqw_social_*` options (seeded in Activator).
+  PostalAddress parsed from multi-line `goqw_business_address` or structured JSON override.
+  `ServiceSchemaEmitter` emits one Service JSON-LD block per active service (11 services,
+  filtered by `goqw_enabled_services`) at `wp_head` priority 11. `SitemapGenerator` serves
+  a custom `/sitemap.xml` listing all 5 React routes; disables WP core sitemap.
+  `RobotsTxtCustomizer` appends `Sitemap:` directive to `robots.txt` (omitted when private).
+  24 new PHP tests (119→143 passed). `docs/seo-adaptation-guide.md` extended with
+  Layers 2-4 usage instructions, troubleshooting, and options reference.
+  OV-5.10b-1 through OV-5.10b-17 pending operational verification.
 
 ## Key Architectural Facts
 
@@ -228,4 +242,4 @@ Strict ordering: validate → persist → forward → respond.
 - typecheck (`pnpm typecheck`)
 - vitest (`pnpm test` → 598/598)
 - build (`pnpm build`)
-- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 119 passed (2 skipped)
+- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 143 passed (2 skipped)

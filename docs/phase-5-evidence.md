@@ -1529,4 +1529,92 @@ infrastructure landed in 5.10a.
 ### Gate state at closure
 
 598/598 Vitest, 119 passed/2 skipped PHP, lint 0/0, typecheck 0 errors, build clean.
+
+---
+
+## Step 5.10b — SEO Layers 2-4 (June 25, 2026)
+
+Implements LocalBusiness JSON-LD schema (Layer 2), Service JSON-LD schema (Layer 3),
+custom sitemap.xml (Layer 4), and robots.txt Sitemap directive (Layer 4).
+
+### Commits
+
+| SHA       | Description                                                                            |
+| --------- | -------------------------------------------------------------------------------------- |
+| `9677a59` | docs: Phase 0 audit — WP sitemap, footer options, service registry (3 audit md files)  |
+| `edfeb0f` | feat(php): LocalBusinessSchemaEmitter — LocalBusiness JSON-LD + 7 tests                |
+| `8bd5d63` | feat(php): ServiceSchemaEmitter — Service JSON-LD (11 services) + 7 tests              |
+| `c200dd8` | feat(php): SitemapGenerator — custom /sitemap.xml + 6 tests                            |
+| `03cd5aa` | feat(php): RobotsTxtCustomizer — Sitemap directive in robots.txt + 4 tests             |
+| `d342760` | feat(php): wire Layer 2-4 classes into Plugin::boot(); seed 8 new options in Activator |
+| `41feab9` | fix(php): PHPCS lint fixes — $blog_public rename, @param alignment                     |
+| `273e537` | docs: ADR-0023 amendment — Layers 2-4 implementation                                   |
+| `8eabba3` | docs: extend SEO adaptation guide with Layers 2-4                                      |
+
+### Gate Results
+
+| Gate               | Result                                                        |
+| ------------------ | ------------------------------------------------------------- |
+| `pnpm lint`        | 0 errors, 0 warnings                                          |
+| `pnpm typecheck`   | 0 errors                                                      |
+| `pnpm test`        | **598 / 598 passing** (48 test files, unchanged)              |
+| `pnpm build`       | Clean (bundle size unchanged — no JS changes in this step)    |
+| `composer lint`    | 0 errors, 0 warnings (PHPCS)                                  |
+| `composer analyse` | No errors (PHPStan level 8)                                   |
+| `composer test`    | **143 passed, 2 skipped** (+24 from 5.10b — 4 new test files) |
+
+### New PHP Test Breakdown
+
+| Suite                      | File                                                | Tests  |
+| -------------------------- | --------------------------------------------------- | ------ |
+| LocalBusinessSchemaEmitter | `tests/Unit/SEO/LocalBusinessSchemaEmitterTest.php` | 7      |
+| ServiceSchemaEmitter       | `tests/Unit/SEO/ServiceSchemaEmitterTest.php`       | 7      |
+| SitemapGenerator           | `tests/Unit/SEO/SitemapGeneratorTest.php`           | 6      |
+| RobotsTxtCustomizer        | `tests/Unit/SEO/RobotsTxtCustomizerTest.php`        | 4      |
+| **Total new**              |                                                     | **24** |
+
+Previous total (5.10a): 119 passed, 2 skipped PHP
+Current total: **143 passed, 2 skipped PHP** (4 new test files)
+
+### Acceptance Criteria
+
+| #   | Criterion                                                                         | Status             |
+| --- | --------------------------------------------------------------------------------- | ------------------ |
+| 1   | LocalBusiness JSON-LD emitted on every React route                                | ✅ 7 PHP tests     |
+| 2   | LocalBusiness schema NOT emitted on non-React routes (wp-admin, REST, etc.)       | ✅ PHP test        |
+| 3   | `goqw_business_name` populates name; falls back to `get_bloginfo('name')`         | ✅ PHP tests       |
+| 4   | Multi-line `goqw_business_address` parsed to PostalAddress sub-schema             | ✅ PHP test        |
+| 5   | `goqw_social_*` options populate sameAs array; empty values omitted               | ✅ PHP test        |
+| 6   | Service JSON-LD emitted per active service (11 by default)                        | ✅ 7 PHP tests     |
+| 7   | `goqw_enabled_services` filters services correctly                                | ✅ PHP test        |
+| 8   | Each Service schema references LocalBusiness provider by name                     | ✅ PHP test        |
+| 9   | Custom `/sitemap.xml` returns valid XML with all 5 React routes                   | ✅ 6 PHP tests     |
+| 10  | WordPress built-in `/wp-sitemap.xml` disabled                                     | ✅ filter verified |
+| 11  | `robots.txt` includes `Sitemap:` directive pointing to `/sitemap.xml`             | ✅ 4 PHP tests     |
+| 12  | `robots.txt` Sitemap directive omitted when `blog_public` is `'0'` (private site) | ✅ PHP test        |
+| 13  | 8 new `goqw_business_*` / `goqw_social_*` options seeded in Activator             | ✅ Code review     |
+| 14  | All 4 new emitters registered in `Plugin::boot()`                                 | ✅ Code review     |
+| 15  | `composer lint` 0/0, `composer analyse` no errors, `composer test` 143 passed     | ✅ Gate run        |
+| 16  | ADR-0023 amended with Layers 2-4 implementation notes                             | ✅ `273e537`       |
+| 17  | `docs/seo-adaptation-guide.md` extended with Layers 2-4 usage instructions        | ✅ `8eabba3`       |
+
+### Architecture notes
+
+- **Footer is TypeScript-only**: `footer-content.ts` contains no WP option equivalent.
+  `LocalBusinessSchemaEmitter` reads discrete `goqw_business_*` WP options directly
+  (8 new options seeded in Activator). No JSON blob parsing needed.
+- **Service registry is TypeScript-only**: `ServiceSchemaEmitter` uses a static PHP
+  `SERVICES` constant mirroring `services-content.ts`. Explicit sync discipline
+  documented in `src/SEO/SERVICE-REGISTRY-AUDIT.md`.
+- **WP core sitemap disabled** via `add_filter('wp_sitemaps_enabled', '__return_false')`.
+  Custom rewrite at `'top'` priority ensures `/sitemap.xml` is handled before React
+  route rewrites.
+- **PHPCS reserved keyword**: `$public` renamed to `$blog_public` in
+  `RobotsTxtCustomizer::customize()` to avoid PHPCS warning; matches the WP option name.
+
+### OVs pending
+
+OV-5.10b-1 through OV-5.10b-17 — operational verification on canonical LocalWP site
+(confirm LocalBusiness schema in view-source, sitemap.xml accessible, robots.txt
+contains Sitemap directive, Google Rich Results Test passes).
 Documentation-only commit; no code changes.
