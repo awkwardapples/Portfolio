@@ -40,12 +40,12 @@ final class RobotsTxtCustomizer {
 	/**
 	 * Append Sitemap directive to WordPress's robots.txt output.
 	 *
-	 * @param string $output The default robots.txt output from WordPress.
-	 * @param string $public '1' when the site allows indexing; '0' when private.
+	 * @param string $output     The default robots.txt output from WordPress.
+	 * @param string $blog_public '1' when the site allows indexing; '0' when private.
 	 * @return string Customized robots.txt output.
 	 */
-	public static function customize( string $output, string $public ): string {
-		if ( '0' === $public ) {
+	public static function customize( string $output, string $blog_public ): string {
+		if ( '0' === $blog_public ) {
 			return $output;
 		}
 

@@ -185,8 +185,8 @@ final class ServiceSchemaEmitter {
 	 * Build a Service schema array for a single service.
 	 *
 	 * @param array{name: string, description: string, category: string} $service      Service metadata.
-	 * @param string                                                      $business_name Business name for provider reference.
-	 * @param string|null                                                 $service_area  Area served (null = omit field).
+	 * @param string                                                     $business_name Business name for provider reference.
+	 * @param string|null                                                $service_area  Area served (null = omit field).
 	 * @return array<string, mixed>
 	 */
 	private static function build_service_schema(
