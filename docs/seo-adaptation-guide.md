@@ -7,13 +7,11 @@ deployments.
 familiarity with WordPress, wp-cli, and the template's fork-and-customize
 workflow (see `docs/fork-procedure.md`).
 
-**Scope:** This guide covers SEO Layer 1 (on-page basics), which is what
-the template provides as of Step 5.10a. Layers 2-4 (LocalBusiness schema,
-Service schema, sitemap.xml, robots.txt) are documented separately after
-they are implemented in Step 5.10b. See the "Coming next" section at the
-bottom.
+**Scope:** This guide covers all four SEO layers: Layer 1 (on-page basics),
+Layer 2 (LocalBusiness schema), Layer 3 (Service schema), and Layer 4
+(sitemap.xml and robots.txt).
 
-**Last updated:** 2026-06-24
+**Last updated:** 2026-06-25
 
 ---
 
@@ -320,24 +318,228 @@ wp option delete goqw_seo_og_image
 
 ---
 
-## Coming next: Layers 2-4 SEO infrastructure
+## Layer 2 — LocalBusiness schema setup
 
-The following is planned for Step 5.10b. **This section will be replaced with
-actual usage instructions when 5.10b lands.** Until then, these capabilities
-are NOT available in the template:
+`LocalBusinessSchemaEmitter` emits a `schema.org/LocalBusiness` JSON-LD block on every React
+route. This tells search engines that the site represents a physical local business — critical
+for local pack inclusion and "near me" searches.
 
-- **Layer 2 — LocalBusiness schema.** Structured JSON-LD data marking the site
-  as a local business (name, address, phone, hours, service area). Important for
-  local pack inclusion and "near me" search results.
+### LocalBusiness options reference
 
-- **Layer 3 — Service schema.** Structured JSON-LD describing each service the
-  business offers. Helps search engines categorize the business's capabilities.
+| Option                             | Schema field   | Notes                                            |
+| ---------------------------------- | -------------- | ------------------------------------------------ |
+| `goqw_business_name`               | `name`         | Defaults to WordPress site name if unset         |
+| `goqw_business_phone`              | `telephone`    | Omitted from schema when empty                   |
+| `goqw_business_email`              | `email`        | Omitted from schema when empty                   |
+| `goqw_business_address`            | `address`      | Multi-line; parsed automatically (see below)     |
+| `goqw_business_address_structured` | `address`      | JSON override; takes precedence over the above   |
+| `goqw_business_hours`              | `openingHours` | Comma-separated opening hours spec (see below)   |
+| `goqw_business_service_area`       | `areaServed`   | Omitted from schema when empty                   |
+| `goqw_business_price_range`        | `priceRange`   | E.g. `"££"`. Omitted from schema when empty      |
+| `goqw_social_facebook`             | `sameAs` array | Full URL, e.g. `https://facebook.com/clientpage` |
+| `goqw_social_instagram`            | `sameAs` array | Full URL                                         |
+| `goqw_social_twitter`              | `sameAs` array | Full URL (use `https://x.com/handle`)            |
+| `goqw_social_linkedin`             | `sameAs` array | Full URL                                         |
 
-- **Layer 4 — sitemap.xml and robots.txt.** Crawlability infrastructure. Tells
-  search engines where to find content and what to index.
+### Address format
 
-When 5.10b is implemented, this guide will be extended with setup and
-customization steps for each layer.
+Set `goqw_business_address` as a multi-line string — one part per line:
+
+```
+12 High Street
+Guildford
+GU1 3AA
+```
+
+The plugin parses this automatically:
+
+- Line 1 → `streetAddress`
+- Line 2 (when 3 lines) → `addressLocality`
+- Last line → `postalCode`
+- `addressCountry` is always `"GB"` (UK deployments)
+
+For non-standard addresses or non-UK deployments, use `goqw_business_address_structured` instead —
+a JSON string that maps directly to schema.org `PostalAddress`:
+
+```bash
+wp option update goqw_business_address_structured '{"@type":"PostalAddress","streetAddress":"12 High Street","addressLocality":"Guildford","addressRegion":"Surrey","postalCode":"GU1 3AA","addressCountry":"GB"}'
+```
+
+### Opening hours format
+
+`goqw_business_hours` is a comma-separated list of opening hours specification strings as
+defined by schema.org/openingHours:
+
+```
+Mo-Fr 08:00-18:00, Sa 09:00-14:00
+```
+
+Set via wp-cli:
+
+```bash
+wp option update goqw_business_hours "Mo-Fr 08:00-18:00, Sa 09:00-14:00"
+```
+
+Use `Mo Tu We Th Fr Sa Su` for days. `Mo-Fr` means Monday through Friday.
+
+### LocalBusiness setup checklist
+
+```bash
+# Core business identity
+wp option update goqw_business_name "Scott's Building Services"
+wp option update goqw_business_phone "07700 123456"
+wp option update goqw_business_email "hello@scottsbuilding.co.uk"
+
+# Address (multi-line — use $'...' syntax for newlines in bash)
+wp option update goqw_business_address $'12 High Street\nGuildford\nGU1 3AA'
+
+# Opening hours
+wp option update goqw_business_hours "Mo-Fr 08:00-18:00, Sa 09:00-14:00"
+
+# Service area
+wp option update goqw_business_service_area "Surrey and surrounding areas"
+
+# Price range (optional)
+wp option update goqw_business_price_range "££"
+
+# Social profiles (set only the ones the client has)
+wp option update goqw_social_facebook "https://facebook.com/scottsbuilding"
+wp option update goqw_social_instagram "https://instagram.com/scottsbuilding"
+```
+
+### Verifying LocalBusiness schema
+
+View source on any React route and search for `application/ld+json`. You should see a block like:
+
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "Scott's Building Services",
+  "telephone": "07700 123456",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "12 High Street",
+    "addressLocality": "Guildford",
+    "postalCode": "GU1 3AA",
+    "addressCountry": "GB"
+  }
+}
+```
+
+Use Google's Rich Results Test (search for it) to validate the structured data.
+
+---
+
+## Layer 3 — Service schema setup
+
+`ServiceSchemaEmitter` emits one `schema.org/Service` JSON-LD block per active service — one
+block for each service the client offers. These help search engines understand what the business
+does and can appear in rich results.
+
+### Which services appear
+
+By default (when `goqw_enabled_services` is empty), all 11 template services are included. This
+option is already used by the wizard to determine which services to show — the schema emitter
+reads the same option.
+
+To limit schema to only the services the client actually offers:
+
+```bash
+# Example: client only does fencing, decking, and painting
+wp option update goqw_enabled_services "fencing,decking,painting"
+```
+
+The full list of service IDs is:
+
+| ID                | Service name          | Category          |
+| ----------------- | --------------------- | ----------------- |
+| `fencing`         | Fencing               | Landscaping       |
+| `decking`         | Decking               | Landscaping       |
+| `patio`           | Patio & Paving        | Landscaping       |
+| `driveway`        | Driveway              | Landscaping       |
+| `steps`           | Garden Steps          | Landscaping       |
+| `painting`        | Painting & Decorating | Decorating        |
+| `jetwash`         | Pressure Washing      | Exterior Cleaning |
+| `general-repairs` | General Repairs       | Handyman Services |
+| `plumbing`        | Plumbing              | Handyman Services |
+| `electrical`      | Electrical            | Handyman Services |
+| `carpentry`       | Carpentry             | Handyman Services |
+
+Service names and descriptions are defined in `ServiceSchemaEmitter.php`'s `SERVICES` constant.
+They are not configurable via options (they mirror `services-content.ts`).
+
+The `areaServed` field on each Service schema block comes from `goqw_business_service_area` —
+the same option as Layer 2.
+
+### Verifying Service schema
+
+View source on any React route and search for `"@type": "Service"`. You should see one block per
+active service, each referencing the business by name in the `provider` field.
+
+---
+
+## Layer 4 — sitemap.xml and robots.txt setup
+
+### sitemap.xml
+
+The plugin generates a custom `/sitemap.xml` listing all five React routes. WordPress's built-in
+sitemap (`/wp-sitemap.xml`) is disabled automatically — the custom one replaces it.
+
+The sitemap is generated at request time. There are no configuration options required: it just
+works once the plugin is active and rewrite rules are flushed (which activation handles).
+
+To verify:
+
+```bash
+curl http://client-slug.local/sitemap.xml
+```
+
+You should see valid XML with five `<url>` entries (home, services, our-work, contact, quote).
+
+**Overriding the last-modified date** (optional): By default `<lastmod>` shows today's date.
+Override with:
+
+```bash
+wp option update goqw_sitemap_lastmod "2026-06-25"
+```
+
+This is useful when you know the content was last changed on a specific date. Delete the option
+to revert to the dynamic fallback:
+
+```bash
+wp option delete goqw_sitemap_lastmod
+```
+
+### robots.txt
+
+WordPress generates a `robots.txt` at the site root. The plugin appends a `Sitemap:` directive
+pointing to `/sitemap.xml`. No setup is needed — it activates automatically.
+
+To verify:
+
+```bash
+curl http://client-slug.local/robots.txt
+```
+
+The output should include:
+
+```
+Sitemap: http://client-slug.local/sitemap.xml
+```
+
+**When the site is private** (Settings → Reading → "Discourage search engines from indexing this
+site"): the Sitemap directive is automatically omitted. This respects the privacy setting and
+avoids submitting private sites to search engines.
+
+### Submitting to search engines (staging/production only)
+
+After going live, submit the sitemap to:
+
+- **Google Search Console** — `https://search.google.com/search-console/`
+  Add property → URL prefix → paste sitemap URL in Sitemaps section.
+- **Bing Webmaster Tools** — `https://www.bing.com/webmasters/`
+  Add site → submit sitemap URL.
 
 ---
 
@@ -345,13 +547,18 @@ customization steps for each layer.
 
 For developers wanting to understand or extend the SEO infrastructure:
 
-| File                                               | Purpose                                                            |
-| -------------------------------------------------- | ------------------------------------------------------------------ |
-| `docs/decisions/0023-seo-infrastructure.md`        | Architectural decision record — the why behind every design choice |
-| `plugins/quote-wizard/src/SEO/SEORouteContent.php` | Per-route default content and option key resolution                |
-| `plugins/quote-wizard/src/SEO/SEOMetaEmitter.php`  | `wp_head` hook and `pre_get_document_title` filter                 |
-| `plugins/quote-wizard/assets/og-image-default.png` | Default OG placeholder image (1200×630, 13 KB)                     |
-| `plugins/quote-wizard/src/Plugin.php`              | `SEOMetaEmitter::register()` called in `boot()`                    |
+| File                                                          | Purpose                                                |
+| ------------------------------------------------------------- | ------------------------------------------------------ |
+| `docs/decisions/0023-seo-infrastructure.md`                   | ADR — architectural decisions and rationale            |
+| `plugins/quote-wizard/src/SEO/SEORouteContent.php`            | Per-route default content and option key resolution    |
+| `plugins/quote-wizard/src/SEO/SEOMetaEmitter.php`             | `wp_head` priority 5 + `pre_get_document_title` filter |
+| `plugins/quote-wizard/src/SEO/LocalBusinessSchemaEmitter.php` | LocalBusiness JSON-LD, `wp_head` priority 10           |
+| `plugins/quote-wizard/src/SEO/ServiceSchemaEmitter.php`       | Service JSON-LD (11 services), `wp_head` priority 11   |
+| `plugins/quote-wizard/src/SEO/SitemapGenerator.php`           | Custom `/sitemap.xml`; disables WP core sitemap        |
+| `plugins/quote-wizard/src/SEO/RobotsTxtCustomizer.php`        | Appends `Sitemap:` directive to `robots.txt`           |
+| `plugins/quote-wizard/assets/og-image-default.png`            | Default OG placeholder image (1200×630, 13 KB)         |
+| `plugins/quote-wizard/src/Plugin.php`                         | All `register()` calls in `boot()`                     |
+| `plugins/quote-wizard/src/Activator.php`                      | All `add_option()` seeds including Layer 2 options     |
 
 **To change the template-wide default content** (affects all fresh clones before
 per-client customization): edit the `DEFAULTS` constant in `SEORouteContent.php`.
@@ -428,3 +635,50 @@ This means `SEOMetaEmitter::emit()` returned early. Check:
    ```bash
    wp eval "do_action('wp_head');" 2>&1 | head -50
    ```
+
+### "No LocalBusiness JSON-LD block in view-source"
+
+1. Confirm the plugin is active and you are viewing a React route (not `/wp-admin`).
+2. Check `SiteRoutes::is_current_request_react_route()` is returning true for the URL.
+   On LocalWP this requires the site root page and rewrites to be set up correctly.
+3. If the business name, phone, and address options are all empty AND `goqw_business_name`
+   doesn't fall back to anything, the schema still emits but fields are omitted. This is
+   expected — set the options.
+4. Run:
+   ```bash
+   wp eval "echo get_option('goqw_business_name');"
+   ```
+   If this returns empty, the option is not set — re-run the setup checklist.
+
+### "sitemap.xml returns 404"
+
+The sitemap rewrite rule requires flushed rewrite rules. Try:
+
+```bash
+wp rewrite flush
+```
+
+If it still 404s, deactivate and reactivate the plugin (which re-runs activation, which flushes
+rules):
+
+```bash
+wp plugin deactivate quote-wizard && wp plugin activate quote-wizard
+```
+
+### "robots.txt does not contain Sitemap directive"
+
+1. Visit `/robots.txt` — if it 404s, WordPress's virtual robots.txt is disabled by another
+   plugin or theme. The `robots_txt` filter only fires if WordPress is generating the file.
+2. Check if the site is set to private (Settings → Reading → "Discourage search engines"). The
+   directive is intentionally omitted when `blog_public` is `0`.
+3. Confirm the plugin is active.
+
+### "Service schema shows services the client doesn't offer"
+
+Set `goqw_enabled_services` to a comma-separated list of the service IDs the client offers:
+
+```bash
+wp option update goqw_enabled_services "fencing,decking,painting"
+```
+
+This controls both the wizard's service list and the Service JSON-LD schema.
