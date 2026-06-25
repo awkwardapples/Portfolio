@@ -15,7 +15,11 @@ use Agency\QuoteWizard\Rest\SubmissionController;
 use Agency\QuoteWizard\Routing\CanonicalRedirectGuard;
 use Agency\QuoteWizard\Routing\FrontPagePolicy;
 use Agency\QuoteWizard\Routing\RenderingArchitecture;
+use Agency\QuoteWizard\SEO\LocalBusinessSchemaEmitter;
+use Agency\QuoteWizard\SEO\RobotsTxtCustomizer;
 use Agency\QuoteWizard\SEO\SEOMetaEmitter;
+use Agency\QuoteWizard\SEO\ServiceSchemaEmitter;
+use Agency\QuoteWizard\SEO\SitemapGenerator;
 use Agency\QuoteWizard\Routing\RewriteRegistrar;
 use Agency\QuoteWizard\Routing\RouteInterceptor;
 use Agency\QuoteWizard\Routing\SelfHealer;
@@ -57,6 +61,14 @@ final class Plugin {
 		CanonicalRedirectGuard::register();
 		// SEO: per-route meta tags, canonical, OG, Twitter card (ADR-0023).
 		SEOMetaEmitter::register();
+		// SEO Layer 2: LocalBusiness JSON-LD schema (ADR-0023 amendment).
+		LocalBusinessSchemaEmitter::register();
+		// SEO Layer 3: Service JSON-LD schema per registered service (ADR-0023 amendment).
+		ServiceSchemaEmitter::register();
+		// SEO Layer 4: custom /sitemap.xml; disables WP core sitemap (ADR-0023 amendment).
+		SitemapGenerator::register();
+		// SEO Layer 4: robots.txt Sitemap directive (ADR-0023 amendment).
+		RobotsTxtCustomizer::register();
 
 		// Frontend: shortcode that renders the wizard mount point.
 		add_shortcode( Shortcode::TAG, array( Shortcode::class, 'render' ) );

@@ -74,6 +74,16 @@ final class Activator {
 		add_option( 'goqw_enabled_services', '' );
 		add_option( 'goqw_enable_category_navigation', 0 );
 		add_option( SiteRootPage::OPTION_KEY, 0 );
+		// SEO Layer 2 options (LocalBusiness schema).
+		add_option( 'goqw_business_address', '' );
+		add_option( 'goqw_business_hours', '' );
+		add_option( 'goqw_business_service_area', '' );
+		add_option( 'goqw_business_price_range', '' );
+		// SEO Layer 2 options (social links for sameAs).
+		add_option( 'goqw_social_facebook', '' );
+		add_option( 'goqw_social_instagram', '' );
+		add_option( 'goqw_social_twitter', '' );
+		add_option( 'goqw_social_linkedin', '' );
 	}
 
 	/**
