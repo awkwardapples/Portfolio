@@ -1,6 +1,6 @@
 # Handoff
 
-_Last updated: 2026-06-25 (post Step 5.10b)_
+_Last updated: 2026-06-26 (post Step 5.11)_
 
 ## Status
 
@@ -73,6 +73,20 @@ _Last updated: 2026-06-25 (post Step 5.10b)_
   verification), common patterns, troubleshooting, and codebase reference. Cross-
   referenced from `onboarding.md` and `fork-procedure.md`. Documentation-only;
   all gates unchanged (598 Vitest, 119 PHP).
+- Step 5.11 complete (June 26, 2026): LLM customization handoff document.
+  New `docs/llm-customization-handoff.md` (~2000 lines) provides a complete,
+  LLM-optimized instruction set for per-client content/SEO/wizard customization.
+  An LLM agent with this document and a business profile JSON can perform all
+  12 customization tasks autonomously: business identity WP options, social links,
+  service availability, per-route SEO titles and descriptions, `site-content.ts`,
+  `footer-content.ts`, `home-page-content.ts` (7 sections), `services-content.ts`
+  - `work-content.ts`, webhook URL, OG image, and final state audit. Includes
+    business profile JSON schema, modification map, report template, pre-deployment
+    checklist, verification commands, and three appendices. Spec corrections applied
+    from codebase read: `goqw_enabled_services` is comma-separated; correct webhook
+    key is `goqw_webhook_url`; `site-content.ts` and `work-content.ts` added as
+    customization targets omitted from the original spec. Documentation-only;
+    all gates unchanged (598 Vitest, 143 PHP).
 - Step 5.10b complete (June 25, 2026): SEO Layers 2-4. ADR-0023 amended.
   `LocalBusinessSchemaEmitter` (Layer 2) emits LocalBusiness JSON-LD with name,
   address (PostalAddress heuristic), phone, email, hours, sameAs social links.
@@ -141,9 +155,9 @@ accessible, robots.txt Sitemap directive, Google Rich Results Test), plus the ba
 outstanding OVs (OV-5.10a-1 through OV-5.10a-13, OV-5.9-R1 through OV-5.9-R6, etc.).
 Deploy to canonical LocalWP site and record all criteria in `docs/phase-5-evidence.md`.
 
-**Then:** Step 5.11 — Per-client customization tooling refinement.
-
-**Then:** Step 5.12 — SCB-specific deployment (first real client).
+**Then:** Step 5.12 — SCB-specific deployment (first real client). Run
+`docs/llm-customization-handoff.md` against SCB's business profile to perform the
+customization pass. Record any gaps discovered in a post-5.12 document update.
 
 Each step is sized small and verified before the next begins. See
 `docs/roadmap.md` "Step rationale and dependencies" for why each step is

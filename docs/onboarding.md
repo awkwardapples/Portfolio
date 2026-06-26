@@ -558,6 +558,13 @@ affects the bundle or the PHP plugin source.
 > (titles, descriptions, Open Graph image). The plugin ships with Acme
 > Fencing demo copy by default; this must be replaced for every real client.
 
+> **Full per-client content customization:** To replace all Acme Fencing
+> placeholder content (site identity, footer, home page sections, services,
+> portfolio, wizard service availability, and all SEO options) in a single
+> pass, use `docs/llm-customization-handoff.md`. Provide a business profile
+> JSON and follow the 12 sequential tasks. Suitable for LLM agent automation
+> or manual step-by-step adaptation.
+
 ### Common pitfalls
 
 - **Stale caches.** Browser caching, page caching plugins, and CDN caching can

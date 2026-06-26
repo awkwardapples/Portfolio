@@ -9,7 +9,9 @@ LocalWP, and the project's conventions.
 
 **Scope:** The mechanical workflow of creating a client clone, deploying it to
 LocalWP for development, and pulling subsequent template improvements. Does not
-cover client-specific customization (see `docs/adaptation-runbook.md`).
+cover client-specific customization — see `docs/adaptation-runbook.md` for the
+manual adaptation workflow, or `docs/llm-customization-handoff.md` for the
+LLM-optimized 12-task customization instruction set.
 
 **Reading flow:** Top to bottom for a new fork. Refer to the reference sections
 at the end for ongoing operations and pitfalls.

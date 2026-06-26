@@ -38,7 +38,7 @@ A single-page, structural view of project state. Update on every completed step.
 | 5.10a                 | Complete | SEO Layer 1: per-route titles, meta, canonical, OG/Twitter; category back button; ADR-0023              |
 | 5.10a-docs            | Complete | SEO Adaptation Guide (Layer 1) for per-client deployments                                               |
 | 5.10b                 | Complete | SEO Layers 2-4: LocalBusiness schema, Service schema, sitemap.xml, robots.txt                           |
-| 5.11                  | Planned  | Per-client customization tooling refinement                                                             |
+| 5.11                  | Complete | LLM customization handoff document (`docs/llm-customization-handoff.md`)                                |
 | 5.12                  | Planned  | SCB-specific deployment (first real client)                                                             |
 | 6.0                   | Planned  | Production IONOS deployment                                                                             |
 | 6.1+                  | Future   | Second and subsequent clients                                                                           |
@@ -149,11 +149,16 @@ Custom `/sitemap.xml` (Layer 4) via `SitemapGenerator`; WP core sitemap disabled
 24 new PHP tests (119→143). ADR-0023 amended. `seo-adaptation-guide.md` extended with
 Layers 2-4 usage instructions. OV-5.10b-1 through OV-5.10b-17 pending.
 
-**5.11 — Per-client customization tooling refinement.** Validates and refines
-the per-client customization workflow against an actual adaptation pass. Ensures
-the composition file, section content config, service selection, and footer
-config are ergonomic. May introduce helper types or developer tooling if the
-workflow surfaces friction. Empirical (do the adaptation, find the gaps, fix).
+**5.11 — LLM Customization Handoff Document.** Produces a single ~2000-line
+LLM-optimized instruction set (`docs/llm-customization-handoff.md`) covering
+all 12 per-client customization tasks: business identity WP options, social
+links, wizard service availability, per-route SEO titles and descriptions,
+`site-content.ts`, `footer-content.ts`, `home-page-content.ts` (7 sections),
+`services-content.ts` + `work-content.ts`, webhook URL, OG image, and final
+audit. Includes business profile JSON schema, modification map, worked example
+(Bright Spark Electricians), report template, pre-deployment checklist,
+verification commands, and appendices covering file shapes, option key reference,
+and common mistakes. Documentation-only; zero code changes.
 
 **5.12 — SCB-specific deployment.** First real client adaptation. Applies the
 5.7-5.11 template to SCB Handyman. Selects SCB's services, composes SCB's home

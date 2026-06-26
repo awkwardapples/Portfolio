@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-06-25 (post Step 5.10b)_
+_Last updated: 2026-06-26 (post Step 5.11)_
 
 ## What's working
 
@@ -17,6 +17,7 @@ _Last updated: 2026-06-25 (post Step 5.10b)_
 - SEO Layer 2: LocalBusiness JSON-LD schema (name, address, phone, email, hours, sameAs).
 - SEO Layer 3: Service JSON-LD schema per active service (11 services, filterable by goqw_enabled_services).
 - SEO Layer 4: custom `/sitemap.xml` (5 React routes); `robots.txt` Sitemap directive.
+- LLM customization handoff document (`docs/llm-customization-handoff.md`): 12-task instruction set for per-client content, SEO, and wizard configuration.
 
 ## Gate state (last verified)
 
@@ -39,7 +40,6 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 
 ## What's NOT yet built
 
-- Step 5.11 (per-client customization tooling) — template-completeness.
 - Step 5.12 (SCB-specific deployment) — gated on 5.8-5.11.
 - Media retention policy (deferred per 4.8 spec).
 - Idempotency for submission retry (deferred; trigger: first observed duplicate).
@@ -160,6 +160,16 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   checklist (titles, descriptions, OG image), verification steps, common patterns,
   troubleshooting, and codebase reference. Cross-referenced from `onboarding.md`,
   `fork-procedure.md`, and ADR-0023. Documentation-only; all gates unchanged.
+- **Step 5.11 — LLM Customization Handoff Document** (June 2026).
+  New `docs/llm-customization-handoff.md` (~2000 lines) provides a complete,
+  LLM-optimized instruction set for per-client content/SEO/wizard customization.
+  Covers 12 sequential tasks (business identity WP options, social links,
+  `goqw_enabled_services`, per-route SEO titles and descriptions,
+  `site-content.ts`, `footer-content.ts`, `home-page-content.ts` 7 sections,
+  `services-content.ts` + `work-content.ts`, webhook URL, OG image, final audit),
+  plus the business profile JSON schema, modification map, report template,
+  pre-deployment checklist, final verification commands, and three appendices.
+  Documentation-only; all gates unchanged (598 Vitest, 143 PHP).
 - **Step 5.10b — SEO Layers 2-4** (June 2026). ADR-0023 amended.
   `LocalBusinessSchemaEmitter` emits LocalBusiness JSON-LD at `wp_head` priority 10;
   reads from 8 new `goqw_business_*` / `goqw_social_*` options (seeded in Activator).

@@ -1617,4 +1617,104 @@ Current total: **143 passed, 2 skipped PHP** (4 new test files)
 OV-5.10b-1 through OV-5.10b-17 — operational verification on canonical LocalWP site
 (confirm LocalBusiness schema in view-source, sitemap.xml accessible, robots.txt
 contains Sitemap directive, Google Rich Results Test passes).
+
+---
+
+## Step 5.11 — LLM Customization Handoff Document (2026-06-26)
+
+### What was built
+
+Single documentation file: `docs/llm-customization-handoff.md` (~2000 lines).
+
+An LLM agent given this document and a business profile JSON can perform full
+per-client content/SEO/wizard customization autonomously.
+
+**Document structure:**
+
+| Section                                       | What                                                                                                                                                                   |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Section 1 — Operating Principles              | 8 rules: scope boundary, modification scope, missing-data handling, verification timing, report format, file reading order, wp-cli context, TypeScript edit discipline |
+| Section 2 — Business Profile Schema           | JSON schema for client input + Bright Spark Electricians worked example                                                                                                |
+| Section 3 — Modification Map                  | Two-table modification map: infrastructure DO NOT TOUCH / content files MODIFY                                                                                         |
+| Section 4 — Customization Tasks (12)          | 12 sequential, self-contained tasks with worked examples throughout                                                                                                    |
+| Section 5 — When to Consult Other Documents   | Lookup table: situation → which external doc to read                                                                                                                   |
+| Section 6 — Report Template                   | Structured customization report template                                                                                                                               |
+| Section 7 — Pre-Deployment Checklist          | LLM-completed items + manual items (content, WordPress, integration, verification)                                                                                     |
+| Section 8 — Final Verification Commands       | V1-V10 verification commands (wp-cli queries, grep, git diff)                                                                                                          |
+| Appendix A — Content File Structure Reference | TypeScript interface shapes for all 5 content files                                                                                                                    |
+| Appendix B — Option Key Quick Reference       | All 24 `goqw_*` option keys in one place                                                                                                                               |
+| Appendix C — Common Mistakes                  | 6 documented traps with wrong/correct examples                                                                                                                         |
+
+**12 customization tasks:**
+
+| Task                            | What                                                                      |
+| ------------------------------- | ------------------------------------------------------------------------- |
+| 1 — Business Identity           | 7 `goqw_business_*` WP options                                            |
+| 2 — Social Media Links          | 4 `goqw_social_*` WP options                                              |
+| 3 — Wizard Service Availability | `goqw_enabled_services` (comma-separated)                                 |
+| 4 — SEO Titles                  | 5 `goqw_seo_title_*` WP options                                           |
+| 5 — SEO Descriptions            | 5 `goqw_seo_description_*` WP options                                     |
+| 6 — Site-Wide Content           | `apps/wizard/src/site/content/site-content.ts`                            |
+| 7 — Footer Content              | `apps/wizard/src/site/pages/footer-content.ts`                            |
+| 8 — Home Page Content           | `apps/wizard/src/site/pages/home-page-content.ts` (7 sections)            |
+| 9 — Services + Work Content     | `apps/wizard/src/site/content/services-content.ts` + `work-content.ts`    |
+| 10 — Webhook URL                | `goqw_webhook_url` WP option                                              |
+| 11 — OG Image                   | `goqw_seo_og_image` WP option (conditional) + `goqw_sitemap_lastmod` note |
+| 12 — Final State Audit          | wp-cli read-back, grep for placeholders, git diff scope check             |
+
+### Spec corrections applied from codebase verification
+
+| Spec error                                   | Actual (corrected in document)                 |
+| -------------------------------------------- | ---------------------------------------------- |
+| `goqw_enabled_services` is JSON array        | Comma-separated string                         |
+| Webhook option key `goqw_make_webhook_url`   | `goqw_webhook_url`                             |
+| `goqw_business_description` WP option exists | Does not exist; description is TypeScript-only |
+| `site-content.ts` not mentioned              | Added as Task 6                                |
+| `work-content.ts` not mentioned              | Added to Task 9                                |
+| `services-content.ts` under `pages/`         | Real path: `content/`                          |
+
+### Gate results
+
+| Gate               | Result                            |
+| ------------------ | --------------------------------- |
+| `pnpm lint`        | 0/0 (no JS changes)               |
+| `pnpm typecheck`   | 0 errors (no TS changes)          |
+| `pnpm test`        | 598/598 Vitest (unchanged)        |
+| `pnpm build`       | Clean (unchanged)                 |
+| `composer lint`    | 0/0 (no PHP changes)              |
+| `composer analyse` | No errors (no PHP changes)        |
+| `composer test`    | 143 passed, 2 skipped (unchanged) |
+
+Documentation-only step. All gates carry forward from 5.10b with no changes.
+
+### Acceptance Criteria
+
+| #   | Criterion                                                                                             | Status                       |
+| --- | ----------------------------------------------------------------------------------------------------- | ---------------------------- |
+| 1   | `docs/llm-customization-handoff.md` exists with ≥1500 lines                                           | ✅ ~2000 lines               |
+| 2   | Document opens with purpose, audience, and codebase state reference                                   | ✅ Section header            |
+| 3   | Business profile JSON schema defined with required/optional fields annotated                          | ✅ Section 2                 |
+| 4   | Worked example (fictional business) used consistently throughout                                      | ✅ Bright Spark Electricians |
+| 5   | Modification map: DO NOT TOUCH vs MODIFY tables present                                               | ✅ Section 3                 |
+| 6   | 12 tasks structured as `<task id="...">` blocks, each self-contained                                  | ✅ Section 4                 |
+| 7   | Every task has "Inputs from business profile", "Actions", "Handling missing data", "Expected outcome" | ✅ All 12 tasks              |
+| 8   | `goqw_enabled_services` documented as comma-separated, NOT JSON array                                 | ✅ Task 3, Appendix C        |
+| 9   | Webhook option key is `goqw_webhook_url` (not `goqw_make_webhook_url`)                                | ✅ Task 10, Appendix B       |
+| 10  | `site-content.ts` included as customization task (Task 6)                                             | ✅ Task 6                    |
+| 11  | `work-content.ts` included in services task (Task 9)                                                  | ✅ Task 9, Part B            |
+| 12  | Correct path for `services-content.ts`: `content/` not `pages/`                                       | ✅ Task 9, Appendix C        |
+| 13  | No `goqw_business_description` option referenced anywhere                                             | ✅ Removed                   |
+| 14  | Report template (Section 6) covers: options set, TS files modified, defaults left in place, warnings  | ✅ Section 6                 |
+| 15  | Pre-deployment checklist (Section 7) covers both LLM and manual items                                 | ✅ Section 7                 |
+| 16  | Final verification commands (Section 8) include boundary violation detection                          | ✅ V8                        |
+| 17  | Appendix A has TypeScript interface shapes for all 5 content files                                    | ✅ Appendix A                |
+| 18  | Appendix B lists all 24 `goqw_*` option keys                                                          | ✅ Appendix B                |
+| 19  | Appendix C documents 6 common mistake traps with wrong/correct examples                               | ✅ Appendix C                |
+| 20  | `docs/current-state.md` updated: date, 5.11 in Completed Steps, llm doc in What's Working             | ✅                           |
+| 21  | `docs/handoff.md` updated: date, 5.11 completion entry, next action points to 5.12                    | ✅                           |
+| 22  | `docs/roadmap.md` updated: 5.11 status Complete, rationale expanded                                   | ✅                           |
+| 23  | `docs/onboarding.md` cross-reference to llm-customization-handoff.md added                            | ✅                           |
+| 24  | `docs/fork-procedure.md` scope note updated to reference llm-customization-handoff.md                 | ✅                           |
+| 25  | All gates unchanged (598 Vitest, 143 PHP)                                                             | ✅                           |
+
 Documentation-only commit; no code changes.
