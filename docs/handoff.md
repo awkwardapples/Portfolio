@@ -1,6 +1,6 @@
 # Handoff
 
-_Last updated: 2026-06-26 (post Step 5.11)_
+_Last updated: 2026-07-07 (post Step 5.12b)_
 
 ## Status
 
@@ -99,6 +99,21 @@ _Last updated: 2026-06-26 (post Step 5.11)_
   24 new PHP tests (143 total). `docs/seo-adaptation-guide.md` extended with Layers 2-4
   usage instructions, options reference, and troubleshooting.
   Operational verification pending (OV-5.10b-1 through OV-5.10b-17).
+- Step 5.12b complete (July 7, 2026): Template bug fixes. Three bugs surfaced during
+  SCB pilot deployment triage and fixed in the template before SCB customization.
+  (1) **REST output buffering:** `SubmissionController::handle()` body wrapped in
+  `ob_start()` / `ob_end_clean()` via `try/finally` — PHP notices from
+  `WP_DEBUG_DISPLAY=true` no longer corrupt the JSON response body. (2) **Activation
+  rewrite flush:** `Activator::setup_site_routing()` now calls
+  `SitemapGenerator::add_rewrite_rule()` directly before `flush_rewrite_rules()`.
+  The sitemap rewrite was registered via `add_action('init')` which fires before the
+  activation hook; `/sitemap.xml` previously returned 404 until a manual flush.
+  (3) **Media validation data URL prefix:** `MediaValidator` strips `data:mime/type;base64,`
+  prefix before decoding, accepting the format browsers produce when reading files via
+  the FileReader API. 5 new PHP tests (143→148). 4 phase-0 audit docs. `onboarding.md`
+  gains a debug logging section with the `WP_DEBUG_DISPLAY=false` recommendation.
+  Commit 5 (docs webhook-option correction) skipped — all docs already used correct
+  option key `goqw_webhook_url`. No JS changes; bundle and Vitest suite unchanged.
 - Build pipeline corrected: `pnpm build` composes Vite build and plugin
   staging in one command.
 - Fork-and-customize architecture demonstrated end-to-end.
@@ -149,15 +164,13 @@ If you are starting a new step:
 
 The roadmap is sequenced explicitly. See `docs/roadmap.md` for full detail.
 
-**Immediate next action:** Operational verification — OV-5.10b-1 through OV-5.10b-17
-(SEO Layers 2-4: LocalBusiness schema in view-source, Service schema blocks, sitemap.xml
-accessible, robots.txt Sitemap directive, Google Rich Results Test), plus the backlog of
-outstanding OVs (OV-5.10a-1 through OV-5.10a-13, OV-5.9-R1 through OV-5.9-R6, etc.).
-Deploy to canonical LocalWP site and record all criteria in `docs/phase-5-evidence.md`.
-
-**Then:** Step 5.12 — SCB-specific deployment (first real client). Run
-`docs/llm-customization-handoff.md` against SCB's business profile to perform the
-customization pass. Record any gaps discovered in a post-5.12 document update.
+**Immediate next action:** Step 5.12 — SCB-specific deployment (first real client).
+Template is now bug-fixed and complete (5.12b). Activate the plugin on a LocalWP SCB
+site, then run `docs/llm-customization-handoff.md` against SCB's business profile to
+perform the full content/SEO/services customization pass. Outstanding OVs
+(OV-5.10b-1 through OV-5.10b-17, OV-5.10a, OV-5.9-R, etc.) can be batched into the
+5.12 deploy session and recorded in `docs/phase-5-evidence.md`. Record any
+customization gaps discovered in a post-5.12 document update.
 
 Each step is sized small and verified before the next begins. See
 `docs/roadmap.md` "Step rationale and dependencies" for why each step is

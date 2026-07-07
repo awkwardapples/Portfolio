@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-06-26 (post Step 5.11)_
+_Last updated: 2026-07-07 (post Step 5.12b)_
 
 ## What's working
 
@@ -18,16 +18,29 @@ _Last updated: 2026-06-26 (post Step 5.11)_
 - SEO Layer 3: Service JSON-LD schema per active service (11 services, filterable by goqw_enabled_services).
 - SEO Layer 4: custom `/sitemap.xml` (5 React routes); `robots.txt` Sitemap directive.
 - LLM customization handoff document (`docs/llm-customization-handoff.md`): 12-task instruction set for per-client content, SEO, and wizard configuration.
+- REST endpoint output buffering: PHP warnings from WP_DEBUG_DISPLAY no longer corrupt JSON responses.
+- Plugin activation rewrite flush: `/sitemap.xml` now accessible immediately after activation without manual `wp rewrite flush`.
+- Media validation: data URL prefix accepted, allowing browsers that prepend `data:image/jpeg;base64,` to succeed.
 
 ## Gate state (last verified)
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors
-- `pnpm test`: 598/598 (48 test files, unchanged — no JS changes in 5.10b)
+- `pnpm test`: 598/598 (48 test files, unchanged)
 - `pnpm build`: clean (bundle size unchanged)
-- `composer test`: 143 passed, 2 skipped (+24 from 5.10b — 4 new test files)
+- `composer test`: 148 passed, 4 skipped (+5 from 5.12b — 3 new test files)
 - `composer analyse`: clean (PHPStan level 8, no errors)
 - `composer lint`: 0/0 (PHPCS)
+
+## Gate state (5.12b, 2026-07-07)
+
+- `pnpm lint`: 0/0 (no JS changes)
+- `pnpm typecheck`: 0 errors (no TS changes)
+- `pnpm test`: 598/598 Vitest (unchanged)
+- `pnpm build`: clean (unchanged)
+- `composer lint`: 0/0
+- `composer analyse`: no errors
+- `composer test`: **148 passed, 4 skipped** (+5 from 5.12b)
 
 ## OV-001 verification
 
@@ -160,6 +173,21 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   checklist (titles, descriptions, OG image), verification steps, common patterns,
   troubleshooting, and codebase reference. Cross-referenced from `onboarding.md`,
   `fork-procedure.md`, and ADR-0023. Documentation-only; all gates unchanged.
+- **Step 5.12b — Template Bug Fixes** (July 2026). Three bugs surfaced during
+  SCB pilot deployment, fixed in the template. (1) **REST output buffering:**
+  `SubmissionController::handle()` wraps its body in `ob_start()` / `ob_end_clean()`
+  via `try/finally` — PHP warnings from `WP_DEBUG_DISPLAY=true` no longer corrupt
+  the JSON response body. (2) **Activation rewrite flush:** `Activator::setup_site_routing()`
+  now calls `SitemapGenerator::add_rewrite_rule()` directly before `flush_rewrite_rules()`.
+  The sitemap rewrite was missing from the flush (it was hook-bound to `init` which
+  fires before the activation hook). `/sitemap.xml` now works immediately after
+  plugin activation. (3) **Media validation data URL prefix:** `MediaValidator`
+  strips `data:mime/type;base64,` prefix before decoding, so browsers that prepend
+  this prefix succeed validation. Security unchanged — magic-byte and dimension
+  checks still run against decoded bytes. 5 new PHP tests (143→148). 4 audit docs.
+  Documentation: debug logging guidance added to `onboarding.md`; 5.12b row added
+  to roadmap. No code-gate changes; Commit 5 (docs webhook option) skipped — all
+  docs already used correct option name.
 - **Step 5.11 — LLM Customization Handoff Document** (June 2026).
   New `docs/llm-customization-handoff.md` (~2000 lines) provides a complete,
   LLM-optimized instruction set for per-client content/SEO/wizard customization.

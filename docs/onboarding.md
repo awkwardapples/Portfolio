@@ -565,6 +565,31 @@ affects the bundle or the PHP plugin source.
 > JSON and follow the 12 sequential tasks. Suitable for LLM agent automation
 > or manual step-by-step adaptation.
 
+### Enabling debug logging (optional)
+
+For diagnostic purposes when setting up a new client site, you may want WordPress
+debug logging enabled. This helps identify issues with plugin activation, submission
+forwarding, or other operational concerns.
+
+In your LocalWP site's `wp-config.php`, ensure these lines exist **before**
+`/* That's all, stop editing! Happy publishing. */`:
+
+```php
+if ( ! defined( 'WP_DEBUG' ) ) {
+    define( 'WP_DEBUG', true );
+}
+define( 'WP_DEBUG_LOG', true );
+define( 'WP_DEBUG_DISPLAY', false );
+@ini_set( 'display_errors', 0 );
+```
+
+**Important:** Only ONE `define( 'WP_DEBUG', ... )` should exist. A duplicate
+definition causes a PHP warning that is echoed before REST responses, corrupting
+the JSON body. The `if ( ! defined( ... ) )` guard prevents this. Set
+`WP_DEBUG_DISPLAY` to `false` so notices go to `wp-content/debug.log` and are
+not prepended to REST responses. For production deployments, set `WP_DEBUG` to
+`false`.
+
 ### Common pitfalls
 
 - **Stale caches.** Browser caching, page caching plugins, and CDN caching can

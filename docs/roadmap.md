@@ -39,6 +39,7 @@ A single-page, structural view of project state. Update on every completed step.
 | 5.10a-docs            | Complete | SEO Adaptation Guide (Layer 1) for per-client deployments                                               |
 | 5.10b                 | Complete | SEO Layers 2-4: LocalBusiness schema, Service schema, sitemap.xml, robots.txt                           |
 | 5.11                  | Complete | LLM customization handoff document (`docs/llm-customization-handoff.md`)                                |
+| 5.12b                 | Complete | Template bug fixes (output buffering, media validation, activation rewrite flush)                       |
 | 5.12                  | Planned  | SCB-specific deployment (first real client)                                                             |
 | 6.0                   | Planned  | Production IONOS deployment                                                                             |
 | 6.1+                  | Future   | Second and subsequent clients                                                                           |
@@ -160,8 +161,26 @@ audit. Includes business profile JSON schema, modification map, worked example
 verification commands, and appendices covering file shapes, option key reference,
 and common mistakes. Documentation-only; zero code changes.
 
+**5.12b — Template bug fixes.** Three bugs surfaced during SCB pilot deployment
+triage and were fixed in the template before the customization pass. (1) REST
+output buffering: `SubmissionController::handle()` wraps its body in `ob_start()`
+/ `ob_end_clean()` via `try/finally`, preventing PHP warnings from
+`WP_DEBUG_DISPLAY=true` from appearing before the JSON response body and causing
+frontend parse errors. (2) Activation rewrite flush: `SitemapGenerator::add_rewrite_rule()`
+is called directly in `Activator::setup_site_routing()` before `flush_rewrite_rules()`.
+The generator registers its rewrite via `add_action('init')`, which fires before the
+activation hook; without the direct call the rewrite was absent from the flush and
+`/sitemap.xml` returned 404 until a manual flush. (3) Media validation data URL
+prefix: `MediaValidator` strips `data:mime/type;base64,` before decoding. Some
+browser FileReader paths prepend this prefix; `base64_decode($str, true)` returns
+`false` on strings containing `:` and `;`, triggering a false `invalid_encoding`
+rejection. Security validation (magic-byte check, dimension check) is unchanged.
+Each fix is preceded by a phase-0 audit doc. 5 new PHP tests (143→148 passed, 4
+skipped); no JS changes. Commit 5 (docs webhook-option correction) was skipped
+after Audit A confirmed all docs already used the correct key `goqw_webhook_url`.
+
 **5.12 — SCB-specific deployment.** First real client adaptation. Applies the
-5.7-5.11 template to SCB Handyman. Selects SCB's services, composes SCB's home
+5.7-5.12b template to SCB Handyman. Selects SCB's services, composes SCB's home
 page, provides SCB's business content, applies visual customization per SCB's
 brand. Operational verification per ADR-0018.
 

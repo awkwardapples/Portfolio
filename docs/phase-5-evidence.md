@@ -1717,4 +1717,62 @@ Documentation-only step. All gates carry forward from 5.10b with no changes.
 | 24  | `docs/fork-procedure.md` scope note updated to reference llm-customization-handoff.md                 | ✅                           |
 | 25  | All gates unchanged (598 Vitest, 143 PHP)                                                             | ✅                           |
 
+---
+
+## Step 5.12b Evidence
+
+_Compiled: 2026-07-07 — Template bug fixes (output buffering, activation rewrite flush, media validation)_
+
+### Commits
+
+| Commit    | Description                                                                                  |
+| --------- | -------------------------------------------------------------------------------------------- |
+| `4371921` | audit(5.12b): phase-0 audit docs — 4 categories (A webhook, B buffering, C sitemap, D media) |
+| `750b508` | fix(5.12b): wrap REST handler body in ob_start/ob_end_clean                                  |
+| `09940fc` | fix(5.12b): strip data URL prefix in MediaValidator before base64_decode                     |
+| `2555700` | fix(5.12b): call SitemapGenerator::add_rewrite_rule() directly in Activator                  |
+| _(5)_     | skipped — Audit A confirmed no webhook-option doc corrections needed                         |
+
+### Gate Results
+
+| Gate               | Result                                                                                 |
+| ------------------ | -------------------------------------------------------------------------------------- |
+| `pnpm lint`        | 0/0 (no JS changes)                                                                    |
+| `pnpm typecheck`   | 0 errors (no TS changes)                                                               |
+| `pnpm test`        | **598/598 Vitest** (unchanged)                                                         |
+| `pnpm build`       | Clean (unchanged; bundle not affected)                                                 |
+| `composer lint`    | 0/0 (PHPCS)                                                                            |
+| `composer analyse` | No errors (PHPStan level 8)                                                            |
+| `composer test`    | **148 passed, 4 skipped** (+5 new: 2 buffering, 2 media validation, 1 sitemap rewrite) |
+
+### Acceptance Criteria
+
+| #   | Criterion                                                                                               | Status  |
+| --- | ------------------------------------------------------------------------------------------------------- | ------- |
+| 1   | Phase-0 audit doc exists for Audit A (webhook option docs)                                              | ✅      |
+| 2   | Phase-0 audit doc exists for Audit B (REST buffering)                                                   | ✅      |
+| 3   | Phase-0 audit doc exists for Audit C (activation rewrite flush)                                         | ✅      |
+| 4   | Phase-0 audit doc exists for Audit D (media validation data URL prefix)                                 | ✅      |
+| 5   | Audit A outcome: no corrections needed — all docs already use `goqw_webhook_url`                        | ✅      |
+| 6   | `SubmissionController::handle()` body wrapped in `ob_start()` / `ob_end_clean()` via `try/finally`      | ✅      |
+| 7   | Output buffer level is the same before and after a successful `handle()` call                           | ✅ test |
+| 8   | Output buffer level is the same before and after a persistence-failure path through `handle()`          | ✅ test |
+| 9   | `Activator::setup_site_routing()` calls `SitemapGenerator::add_rewrite_rule()` directly before flush    | ✅      |
+| 10  | `SitemapGenerator::add_rewrite_rule()` is a public static method callable without instantiation         | ✅      |
+| 11  | New test verifies `add_rewrite_rule()` calls `add_rewrite_rule()` with correct args at `'top'` priority | ✅ test |
+| 12  | `MediaValidator::validate_file()` strips `data:[^;]+;base64,` prefix before calling `base64_decode`     | ✅      |
+| 13  | A valid JPEG sent with `data:image/jpeg;base64,` prefix passes validation                               | ✅ test |
+| 14  | A valid JPEG sent with `data:image/png;base64,` prefix passes validation (prefix mime is irrelevant)    | ✅ test |
+| 15  | A data URL with no content after the prefix (`data:image/jpeg;base64,`) produces `invalid_encoding`     | ✅ test |
+| 16  | A data URL with genuinely malformed base64 after the prefix produces `invalid_encoding`                 | ✅ test |
+| 17  | All existing MediaValidator tests continue to pass (no regression)                                      | ✅      |
+| 18  | `composer lint` 0/0 on all modified PHP files                                                           | ✅      |
+| 19  | `composer analyse` no errors on all modified PHP files                                                  | ✅      |
+| 20  | `docs/onboarding.md` gains "Enabling debug logging" section with `WP_DEBUG_DISPLAY=false` note          | ✅      |
+| 21  | `docs/roadmap.md` gains 5.12b row (Complete) and rationale paragraph                                    | ✅      |
+| 22  | `docs/current-state.md` updated: date, 5.12b in Completed Steps, gate count 148 PHP                     | ✅      |
+| 23  | `docs/handoff.md` updated: date, 5.12b completion entry, next action points to 5.12                     | ✅      |
+| 24  | Vitest suite unchanged at 598/598 (no JS changes in 5.12b)                                              | ✅      |
+| 25  | Commit 5 (doc corrections) skipped with rationale recorded (Audit A found nothing to fix)               | ✅      |
+
 Documentation-only commit; no code changes.
