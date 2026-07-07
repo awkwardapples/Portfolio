@@ -14,6 +14,7 @@ namespace Agency\QuoteWizard;
 use Agency\QuoteWizard\Routing\FrontPagePolicy;
 use Agency\QuoteWizard\Routing\RewriteRegistrar;
 use Agency\QuoteWizard\Routing\SiteRootPage;
+use Agency\QuoteWizard\SEO\SitemapGenerator;
 use Agency\QuoteWizard\Submissions\Schema;
 
 defined( 'ABSPATH' ) || exit;
@@ -55,6 +56,11 @@ final class Activator {
 		$page->ensure();
 		$policy->apply_on_activation();
 		$registrar->register();
+		// SitemapGenerator registers its rewrite via add_action('init'), which has
+		// already fired before the activation hook runs. Call it directly so the
+		// sitemap rewrite is included in the flush and /sitemap.xml works immediately
+		// after activation without requiring a manual wp rewrite flush.
+		SitemapGenerator::add_rewrite_rule();
 		flush_rewrite_rules();
 	}
 

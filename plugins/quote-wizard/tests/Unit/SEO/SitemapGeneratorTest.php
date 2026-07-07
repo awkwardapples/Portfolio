@@ -109,3 +109,15 @@ it( 'add_query_var appends goqw_sitemap to the vars array', function (): void {
 	expect( $result )->toContain( 'goqw_sitemap' );
 	expect( $result )->toContain( 'existing_var' );
 } );
+
+// ---------------------------------------------------------------------------
+// Activation-time rewrite registration (5.12b)
+// ---------------------------------------------------------------------------
+
+it( 'add_rewrite_rule registers the sitemap rewrite at top priority', function (): void {
+	Functions\expect( 'add_rewrite_rule' )
+		->once()
+		->with( '^sitemap\.xml$', 'index.php?goqw_sitemap=1', 'top' );
+
+	SitemapGenerator::add_rewrite_rule();
+} );
