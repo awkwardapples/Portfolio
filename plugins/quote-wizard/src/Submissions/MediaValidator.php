@@ -130,14 +130,18 @@ class MediaValidator {
 		}
 
 		// 4. Base64 decode.
-		if ( '' === $base64 ) {
+		// Strip data URL prefix if present (e.g., 'data:image/jpeg;base64,...').
+		// The frontend sends raw base64, but some browser paths prepend this prefix.
+		$raw_base64 = (string) preg_replace( '/^data:[^;]+;base64,/i', '', $base64 );
+
+		if ( '' === $raw_base64 ) {
 			return array(
 				'fileIndex' => $index,
 				'code'      => 'invalid_encoding',
 			);
 		}
 
-		$decoded = base64_decode( $base64, true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
+		$decoded = base64_decode( $raw_base64, true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode
 		if ( false === $decoded ) {
 			return array(
 				'fileIndex' => $index,

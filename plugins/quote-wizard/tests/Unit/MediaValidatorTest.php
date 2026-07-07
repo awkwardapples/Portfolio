@@ -215,3 +215,67 @@ it( 'ignores non-photo answer fields (plain string, number, array)', function ()
 	$result  = ( new MediaValidator() )->validate( $answers );
 	expect( $result['ok'] )->toBeTrue();
 } );
+
+// ---------------------------------------------------------------------------
+// Data URL prefix handling (5.12b)
+// ---------------------------------------------------------------------------
+
+it( 'accepts dataBase64 with a data URL prefix (image/jpeg)', function (): void {
+	$jpeg_b64  = make_jpeg_base64();
+	$data_url  = 'data:image/jpeg;base64,' . $jpeg_b64;
+	$answers   = photo_answers( array( 'dataBase64' => $data_url ) );
+	$result    = ( new MediaValidator() )->validate( $answers );
+	expect( $result['ok'] )->toBeTrue();
+	expect( $result['issues'] )->toBeEmpty();
+} );
+
+it( 'accepts dataBase64 with a data URL prefix (image/png)', function (): void {
+	// The validator strips the prefix before decoding; the mimeType claim and
+	// magic bytes must agree. Use a JPEG blob with image/jpeg claim so the
+	// magic-byte check passes, only varying the prefix mime sub-type.
+	$jpeg_b64  = make_jpeg_base64();
+	$data_url  = 'data:image/png;base64,' . $jpeg_b64;
+	// mimeType claim must be image/jpeg to match actual content — the prefix
+	// mime-type is irrelevant after stripping.
+	$answers   = photo_answers( array( 'dataBase64' => $data_url ) );
+	$result    = ( new MediaValidator() )->validate( $answers );
+	expect( $result['ok'] )->toBeTrue();
+} );
+
+it( 'still rejects empty dataBase64 even after prefix stripping', function (): void {
+	// Use inline array to avoid calling make_jpeg_base64() which requires GD.
+	// The validator short-circuits at the empty-string check before magic-byte.
+	$answers = array(
+		'photos' => array(
+			'files' => array(
+				array(
+					'fileId'       => 'f1',
+					'originalName' => 'test.jpg',
+					'mimeType'     => 'image/jpeg',
+					'dataBase64'   => 'data:image/jpeg;base64,', // prefix only, no content
+				),
+			),
+		),
+	);
+	$result  = ( new MediaValidator() )->validate( $answers );
+	expect( $result['ok'] )->toBeFalse();
+	expect( $result['issues'][0]['code'] )->toBe( 'invalid_encoding' );
+} );
+
+it( 'still rejects genuinely malformed base64 after prefix stripping', function (): void {
+	$answers = array(
+		'photos' => array(
+			'files' => array(
+				array(
+					'fileId'       => 'f1',
+					'originalName' => 'test.jpg',
+					'mimeType'     => 'image/jpeg',
+					'dataBase64'   => 'data:image/jpeg;base64,!!!not-valid!!!',
+				),
+			),
+		),
+	);
+	$result  = ( new MediaValidator() )->validate( $answers );
+	expect( $result['ok'] )->toBeFalse();
+	expect( $result['issues'][0]['code'] )->toBe( 'invalid_encoding' );
+} );
