@@ -539,3 +539,39 @@ it(
 		expect( $decoded[0]['fieldKey'] )->toBe( 'photos' );
 	}
 );
+
+// ---------------------------------------------------------------------------
+// Output buffering (5.12b)
+// ---------------------------------------------------------------------------
+
+it(
+	'does not leave open output buffers after a successful response',
+	function (): void {
+		$repo    = spy_repository( 1 );
+		$fwd     = spy_forwarder( ForwardResult::success() );
+		$ctrl    = new SubmissionController( $repo, $fwd );
+		$request = make_request( valid_payload() );
+
+		$level_before = ob_get_level();
+		$ctrl->handle( $request );
+		$level_after = ob_get_level();
+
+		expect( $level_after )->toBe( $level_before );
+	}
+);
+
+it(
+	'does not leave open output buffers after a persistence failure',
+	function (): void {
+		$repo    = spy_repository( throw_on_insert: true );
+		$fwd     = spy_forwarder( ForwardResult::success() );
+		$ctrl    = new SubmissionController( $repo, $fwd );
+		$request = make_request( valid_payload() );
+
+		$level_before = ob_get_level();
+		$ctrl->handle( $request );
+		$level_after = ob_get_level();
+
+		expect( $level_after )->toBe( $level_before );
+	}
+);

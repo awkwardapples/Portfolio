@@ -54,70 +54,78 @@ final class SubmissionController {
 	 * @param WP_REST_Request $request  The incoming REST request.
 	 */
 	public function handle( WP_REST_Request $request ): WP_REST_Response {
-		// Step 1: validate.
-		$payload   = $request->get_json_params();
-		$validated = $this->validate( $payload );
+		// Buffer any output that leaks during the request (e.g., PHP warnings
+		// from WP_DEBUG_DISPLAY=true) so it does not corrupt the JSON response
+		// body. The buffer is discarded unconditionally in the finally block.
+		ob_start();
+		try {
+			// Step 1: validate.
+			$payload   = $request->get_json_params();
+			$validated = $this->validate( $payload );
 
-		if ( $validated instanceof WP_Error ) {
-			return new WP_REST_Response(
-				array( 'errorCode' => 'validation_failed' ),
-				400
+			if ( $validated instanceof WP_Error ) {
+				return new WP_REST_Response(
+					array( 'errorCode' => 'validation_failed' ),
+					400
+				);
+			}
+
+			// Step 1b: validate media entries (photo fields) before persisting.
+			$media_result = $this->media_validator->validate(
+				is_array( $payload['answers'] ?? null ) ? $payload['answers'] : array()
 			);
-		}
+			if ( ! $media_result['ok'] ) {
+				return new WP_REST_Response(
+					array(
+						'errorCode'   => 'media_validation_failed',
+						'mediaIssues' => $media_result['issues'],
+					),
+					400
+				);
+			}
 
-		// Step 1b: validate media entries (photo fields) before persisting.
-		$media_result = $this->media_validator->validate(
-			is_array( $payload['answers'] ?? null ) ? $payload['answers'] : array()
-		);
-		if ( ! $media_result['ok'] ) {
+			// Step 2: persist durably (must succeed before any forward attempt).
+			try {
+				$submission_id = $this->repository->insert( $validated );
+			} catch ( \Throwable $e ) {
+				Logger::operational( 'submission persist failed: ' . $e->getMessage() );
+				return new WP_REST_Response(
+					array( 'errorCode' => 'persistence_failed' ),
+					500
+				);
+			}
+
+			// Step 3: forward synchronously (ADR-0005).
+			$forward_result = $this->forwarder->forward( $submission_id, $validated );
+
+			// Step 4: respond.
+			if ( $forward_result->is_success() ) {
+				$this->repository->mark_forwarded( $submission_id );
+				return new WP_REST_Response(
+					array( 'reference' => $this->reference_for( $submission_id ) ),
+					200
+				);
+			}
+
+			$this->repository->mark_forward_failed( $submission_id, $forward_result->error_message() );
+			Logger::operational(
+				sprintf(
+					'submission %d persisted but forward failed: %s',
+					$submission_id,
+					$forward_result->error_message()
+				)
+			);
+
 			return new WP_REST_Response(
 				array(
-					'errorCode'   => 'media_validation_failed',
-					'mediaIssues' => $media_result['issues'],
+					'errorCode'    => 'forwarder_unavailable',
+					'submissionId' => $submission_id,
 				),
-				400
+				502
 			);
+		} finally {
+			ob_end_clean();
 		}
-
-		// Step 2: persist durably (must succeed before any forward attempt).
-		try {
-			$submission_id = $this->repository->insert( $validated );
-		} catch ( \Throwable $e ) {
-			Logger::operational( 'submission persist failed: ' . $e->getMessage() );
-			return new WP_REST_Response(
-				array( 'errorCode' => 'persistence_failed' ),
-				500
-			);
-		}
-
-		// Step 3: forward synchronously (ADR-0005).
-		$forward_result = $this->forwarder->forward( $submission_id, $validated );
-
-		// Step 4: respond.
-		if ( $forward_result->is_success() ) {
-			$this->repository->mark_forwarded( $submission_id );
-			return new WP_REST_Response(
-				array( 'reference' => $this->reference_for( $submission_id ) ),
-				200
-			);
-		}
-
-		$this->repository->mark_forward_failed( $submission_id, $forward_result->error_message() );
-		Logger::operational(
-			sprintf(
-				'submission %d persisted but forward failed: %s',
-				$submission_id,
-				$forward_result->error_message()
-			)
-		);
-
-		return new WP_REST_Response(
-			array(
-				'errorCode'    => 'forwarder_unavailable',
-				'submissionId' => $submission_id,
-			),
-			502
-		);
 	}
 
 	/**
