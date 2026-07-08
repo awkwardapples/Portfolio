@@ -15,7 +15,7 @@ describe('painting reference config', () => {
     expect(result.ok).toBe(true);
   });
 
-  it('contains exactly 6 steps in expected order', () => {
+  it('contains exactly 7 steps in expected order', () => {
     expect(paintingWizardConfig.steps.map((s) => s.id)).toEqual([
       'rooms_step',
       'what_to_paint_step',
@@ -23,6 +23,7 @@ describe('painting reference config', () => {
       'extras',
       'site_photos',
       'contact-and-address',
+      'optional-details',
     ]);
   });
 
@@ -87,5 +88,32 @@ describe('painting reference config', () => {
     for (const field of step.fields) {
       expect(field.required).toBe(true);
     }
+  });
+
+  it('optional-details step is last and has allowSkip: true', () => {
+    const step = paintingWizardConfig.steps[6];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 6');
+    expect(step.id).toBe('optional-details');
+    expect(step.allowSkip).toBe(true);
+  });
+
+  it('optional-details universal fields are present and required: false', () => {
+    const step = paintingWizardConfig.steps[6];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 6');
+    const keys = step.fields.map((f) => f.key);
+    expect(keys).toContain('preferred_timeframe');
+    expect(keys).toContain('additional_notes');
+    for (const field of step.fields) {
+      expect(field.required).toBe(false);
+    }
+  });
+
+  it('painting optional-details has furniture_handling, pets, customer_supplies_paint fields', () => {
+    const step = paintingWizardConfig.steps[6];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 6');
+    const keys = step.fields.map((f) => f.key);
+    expect(keys).toContain('furniture_handling');
+    expect(keys).toContain('pets');
+    expect(keys).toContain('customer_supplies_paint');
   });
 });

@@ -4,7 +4,7 @@
  * Redesigned in Step 5.13b to use the new step types introduced in 5.13a.
  * Pricing switches from linear metre (length only) to square metre (area).
  *
- * Flow: size → material → estimate → extras → site_photos → contact-and-address
+ * Flow: size → material → estimate → extras → site_photos → contact-and-address → optional-details
  * The pre-step (ADR-0022) collects postcode only (reduced in 5.13c).
  *
  * MONEY: every monetary value is INTEGER PENCE. £90.00/m² = 9000.
@@ -127,6 +127,46 @@ export const deckingWizardConfig: WizardConfig = {
           label: 'Full address',
           help: 'e.g. 12 Main Street, Guildford, GU1 3AA',
           required: true,
+        },
+      ],
+    },
+    {
+      id: 'optional-details',
+      title: 'Anything else? (Optional)',
+      description:
+        "These details help us prepare the best possible quote. Fill in what you'd like, or skip and submit.",
+      allowSkip: true,
+      fields: [
+        {
+          id: 'preferred_timeframe',
+          key: 'preferred_timeframe',
+          type: 'select',
+          label: 'When would you like the work done?',
+          required: false,
+          options: [
+            { value: 'next_week', label: 'Next week' },
+            { value: 'next_month', label: 'Next month' },
+            { value: '2_3_months', label: '2–3 months' },
+            { value: 'flexible', label: 'Flexible' },
+          ],
+        },
+        {
+          id: 'existing_deck_removal',
+          key: 'existing_deck_removal',
+          type: 'select',
+          label: 'Is there an existing deck to remove first?',
+          required: false,
+          options: [
+            { value: 'yes', label: 'Yes' },
+            { value: 'no', label: 'No' },
+          ],
+        },
+        {
+          id: 'additional_notes',
+          key: 'additional_notes',
+          type: 'textarea',
+          label: 'Anything else we should know?',
+          required: false,
         },
       ],
     },

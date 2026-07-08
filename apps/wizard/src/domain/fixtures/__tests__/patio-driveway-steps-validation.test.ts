@@ -19,7 +19,7 @@ describe('patio reference config', () => {
     expect(validatePricingConfig(patioPricingConfig, patioWizardConfig).ok).toBe(true);
   });
 
-  it('contains exactly 6 steps in expected order', () => {
+  it('contains exactly 7 steps in expected order', () => {
     expect(patioWizardConfig.steps.map((s) => s.id)).toEqual([
       'patio_size',
       'material_step',
@@ -27,6 +27,7 @@ describe('patio reference config', () => {
       'extras',
       'site_photos',
       'contact-and-address',
+      'optional-details',
     ]);
   });
 
@@ -78,6 +79,32 @@ describe('patio reference config', () => {
     for (const field of step.fields) {
       expect(field.required).toBe(true);
     }
+  });
+
+  it('optional-details step is last and has allowSkip: true', () => {
+    const step = patioWizardConfig.steps[6];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 6');
+    expect(step.id).toBe('optional-details');
+    expect(step.allowSkip).toBe(true);
+  });
+
+  it('optional-details universal fields are present and required: false', () => {
+    const step = patioWizardConfig.steps[6];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 6');
+    const keys = step.fields.map((f) => f.key);
+    expect(keys).toContain('preferred_timeframe');
+    expect(keys).toContain('additional_notes');
+    for (const field of step.fields) {
+      expect(field.required).toBe(false);
+    }
+  });
+
+  it('patio optional-details has existing_patio_removal and slope_assessment fields', () => {
+    const step = patioWizardConfig.steps[6];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 6');
+    const keys = step.fields.map((f) => f.key);
+    expect(keys).toContain('existing_patio_removal');
+    expect(keys).toContain('slope_assessment');
   });
 });
 

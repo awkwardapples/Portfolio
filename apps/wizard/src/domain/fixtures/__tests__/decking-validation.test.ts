@@ -15,7 +15,7 @@ describe('decking reference config', () => {
     expect(result.ok).toBe(true);
   });
 
-  it('contains exactly 6 steps in expected order', () => {
+  it('contains exactly 7 steps in expected order', () => {
     expect(deckingWizardConfig.steps.map((s) => s.id)).toEqual([
       'deck_size',
       'material_step',
@@ -23,6 +23,7 @@ describe('decking reference config', () => {
       'extras',
       'site_photos',
       'contact-and-address',
+      'optional-details',
     ]);
   });
 
@@ -69,5 +70,30 @@ describe('decking reference config', () => {
     for (const field of step.fields) {
       expect(field.required).toBe(true);
     }
+  });
+
+  it('optional-details step is last and has allowSkip: true', () => {
+    const step = deckingWizardConfig.steps[6];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 6');
+    expect(step.id).toBe('optional-details');
+    expect(step.allowSkip).toBe(true);
+  });
+
+  it('optional-details universal fields are present and required: false', () => {
+    const step = deckingWizardConfig.steps[6];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 6');
+    const keys = step.fields.map((f) => f.key);
+    expect(keys).toContain('preferred_timeframe');
+    expect(keys).toContain('additional_notes');
+    for (const field of step.fields) {
+      expect(field.required).toBe(false);
+    }
+  });
+
+  it('decking optional-details has existing_deck_removal field', () => {
+    const step = deckingWizardConfig.steps[6];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 6');
+    const keys = step.fields.map((f) => f.key);
+    expect(keys).toContain('existing_deck_removal');
   });
 });

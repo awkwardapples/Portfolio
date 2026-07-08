@@ -6,7 +6,7 @@
  *   - VisualCardSelectorStep for fence type and height
  *   - EstimateDisplayStep mid-wizard with accept/adjust decision
  *
- * Flow: size → type → height → estimate → extras → site_photos → contact-and-address
+ * Flow: size → type → height → estimate → extras → site_photos → contact-and-address → optional-details
  * The pre-step (ADR-0022) collects postcode only (reduced in 5.13c).
  *
  * MONEY: every monetary value is INTEGER PENCE. £75.00/m = 7500.
@@ -145,6 +145,61 @@ export const fencingWizardConfig: WizardConfig = {
           label: 'Full address',
           help: 'e.g. 12 Main Street, Guildford, GU1 3AA',
           required: true,
+        },
+      ],
+    },
+    {
+      id: 'optional-details',
+      title: 'Anything else? (Optional)',
+      description:
+        "These details help us prepare the best possible quote. Fill in what you'd like, or skip and submit.",
+      allowSkip: true,
+      fields: [
+        {
+          id: 'preferred_timeframe',
+          key: 'preferred_timeframe',
+          type: 'select',
+          label: 'When would you like the work done?',
+          required: false,
+          options: [
+            { value: 'urgent', label: 'Urgent' },
+            { value: 'next_week', label: 'Next week' },
+            { value: 'next_month', label: 'Next month' },
+            { value: '2_3_months', label: '2–3 months' },
+            { value: 'flexible', label: 'Flexible' },
+          ],
+        },
+        {
+          id: 'gate_needed',
+          key: 'gate_needed',
+          type: 'select',
+          label: 'Do you need a gate?',
+          required: false,
+          options: [
+            { value: 'yes', label: 'Yes' },
+            { value: 'no', label: 'No' },
+          ],
+        },
+        {
+          id: 'gate_width',
+          key: 'gate_width',
+          type: 'select',
+          label: 'Approximate gate width',
+          required: false,
+          condition: { operator: 'equals', fieldId: 'gate_needed', value: 'yes' },
+          options: [
+            { value: 'small', label: 'Small (~1m)' },
+            { value: 'medium', label: 'Medium (~2m)' },
+            { value: 'large', label: 'Large (~3m+)' },
+            { value: 'not_sure', label: 'Not sure' },
+          ],
+        },
+        {
+          id: 'additional_notes',
+          key: 'additional_notes',
+          type: 'textarea',
+          label: 'Anything else we should know?',
+          required: false,
         },
       ],
     },

@@ -6,7 +6,7 @@
  *   - VisualCardSelectorStep for what to paint (multiple selection)
  *   - EstimateDisplayStep mid-wizard with accept/adjust decision
  *
- * Flow: rooms → what to paint → estimate → extras → site_photos → contact-and-address
+ * Flow: rooms → what to paint → estimate → extras → site_photos → contact-and-address → optional-details
  * The pre-step (ADR-0022) collects postcode only (reduced in 5.13c).
  *
  * MONEY: every monetary value is INTEGER PENCE. £300.00/room = 30000.
@@ -153,6 +153,68 @@ export const paintingWizardConfig: WizardConfig = {
           label: 'Full address',
           help: 'e.g. 12 Main Street, Guildford, GU1 3AA',
           required: true,
+        },
+      ],
+    },
+    {
+      id: 'optional-details',
+      title: 'Anything else? (Optional)',
+      description:
+        "These details help us prepare the best possible quote. Fill in what you'd like, or skip and submit.",
+      allowSkip: true,
+      fields: [
+        {
+          id: 'preferred_timeframe',
+          key: 'preferred_timeframe',
+          type: 'select',
+          label: 'When would you like the work done?',
+          required: false,
+          options: [
+            { value: 'next_week', label: 'Next week' },
+            { value: 'next_month', label: 'Next month' },
+            { value: '2_3_months', label: '2–3 months' },
+            { value: 'flexible', label: 'Flexible' },
+          ],
+        },
+        {
+          id: 'furniture_handling',
+          key: 'furniture_handling',
+          type: 'select',
+          label: 'Do you need furniture moved or covered?',
+          required: false,
+          options: [
+            { value: 'yes', label: 'Yes' },
+            { value: 'no', label: 'No' },
+          ],
+        },
+        {
+          id: 'pets',
+          key: 'pets',
+          type: 'select',
+          label: 'Are there pets in the property?',
+          required: false,
+          options: [
+            { value: 'yes', label: 'Yes' },
+            { value: 'no', label: 'No' },
+          ],
+        },
+        {
+          id: 'customer_supplies_paint',
+          key: 'customer_supplies_paint',
+          type: 'select',
+          label: 'Will you supply the paint?',
+          required: false,
+          options: [
+            { value: 'yes', label: 'Yes' },
+            { value: 'no', label: 'No' },
+          ],
+        },
+        {
+          id: 'additional_notes',
+          key: 'additional_notes',
+          type: 'textarea',
+          label: 'Anything else we should know?',
+          required: false,
         },
       ],
     },

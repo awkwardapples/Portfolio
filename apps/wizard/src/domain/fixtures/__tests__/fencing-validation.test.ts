@@ -15,7 +15,7 @@ describe('fencing reference config', () => {
     expect(result.ok).toBe(true);
   });
 
-  it('contains exactly 7 steps in expected order', () => {
+  it('contains exactly 8 steps in expected order', () => {
     expect(fencingWizardConfig.steps.map((s) => s.id)).toEqual([
       'fence_size',
       'fence_type_step',
@@ -24,6 +24,7 @@ describe('fencing reference config', () => {
       'extras',
       'site_photos',
       'contact-and-address',
+      'optional-details',
     ]);
   });
 
@@ -104,5 +105,44 @@ describe('fencing reference config', () => {
     for (const field of step.fields) {
       expect(field.required).toBe(true);
     }
+  });
+
+  it('optional-details step is last and has allowSkip: true', () => {
+    const step = fencingWizardConfig.steps[7];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 7');
+    expect(step.id).toBe('optional-details');
+    expect(step.allowSkip).toBe(true);
+  });
+
+  it('optional-details universal fields are present and required: false', () => {
+    const step = fencingWizardConfig.steps[7];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 7');
+    const keys = step.fields.map((f) => f.key);
+    expect(keys).toContain('preferred_timeframe');
+    expect(keys).toContain('additional_notes');
+    for (const field of step.fields) {
+      expect(field.required).toBe(false);
+    }
+  });
+
+  it('fencing optional-details preferred_timeframe has Urgent as first option', () => {
+    const step = fencingWizardConfig.steps[7];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 7');
+    const timeframe = step.fields.find((f) => f.key === 'preferred_timeframe');
+    expect(timeframe?.options?.[0]?.value).toBe('urgent');
+  });
+
+  it('fencing optional-details gate_needed and conditional gate_width fields are present', () => {
+    const step = fencingWizardConfig.steps[7];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 7');
+    const keys = step.fields.map((f) => f.key);
+    expect(keys).toContain('gate_needed');
+    expect(keys).toContain('gate_width');
+    const gateWidth = step.fields.find((f) => f.key === 'gate_width');
+    expect(gateWidth?.condition).toEqual({
+      operator: 'equals',
+      fieldId: 'gate_needed',
+      value: 'yes',
+    });
   });
 });
