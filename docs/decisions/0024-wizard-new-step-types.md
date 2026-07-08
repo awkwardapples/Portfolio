@@ -124,3 +124,47 @@ checkable, and simpler to audit.
   isFieldStep guard need no changes for non-field kinds.
 - Existing configs and all 630 Vitest tests are unaffected. Field-step-only
   configs continue to parse and validate correctly through the new union.
+
+---
+
+## Amendment — Step 5.13b (2026-07-08): All 7 Instant-Quote Services Redesigned
+
+Step 5.13b applied the new step types to all 7 instant-quote service wizard configs
+(fencing, decking, painting, patio, driveway, steps, jetwash). Two infrastructure
+changes were required that were not anticipated in the original 5.13a decision:
+
+### `buildFieldKeyMap` and `collectFieldIds` extension
+
+`buildFieldKeyMap` (in `condition-evaluator.ts`) and `collectFieldIds` (in
+`validate.ts`) originally only mapped classic field step IDs. When `quantityFieldId`
+or modifier `appliesToFieldId` references a `VisualCardSelectorStep.answerKey` or
+`SizeBracketSelectorStep.exactField.id`, the pricing validator raises a dangling-reference
+error and `computePrice` returns `INVALID`.
+
+Both functions were extended to also emit entries for:
+
+- `VisualCardSelectorStep.answerKey` → identity mapping (`key === id`)
+- `SizeBracketSelectorStep.answerKey` → identity mapping
+- `SizeBracketSelectorStep.exactFields[n].id` → identity mapping
+
+This is a narrow infrastructure extension (condition evaluator + validation),
+not a change to the FSM, WizardStore, or answer-validation.
+
+### `typicalValue` on `SizeBracket`
+
+Size brackets store a string id (`'small'`, `'medium'`, `'large'`) at `answerKey`.
+The pricing engine needs a numeric value at `quantityFieldId` (e.g. `length_m`).
+Without a bridge, selecting a bracket produces no numeric answer and every estimate
+displays "complete earlier steps".
+
+An optional `typicalValue: number` field was added to `SizeBracketSchema`. When a
+bracket is selected, the `SizeBracketSelectorStep` component dispatches `ANSWER_SET`
+for each `exactField` with the bracket's `typicalValue`. This gives `computePrice` a
+valid numeric quantity immediately. The user can then expand the exact-entry panel to
+override with a precise measurement.
+
+### Test count update
+
+Step 5.13a established 630 Vitest tests. Step 5.13b adds ~22 tests across service
+config validation and engine integration files. The passing suite is 652 tests after
+Commit 4.

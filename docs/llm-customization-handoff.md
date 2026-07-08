@@ -1140,6 +1140,96 @@ Acme Fencing copy is fully replaced. Visual layout is untouched.
 
 ---
 
+### Task 8b — Pricing Calibration (Instant-Quote Services)
+
+<task id="pricing-calibration">
+
+**Goal:** Update placeholder pricing constants for each instant-quote service the client
+offers. Template values are rough indicative figures; real deployments must be calibrated
+to the client's actual rates before going live.
+
+**Files (one per instant-quote service):**
+
+| Service    | Config file                                          |
+| ---------- | ---------------------------------------------------- |
+| `fencing`  | `apps/wizard/src/domain/fixtures/fencing.config.ts`  |
+| `decking`  | `apps/wizard/src/domain/fixtures/decking.config.ts`  |
+| `patio`    | `apps/wizard/src/domain/fixtures/patio.config.ts`    |
+| `driveway` | `apps/wizard/src/domain/fixtures/driveway.config.ts` |
+| `steps`    | `apps/wizard/src/domain/fixtures/steps.config.ts`    |
+| `painting` | `apps/wizard/src/domain/fixtures/painting.config.ts` |
+| `jetwash`  | `apps/wizard/src/domain/fixtures/jetwash.config.ts`  |
+
+Manual-quote services (`general-repairs`, `plumbing`, `electrical`, `carpentry`) have no
+pricing config — they collect contact details only and always produce a custom quote.
+
+**CRITICAL — Integer pence only:** Every monetary value must be a whole number of pence
+(1 pence = £0.01). Never use a decimal point. £75.50 = 7550. Floats fail pricing
+validation at runtime and the estimate screen will not render for that service.
+
+**What to change in each config file:**
+
+| Field                     | Location in file                       | What it sets                                                   |
+| ------------------------- | -------------------------------------- | -------------------------------------------------------------- |
+| `base.perUnitPence`       | `xxxPricingConfig.base`                | Price per unit (per metre, per m², per room, per step)         |
+| `modifier.effect.factor`  | `xxxPricingConfig.modifiers[n].effect` | Multiplier relative to base (e.g. `1.3` = +30%)                |
+| `extra.amountPence`       | `xxxPricingConfig.extras[n]`           | Flat-rate add-on per selected extra                            |
+| `bounds.minPence`         | `xxxPricingConfig.bounds`              | Minimum job price floor                                        |
+| `bounds.maxPence`         | `xxxPricingConfig.bounds`              | Maximum price ceiling                                          |
+| `bounds.rounding.toPence` | `xxxPricingConfig.bounds.rounding`     | Round final price to nearest N pence (e.g. `500` = nearest £5) |
+
+**Example — fencing.config.ts:**
+
+```typescript
+// Template placeholder:
+base: {
+  perUnitPence: 7500, // £75.00 per linear metre
+  unit: 'linear_metre',
+  quantityFieldId: 'length_m',
+},
+
+// After calibration for local market:
+base: {
+  perUnitPence: 8500, // £85.00 per linear metre
+  unit: 'linear_metre',       // DO NOT CHANGE
+  quantityFieldId: 'length_m', // DO NOT CHANGE
+},
+```
+
+**Do NOT change:**
+
+- `base.unit` — the unit string (e.g. `'linear_metre'`, `'square_metre'`, `'item'`)
+- `base.quantityFieldId` — field ID supplying the numeric quantity to the pricing engine
+- `modifier.id`, `modifier.appliesToFieldId`, `modifier.match` — the modifier wiring
+- `extra.id`, `extra.appliesToFieldId`, `extra.match` — the extra wiring
+- `schemaVersion`, `currency`, `rangeSpreadBasisPoints`
+- Any wizard step definitions, step sequences, or TypeScript type annotations
+
+**Verification:**
+
+After editing pricing configs, run the Vitest suite to confirm validation passes:
+
+```bash
+pnpm --filter @growth-ops/wizard exec vitest run
+```
+
+All tests should pass. A pricing validation failure means a float was introduced, a
+`quantityFieldId` was changed to a non-existent field, or a modifier `factor` was set to
+zero or negative. The error output names the failing config and field.
+
+**Scope note:** This task is in the "Manual" column of the Pre-Deployment Checklist because
+real-world pricing figures must come from the client. The LLM agent can perform this task
+if a pricing table is included in the business profile.
+
+**Expected outcome:**
+
+Each active service's pricing config reflects the client's real rates. The estimate display
+shows a plausible price range to users rather than the template placeholder values.
+
+</task>
+
+---
+
 ### Task 9 — Services Page and Work Page Content
 
 <task id="content-services-and-work">
@@ -1442,15 +1532,15 @@ Report data collected. Ready to produce Section 6 output.
 Consult external documents only when a task explicitly directs you to, or when you encounter
 a gap that this document does not cover.
 
-| Situation                                                                                        | Document to read                                                   |
-| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ |
-| Need to understand a SEO option in depth (what it does, how it's emitted, verification commands) | `docs/seo-adaptation-guide.md`                                     |
-| Need to understand the address heuristic or PostalAddress structured override                    | `docs/seo-adaptation-guide.md` §Layer 2                            |
-| Need to understand how the `robots_txt` filter or `/sitemap.xml` rewrite works                   | `docs/decisions/0023-seo-infrastructure.md`                        |
-| Need to understand what a specific wizard service config does                                    | Read `apps/wizard/src/domain/wizards/{serviceId}/` — DO NOT modify |
-| Need to understand the overall deployment procedure                                              | `docs/onboarding.md` §Deploying the plugin                         |
-| Need to understand the fork-and-customize workflow                                               | `docs/fork-procedure.md`                                           |
-| Encountered a wp-cli error related to the Make.com webhook                                       | `docs/make-com-integration.md`                                     |
+| Situation                                                                                        | Document to read                                                             |
+| ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
+| Need to understand a SEO option in depth (what it does, how it's emitted, verification commands) | `docs/seo-adaptation-guide.md`                                               |
+| Need to understand the address heuristic or PostalAddress structured override                    | `docs/seo-adaptation-guide.md` §Layer 2                                      |
+| Need to understand how the `robots_txt` filter or `/sitemap.xml` rewrite works                   | `docs/decisions/0023-seo-infrastructure.md`                                  |
+| Need to understand what a specific wizard service config does                                    | Read `apps/wizard/src/domain/fixtures/{serviceId}.config.ts` — DO NOT modify |
+| Need to understand the overall deployment procedure                                              | `docs/onboarding.md` §Deploying the plugin                                   |
+| Need to understand the fork-and-customize workflow                                               | `docs/fork-procedure.md`                                                     |
+| Encountered a wp-cli error related to the Make.com webhook                                       | `docs/make-com-integration.md`                                               |
 
 ---
 
@@ -1599,8 +1689,9 @@ action.
       `Layout.tsx` files (colors, typography, spacing) if the template visual defaults are
       not suitable for this client.
 - [ ] (Manual) **Pricing calibration:** Review per-service pricing configs in
-      `apps/wizard/src/domain/wizards/` with the client. Adjust base prices, per-unit rates,
-      and multipliers to reflect real-world pricing.
+      `apps/wizard/src/domain/fixtures/` with the client (see Task 8b). Adjust
+      `perUnitPence`, modifier `factor` values, and extra `amountPence` to reflect
+      real-world pricing. Run `pnpm --filter @growth-ops/wizard exec vitest run` to verify.
 
 ### Manual — WordPress Setup
 
