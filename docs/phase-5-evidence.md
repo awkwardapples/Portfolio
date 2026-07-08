@@ -1834,3 +1834,79 @@ _Compiled: 2026-07-08 — Wizard engine new step types (estimate-display, visual
 | 23  | `docs/roadmap.md` gains 5.13a row (Complete) and rationale paragraph                                                           | ✅      |
 | 24  | `docs/current-state.md` updated: date, 5.13a in What's working, gate counts updated                                            | ✅      |
 | 25  | `docs/handoff.md` updated: date, 5.13a completion entry, Immediate next action updated                                         | ✅      |
+
+---
+
+## Step 5.13b — Apply New Flow to 7 Instant-Quote Services (2026-07-08)
+
+### Summary
+
+All 7 instant-quote service wizard configs (fencing, decking, painting, patio,
+driveway, steps, jetwash) redesigned to use the new step types from 5.13a.
+New flow per service: size-bracket-selector → visual-card-selector (material/type) →
+estimate-display → contact → optional extras (jetwash: no extras step).
+
+Two infrastructure changes were required to make the pricing engine and validation
+layer resolve answers from the new step types:
+
+1. `buildFieldKeyMap` (`condition-evaluator.ts`) and `collectFieldIds` (`validate.ts`)
+   extended to emit entries for `VisualCardSelectorStep.answerKey`,
+   `SizeBracketSelectorStep.answerKey`, and `SizeBracketSelectorStep.exactField.id`.
+2. `typicalValue: number` added to `SizeBracketSchema`; the `SizeBracketSelectorStep`
+   component dispatches `ANSWER_SET` for each `exactField` on bracket selection,
+   giving `computePrice` a valid numeric quantity immediately.
+
+### Commit Sequence
+
+| #   | Hash      | Message                                                                              |
+| --- | --------- | ------------------------------------------------------------------------------------ |
+| C1  | `ae41343` | chore(audit): Phase 0 audits for 5.13b service reconfiguration                       |
+| C2  | `0dda0c8` | feat(wizards/fencing+decking): redesign flow with new step types (5.13b C2)          |
+| C3  | `b982d79` | feat(wizards/painting+patio+driveway): redesign flow with new step types (5.13b C3)  |
+| C4  | `3fa0834` | feat(wizards/steps+jetwash): redesign flow with new step types (5.13b C4)            |
+| C5  | `9e6f777` | docs(pricing+ADR): Task 8b pricing calibration + ADR-0024 5.13b amendment (5.13b C5) |
+| C6  | _(this)_  | docs(evidence+standard): 5.13b evidence + standard doc updates (5.13b C6)            |
+
+### Gate Results
+
+| Gate               | Result                                               |
+| ------------------ | ---------------------------------------------------- |
+| `pnpm lint`        | 0/0                                                  |
+| `pnpm typecheck`   | 0 errors                                             |
+| `pnpm test`        | **652/652 Vitest** (+22 from 5.13b, 51 test files)   |
+| `pnpm build`       | Clean (no bundle-size regression; no new components) |
+| `composer lint`    | 0/0 (no PHP changes)                                 |
+| `composer analyse` | No errors (no PHP changes)                           |
+| `composer test`    | **148 passed, 4 skipped** (PHP unchanged)            |
+
+### Acceptance Criteria
+
+| #   | Criterion                                                                                                                                           | Status  |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| 1   | `buildFieldKeyMap` extended: VisualCard answerKey and SizeBracket answerKey/exactField ids now emit entries (identity mapping)                      | ✅ test |
+| 2   | `collectFieldIds` extended identically to `buildFieldKeyMap`                                                                                        | ✅      |
+| 3   | `typicalValue` field added to `SizeBracketSchema` (optional, nonnegative)                                                                           | ✅ test |
+| 4   | `SizeBracketSelectorStep` component dispatches `ANSWER_SET` for each exactField with bracket's `typicalValue` on bracket selection                  | ✅      |
+| 5   | `validation.test.ts` and `error-tone-and-public-config.test.ts` field-mutation tests redirected from steps[0] to steps[4]/steps[5] (contact/extras) | ✅      |
+| 6   | `fencing.config.ts` redesigned: fence_size (SizeBracket) → fence_type + fence_height (VisualCard×2) → estimate → contact → extras                   | ✅      |
+| 7   | `decking.config.ts` redesigned: deck_size (SizeBracket) → material (VisualCard) → estimate → contact → extras                                       | ✅      |
+| 8   | `painting.config.ts` redesigned: rooms_step (SizeBracket) → what_to_paint (VisualCard, multiple) → estimate → contact → extras                      | ✅      |
+| 9   | `patio.config.ts` redesigned: patio_size (SizeBracket) → material (VisualCard, 4 options inc. porcelain) → estimate → contact → extras              | ✅      |
+| 10  | `driveway.config.ts` redesigned: driveway_size (SizeBracket) → material (VisualCard, 4 options inc. resin_bound) → estimate → contact → extras      | ✅      |
+| 11  | `steps.config.ts` redesigned: shape (VisualCard) → material (VisualCard) → step_count (SizeBracket) → estimate → contact → extras                   | ✅      |
+| 12  | `jetwash.config.ts` redesigned: area_size (SizeBracket) → surface_type (VisualCard, 4 options, no 'other') → estimate → contact (no extras)         | ✅      |
+| 13  | All 7 configs pass `validateWizardConfig` and `validatePricingConfig` without errors                                                                | ✅ test |
+| 14  | All `typicalValue` fields set on every bracket in every SizeBracketSelectorStep across all 7 services                                               | ✅      |
+| 15  | `fencing-validation.test.ts` rewritten: 9 tests using `isFieldStep` guard; old `asStep` helper removed                                              | ✅      |
+| 16  | `decking-validation.test.ts` rewritten: 5 tests using `isFieldStep` guard                                                                           | ✅      |
+| 17  | `painting-validation.test.ts` rewritten: 7 tests (step sequence, SizeBracket, VisualCard multiple, pricing base, 0 modifiers)                       | ✅      |
+| 18  | `patio-driveway-steps-validation.test.ts` rewritten: 6+6+8 tests with `isFieldStep` guard; `asFieldStep` import removed                             | ✅      |
+| 19  | `jetwash-validation.test.ts` rewritten: 5 tests (step sequence, 4-option VisualCard, SizeBracket with area_m2 exactField)                           | ✅      |
+| 20  | `non-field-step-engine.test.ts` extended: 5 new tests for extended `buildFieldKeyMap` (VisualCard, SizeBracket, mixed config)                       | ✅      |
+| 21  | `visual-card-size-bracket-types.test.ts` extended: 3 new typicalValue schema tests                                                                  | ✅      |
+| 22  | `pricing-engine.test.ts` integration tests updated to new fencing base (7500p/m)                                                                    | ✅      |
+| 23  | `docs/llm-customization-handoff.md` gains Task 8b (Pricing Calibration) + stale path corrections in Section 5 and Pre-Deployment Checklist          | ✅      |
+| 24  | ADR-0024 gains 5.13b amendment documenting the two infrastructure additions and final test count (652)                                              | ✅      |
+| 25  | `docs/roadmap.md` gains 5.13b row (Complete)                                                                                                        | ✅      |
+| 26  | `docs/current-state.md` updated: gate counts 630→652, 5.13b in What's working and Completed Steps                                                   | ✅      |
+| 27  | `docs/handoff.md` updated: 5.13b completion entry, Immediate next action updated                                                                    | ✅      |

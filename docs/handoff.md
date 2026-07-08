@@ -1,6 +1,6 @@
 # Handoff
 
-_Last updated: 2026-07-08 (post Step 5.13a)_
+_Last updated: 2026-07-08 (post Step 5.13b)_
 
 ## Status
 
@@ -108,6 +108,16 @@ _Last updated: 2026-07-08 (post Step 5.13a)_
   introduced in `wizard-config.ts`; all domain engine files updated to guard
   `.fields` access; three new React components added; ADR-0024 accepted.
   32 new Vitest tests (598→630, 51 test files). PHP and bundle unchanged.
+- Step 5.13b complete (July 8, 2026): All 7 instant-quote service wizard flows
+  redesigned to use the new step types from 5.13a. New flow per service:
+  size-bracket-selector → visual-card-selector (material/type) → estimate-display →
+  contact → optional extras (jetwash has no extras step). Two infrastructure
+  additions: `buildFieldKeyMap` and `collectFieldIds` extended to resolve
+  `VisualCardSelectorStep.answerKey` and `SizeBracketSelectorStep` fields from the
+  pricing/validation layer; `typicalValue: number` added to `SizeBracketSchema` so
+  bracket selection auto-populates the pricing quantity field. 22 new Vitest tests
+  (630→652). PHP unchanged (148/148). ADR-0024 amended with 5.13b details;
+  `docs/llm-customization-handoff.md` gains Task 8b (Pricing Calibration) table.
 - Step 5.12b complete (July 7, 2026): Template bug fixes. Three bugs surfaced during
   SCB pilot deployment triage and fixed in the template before SCB customization.
   (1) **REST output buffering:** `SubmissionController::handle()` body wrapped in
@@ -174,13 +184,14 @@ If you are starting a new step:
 The roadmap is sequenced explicitly. See `docs/roadmap.md` for full detail.
 
 **Immediate next action:** Step 5.12 — SCB-specific deployment (first real client).
-Template is now bug-fixed and engine-complete (5.12b + 5.13a). Activate the plugin
-on a LocalWP SCB site, then run `docs/llm-customization-handoff.md` against SCB's
-business profile to perform the full content/SEO/services customization pass.
-To use the new step kinds (5.13a), wire SCB's service configs with `estimate-display`,
-`visual-card-selector`, or `size-bracket-selector` steps as appropriate for the flow
-redesign. Outstanding OVs (OV-5.10b, OV-5.10a, OV-5.9-R, etc.) can be batched into
-the 5.12 deploy session and recorded in `docs/phase-5-evidence.md`.
+Template is now bug-fixed, engine-complete (5.12b + 5.13a), and all 7 instant-quote
+service flows use the new step kinds (5.13b). Activate the plugin on a LocalWP SCB
+site, then run `docs/llm-customization-handoff.md` against SCB's business profile
+to perform the full content/SEO/services customization pass. Task 8b in the handoff
+document covers pricing calibration for the instant-quote services (integer-pence
+values, which fields are safe to change, and how to verify with Vitest). Outstanding
+OVs (OV-5.10b, OV-5.10a, OV-5.9-R, etc.) can be batched into the 5.12 deploy
+session and recorded in `docs/phase-5-evidence.md`.
 
 Each step is sized small and verified before the next begins. See
 `docs/roadmap.md` "Step rationale and dependencies" for why each step is

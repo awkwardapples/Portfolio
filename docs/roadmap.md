@@ -41,6 +41,7 @@ A single-page, structural view of project state. Update on every completed step.
 | 5.11                  | Complete | LLM customization handoff document (`docs/llm-customization-handoff.md`)                                |
 | 5.12b                 | Complete | Template bug fixes (output buffering, media validation, activation rewrite flush)                       |
 | 5.13a                 | Complete | Wizard engine: three new step kinds (estimate-display, visual-card-selector, size-bracket-selector)     |
+| 5.13b                 | Complete | All 7 instant-quote service flows redesigned with new step types; pricing infrastructure extended       |
 | 5.12                  | Planned  | SCB-specific deployment (first real client)                                                             |
 | 6.0                   | Planned  | Production IONOS deployment                                                                             |
 | 6.1+                  | Future   | Second and subsequent clients                                                                           |

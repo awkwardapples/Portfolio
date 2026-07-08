@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-07-08 (post Step 5.13a)_
+_Last updated: 2026-07-08 (post Step 5.13b)_
 
 ## What's working
 
@@ -22,16 +22,27 @@ _Last updated: 2026-07-08 (post Step 5.13a)_
 - Plugin activation rewrite flush: `/sitemap.xml` now accessible immediately after activation without manual `wp rewrite flush`.
 - Media validation: data URL prefix accepted, allowing browsers that prepend `data:image/jpeg;base64,` to succeed.
 - Wizard engine step types: `estimate-display`, `visual-card-selector`, and `size-bracket-selector` steps added alongside classic field steps. `AnyStep` discriminated union and `isFieldStep` guard applied throughout the engine and UI.
+- All 7 instant-quote service wizard configs redesigned to use the new step types (size-bracket → visual-card → estimate → contact flow). Pricing infrastructure extended to resolve `VisualCardSelectorStep.answerKey` and `SizeBracketSelectorStep` fields. `typicalValue` on `SizeBracket` auto-populates the quantity field for immediate pricing on bracket selection.
 
 ## Gate state (last verified)
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors
-- `pnpm test`: 630/630 (51 test files, +32 from 5.13a)
+- `pnpm test`: 652/652 (51 test files, +22 from 5.13b)
 - `pnpm build`: clean
-- `composer test`: 148 passed, 4 skipped (PHP unchanged from 5.12b)
+- `composer test`: 148 passed, 4 skipped (PHP unchanged)
 - `composer analyse`: clean (PHPStan level 8, no errors)
 - `composer lint`: 0/0 (PHPCS)
+
+## Gate state (5.13b, 2026-07-08)
+
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: 0 errors
+- `pnpm test`: **652/652 Vitest** (+22 from 5.13b, 51 test files)
+- `pnpm build`: clean (no bundle size change — no new components)
+- `composer lint`: 0/0 (no PHP changes)
+- `composer analyse`: no errors (no PHP changes)
+- `composer test`: **148 passed, 4 skipped** (PHP unchanged)
 
 ## Gate state (5.13a, 2026-07-08)
 
@@ -209,6 +220,15 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   plus the business profile JSON schema, modification map, report template,
   pre-deployment checklist, final verification commands, and three appendices.
   Documentation-only; all gates unchanged (598 Vitest, 143 PHP).
+- **Step 5.13b — All 7 Instant-Quote Service Wizard Flows Redesigned** (July 2026).
+  All instant-quote configs (fencing, decking, painting, patio, driveway, steps,
+  jetwash) updated to use new step types from 5.13a. New flow per service:
+  size-bracket-selector → visual-card-selector (material/type) → estimate-display →
+  contact. Two infrastructure additions: `buildFieldKeyMap`/`collectFieldIds` extended
+  to resolve VisualCard/SizeBracket answer keys; `typicalValue` field on SizeBracket
+  bridges bracket selection to the quantity field used by the pricing engine.
+  22 new Vitest tests (630→652). PHP unchanged (148/148).
+  ADR-0024 amended; `docs/llm-customization-handoff.md` gains Task 8b (Pricing Calibration).
 - **Step 5.10b — SEO Layers 2-4** (June 2026). ADR-0023 amended.
   `LocalBusinessSchemaEmitter` emits LocalBusiness JSON-LD at `wp_head` priority 10;
   reads from 8 new `goqw_business_*` / `goqw_social_*` options (seeded in Activator).
