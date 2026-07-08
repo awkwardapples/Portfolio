@@ -52,6 +52,12 @@ describe('manual-quote services — shared structural contract', () => {
   });
 });
 
+describe('manual-quote services — no optional-details step (regression)', () => {
+  it.each(MANUAL_CONFIGS)('$id does not have an optional-details step', ({ config }) => {
+    expect(config.steps.map((s) => s.id)).not.toContain('optional-details');
+  });
+});
+
 describe('manual-quote services — service-specific description prompts', () => {
   it('general-repairs description field label does not mention a specific trade', () => {
     const step = asFieldStep(generalRepairsWizardConfig.steps.find((s) => s.id === 'description'));

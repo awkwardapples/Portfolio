@@ -6,7 +6,7 @@
  *   - VisualCardSelectorStep for driveway material
  *   - EstimateDisplayStep mid-wizard with accept/adjust decision
  *
- * Flow: size → material → estimate → extras → site_photos → contact-and-address
+ * Flow: size → material → estimate → extras → site_photos → contact-and-address → optional-details
  * The pre-step (ADR-0022) collects postcode only (reduced in 5.13c).
  *
  * MONEY: every monetary value is INTEGER PENCE.
@@ -130,6 +130,58 @@ export const drivewayWizardConfig: WizardConfig = {
           label: 'Full address',
           help: 'e.g. 12 Main Street, Guildford, GU1 3AA',
           required: true,
+        },
+      ],
+    },
+    {
+      id: 'optional-details',
+      title: 'Anything else? (Optional)',
+      description:
+        "These details help us prepare the best possible quote. Fill in what you'd like, or skip and submit.",
+      allowSkip: true,
+      fields: [
+        {
+          id: 'preferred_timeframe',
+          key: 'preferred_timeframe',
+          type: 'select',
+          label: 'When would you like the work done?',
+          required: false,
+          options: [
+            { value: 'next_week', label: 'Next week' },
+            { value: 'next_month', label: 'Next month' },
+            { value: '2_3_months', label: '2–3 months' },
+            { value: 'flexible', label: 'Flexible' },
+          ],
+        },
+        {
+          id: 'existing_driveway_removal',
+          key: 'existing_driveway_removal',
+          type: 'select',
+          label: 'Is there an existing driveway to remove first?',
+          required: false,
+          options: [
+            { value: 'yes', label: 'Yes' },
+            { value: 'no', label: 'No' },
+          ],
+        },
+        {
+          id: 'parking_during_work',
+          key: 'parking_during_work',
+          type: 'select',
+          label: 'Parking access during the work',
+          required: false,
+          options: [
+            { value: 'blocked', label: 'Driveway will be blocked' },
+            { value: 'street', label: 'Street parking available' },
+            { value: 'limited', label: 'Limited parking' },
+          ],
+        },
+        {
+          id: 'additional_notes',
+          key: 'additional_notes',
+          type: 'textarea',
+          label: 'Anything else we should know?',
+          required: false,
         },
       ],
     },

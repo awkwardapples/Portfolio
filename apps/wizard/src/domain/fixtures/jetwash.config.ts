@@ -6,7 +6,7 @@
  *   - VisualCardSelectorStep for surface type
  *   - EstimateDisplayStep mid-wizard with accept/adjust decision
  *
- * Flow: size → surface type → estimate → site_photos → contact-and-address
+ * Flow: size → surface type → estimate → site_photos → contact-and-address → optional-details
  * No extras step — jetwash is a simple two-factor quote.
  * The pre-step (ADR-0022) collects postcode only (reduced in 5.13c).
  *
@@ -129,6 +129,54 @@ export const jetwashWizardConfig: WizardConfig = {
           label: 'Full address',
           help: 'e.g. 12 Main Street, Guildford, GU1 3AA',
           required: true,
+        },
+      ],
+    },
+    {
+      id: 'optional-details',
+      title: 'Anything else? (Optional)',
+      description:
+        "These details help us prepare the best possible quote. Fill in what you'd like, or skip and submit.",
+      allowSkip: true,
+      fields: [
+        {
+          id: 'preferred_timeframe',
+          key: 'preferred_timeframe',
+          type: 'select',
+          label: 'When would you like the work done?',
+          required: false,
+          options: [
+            { value: 'next_week', label: 'Next week' },
+            { value: 'next_month', label: 'Next month' },
+            { value: '2_3_months', label: '2–3 months' },
+            { value: 'flexible', label: 'Flexible' },
+          ],
+        },
+        {
+          id: 'specific_stains',
+          key: 'specific_stains',
+          type: 'textarea',
+          label: 'Any specific stains or marks to focus on?',
+          required: false,
+        },
+        {
+          id: 'time_preference',
+          key: 'time_preference',
+          type: 'select',
+          label: 'Do you prefer weekday or weekend appointments?',
+          required: false,
+          options: [
+            { value: 'weekday', label: 'Weekday' },
+            { value: 'weekend', label: 'Weekend' },
+            { value: 'flexible', label: 'Flexible' },
+          ],
+        },
+        {
+          id: 'additional_notes',
+          key: 'additional_notes',
+          type: 'textarea',
+          label: 'Anything else we should know?',
+          required: false,
         },
       ],
     },

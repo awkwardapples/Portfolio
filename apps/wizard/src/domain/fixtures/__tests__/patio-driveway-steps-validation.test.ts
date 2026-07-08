@@ -121,7 +121,7 @@ describe('driveway reference config', () => {
     expect(validatePricingConfig(drivewayPricingConfig, drivewayWizardConfig).ok).toBe(true);
   });
 
-  it('contains exactly 6 steps in expected order', () => {
+  it('contains exactly 7 steps in expected order', () => {
     expect(drivewayWizardConfig.steps.map((s) => s.id)).toEqual([
       'driveway_size',
       'material_step',
@@ -129,6 +129,7 @@ describe('driveway reference config', () => {
       'extras',
       'site_photos',
       'contact-and-address',
+      'optional-details',
     ]);
   });
 
@@ -178,6 +179,32 @@ describe('driveway reference config', () => {
       expect(field.required).toBe(true);
     }
   });
+
+  it('optional-details step is last and has allowSkip: true', () => {
+    const step = drivewayWizardConfig.steps[6];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 6');
+    expect(step.id).toBe('optional-details');
+    expect(step.allowSkip).toBe(true);
+  });
+
+  it('optional-details universal fields are present and required: false', () => {
+    const step = drivewayWizardConfig.steps[6];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 6');
+    const keys = step.fields.map((f) => f.key);
+    expect(keys).toContain('preferred_timeframe');
+    expect(keys).toContain('additional_notes');
+    for (const field of step.fields) {
+      expect(field.required).toBe(false);
+    }
+  });
+
+  it('driveway optional-details has existing_driveway_removal and parking_during_work fields', () => {
+    const step = drivewayWizardConfig.steps[6];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 6');
+    const keys = step.fields.map((f) => f.key);
+    expect(keys).toContain('existing_driveway_removal');
+    expect(keys).toContain('parking_during_work');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -193,7 +220,7 @@ describe('steps (garden steps) reference config', () => {
     expect(validatePricingConfig(stepsPricingConfig, stepsWizardConfig).ok).toBe(true);
   });
 
-  it('contains exactly 7 steps in expected order', () => {
+  it('contains exactly 8 steps in expected order', () => {
     expect(stepsWizardConfig.steps.map((s) => s.id)).toEqual([
       'shape_step',
       'material_step',
@@ -202,6 +229,7 @@ describe('steps (garden steps) reference config', () => {
       'extras',
       'site_photos',
       'contact-and-address',
+      'optional-details',
     ]);
   });
 
@@ -269,5 +297,30 @@ describe('steps (garden steps) reference config', () => {
     for (const field of step.fields) {
       expect(field.required).toBe(true);
     }
+  });
+
+  it('optional-details step is last and has allowSkip: true', () => {
+    const step = stepsWizardConfig.steps[7];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 7');
+    expect(step.id).toBe('optional-details');
+    expect(step.allowSkip).toBe(true);
+  });
+
+  it('optional-details universal fields are present and required: false', () => {
+    const step = stepsWizardConfig.steps[7];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 7');
+    const keys = step.fields.map((f) => f.key);
+    expect(keys).toContain('preferred_timeframe');
+    expect(keys).toContain('additional_notes');
+    for (const field of step.fields) {
+      expect(field.required).toBe(false);
+    }
+  });
+
+  it('steps optional-details has existing_steps_removal field', () => {
+    const step = stepsWizardConfig.steps[7];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 7');
+    const keys = step.fields.map((f) => f.key);
+    expect(keys).toContain('existing_steps_removal');
   });
 });

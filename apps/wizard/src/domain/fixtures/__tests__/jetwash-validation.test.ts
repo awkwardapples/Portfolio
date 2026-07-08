@@ -13,13 +13,14 @@ describe('jetwash (pressure washing) reference config', () => {
     expect(validatePricingConfig(jetwashPricingConfig, jetwashWizardConfig).ok).toBe(true);
   });
 
-  it('contains exactly 5 steps in expected order', () => {
+  it('contains exactly 6 steps in expected order', () => {
     expect(jetwashWizardConfig.steps.map((s) => s.id)).toEqual([
       'area_size',
       'surface_type_step',
       'estimate',
       'site_photos',
       'contact-and-address',
+      'optional-details',
     ]);
   });
 
@@ -66,5 +67,33 @@ describe('jetwash (pressure washing) reference config', () => {
     for (const field of step.fields) {
       expect(field.required).toBe(true);
     }
+  });
+
+  it('optional-details step is last and has allowSkip: true', () => {
+    const step = jetwashWizardConfig.steps[5];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 5');
+    expect(step.id).toBe('optional-details');
+    expect(step.allowSkip).toBe(true);
+  });
+
+  it('optional-details universal fields are present and required: false', () => {
+    const step = jetwashWizardConfig.steps[5];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 5');
+    const keys = step.fields.map((f) => f.key);
+    expect(keys).toContain('preferred_timeframe');
+    expect(keys).toContain('additional_notes');
+    for (const field of step.fields) {
+      expect(field.required).toBe(false);
+    }
+  });
+
+  it('jetwash optional-details has specific_stains (textarea) and time_preference (select) fields', () => {
+    const step = jetwashWizardConfig.steps[5];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 5');
+    const fields = step.fields;
+    const specificStains = fields.find((f) => f.key === 'specific_stains');
+    const timePreference = fields.find((f) => f.key === 'time_preference');
+    expect(specificStains?.type).toBe('textarea');
+    expect(timePreference?.type).toBe('select');
   });
 });
