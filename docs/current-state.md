@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-07-08 (post Step 5.13c)_
+_Last updated: 2026-07-08 (post Step 5.13d)_
 
 ## What's working
 
@@ -24,16 +24,27 @@ _Last updated: 2026-07-08 (post Step 5.13c)_
 - Wizard engine step types: `estimate-display`, `visual-card-selector`, and `size-bracket-selector` steps added alongside classic field steps. `AnyStep` discriminated union and `isFieldStep` guard applied throughout the engine and UI.
 - All 7 instant-quote service wizard configs redesigned to use the new step types (size-bracket → visual-card → estimate → contact flow). Pricing infrastructure extended to resolve `VisualCardSelectorStep.answerKey` and `SizeBracketSelectorStep` fields. `typicalValue` on `SizeBracket` auto-populates the quantity field for immediate pricing on bracket selection.
 - Pre-step (addressPreStep) reduced to postcode only (id `postcode_prestep`). All 7 instant-quote service configs now end with a `site_photos` step (optional, maxCount=5) and a `contact-and-address` step collecting name, phone (required), email, and full_address. Old lightweight `contact` step removed.
+- Optional details step added to all 7 instant-quote services as the final step after `contact-and-address`. Universal fields: `preferred_timeframe` (select, required:false) and `additional_notes` (textarea, required:false). Per-service supplementary fields capture gate details (fencing), removal/condition context (decking, patio, driveway, steps), furniture/pets/paint preferences (painting), and stain type + time preference (jetwash). `allowSkip: true` enables "Skip and Submit" — users bypass the step entirely. Manual-quote services do not receive this step.
 
 ## Gate state (last verified)
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors
-- `pnpm test`: 674/674 (51 test files, +22 from 5.13c)
+- `pnpm test`: 704/704 (52 test files, +30 from 5.13d)
 - `pnpm build`: clean
 - `composer test`: 148 passed, 4 skipped (PHP unchanged)
 - `composer analyse`: clean (PHPStan level 8, no errors)
 - `composer lint`: 0/0 (PHPCS)
+
+## Gate state (5.13d, 2026-07-08)
+
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: 0 errors
+- `pnpm test`: **704/704 Vitest** (+30 from 5.13d, 52 test files)
+- `pnpm build`: clean (no bundle size change — allowSkip adds negligible weight)
+- `composer lint`: 0/0 (no PHP changes)
+- `composer analyse`: no errors (no PHP changes)
+- `composer test`: **148 passed, 4 skipped** (PHP unchanged)
 
 ## Gate state (5.13c, 2026-07-08)
 
@@ -231,6 +242,16 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   plus the business profile JSON schema, modification map, report template,
   pre-deployment checklist, final verification commands, and three appendices.
   Documentation-only; all gates unchanged (598 Vitest, 143 PHP).
+- **Step 5.13d — Optional Details Step** (July 2026).
+  `optional-details` step added as the final step in all 7 instant-quote service
+  configs. New `allowSkip: boolean` flag on `StepSchema` enables "Skip and Submit"
+  button — dispatches `SUBMIT_REQUESTED` without showing validation errors. Universal
+  fields: `preferred_timeframe` (select) and `additional_notes` (textarea). Per-service
+  supplementary fields cover gate details (fencing), deck/patio/driveway/steps removal
+  (decking, patio, driveway, steps), furniture/pets/paint (painting), and stains +
+  appointment preference (jetwash). Manual-quote services excluded — regression tests
+  confirm no `optional-details` step present. 30 new Vitest tests (674→704, 52 test
+  files). PHP unchanged (148/148). ADR-0025 accepted.
 - **Step 5.13c — Photo Upload + Pre-Step Reduction** (July 2026).
   Pre-step (`addressPreStep`) reduced from 4 fields to postcode-only; id renamed
   from `contact-and-address` to `postcode_prestep` to avoid collision with the new
@@ -329,6 +350,6 @@ Strict ordering: validate → persist → forward → respond.
 
 - lint (`pnpm lint` → 0 errors, 0 warnings)
 - typecheck (`pnpm typecheck`)
-- vitest (`pnpm test` → 674/674)
+- vitest (`pnpm test` → 704/704)
 - build (`pnpm build`)
 - PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 148 passed (4 skipped)

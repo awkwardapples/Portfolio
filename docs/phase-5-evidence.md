@@ -1970,3 +1970,71 @@ _Compiled: 2026-07-08_
 | 24  | `docs/roadmap.md` gains 5.13c row (Complete)                                                                                                                             | ✅      |
 | 25  | `docs/current-state.md` updated: gate counts 652→674, 5.13c in What's working and Completed Steps                                                                        | ✅      |
 | 26  | `docs/handoff.md` updated: 5.13c completion entry, Immediate next action updated                                                                                         | ✅      |
+
+---
+
+## Step 5.13d Evidence
+
+_Compiled: 2026-07-08 — Covers Step 5.13d (Optional Details Step)_
+
+### Summary
+
+Adds an `optional-details` step as the final step in each of the 7 instant-quote
+service configs. The step is always optional: a "Skip and Submit" button dispatches
+`SUBMIT_REQUESTED` without validation. Universal fields (`preferred_timeframe`,
+`additional_notes`) appear on every service; per-service supplementary fields capture
+service-specific context. Manual-quote services are not affected.
+
+Engine changes are minimal: `allowSkip: z.boolean().optional()` on `StepSchema`;
+`NavigationControls` renders "Skip and Submit" when `onSkip` is provided; `StepRenderer`
+passes `onSkip` only when `isLast && step.allowSkip`.
+
+### Commit Sequence
+
+| #   | Hash      | Message                                                                               |
+| --- | --------- | ------------------------------------------------------------------------------------- |
+| C1  | `6d9d656` | chore(audit): Phase 0 audits for 5.13d optional details step                          |
+| C2  | `a9e1ffa` | feat(engine): add allowSkip to StepSchema + NavigationControls skip button (5.13d C2) |
+| C3  | `fa76c9d` | feat(wizards/fencing+decking+painting+patio): add optional-details step (5.13d C3)    |
+| C4  | `c38654e` | feat(wizards/driveway+steps+jetwash): add optional-details step (5.13d C4)            |
+| C5  | _(this)_  | docs(ADR-0025+evidence): 5.13d optional details step docs (5.13d C5)                  |
+
+### Gate Results
+
+| Gate               | Result                                             |
+| ------------------ | -------------------------------------------------- |
+| `pnpm lint`        | 0/0                                                |
+| `pnpm typecheck`   | 0 errors                                           |
+| `pnpm test`        | **704/704 Vitest** (+30 from 5.13d, 52 test files) |
+| `pnpm build`       | Clean (no bundle-size regression)                  |
+| `composer lint`    | 0/0 (no PHP changes)                               |
+| `composer analyse` | No errors (no PHP changes)                         |
+| `composer test`    | **148 passed, 4 skipped** (PHP unchanged)          |
+
+### Acceptance Criteria
+
+| #   | Criterion                                                                                                                                                                | Status  |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| 1   | `StepSchema` accepts `allowSkip: true` without validation error                                                                                                          | ✅ test |
+| 2   | `StepSchema` accepts `allowSkip: false` without validation error                                                                                                         | ✅ test |
+| 3   | `StepSchema` accepts steps with no `allowSkip` field (backwards compatible)                                                                                              | ✅ test |
+| 4   | `StepSchema` rejects `allowSkip: 'yes'` (non-boolean) with Zod error                                                                                                     | ✅ test |
+| 5   | Fencing: 8 steps; final step id is `optional-details`; `allowSkip: true`                                                                                                 | ✅ test |
+| 6   | Fencing: `preferred_timeframe` and `additional_notes` both `required: false`                                                                                             | ✅ test |
+| 7   | Fencing: `preferred_timeframe` first option is `urgent`                                                                                                                  | ✅ test |
+| 8   | Fencing: `gate_needed` and `gate_width` (conditional on `gate_needed=yes`) present                                                                                       | ✅ test |
+| 9   | Decking: 7 steps; final step is `optional-details`; `allowSkip: true`; universal fields required:false; `existing_deck_removal` present                                  | ✅ test |
+| 10  | Painting: 7 steps; final step is `optional-details`; `allowSkip: true`; universal fields required:false; `furniture_handling`, `pets`, `customer_supplies_paint` present | ✅ test |
+| 11  | Patio: 7 steps; final step is `optional-details`; `allowSkip: true`; universal fields required:false; `existing_patio_removal`, `slope_assessment` present               | ✅ test |
+| 12  | Driveway: 7 steps; final step is `optional-details`; `allowSkip: true`; universal fields required:false; `existing_driveway_removal`, `parking_during_work` present      | ✅ test |
+| 13  | Garden steps: 8 steps; final step is `optional-details`; `allowSkip: true`; universal fields required:false; `existing_steps_removal` present                            | ✅ test |
+| 14  | Jetwash: 6 steps; final step is `optional-details`; `allowSkip: true`; universal fields required:false; `specific_stains`, `time_preference` present                     | ✅ test |
+| 15  | All 7 instant-quote configs pass `validateWizardConfig` with the new optional-details step                                                                               | ✅ test |
+| 16  | Manual-quote services (general-repairs, plumbing, electrical, carpentry) do NOT have an `optional-details` step                                                          | ✅ test |
+| 17  | `gate_width` condition: `{ operator: 'equals', fieldId: 'gate_needed', value: 'yes' }` — intra-step condition valid                                                      | ✅ test |
+| 18  | All `optional-details` steps have `title: 'Anything else? (Optional)'`                                                                                                   | ✅ code |
+| 19  | `StepSchema` is still `z.strictObject` — no unknown keys accepted                                                                                                        | ✅ test |
+| 20  | ADR-0025 created and accepted                                                                                                                                            | ✅      |
+| 21  | `docs/roadmap.md` gains 5.13d row (Complete)                                                                                                                             | ✅      |
+| 22  | `docs/current-state.md` updated: gate counts 674→704, 5.13d in What's working and Completed Steps                                                                        | ✅      |
+| 23  | `docs/handoff.md` updated: 5.13d completion entry added                                                                                                                  | ✅      |

@@ -1,6 +1,6 @@
 # Handoff
 
-_Last updated: 2026-07-08 (post Step 5.13c)_
+_Last updated: 2026-07-08 (post Step 5.13d)_
 
 ## Status
 
@@ -108,6 +108,21 @@ _Last updated: 2026-07-08 (post Step 5.13c)_
   introduced in `wizard-config.ts`; all domain engine files updated to guard
   `.fields` access; three new React components added; ADR-0024 accepted.
   32 new Vitest tests (598→630, 51 test files). PHP and bundle unchanged.
+- Step 5.13d complete (July 8, 2026): Optional details step added to all 7
+  instant-quote services. Each service now ends with an `optional-details` step
+  (allowSkip: true) after `contact-and-address`. Universal fields: `preferred_timeframe`
+  (select) and `additional_notes` (textarea), all `required: false`. Per-service
+  supplementary fields: fencing adds `gate_needed` + conditional `gate_width`; decking
+  adds `existing_deck_removal`; painting adds `furniture_handling`, `pets`,
+  `customer_supplies_paint`; patio adds `existing_patio_removal` + `slope_assessment`;
+  driveway adds `existing_driveway_removal` + `parking_during_work`; steps adds
+  `existing_steps_removal`; jetwash adds `specific_stains` + `time_preference`. Engine
+  changes: `allowSkip: z.boolean().optional()` added to `StepSchema`; `NavigationControls`
+  gains `onSkip?: () => void` prop rendering "Skip and Submit"; `StepRenderer` dispatches
+  `SUBMIT_REQUESTED` on skip without triggering `showAllErrors`. Manual-quote services
+  (general-repairs, plumbing, electrical, carpentry) do NOT receive this step — confirmed
+  by regression tests. 30 new Vitest tests (674→704, 52 test files). PHP unchanged
+  (148/148). ADR-0025 accepted.
 - Step 5.13c complete (July 8, 2026): Photo upload + pre-step reduction.
   Pre-step (`addressPreStep`) reduced to postcode only; step id renamed to
   `postcode_prestep` (was `contact-and-address`) to avoid collision with new
