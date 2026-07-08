@@ -55,6 +55,30 @@ describe('patio reference config', () => {
     expect(patioPricingConfig.base.quantityFieldId).toBe('area_m2');
     expect(patioPricingConfig.base.unit).toBe('square_metre');
   });
+
+  it('old contact step has been replaced — no step with id "contact" in the config', () => {
+    expect(patioWizardConfig.steps.map((s) => s.id)).not.toContain('contact');
+  });
+
+  it('site_photos step is optional photo field with maxCount 5', () => {
+    const step = patioWizardConfig.steps[4];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 4');
+    expect(step.id).toBe('site_photos');
+    const photo = step.fields.find((f) => f.type === 'photo');
+    expect(photo?.required).toBe(false);
+    expect(photo?.maxCount).toBe(5);
+  });
+
+  it('contact-and-address step collects name, phone, email, full_address — all required', () => {
+    const step = patioWizardConfig.steps[5];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 5');
+    expect(step.id).toBe('contact-and-address');
+    const keys = step.fields.map((f) => f.key);
+    expect(keys).toEqual(['contact_name', 'contact_phone', 'contact_email', 'full_address']);
+    for (const field of step.fields) {
+      expect(field.required).toBe(true);
+    }
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -102,6 +126,30 @@ describe('driveway reference config', () => {
     expect(drivewayPricingConfig.modifiers).toHaveLength(3);
     const ids = drivewayPricingConfig.modifiers.map((m) => m.id);
     expect(ids).toContain('material_resin_bound');
+  });
+
+  it('old contact step has been replaced — no step with id "contact" in the config', () => {
+    expect(drivewayWizardConfig.steps.map((s) => s.id)).not.toContain('contact');
+  });
+
+  it('site_photos step is optional photo field with maxCount 5', () => {
+    const step = drivewayWizardConfig.steps[4];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 4');
+    expect(step.id).toBe('site_photos');
+    const photo = step.fields.find((f) => f.type === 'photo');
+    expect(photo?.required).toBe(false);
+    expect(photo?.maxCount).toBe(5);
+  });
+
+  it('contact-and-address step collects name, phone, email, full_address — all required', () => {
+    const step = drivewayWizardConfig.steps[5];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 5');
+    expect(step.id).toBe('contact-and-address');
+    const keys = step.fields.map((f) => f.key);
+    expect(keys).toEqual(['contact_name', 'contact_phone', 'contact_email', 'full_address']);
+    for (const field of step.fields) {
+      expect(field.required).toBe(true);
+    }
   });
 });
 
@@ -170,5 +218,29 @@ describe('steps (garden steps) reference config', () => {
     const ids = stepsPricingConfig.modifiers.map((m) => m.id);
     expect(ids).toContain('shape_curved');
     expect(ids).toContain('material_granite');
+  });
+
+  it('old contact step has been replaced — no step with id "contact" in the config', () => {
+    expect(stepsWizardConfig.steps.map((s) => s.id)).not.toContain('contact');
+  });
+
+  it('site_photos step is optional photo field with maxCount 5', () => {
+    const step = stepsWizardConfig.steps[5];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 5');
+    expect(step.id).toBe('site_photos');
+    const photo = step.fields.find((f) => f.type === 'photo');
+    expect(photo?.required).toBe(false);
+    expect(photo?.maxCount).toBe(5);
+  });
+
+  it('contact-and-address step collects name, phone, email, full_address — all required', () => {
+    const step = stepsWizardConfig.steps[6];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 6');
+    expect(step.id).toBe('contact-and-address');
+    const keys = step.fields.map((f) => f.key);
+    expect(keys).toEqual(['contact_name', 'contact_phone', 'contact_email', 'full_address']);
+    for (const field of step.fields) {
+      expect(field.required).toBe(true);
+    }
   });
 });

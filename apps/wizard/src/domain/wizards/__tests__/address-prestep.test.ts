@@ -22,4 +22,11 @@ describe('addressPreStep', () => {
   it('field key is "postcode" — triggers UK postcode format validation via FORMAT_VALIDATORS', () => {
     expect(addressPreStep.fields[0]!.key).toBe('postcode');
   });
+
+  it('collects no name, phone, or email field (contact moved to end-of-wizard step)', () => {
+    const keys = addressPreStep.fields.map((f) => f.key);
+    expect(keys).not.toContain('contact_name');
+    expect(keys).not.toContain('contact_phone');
+    expect(keys).not.toContain('contact_email');
+  });
 });

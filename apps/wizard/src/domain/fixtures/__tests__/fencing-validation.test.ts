@@ -81,4 +81,28 @@ describe('fencing reference config', () => {
     expect(ids).toContain('type_chain_link');
     expect(ids).toContain('height_low');
   });
+
+  it('old contact step has been replaced — no step with id "contact" in the config', () => {
+    expect(fencingWizardConfig.steps.map((s) => s.id)).not.toContain('contact');
+  });
+
+  it('site_photos step is optional photo field with maxCount 5', () => {
+    const step = fencingWizardConfig.steps[5];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 5');
+    expect(step.id).toBe('site_photos');
+    const photo = step.fields.find((f) => f.type === 'photo');
+    expect(photo?.required).toBe(false);
+    expect(photo?.maxCount).toBe(5);
+  });
+
+  it('contact-and-address step collects name, phone, email, full_address — all required', () => {
+    const step = fencingWizardConfig.steps[6];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 6');
+    expect(step.id).toBe('contact-and-address');
+    const keys = step.fields.map((f) => f.key);
+    expect(keys).toEqual(['contact_name', 'contact_phone', 'contact_email', 'full_address']);
+    for (const field of step.fields) {
+      expect(field.required).toBe(true);
+    }
+  });
 });
