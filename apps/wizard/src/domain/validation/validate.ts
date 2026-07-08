@@ -87,12 +87,29 @@ export function validatePricingConfig(
 // ---------------------------------------------------------------------------
 
 /**
- * Collect every field ID declared anywhere in the wizard.
+ * Collect every answer key / field ID declared anywhere in the wizard.
+ *
+ * Classic field steps: field.id values.
+ * VisualCardSelectorStep: answerKey.
+ * SizeBracketSelectorStep: answerKey + each exactField.id.
+ *
+ * Used by the cross-reference passes to validate that pricing quantityFieldId
+ * and modifier/extra appliesToFieldId values resolve to real answer keys.
  */
 function collectFieldIds(wizard: WizardConfig): Set<string> {
   const ids = new Set<string>();
   for (const step of wizard.steps) {
-    if (!isFieldStep(step)) continue;
+    if (!isFieldStep(step)) {
+      if (step.stepKind === 'visual-card-selector') {
+        ids.add(step.answerKey);
+      } else if (step.stepKind === 'size-bracket-selector') {
+        ids.add(step.answerKey);
+        for (const ef of step.exactFields) {
+          ids.add(ef.id);
+        }
+      }
+      continue;
+    }
     for (const field of step.fields) {
       ids.add(field.id);
     }

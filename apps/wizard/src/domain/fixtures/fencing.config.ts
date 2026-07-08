@@ -1,33 +1,23 @@
 /**
  * CANONICAL REFERENCE CONFIG — Fencing vertical.
  *
- * This is a contract artifact and a teaching example. Engineers onboarding a
- * new client or vertical will read this to learn how a wizard + pricing config
- * is authored. Keep it:
- *   - heavily commented where useful
- *   - human-readable
- *   - intentionally and stably ordered
+ * Redesigned in Step 5.13b to use the new step types introduced in 5.13a:
+ *   - SizeBracketSelectorStep for fence length (bracket or exact)
+ *   - VisualCardSelectorStep for fence type and height
+ *   - EstimateDisplayStep mid-wizard with accept/adjust decision
  *
- * It is also a COMPILE-TIME + TEST-TIME validity proof: the values below are
- * typed against WizardConfig / PricingConfig, and the test suite runs them
- * through the full validators. A malformed reference config fails CI, never
- * production.
+ * Flow: size → type → height → estimate → contact → extras
+ * The pre-step (ADR-0022) collects name/postcode/phone/email first.
  *
- * MONEY: every monetary value is INTEGER PENCE. £45.00/linear-metre = 4500.
- * There is no floating-point money anywhere. See pricing.ts for the rules.
+ * MONEY: every monetary value is INTEGER PENCE. £75.00/m = 7500.
  *
- * IDS vs LABELS: `id`/`key`/`value` are stable contracts; `label`/`title` are
- * editable human copy. Cross-references use IDs only.
+ * IDS vs LABELS: `id`/`key`/`answerKey`/`value` are stable contracts;
+ * `label`/`title` are editable human copy.
  */
 
 import type { WizardConfig } from '@/domain/config/wizard-config';
 import type { PricingConfig } from '@/domain/config/pricing';
 
-/**
- * The wizard definition: the questions a homeowner answers to get a fencing
- * quote. Worked example target (Phase 1 pricing spec): a 20 linear-metre fence
- * lands in the £5,750–£7,750 range.
- */
 export const fencingWizardConfig: WizardConfig = {
   schemaVersion: 1,
   id: 'fencing',
@@ -35,82 +25,51 @@ export const fencingWizardConfig: WizardConfig = {
   title: 'Fencing',
   steps: [
     {
-      id: 'dimensions',
-      title: 'Your fence',
-      description: 'Tell us the size and type of fence you need.',
-      fields: [
-        {
-          id: 'length_m',
-          key: 'length_m',
-          type: 'number',
-          label: 'Approximate length in metres',
-          help: 'A rough estimate is fine. We confirm exact measurements on site.',
-          required: true,
-        },
-        {
-          id: 'fence_type',
-          key: 'fence_type',
-          type: 'select',
-          label: 'Fence type',
-          required: true,
-          options: [
-            { value: 'feather_edge', label: 'Feather edge' },
-            { value: 'closeboard', label: 'Closeboard' },
-            { value: 'panel', label: 'Panel' },
-          ],
-        },
-        {
-          id: 'height',
-          key: 'height',
-          type: 'radio',
-          label: 'Height',
-          required: true,
-          options: [
-            { value: 'low', label: 'Up to 1.2m' },
-            { value: 'standard', label: '1.5m to 1.8m' },
-            { value: 'tall', label: 'Over 1.8m' },
-          ],
-        },
+      stepKind: 'size-bracket-selector',
+      id: 'fence_size',
+      title: 'How much fencing do you need?',
+      description: 'Choose the approximate length, or enter the exact measurement.',
+      answerKey: 'fence_size',
+      brackets: [
+        { id: 'small', label: 'Small', minValue: 0, maxValue: 10, unit: 'm', typicalValue: 8 },
+        { id: 'medium', label: 'Medium', minValue: 10, maxValue: 30, unit: 'm', typicalValue: 20 },
+        { id: 'large', label: 'Large', minValue: 30, maxValue: 60, unit: 'm', typicalValue: 45 },
+      ],
+      exactPromptLabel: 'I know the exact length',
+      exactFields: [{ id: 'length_m', label: 'Length in metres', unit: 'm' }],
+    },
+    {
+      stepKind: 'visual-card-selector',
+      id: 'fence_type_step',
+      title: 'What type of fence?',
+      description: 'Choose the fencing style that suits your property.',
+      answerKey: 'fence_type',
+      options: [
+        { id: 'feather_edge', label: 'Feather Edge' },
+        { id: 'closeboard', label: 'Closeboard' },
+        { id: 'panel', label: 'Panel' },
+        { id: 'chain_link', label: 'Chain Link' },
       ],
     },
     {
-      id: 'extras',
-      title: 'Extras',
-      description: 'Optional additions to your quote.',
-      fields: [
-        {
-          id: 'include_gate',
-          key: 'include_gate',
-          type: 'checkbox',
-          label: 'Include a gate',
-          required: false,
-          options: [{ value: 'yes', label: 'Yes, include a gate' }],
-        },
-        {
-          id: 'remove_old',
-          key: 'remove_old',
-          type: 'checkbox',
-          label: 'Remove the existing fence',
-          required: false,
-          options: [{ value: 'yes', label: 'Yes, remove and dispose of the old fence' }],
-        },
+      stepKind: 'visual-card-selector',
+      id: 'fence_height_step',
+      title: 'What height?',
+      description: 'Choose the approximate fence height.',
+      answerKey: 'height',
+      options: [
+        { id: 'low', label: 'Up to 1.2m' },
+        { id: 'standard', label: '1.5m to 1.8m' },
+        { id: 'tall', label: 'Over 1.8m' },
       ],
     },
     {
-      id: 'site_photos',
-      title: 'Site photos',
-      description: 'Add photos of the area so we can give a more accurate estimate.',
-      fields: [
-        {
-          id: 'site_photos',
-          key: 'site_photos',
-          type: 'photo',
-          label: 'Photos of the area (optional)',
-          maxCount: 5,
-          required: false,
-          help: 'Up to 5 photos. We accept JPEG, PNG, and WebP. Photos are compressed automatically before upload.',
-        },
-      ],
+      stepKind: 'estimate-display',
+      id: 'estimate',
+      title: 'Your estimate',
+      description: 'Based on the details you have provided.',
+      disclaimer: 'This is a guide price. We confirm exact costs after a site survey.',
+      onAdjustGoTo: 'fence_size',
     },
     {
       id: 'contact',
@@ -141,16 +100,25 @@ export const fencingWizardConfig: WizardConfig = {
       ],
     },
     {
-      id: 'review',
-      title: 'Review',
-      description: 'Check your answers before we prepare your quote.',
+      id: 'extras',
+      title: 'Extras',
+      description: 'Optional additions to your quote.',
       fields: [
         {
-          id: 'review_summary',
-          key: 'review_summary',
-          type: 'review',
-          label: 'Your answers',
+          id: 'include_gate',
+          key: 'include_gate',
+          type: 'checkbox',
+          label: 'Include a gate',
           required: false,
+          options: [{ value: 'yes', label: 'Yes, include a gate' }],
+        },
+        {
+          id: 'remove_old',
+          key: 'remove_old',
+          type: 'checkbox',
+          label: 'Remove the existing fence',
+          required: false,
+          options: [{ value: 'yes', label: 'Yes, remove and dispose of the old fence' }],
         },
       ],
     },
@@ -158,25 +126,26 @@ export const fencingWizardConfig: WizardConfig = {
 };
 
 /**
- * The pricing model for fencing. Evaluation order (implemented by the 4.5
- * engine): base * quantity -> modifiers (in order) -> extras (in order) ->
- * clamp -> round -> spread into a range.
+ * Placeholder pricing for fencing.
  *
- * Worked example (Phase 1 spec): length_m = 20, fence_type = closeboard,
- * height = standard, no extras.
- *   base:        4500 pence/m * 20 = 90000 (£900)  -- NOTE: see test for the
- *                full worked figures; the canonical spec target is the final
- *                RANGE £5,750–£7,750, reproduced in the engine tests in 4.5.
+ * Base: £75/m (feather edge baseline). Fence type and height modifiers applied
+ * to the length_m quantity, which is populated either by bracket typicalValue
+ * or by the user entering the exact length.
  *
- * The exact arithmetic is asserted in the 4.5 engine tests against this config;
- * here we provide the declarative rules the engine consumes.
+ * Worked example: 20m feather_edge standard
+ *   base: 7500 × 20 = 150 000 p (£1 500)
+ *   no modifiers match (feather_edge and standard have no modifier)
+ *   round to £5: 150 000
+ *   range ±15%: £1 275 – £1 725
+ *
+ * A real deployment calibrates these values for their local market.
  */
 export const fencingPricingConfig: PricingConfig = {
   schemaVersion: 1,
   currency: 'GBP',
   base: {
-    label: 'Base rate per linear metre',
-    perUnitPence: 32500, // £325.00 per linear metre (installed)
+    label: 'Base rate per linear metre (feather edge)',
+    perUnitPence: 7500, // £75.00 per linear metre
     unit: 'linear_metre',
     quantityFieldId: 'length_m',
   },
@@ -189,18 +158,32 @@ export const fencingPricingConfig: PricingConfig = {
       effect: { kind: 'multiply', factor: 1.1 },
     },
     {
-      id: 'type_panel_discount',
-      label: 'Panel (lower labour)',
+      id: 'type_panel',
+      label: 'Panel premium',
       appliesToFieldId: 'fence_type',
       match: { kind: 'equals', value: 'panel' },
-      effect: { kind: 'multiply', factor: 0.9 },
+      effect: { kind: 'multiply', factor: 1.2 },
+    },
+    {
+      id: 'type_chain_link',
+      label: 'Chain link discount',
+      appliesToFieldId: 'fence_type',
+      match: { kind: 'equals', value: 'chain_link' },
+      effect: { kind: 'multiply', factor: 0.55 },
     },
     {
       id: 'height_tall',
       label: 'Tall fence premium',
       appliesToFieldId: 'height',
       match: { kind: 'equals', value: 'tall' },
-      effect: { kind: 'multiply', factor: 1.2 },
+      effect: { kind: 'multiply', factor: 1.3 },
+    },
+    {
+      id: 'height_low',
+      label: 'Low fence discount',
+      appliesToFieldId: 'height',
+      match: { kind: 'equals', value: 'low' },
+      effect: { kind: 'multiply', factor: 0.8 },
     },
   ],
   extras: [
@@ -216,16 +199,16 @@ export const fencingPricingConfig: PricingConfig = {
       label: 'Remove and dispose of existing fence',
       appliesToFieldId: 'remove_old',
       match: { kind: 'equals', value: 'yes' },
-      amountPence: 45000, // £450.00
+      amountPence: 40000, // £400.00
     },
   ],
   bounds: {
-    minPence: 25000, // £250 minimum job
+    minPence: 20000, // £200 minimum job
     maxPence: 5000000, // £50,000 ceiling
     rounding: {
       mode: 'nearest',
-      toPence: 5000, // round to nearest £50
+      toPence: 500, // round to nearest £5
     },
   },
-  rangeSpreadBasisPoints: 1500, // +/-15% -> presented as a range
+  rangeSpreadBasisPoints: 1500, // ±15%
 };

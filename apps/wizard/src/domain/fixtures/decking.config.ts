@@ -1,37 +1,18 @@
 /**
  * CANONICAL REFERENCE CONFIG — Decking vertical.
  *
- * Second reference vertical (added in Step 4.7) alongside fencing.config.ts.
- * Its primary purpose is to prove the abstraction: the wizard engine, pricing
- * engine, FSM, validation, and submission pipeline run identically regardless
- * of which service produced the config. Only the data differs.
+ * Redesigned in Step 5.13b to use the new step types introduced in 5.13a.
+ * Pricing switches from linear metre (length only) to square metre (area).
  *
- * Read alongside fencing.config.ts to understand the two-vertical pattern.
+ * Flow: size → material → estimate → contact → extras
+ * The pre-step (ADR-0022) collects name/postcode/phone/email first.
  *
- * MONEY: every monetary value is INTEGER PENCE. £250 = 25000.
- *
- * IDS vs LABELS: `id`/`key`/`value` are stable contracts; `label`/`title` are
- * editable human copy. Cross-references use IDs only.
- *
- * PRICING NOTE — width is informational only:
- *   The `width_m` field collects the approximate deck width for the contractor's
- *   reference, but it does NOT affect the quoted price in this template. The
- *   base rate is per linear metre of decking run; material premiums are the
- *   primary differentiator. A real client deployment may choose to incorporate
- *   width into the pricing formula, but doing so requires a richer pricing DSL
- *   (e.g. a computed quantity field) that is out of scope for this reference.
- *   This is documented here so engineers cloning the template understand the
- *   simplification.
+ * MONEY: every monetary value is INTEGER PENCE. £90.00/m² = 9000.
  */
 
 import type { WizardConfig } from '@/domain/config/wizard-config';
 import type { PricingConfig } from '@/domain/config/pricing';
 
-/**
- * The wizard definition for decking quotes. A homeowner answers questions about
- * their planned deck; the wizard collects dimensions, material, optional extras,
- * and contact details.
- */
 export const deckingWizardConfig: WizardConfig = {
   schemaVersion: 1,
   id: 'decking',
@@ -39,62 +20,38 @@ export const deckingWizardConfig: WizardConfig = {
   title: 'Decking',
   steps: [
     {
-      id: 'dimensions',
-      title: 'Your deck',
-      description: 'Tell us the approximate size and material you have in mind.',
-      fields: [
-        {
-          id: 'length_m',
-          key: 'length_m',
-          type: 'number',
-          label: 'Approximate length in metres',
-          help: 'A rough estimate is fine. We confirm exact measurements on site.',
-          required: true,
-        },
-        {
-          id: 'width_m',
-          key: 'width_m',
-          type: 'number',
-          label: 'Approximate width in metres',
-          help: 'Collected for the contractor. Does not affect the quoted price in this template.',
-          required: false,
-        },
-        {
-          id: 'material',
-          key: 'material',
-          type: 'select',
-          label: 'Decking material',
-          required: true,
-          options: [
-            { value: 'softwood', label: 'Softwood (pine/spruce)' },
-            { value: 'hardwood', label: 'Hardwood (oak/ipe)' },
-            { value: 'composite', label: 'Composite (low maintenance)' },
-          ],
-        },
+      stepKind: 'size-bracket-selector',
+      id: 'deck_size',
+      title: 'How large is the deck?',
+      description: 'Choose the approximate area, or enter the exact measurement.',
+      answerKey: 'deck_size',
+      brackets: [
+        { id: 'small', label: 'Small', minValue: 0, maxValue: 10, unit: 'm²', typicalValue: 8 },
+        { id: 'medium', label: 'Medium', minValue: 10, maxValue: 30, unit: 'm²', typicalValue: 20 },
+        { id: 'large', label: 'Large', minValue: 30, maxValue: 60, unit: 'm²', typicalValue: 45 },
+      ],
+      exactPromptLabel: 'I know the exact area',
+      exactFields: [{ id: 'area_m2', label: 'Area in square metres', unit: 'm²' }],
+    },
+    {
+      stepKind: 'visual-card-selector',
+      id: 'material_step',
+      title: 'What material?',
+      description: 'Choose the decking material.',
+      answerKey: 'material',
+      options: [
+        { id: 'softwood', label: 'Softwood', description: 'Pine or spruce — cost-effective' },
+        { id: 'hardwood', label: 'Hardwood', description: 'Oak or ipe — long lasting' },
+        { id: 'composite', label: 'Composite', description: 'Low maintenance' },
       ],
     },
     {
-      id: 'extras',
-      title: 'Extras',
-      description: 'Optional additions to your quote.',
-      fields: [
-        {
-          id: 'include_steps',
-          key: 'include_steps',
-          type: 'checkbox',
-          label: 'Include steps',
-          required: false,
-          options: [{ value: 'yes', label: 'Yes, include steps up to deck level' }],
-        },
-        {
-          id: 'include_lighting',
-          key: 'include_lighting',
-          type: 'checkbox',
-          label: 'Include integrated lighting',
-          required: false,
-          options: [{ value: 'yes', label: 'Yes, include integrated deck lighting' }],
-        },
-      ],
+      stepKind: 'estimate-display',
+      id: 'estimate',
+      title: 'Your estimate',
+      description: 'Based on the details you have provided.',
+      disclaimer: 'This is a guide price. We confirm exact costs after a site survey.',
+      onAdjustGoTo: 'deck_size',
     },
     {
       id: 'contact',
@@ -125,16 +82,25 @@ export const deckingWizardConfig: WizardConfig = {
       ],
     },
     {
-      id: 'review',
-      title: 'Review',
-      description: 'Check your answers before we prepare your quote.',
+      id: 'extras',
+      title: 'Extras',
+      description: 'Optional additions to your quote.',
       fields: [
         {
-          id: 'review_summary',
-          key: 'review_summary',
-          type: 'review',
-          label: 'Your answers',
+          id: 'include_steps',
+          key: 'include_steps',
+          type: 'checkbox',
+          label: 'Include steps',
           required: false,
+          options: [{ value: 'yes', label: 'Yes, include steps up to deck level' }],
+        },
+        {
+          id: 'include_lighting',
+          key: 'include_lighting',
+          type: 'checkbox',
+          label: 'Include integrated lighting',
+          required: false,
+          options: [{ value: 'yes', label: 'Yes, include integrated deck lighting' }],
         },
       ],
     },
@@ -142,26 +108,22 @@ export const deckingWizardConfig: WizardConfig = {
 };
 
 /**
- * The pricing model for decking. Base rate is per linear metre of decking run
- * (softwood). Material premiums are applied as modifiers. Steps and lighting
- * are fixed-amount extras.
+ * Placeholder pricing for decking.
+ * Base: £90/m² (softwood baseline). Material premiums as modifiers.
  *
- * Worked example: 10m softwood, no extras.
- *   base: 25000 pence/m × 10 = 250000 (£2,500)
- *   no modifiers apply (softwood = default)
- *   no extras
- *   clamp: within bounds
- *   round: nearest £50 → £2,500
- *   range: ±15% → £2,125–£2,875
+ * Worked example: 20m² softwood, no extras
+ *   base: 9000 × 20 = 180 000 p (£1 800)
+ *   round to £5: 180 000
+ *   range ±15%: £1 530 – £2 070
  */
 export const deckingPricingConfig: PricingConfig = {
   schemaVersion: 1,
   currency: 'GBP',
   base: {
-    label: 'Base rate per linear metre (softwood)',
-    perUnitPence: 25000, // £250.00 per linear metre installed
-    unit: 'linear_metre',
-    quantityFieldId: 'length_m',
+    label: 'Base rate per square metre (softwood)',
+    perUnitPence: 9000, // £90.00 per m²
+    unit: 'square_metre',
+    quantityFieldId: 'area_m2',
   },
   modifiers: [
     {
@@ -169,14 +131,14 @@ export const deckingPricingConfig: PricingConfig = {
       label: 'Hardwood premium',
       appliesToFieldId: 'material',
       match: { kind: 'equals', value: 'hardwood' },
-      effect: { kind: 'multiply', factor: 1.4 },
+      effect: { kind: 'multiply', factor: 1.5 },
     },
     {
       id: 'material_composite',
       label: 'Composite premium',
       appliesToFieldId: 'material',
       match: { kind: 'equals', value: 'composite' },
-      effect: { kind: 'multiply', factor: 1.6 },
+      effect: { kind: 'multiply', factor: 1.8 },
     },
   ],
   extras: [
@@ -200,7 +162,7 @@ export const deckingPricingConfig: PricingConfig = {
     maxPence: 5000000, // £50,000 ceiling
     rounding: {
       mode: 'nearest',
-      toPence: 5000, // round to nearest £50
+      toPence: 500, // round to nearest £5
     },
   },
   rangeSpreadBasisPoints: 1500, // ±15%

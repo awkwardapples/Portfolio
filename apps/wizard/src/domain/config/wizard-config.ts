@@ -191,6 +191,13 @@ export const SizeBracketSchema = z.strictObject({
   minValue: z.number().nonnegative(),
   maxValue: z.number().positive(),
   unit: z.string().min(1),
+  /**
+   * Representative numeric value for this bracket used by the pricing engine
+   * when the user picks a bracket rather than entering exact dimensions.
+   * The SizeBracketSelectorStep component writes this to each exactField's
+   * answer key on bracket selection, so computePrice always receives a number.
+   */
+  typicalValue: z.number().nonnegative().optional(),
 });
 
 export type SizeBracket = z.infer<typeof SizeBracketSchema>;

@@ -6,7 +6,7 @@ import { validateStep } from '@/domain/runtime/answer-validation';
 import { getVisibleSteps } from '@/domain/runtime/navigation';
 
 // ---------------------------------------------------------------------------
-// Test fixture: wizard with a mix of field steps and an estimate-display step
+// Test fixtures
 // ---------------------------------------------------------------------------
 
 const mixedConfig: WizardConfig = {
@@ -35,17 +35,76 @@ const mixedConfig: WizardConfig = {
   ],
 };
 
+const allStepTypesConfig: WizardConfig = {
+  schemaVersion: 1,
+  id: 'all-types-test',
+  title: 'All step types',
+  steps: [
+    {
+      stepKind: 'size-bracket-selector' as const,
+      id: 'area_bracket',
+      title: 'Area',
+      answerKey: 'area_size',
+      brackets: [{ id: 'small', label: 'Small', minValue: 0, maxValue: 10, unit: 'm²' }],
+      exactPromptLabel: 'Exact',
+      exactFields: [{ id: 'area_m2', label: 'Area', unit: 'm²' }],
+    },
+    {
+      stepKind: 'visual-card-selector' as const,
+      id: 'material_step',
+      title: 'Material',
+      answerKey: 'material',
+      options: [{ id: 'brick', label: 'Brick' }],
+    },
+    {
+      stepKind: 'estimate-display' as const,
+      id: 'estimate',
+      title: 'Estimate',
+      disclaimer: 'Guide price only.',
+      onAdjustGoTo: 'area_bracket',
+    },
+    {
+      id: 'contact',
+      title: 'Contact',
+      fields: [{ id: 'f-name', key: 'name', type: 'text', label: 'Name', required: true }],
+    },
+  ],
+};
+
 const answers = {};
 const fieldKeyById = buildFieldKeyMap(mixedConfig);
+const allTypesFieldKeyById = buildFieldKeyMap(allStepTypesConfig);
 
 describe('buildFieldKeyMap with non-field steps', () => {
-  it('only includes field IDs from classic field steps', () => {
+  it('includes field IDs from classic field steps', () => {
     expect(fieldKeyById.get('f-size')).toBe('size');
     expect(fieldKeyById.get('f-name')).toBe('name');
   });
 
   it('does not include any ID from the estimate-display step', () => {
     expect(fieldKeyById.get('estimate')).toBeUndefined();
+  });
+});
+
+describe('buildFieldKeyMap with visual-card-selector and size-bracket-selector', () => {
+  it('includes VisualCardSelectorStep answerKey with identity mapping', () => {
+    expect(allTypesFieldKeyById.get('material')).toBe('material');
+  });
+
+  it('includes SizeBracketSelectorStep answerKey with identity mapping', () => {
+    expect(allTypesFieldKeyById.get('area_size')).toBe('area_size');
+  });
+
+  it('includes SizeBracketSelectorStep exactField ids with identity mapping', () => {
+    expect(allTypesFieldKeyById.get('area_m2')).toBe('area_m2');
+  });
+
+  it('does not include the estimate-display step id in the all-types config', () => {
+    expect(allTypesFieldKeyById.get('estimate')).toBeUndefined();
+  });
+
+  it('includes classic field step entries alongside new step type entries', () => {
+    expect(allTypesFieldKeyById.get('f-name')).toBe('name');
   });
 });
 

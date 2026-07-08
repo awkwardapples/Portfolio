@@ -486,67 +486,83 @@ describe('computePrice — determinism', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Integration: fencing fixture
+// Integration: fencing fixture (redesigned in 5.13b)
 //
-// Worked example: length_m=20, fence_type=closeboard, height=standard, no extras
-//   base:        32500 * 20 = 650000
-//   closeboard:  650000 * 1.1 = 715000   (other modifiers not matched)
-//   no extras
-//   clamp:       715000 (within 25000..5000000)
-//   round 5000:  715000 (already a multiple)
-//   spread 1500: rangeMin = round(715000*8500/10000) = 607750
-//                rangeMax = round(715000*11500/10000) = 822250
+// Base rate: 7500 p/m (£75/m). Quantity: length_m from SizeBracketSelectorStep
+// exactField (populated by typicalValue on bracket select, or direct entry).
+// fence_type and height are VisualCardSelectorStep answerKeys, resolved via the
+// extended buildFieldKeyMap.
+//
+// Worked example: length_m=20, fence_type=feather_edge, height=standard
+//   base:   7500 * 20 = 150000 (£1 500)
+//   no modifiers match (feather_edge and standard have no modifier)
+//   round 500: 150000
+//   spread 1500: rangeMin = round(150000*8500/10000) = 127500
+//               rangeMax = round(150000*11500/10000) = 172500
 // ---------------------------------------------------------------------------
 
 describe('computePrice — fencing fixture integration', () => {
-  it('closeboard standard fence, 20m, no extras produces correct price and range', () => {
-    const answers: AnswerMap = { length_m: 20, fence_type: 'closeboard', height: 'standard' };
+  it('feather_edge standard fence, 20m produces correct price and range', () => {
+    const answers: AnswerMap = { length_m: 20, fence_type: 'feather_edge', height: 'standard' };
     const result = computePrice(answers, fencingWizardConfig, fencingPricingConfig);
 
     expect(result.valid).toBe(true);
-    expect(result.totalPence).toBe(715000);
-    expect(result.rangeMinPence).toBe(607750);
-    expect(result.rangeMaxPence).toBe(822250);
-    expect(result.breakdown?.basePence).toBe(650000);
-    expect(result.breakdown?.subtotalAfterModifiersPence).toBe(715000);
+    expect(result.totalPence).toBe(150000);
+    expect(result.rangeMinPence).toBe(127500);
+    expect(result.rangeMaxPence).toBe(172500);
+    expect(result.breakdown?.basePence).toBe(150000);
+    expect(result.breakdown?.subtotalAfterModifiersPence).toBe(150000);
   });
 
-  it('panel fence, 20m applies discount modifier', () => {
-    //   base:   32500 * 20 = 650000
-    //   panel:  650000 * 0.9 = 585000
-    //   round 5000: 585000
-    const answers: AnswerMap = { length_m: 20, fence_type: 'panel', height: 'standard' };
+  it('closeboard standard fence, 20m applies 1.1x modifier', () => {
+    //   base:      7500 * 20 = 150000
+    //   closeboard: 150000 * 1.1 = 165000
+    //   round 500: 165000
+    const answers: AnswerMap = { length_m: 20, fence_type: 'closeboard', height: 'standard' };
     const result = computePrice(answers, fencingWizardConfig, fencingPricingConfig);
-    expect(result.totalPence).toBe(585000);
+    expect(result.totalPence).toBe(165000);
+    expect(result.breakdown?.subtotalAfterModifiersPence).toBe(165000);
   });
 
-  it('closeboard tall fence stacks two modifiers', () => {
-    //   base:        32500 * 20 = 650000
-    //   closeboard:  650000 * 1.1 = 715000
-    //   tall:        715000 * 1.2 = 858000
-    //   round 5000:  Math.round(858000/5000)*5000 = 172*5000 = 860000
-    const answers: AnswerMap = { length_m: 20, fence_type: 'closeboard', height: 'tall' };
+  it('panel tall fence stacks two modifiers', () => {
+    //   base:   7500 * 20 = 150000
+    //   panel:  150000 * 1.2 = 180000
+    //   tall:   180000 * 1.3 = 234000
+    //   round 500: 234000
+    const answers: AnswerMap = { length_m: 20, fence_type: 'panel', height: 'tall' };
     const result = computePrice(answers, fencingWizardConfig, fencingPricingConfig);
-    expect(result.totalPence).toBe(860000);
-    expect(result.breakdown?.subtotalAfterModifiersPence).toBe(858000);
+    expect(result.totalPence).toBe(234000);
+    expect(result.breakdown?.subtotalAfterModifiersPence).toBe(234000);
   });
 
   it('adds gate and removal extras', () => {
-    //   base:        32500 * 20 = 650000
-    //   closeboard:  715000
-    //   gate:        +35000 = 750000
-    //   removal:     +45000 = 795000
-    //   round 5000:  795000
+    //   base:      7500 * 20 = 150000
+    //   gate:      +35000 = 185000
+    //   removal:   +40000 = 225000
+    //   round 500: 225000
     const answers: AnswerMap = {
       length_m: 20,
-      fence_type: 'closeboard',
+      fence_type: 'feather_edge',
       height: 'standard',
       include_gate: 'yes',
       remove_old: 'yes',
     };
     const result = computePrice(answers, fencingWizardConfig, fencingPricingConfig);
-    expect(result.breakdown?.subtotalAfterExtrasPence).toBe(795000);
-    expect(result.totalPence).toBe(795000);
+    expect(result.breakdown?.subtotalAfterExtrasPence).toBe(225000);
+    expect(result.totalPence).toBe(225000);
+  });
+
+  it('bracket typicalValue (medium=20m) produces the same result as explicit length_m=20', () => {
+    // Simulates bracket selection: answers['fence_size']='medium', answers['length_m']=20
+    const bracketAnswers: AnswerMap = {
+      fence_size: 'medium',
+      length_m: 20,
+      fence_type: 'feather_edge',
+      height: 'standard',
+    };
+    const result = computePrice(bracketAnswers, fencingWizardConfig, fencingPricingConfig);
+    expect(result.valid).toBe(true);
+    expect(result.totalPence).toBe(150000);
   });
 
   it('returns valid: false when length_m is not set', () => {

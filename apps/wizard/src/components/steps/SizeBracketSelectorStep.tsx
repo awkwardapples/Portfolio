@@ -43,9 +43,14 @@ export function SizeBracketSelectorStep({
   const selectedMode = state.answers[step.answerKey];
   const isExactMode = selectedMode === EXACT_SENTINEL;
 
-  function handleBracketSelect(bracketId: string): void {
+  function handleBracketSelect(bracketId: string, typicalValue: number | undefined): void {
     setSelectionError(undefined);
     dispatch({ type: 'ANSWER_SET', fieldKey: step.answerKey, value: bracketId });
+    if (typicalValue !== undefined) {
+      for (const ef of step.exactFields) {
+        dispatch({ type: 'ANSWER_SET', fieldKey: ef.id, value: typicalValue });
+      }
+    }
   }
 
   function handleExactToggle(): void {
@@ -96,7 +101,7 @@ export function SizeBracketSelectorStep({
               <button
                 key={bracket.id}
                 type="button"
-                onClick={() => handleBracketSelect(bracket.id)}
+                onClick={() => handleBracketSelect(bracket.id, bracket.typicalValue)}
                 aria-pressed={selected}
                 className={[
                   'flex w-full items-center justify-between rounded border px-4 py-3 text-left transition-colors',

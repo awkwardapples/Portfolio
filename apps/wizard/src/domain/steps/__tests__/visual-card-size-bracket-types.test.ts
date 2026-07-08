@@ -155,6 +155,38 @@ describe('SizeBracketSelectorStepSchema', () => {
     const result = SizeBracketSelectorStepSchema.parse(validSizeBracket);
     expect(isFieldStep(result)).toBe(false);
   });
+
+  it('accepts a bracket with typicalValue present', () => {
+    const withTypical = {
+      ...validSizeBracket,
+      brackets: [
+        { id: 'small', label: 'Small', minValue: 0, maxValue: 20, unit: 'm²', typicalValue: 15 },
+      ],
+    };
+    const result = SizeBracketSelectorStepSchema.safeParse(withTypical);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.brackets[0]?.typicalValue).toBe(15);
+    }
+  });
+
+  it('typicalValue is optional — bracket without it still parses', () => {
+    const result = SizeBracketSelectorStepSchema.safeParse(validSizeBracket);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.brackets[0]?.typicalValue).toBeUndefined();
+    }
+  });
+
+  it('rejects typicalValue below zero', () => {
+    const withNegative = {
+      ...validSizeBracket,
+      brackets: [
+        { id: 'small', label: 'Small', minValue: 0, maxValue: 20, unit: 'm²', typicalValue: -1 },
+      ],
+    };
+    expect(SizeBracketSelectorStepSchema.safeParse(withNegative).success).toBe(false);
+  });
 });
 
 // ---------------------------------------------------------------------------

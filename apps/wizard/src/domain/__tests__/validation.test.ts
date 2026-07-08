@@ -31,22 +31,22 @@ describe('structural rejection (Zod phase)', () => {
 
   it('rejects a misspelled field key (strict objects catch typos)', () => {
     const bad = clone(fencingWizardConfig);
-    // Introduce a typo'd property on the first field.
-    (asStep(bad.steps[0]).fields[0] as unknown as Record<string, unknown>).requried = true;
+    // Introduce a typo'd property on the first field of the contact step (index 4).
+    (asStep(bad.steps[4]).fields[0] as unknown as Record<string, unknown>).requried = true;
     const result = validateWizardConfig(bad);
     expect(result.ok).toBe(false);
   });
 
   it('rejects a step with no fields', () => {
     const bad = clone(fencingWizardConfig);
-    asStep(bad.steps[0]).fields = [];
+    asStep(bad.steps[4]).fields = [];
     const result = validateWizardConfig(bad);
     expect(result.ok).toBe(false);
   });
 
   it('rejects a field with an empty label', () => {
     const bad = clone(fencingWizardConfig);
-    asStep(bad.steps[0]).fields[0].label = '';
+    asStep(bad.steps[4]).fields[0].label = '';
     const result = validateWizardConfig(bad);
     expect(result.ok).toBe(false);
   });
@@ -62,7 +62,7 @@ describe('structural rejection (Zod phase)', () => {
 describe('semantic rejection (cross-reference phase)', () => {
   it('rejects a dangling condition fieldId reference', () => {
     const bad = clone(fencingWizardConfig);
-    asStep(bad.steps[1]).fields[0].condition = {
+    asStep(bad.steps[4]).fields[0].condition = {
       operator: 'equals',
       fieldId: 'does_not_exist',
       value: 'yes',
@@ -75,7 +75,8 @@ describe('semantic rejection (cross-reference phase)', () => {
 
   it('rejects duplicate field ids', () => {
     const bad = clone(fencingWizardConfig);
-    asStep(bad.steps[0]).fields[1].id = asStep(bad.steps[0]).fields[0].id;
+    // contact step (index 4) has: contact_name[0], contact_email[1], contact_phone[2]
+    asStep(bad.steps[4]).fields[1].id = asStep(bad.steps[4]).fields[0].id;
     const result = validateWizardConfig(bad);
     expect(result.ok).toBe(false);
     if (result.ok) return;
@@ -84,7 +85,8 @@ describe('semantic rejection (cross-reference phase)', () => {
 
   it('rejects a choice field with no options', () => {
     const bad = clone(fencingWizardConfig);
-    delete (asStep(bad.steps[0]).fields[1] as { options?: unknown }).options;
+    // extras step (index 5), fields[0] = include_gate (checkbox with options)
+    delete (asStep(bad.steps[5]).fields[0] as { options?: unknown }).options;
     const result = validateWizardConfig(bad);
     expect(result.ok).toBe(false);
     if (result.ok) return;
@@ -93,8 +95,8 @@ describe('semantic rejection (cross-reference phase)', () => {
 
   it('rejects a non-choice field that defines options', () => {
     const bad = clone(fencingWizardConfig);
-    // length_m is a number field; give it options.
-    (asStep(bad.steps[0]).fields[0] as { options?: unknown }).options = [
+    // contact_name is a text field; give it options.
+    (asStep(bad.steps[4]).fields[0] as { options?: unknown }).options = [
       { value: 'x', label: 'X' },
     ];
     const result = validateWizardConfig(bad);
@@ -158,10 +160,10 @@ describe('pricing semantic rejection', () => {
 describe('deterministic error ordering', () => {
   it('produces byte-stable issue output across repeated runs', () => {
     const bad = clone(fencingWizardConfig);
-    // Introduce multiple problems at once.
-    asStep(bad.steps[0]).fields[0].label = '';
+    // Introduce multiple problems at once across different step types.
+    asStep(bad.steps[4]).fields[0].label = '';
     bad.steps[0].id = 'Bad Id';
-    asStep(bad.steps[1]).fields[0].condition = {
+    asStep(bad.steps[4]).fields[0].condition = {
       operator: 'equals',
       fieldId: 'missing_a',
       value: 'x',

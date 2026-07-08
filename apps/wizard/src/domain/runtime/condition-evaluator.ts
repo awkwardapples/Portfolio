@@ -4,19 +4,33 @@ import { isFieldStep } from '@/domain/config/wizard-config';
 import type { AnswerMap } from '@/domain/runtime/answer-types';
 
 /**
- * Builds a map of fieldId → field.key from a WizardConfig.
+ * Builds a map of fieldId → answerKey from a WizardConfig.
+ *
+ * For classic field steps: field.id → field.key (may differ).
+ * For VisualCardSelectorStep: answerKey → answerKey (identity mapping).
+ * For SizeBracketSelectorStep: answerKey → answerKey plus each exactField.id → exactField.id.
+ *
+ * This allows the pricing engine and condition evaluator to resolve answer
+ * keys from all step types, not only classic field steps.
  *
  * Create once at hydration and pass to evaluateCondition; avoids scanning
  * the config on every evaluation. The map is sealed after construction and
  * does not retain a reference to the config.
- *
- * Non-field steps (estimate-display, visual-card-selector, size-bracket-selector)
- * have no field registry entries and are skipped.
  */
 export function buildFieldKeyMap(config: WizardConfig): ReadonlyMap<string, string> {
   const map = new Map<string, string>();
   for (const step of config.steps) {
-    if (!isFieldStep(step)) continue;
+    if (!isFieldStep(step)) {
+      if (step.stepKind === 'visual-card-selector') {
+        map.set(step.answerKey, step.answerKey);
+      } else if (step.stepKind === 'size-bracket-selector') {
+        map.set(step.answerKey, step.answerKey);
+        for (const ef of step.exactFields) {
+          map.set(ef.id, ef.id);
+        }
+      }
+      continue;
+    }
     for (const field of step.fields) {
       map.set(field.id, field.key);
     }
