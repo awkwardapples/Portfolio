@@ -117,6 +117,12 @@ export const StepSchema = z.strictObject({
   description: z.string().optional(),
   fields: z.array(FieldSchema).min(1, 'A step must contain at least one field.'),
   condition: ConditionSchema.optional(),
+  /**
+   * When true, renders a "Skip and Submit" button alongside the standard
+   * action button. Intended only for fully-optional terminal steps where the
+   * user may want to submit without filling any fields.
+   */
+  allowSkip: z.boolean().optional(),
 });
 
 export type Step = z.infer<typeof StepSchema>;

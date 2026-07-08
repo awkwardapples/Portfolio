@@ -90,6 +90,10 @@ export function StepRenderer({
     }
   }
 
+  function handleSkip(): void {
+    dispatch({ type: 'SUBMIT_REQUESTED' });
+  }
+
   const errorCount = showAllErrors && snapshot && !snapshot.valid ? snapshot.issues.length : 0;
 
   return (
@@ -126,6 +130,7 @@ export function StepRenderer({
           onNext={handleNext}
           isLast={isLast}
           disabled={hasMissingPhotos}
+          onSkip={isLast && step.allowSkip ? handleSkip : undefined}
         />
       </form>
     </StepCard>
