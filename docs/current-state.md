@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-07-08 (post Step 5.13b)_
+_Last updated: 2026-07-08 (post Step 5.13c)_
 
 ## What's working
 
@@ -23,16 +23,27 @@ _Last updated: 2026-07-08 (post Step 5.13b)_
 - Media validation: data URL prefix accepted, allowing browsers that prepend `data:image/jpeg;base64,` to succeed.
 - Wizard engine step types: `estimate-display`, `visual-card-selector`, and `size-bracket-selector` steps added alongside classic field steps. `AnyStep` discriminated union and `isFieldStep` guard applied throughout the engine and UI.
 - All 7 instant-quote service wizard configs redesigned to use the new step types (size-bracket → visual-card → estimate → contact flow). Pricing infrastructure extended to resolve `VisualCardSelectorStep.answerKey` and `SizeBracketSelectorStep` fields. `typicalValue` on `SizeBracket` auto-populates the quantity field for immediate pricing on bracket selection.
+- Pre-step (addressPreStep) reduced to postcode only (id `postcode_prestep`). All 7 instant-quote service configs now end with a `site_photos` step (optional, maxCount=5) and a `contact-and-address` step collecting name, phone (required), email, and full_address. Old lightweight `contact` step removed.
 
 ## Gate state (last verified)
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors
-- `pnpm test`: 652/652 (51 test files, +22 from 5.13b)
+- `pnpm test`: 674/674 (51 test files, +22 from 5.13c)
 - `pnpm build`: clean
 - `composer test`: 148 passed, 4 skipped (PHP unchanged)
 - `composer analyse`: clean (PHPStan level 8, no errors)
 - `composer lint`: 0/0 (PHPCS)
+
+## Gate state (5.13c, 2026-07-08)
+
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: 0 errors
+- `pnpm test`: **674/674 Vitest** (+22 from 5.13c, 51 test files)
+- `pnpm build`: clean (no bundle size change — no new components)
+- `composer lint`: 0/0 (no PHP changes)
+- `composer analyse`: no errors (no PHP changes)
+- `composer test`: **148 passed, 4 skipped** (PHP unchanged)
 
 ## Gate state (5.13b, 2026-07-08)
 
@@ -220,6 +231,15 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   plus the business profile JSON schema, modification map, report template,
   pre-deployment checklist, final verification commands, and three appendices.
   Documentation-only; all gates unchanged (598 Vitest, 143 PHP).
+- **Step 5.13c — Photo Upload + Pre-Step Reduction** (July 2026).
+  Pre-step (`addressPreStep`) reduced from 4 fields to postcode-only; id renamed
+  from `contact-and-address` to `postcode_prestep` to avoid collision with the new
+  end-of-wizard step. All 7 instant-quote service configs updated: old lightweight
+  `contact` step removed; `site_photos` step added (type:photo, required:false, maxCount:5);
+  new `contact-and-address` step added as final step with 4 required fields (name, phone,
+  email, full_address). `contact_phone` is now required. `full_address` is a new key not
+  in FORMAT_VALIDATORS. ADR-0022 amended; `docs/llm-customization-handoff.md` updated
+  with codebase state and wizard flow note. 22 new Vitest tests (652→674). PHP unchanged.
 - **Step 5.13b — All 7 Instant-Quote Service Wizard Flows Redesigned** (July 2026).
   All instant-quote configs (fencing, decking, painting, patio, driveway, steps,
   jetwash) updated to use new step types from 5.13a. New flow per service:
@@ -309,6 +329,6 @@ Strict ordering: validate → persist → forward → respond.
 
 - lint (`pnpm lint` → 0 errors, 0 warnings)
 - typecheck (`pnpm typecheck`)
-- vitest (`pnpm test` → 598/598)
+- vitest (`pnpm test` → 674/674)
 - build (`pnpm build`)
-- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 143 passed (2 skipped)
+- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 148 passed (4 skipped)

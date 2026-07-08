@@ -1,6 +1,6 @@
 # Handoff
 
-_Last updated: 2026-07-08 (post Step 5.13b)_
+_Last updated: 2026-07-08 (post Step 5.13c)_
 
 ## Status
 
@@ -108,6 +108,15 @@ _Last updated: 2026-07-08 (post Step 5.13b)_
   introduced in `wizard-config.ts`; all domain engine files updated to guard
   `.fields` access; three new React components added; ADR-0024 accepted.
   32 new Vitest tests (598→630, 51 test files). PHP and bundle unchanged.
+- Step 5.13c complete (July 8, 2026): Photo upload + pre-step reduction.
+  Pre-step (`addressPreStep`) reduced to postcode only; step id renamed to
+  `postcode_prestep` (was `contact-and-address`) to avoid collision with new
+  end-of-wizard step. All 7 instant-quote configs updated: old `contact` step
+  removed, `site_photos` step added (optional, maxCount=5), and `contact-and-address`
+  step added as final step with 4 required fields (name, phone, email, full_address).
+  `contact_phone` now required; `full_address` is a new key. ADR-0022 amended.
+  `docs/llm-customization-handoff.md` updated. 22 new Vitest tests (652→674, 51
+  test files). PHP unchanged (148/148).
 - Step 5.13b complete (July 8, 2026): All 7 instant-quote service wizard flows
   redesigned to use the new step types from 5.13a. New flow per service:
   size-bracket-selector → visual-card-selector (material/type) → estimate-display →
@@ -184,14 +193,13 @@ If you are starting a new step:
 The roadmap is sequenced explicitly. See `docs/roadmap.md` for full detail.
 
 **Immediate next action:** Step 5.12 — SCB-specific deployment (first real client).
-Template is now bug-fixed, engine-complete (5.12b + 5.13a), and all 7 instant-quote
-service flows use the new step kinds (5.13b). Activate the plugin on a LocalWP SCB
-site, then run `docs/llm-customization-handoff.md` against SCB's business profile
-to perform the full content/SEO/services customization pass. Task 8b in the handoff
-document covers pricing calibration for the instant-quote services (integer-pence
-values, which fields are safe to change, and how to verify with Vitest). Outstanding
-OVs (OV-5.10b, OV-5.10a, OV-5.9-R, etc.) can be batched into the 5.12 deploy
-session and recorded in `docs/phase-5-evidence.md`.
+Template is now bug-fixed, engine-complete (5.12b + 5.13a), all 7 instant-quote service
+flows use the new step kinds (5.13b), and photo upload + contact collection are
+restructured for better UX (5.13c). Activate the plugin on a LocalWP SCB site, then
+run `docs/llm-customization-handoff.md` against SCB's business profile to perform the
+full content/SEO/services customization pass. Task 8b covers pricing calibration for
+instant-quote services. Outstanding OVs (OV-5.10b, OV-5.10a, OV-5.9-R, etc.) can be
+batched into the 5.12 deploy session and recorded in `docs/phase-5-evidence.md`.
 
 Each step is sized small and verified before the next begins. See
 `docs/roadmap.md` "Step rationale and dependencies" for why each step is

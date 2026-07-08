@@ -1910,3 +1910,63 @@ layer resolve answers from the new step types:
 | 25  | `docs/roadmap.md` gains 5.13b row (Complete)                                                                                                        | ✅      |
 | 26  | `docs/current-state.md` updated: gate counts 630→652, 5.13b in What's working and Completed Steps                                                   | ✅      |
 | 27  | `docs/handoff.md` updated: 5.13b completion entry, Immediate next action updated                                                                    | ✅      |
+
+---
+
+## Step 5.13c — Photo Upload + Pre-Step Reduction
+
+_Compiled: 2026-07-08_
+
+### Commit Sequence
+
+| #   | Hash      | Message                                                                            |
+| --- | --------- | ---------------------------------------------------------------------------------- |
+| C1  | `616dccb` | chore(audit): Phase 0 audits for 5.13c photo relocation + pre-step reduction       |
+| C2  | `2179981` | feat(wizards): reduce pre-step to postcode-only (5.13c C2)                         |
+| C3  | `ec8719a` | feat(wizards/instant-quote): add photos + contact-and-address step, reorder flow   |
+| C4  | `419902a` | test(5.13c C4): add 22 new tests for photo step + contact-and-address              |
+| C5  | `d4bb204` | docs(ADR-0022+handoff): 5.13c amendment — pre-step reduction + contact-and-address |
+| C6  | _(this)_  | docs(evidence+standard): 5.13c evidence + standard doc updates                     |
+
+### Gate Results
+
+| Gate               | Result                                               |
+| ------------------ | ---------------------------------------------------- |
+| `pnpm lint`        | 0/0                                                  |
+| `pnpm typecheck`   | 0 errors                                             |
+| `pnpm test`        | **674/674 Vitest** (+22 from 5.13c, 51 test files)   |
+| `pnpm build`       | Clean (no bundle-size regression; no new components) |
+| `composer lint`    | 0/0 (no PHP changes)                                 |
+| `composer analyse` | No errors (no PHP changes)                           |
+| `composer test`    | **148 passed, 4 skipped** (PHP unchanged)            |
+
+### Acceptance Criteria
+
+| #   | Criterion                                                                                                                                                                | Status  |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| 1   | Pre-step id changed from `contact-and-address` to `postcode_prestep`                                                                                                     | ✅ test |
+| 2   | Pre-step has exactly 1 field (postcode only)                                                                                                                             | ✅ test |
+| 3   | Pre-step field: key=`postcode`, type=`text`, required=`true`                                                                                                             | ✅ test |
+| 4   | Pre-step has no name, phone, or email field (regression guard)                                                                                                           | ✅ test |
+| 5   | All 7 instant-quote configs: no step with id `contact` (old lightweight step removed)                                                                                    | ✅ test |
+| 6   | All 7 instant-quote configs: `site_photos` step added; field type=`photo`, required=`false`, maxCount=5                                                                  | ✅ test |
+| 7   | All 7 instant-quote configs: `contact-and-address` step is final step with 4 required fields                                                                             | ✅ test |
+| 8   | `contact-and-address` fields in order: contact_name, contact_phone, contact_email, full_address — all required=`true`                                                    | ✅ test |
+| 9   | `contact_phone` required=`true` (was optional in old `contact` step when phone was collected in pre-step)                                                                | ✅ test |
+| 10  | Fencing step order: fence_size, fence_type_step, fence_height_step, estimate, extras, site_photos, contact-and-address (7 steps)                                         | ✅ test |
+| 11  | Decking step order: deck_size, material_step, estimate, extras, site_photos, contact-and-address (6 steps)                                                               | ✅ test |
+| 12  | Painting step order: rooms_step, what_to_paint_step, estimate, extras, site_photos, contact-and-address (6 steps)                                                        | ✅ test |
+| 13  | Patio step order: patio_size, material_step, estimate, extras, site_photos, contact-and-address (6 steps)                                                                | ✅ test |
+| 14  | Driveway step order: driveway_size, material_step, estimate, extras, site_photos, contact-and-address (6 steps)                                                          | ✅ test |
+| 15  | Steps (garden steps) order: shape_step, material_step, step_count_step, estimate, extras, site_photos, contact-and-address (7 steps)                                     | ✅ test |
+| 16  | Jetwash step order: area_size, surface_type_step, estimate, site_photos, contact-and-address (5 steps; no extras)                                                        | ✅ test |
+| 17  | All 7 configs pass `validateWizardConfig` and `validatePricingConfig` without errors                                                                                     | ✅ test |
+| 18  | `validation.test.ts`: text-mutation tests redirected steps[4]→steps[6] (contact-and-address); checkbox tests steps[5]→steps[4] (extras)                                  | ✅      |
+| 19  | `error-tone-and-public-config.test.ts`: label-mutation test redirected steps[4]→steps[6]                                                                                 | ✅      |
+| 20  | All 7 per-service validation test files updated: step count assertions and step id arrays reflect new order                                                              | ✅      |
+| 21  | 22 new tests added across 7 per-service test files + address-prestep: photo step (optional/maxCount/type), contact-and-address (4 required fields), no-old-contact guard | ✅      |
+| 22  | ADR-0022 amended: pre-step reduction rationale, id collision resolution, new end-of-wizard step schema, post-5.13c step order                                            | ✅      |
+| 23  | `docs/llm-customization-handoff.md` updated: codebase state reference to 5.13c, wizard flow note documenting postcode-only pre-step and full_address                     | ✅      |
+| 24  | `docs/roadmap.md` gains 5.13c row (Complete)                                                                                                                             | ✅      |
+| 25  | `docs/current-state.md` updated: gate counts 652→674, 5.13c in What's working and Completed Steps                                                                        | ✅      |
+| 26  | `docs/handoff.md` updated: 5.13c completion entry, Immediate next action updated                                                                                         | ✅      |
