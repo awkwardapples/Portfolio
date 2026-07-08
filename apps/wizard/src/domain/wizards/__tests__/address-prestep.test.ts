@@ -4,30 +4,22 @@ import { addressPreStep } from '../address-prestep';
 
 describe('addressPreStep', () => {
   it('has the expected stable step id', () => {
-    expect(addressPreStep.id).toBe('contact-and-address');
+    expect(addressPreStep.id).toBe('postcode_prestep');
   });
 
-  it('has exactly four fields', () => {
-    expect(addressPreStep.fields).toHaveLength(4);
+  it('has exactly one field (postcode only — full contact moved to end-of-wizard step)', () => {
+    expect(addressPreStep.fields).toHaveLength(1);
   });
 
-  it('all fields use type text (no tel or email field types)', () => {
-    for (const field of addressPreStep.fields) {
-      expect(field.type).toBe('text');
-    }
+  it('field is type text', () => {
+    expect(addressPreStep.fields[0]!.type).toBe('text');
   });
 
-  it('all fields are required', () => {
-    for (const field of addressPreStep.fields) {
-      expect(field.required).toBe(true);
-    }
+  it('field is required', () => {
+    expect(addressPreStep.fields[0]!.required).toBe(true);
   });
 
-  it('field keys are the shared contact keys that trigger auto-fill and format validation', () => {
-    const keys = addressPreStep.fields.map((f) => f.key);
-    expect(keys).toContain('contact_name');
-    expect(keys).toContain('postcode');
-    expect(keys).toContain('contact_phone');
-    expect(keys).toContain('contact_email');
+  it('field key is "postcode" — triggers UK postcode format validation via FORMAT_VALIDATORS', () => {
+    expect(addressPreStep.fields[0]!.key).toBe('postcode');
   });
 });
