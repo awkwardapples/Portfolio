@@ -52,7 +52,7 @@ describe('validation error tone', () => {
 
   it('messages are non-empty and end with terminal punctuation (stable formatting)', () => {
     const bad = clone(fencingWizardConfig);
-    asStep(bad.steps[4]).fields[0].label = '';
+    asStep(bad.steps[6]).fields[0].label = '';
     const result = validateWizardConfig(bad);
     expect(result.ok).toBe(false);
     if (result.ok) return;

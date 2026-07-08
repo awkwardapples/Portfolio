@@ -6,8 +6,8 @@
  *   - VisualCardSelectorStep for fence type and height
  *   - EstimateDisplayStep mid-wizard with accept/adjust decision
  *
- * Flow: size → type → height → estimate → contact → extras
- * The pre-step (ADR-0022) collects name/postcode/phone/email first.
+ * Flow: size → type → height → estimate → extras → site_photos → contact-and-address
+ * The pre-step (ADR-0022) collects postcode only (reduced in 5.13c).
  *
  * MONEY: every monetary value is INTEGER PENCE. £75.00/m = 7500.
  *
@@ -72,34 +72,6 @@ export const fencingWizardConfig: WizardConfig = {
       onAdjustGoTo: 'fence_size',
     },
     {
-      id: 'contact',
-      title: 'Your details',
-      description: 'Where should we send your quote?',
-      fields: [
-        {
-          id: 'contact_name',
-          key: 'contact_name',
-          type: 'text',
-          label: 'Your name',
-          required: true,
-        },
-        {
-          id: 'contact_email',
-          key: 'contact_email',
-          type: 'text',
-          label: 'Email address',
-          required: true,
-        },
-        {
-          id: 'contact_phone',
-          key: 'contact_phone',
-          type: 'text',
-          label: 'Phone number',
-          required: false,
-        },
-      ],
-    },
-    {
       id: 'extras',
       title: 'Extras',
       description: 'Optional additions to your quote.',
@@ -119,6 +91,60 @@ export const fencingWizardConfig: WizardConfig = {
           label: 'Remove the existing fence',
           required: false,
           options: [{ value: 'yes', label: 'Yes, remove and dispose of the old fence' }],
+        },
+      ],
+    },
+    {
+      id: 'site_photos',
+      title: 'Photos',
+      description: 'Add photos of the project area.',
+      fields: [
+        {
+          id: 'site_photos',
+          key: 'site_photos',
+          type: 'photo',
+          label:
+            'Upload 2–5 photos so we can usually confirm the estimate without arranging a site visit',
+          maxCount: 5,
+          required: false,
+          help: 'Up to 5 photos. We accept JPEG, PNG, and WebP.',
+        },
+      ],
+    },
+    {
+      id: 'contact-and-address',
+      title: 'Almost done!',
+      description: 'Enter your details so we can send you your personalised quote.',
+      fields: [
+        {
+          id: 'contact_name',
+          key: 'contact_name',
+          type: 'text',
+          label: 'Your name',
+          required: true,
+        },
+        {
+          id: 'contact_phone',
+          key: 'contact_phone',
+          type: 'text',
+          label: 'Phone number',
+          help: 'e.g. 07712 345 678',
+          required: true,
+        },
+        {
+          id: 'contact_email',
+          key: 'contact_email',
+          type: 'text',
+          label: 'Email address',
+          required: true,
+        },
+        {
+          id: 'full_address',
+          key: 'full_address',
+          type: 'text',
+          label: 'Full address',
+          help: 'e.g. 12 Main Street, Guildford, GU1 3AA',
+          required: true,
         },
       ],
     },

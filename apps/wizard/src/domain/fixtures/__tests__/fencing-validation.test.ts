@@ -15,14 +15,15 @@ describe('fencing reference config', () => {
     expect(result.ok).toBe(true);
   });
 
-  it('contains exactly 6 steps in expected order', () => {
+  it('contains exactly 7 steps in expected order', () => {
     expect(fencingWizardConfig.steps.map((s) => s.id)).toEqual([
       'fence_size',
       'fence_type_step',
       'fence_height_step',
       'estimate',
-      'contact',
       'extras',
+      'site_photos',
+      'contact-and-address',
     ]);
   });
 

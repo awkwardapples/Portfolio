@@ -15,13 +15,14 @@ describe('decking reference config', () => {
     expect(result.ok).toBe(true);
   });
 
-  it('contains exactly 5 steps in expected order', () => {
+  it('contains exactly 6 steps in expected order', () => {
     expect(deckingWizardConfig.steps.map((s) => s.id)).toEqual([
       'deck_size',
       'material_step',
       'estimate',
-      'contact',
       'extras',
+      'site_photos',
+      'contact-and-address',
     ]);
   });
 

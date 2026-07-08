@@ -13,12 +13,13 @@ describe('jetwash (pressure washing) reference config', () => {
     expect(validatePricingConfig(jetwashPricingConfig, jetwashWizardConfig).ok).toBe(true);
   });
 
-  it('contains exactly 4 steps in expected order', () => {
+  it('contains exactly 5 steps in expected order', () => {
     expect(jetwashWizardConfig.steps.map((s) => s.id)).toEqual([
       'area_size',
       'surface_type_step',
       'estimate',
-      'contact',
+      'site_photos',
+      'contact-and-address',
     ]);
   });
 

@@ -19,13 +19,14 @@ describe('patio reference config', () => {
     expect(validatePricingConfig(patioPricingConfig, patioWizardConfig).ok).toBe(true);
   });
 
-  it('contains exactly 5 steps in expected order', () => {
+  it('contains exactly 6 steps in expected order', () => {
     expect(patioWizardConfig.steps.map((s) => s.id)).toEqual([
       'patio_size',
       'material_step',
       'estimate',
-      'contact',
       'extras',
+      'site_photos',
+      'contact-and-address',
     ]);
   });
 
@@ -69,13 +70,14 @@ describe('driveway reference config', () => {
     expect(validatePricingConfig(drivewayPricingConfig, drivewayWizardConfig).ok).toBe(true);
   });
 
-  it('contains exactly 5 steps in expected order', () => {
+  it('contains exactly 6 steps in expected order', () => {
     expect(drivewayWizardConfig.steps.map((s) => s.id)).toEqual([
       'driveway_size',
       'material_step',
       'estimate',
-      'contact',
       'extras',
+      'site_photos',
+      'contact-and-address',
     ]);
   });
 
@@ -116,14 +118,15 @@ describe('steps (garden steps) reference config', () => {
     expect(validatePricingConfig(stepsPricingConfig, stepsWizardConfig).ok).toBe(true);
   });
 
-  it('contains exactly 6 steps in expected order', () => {
+  it('contains exactly 7 steps in expected order', () => {
     expect(stepsWizardConfig.steps.map((s) => s.id)).toEqual([
       'shape_step',
       'material_step',
       'step_count_step',
       'estimate',
-      'contact',
       'extras',
+      'site_photos',
+      'contact-and-address',
     ]);
   });
 

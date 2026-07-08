@@ -15,13 +15,14 @@ describe('painting reference config', () => {
     expect(result.ok).toBe(true);
   });
 
-  it('contains exactly 5 steps in expected order', () => {
+  it('contains exactly 6 steps in expected order', () => {
     expect(paintingWizardConfig.steps.map((s) => s.id)).toEqual([
       'rooms_step',
       'what_to_paint_step',
       'estimate',
-      'contact',
       'extras',
+      'site_photos',
+      'contact-and-address',
     ]);
   });
 
