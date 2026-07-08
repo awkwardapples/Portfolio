@@ -1776,3 +1776,61 @@ _Compiled: 2026-07-07 — Template bug fixes (output buffering, activation rewri
 | 25  | Commit 5 (doc corrections) skipped with rationale recorded (Audit A found nothing to fix)               | ✅      |
 
 Documentation-only commit; no code changes.
+
+---
+
+## Step 5.13a Evidence
+
+_Compiled: 2026-07-08 — Wizard engine new step types (estimate-display, visual-card-selector, size-bracket-selector)_
+
+### Commits
+
+| Commit    | Description                                                                                                         |
+| --------- | ------------------------------------------------------------------------------------------------------------------- |
+| `f54d586` | audit(5.13a): phase-0 audits A (step type registration), B (pricing timing), C (navigation for non-field steps)     |
+| `3805f3e` | feat(wizard): 5.13a commit 2 — new step types + engine updates + components + 15 tests (598→613)                    |
+| `1ba6a54` | test(wizard): 5.13a commit 3 — schema tests for visual-card and size-bracket step types +17 tests (613→630)         |
+| _(4)_     | merged into commit 5 (docs) — no separate step-type registry file needed; WizardShell dispatch serves that function |
+| _(5)_     | this commit — ADR-0024 + roadmap, current-state, handoff, phase-5-evidence updates                                  |
+
+### Gate Results
+
+| Gate               | Result                                                                 |
+| ------------------ | ---------------------------------------------------------------------- |
+| `pnpm lint`        | 0/0                                                                    |
+| `pnpm typecheck`   | 0 errors                                                               |
+| `pnpm test`        | **630/630 Vitest** (+32 from 5.13a, 51 test files)                     |
+| `pnpm build`       | Clean (no bundle-size regression expected; new components are trivial) |
+| `composer lint`    | 0/0 (no PHP changes)                                                   |
+| `composer analyse` | No errors (no PHP changes)                                             |
+| `composer test`    | **148 passed, 4 skipped** (PHP unchanged)                              |
+
+### Acceptance Criteria
+
+| #   | Criterion                                                                                                                      | Status  |
+| --- | ------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| 1   | Phase-0 audit A doc: no existing step-type registry; `buildFieldKeyMap` and `validateStep` iterate `step.fields`               | ✅      |
+| 2   | Phase-0 audit B doc: `computePrice` is pure/on-demand; no refactoring needed                                                   | ✅      |
+| 3   | Phase-0 audit C doc: `STEP_GOTO` already exists; "Adjust" works with existing FSM; `onAcceptGoTo` not needed                   | ✅      |
+| 4   | `EstimateDisplayStepSchema` added to `wizard-config.ts` with `stepKind: 'estimate-display'` discriminant                       | ✅      |
+| 5   | `VisualCardSelectorStepSchema` added with `stepKind: 'visual-card-selector'`, `options` array (min 1), `answerKey`, `multiple` | ✅      |
+| 6   | `SizeBracketSelectorStepSchema` added with `stepKind: 'size-bracket-selector'`, `brackets`, `exactFields`, `exactPromptLabel`  | ✅      |
+| 7   | `AnyStepSchema` is `z.union([StepSchema, ...])` — classic step tried first; not `z.discriminatedUnion`                         | ✅      |
+| 8   | `isFieldStep(step: AnyStep): step is Step` — returns `!('stepKind' in step)`                                                   | ✅      |
+| 9   | `WizardConfig.steps` changed from `Step[]` to `AnyStep[]`                                                                      | ✅      |
+| 10  | `buildFieldKeyMap` skips non-field steps via `isFieldStep` guard                                                               | ✅ test |
+| 11  | `validateStep` returns `{ valid: true, issues: [] }` for any non-field step                                                    | ✅ test |
+| 12  | `getVisibleSteps` includes non-field steps in the visible list                                                                 | ✅ test |
+| 13  | `validate.ts` (`collectFieldIds`, `crossReferenceWizard`) guarded with `isFieldStep`                                           | ✅      |
+| 14  | `ReviewField.tsx` `buildAnswerSummary` skips non-field steps                                                                   | ✅      |
+| 15  | `EstimateDisplayStep.tsx` component: calls `selectPrice`, shows price range, Continue/Adjust/Back                              | ✅      |
+| 16  | `VisualCardSelectorStep.tsx` component: card grid, `aria-pressed`, single/multi select, NavigationControls                     | ✅      |
+| 17  | `SizeBracketSelectorStep.tsx` component: bracket buttons, exact toggle, number inputs, NavigationControls                      | ✅      |
+| 18  | `WizardShell.tsx` dispatches to correct component by `stepKind`; TypeScript exhaustive narrowing enforced                      | ✅      |
+| 19  | Fixture test files updated with `asFieldStep`/`asStep` helpers; no regressions in existing tests                               | ✅      |
+| 20  | `pnpm typecheck` passes cleanly under both `tsconfig.json` and `tsconfig.test.json`                                            | ✅      |
+| 21  | `pnpm lint` 0/0 on all changed files                                                                                           | ✅      |
+| 22  | ADR-0024 written and accepted                                                                                                  | ✅      |
+| 23  | `docs/roadmap.md` gains 5.13a row (Complete) and rationale paragraph                                                           | ✅      |
+| 24  | `docs/current-state.md` updated: date, 5.13a in What's working, gate counts updated                                            | ✅      |
+| 25  | `docs/handoff.md` updated: date, 5.13a completion entry, Immediate next action updated                                         | ✅      |

@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-07-07 (post Step 5.12b)_
+_Last updated: 2026-07-08 (post Step 5.13a)_
 
 ## What's working
 
@@ -21,16 +21,27 @@ _Last updated: 2026-07-07 (post Step 5.12b)_
 - REST endpoint output buffering: PHP warnings from WP_DEBUG_DISPLAY no longer corrupt JSON responses.
 - Plugin activation rewrite flush: `/sitemap.xml` now accessible immediately after activation without manual `wp rewrite flush`.
 - Media validation: data URL prefix accepted, allowing browsers that prepend `data:image/jpeg;base64,` to succeed.
+- Wizard engine step types: `estimate-display`, `visual-card-selector`, and `size-bracket-selector` steps added alongside classic field steps. `AnyStep` discriminated union and `isFieldStep` guard applied throughout the engine and UI.
 
 ## Gate state (last verified)
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors
-- `pnpm test`: 598/598 (48 test files, unchanged)
-- `pnpm build`: clean (bundle size unchanged)
-- `composer test`: 148 passed, 4 skipped (+5 from 5.12b — 3 new test files)
+- `pnpm test`: 630/630 (51 test files, +32 from 5.13a)
+- `pnpm build`: clean
+- `composer test`: 148 passed, 4 skipped (PHP unchanged from 5.12b)
 - `composer analyse`: clean (PHPStan level 8, no errors)
 - `composer lint`: 0/0 (PHPCS)
+
+## Gate state (5.13a, 2026-07-08)
+
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: 0 errors
+- `pnpm test`: **630/630 Vitest** (+32 from 5.13a, 51 test files)
+- `pnpm build`: clean (no bundle size change expected — new step components add negligible weight)
+- `composer lint`: 0/0 (no PHP changes)
+- `composer analyse`: no errors (no PHP changes)
+- `composer test`: **148 passed, 4 skipped** (PHP unchanged)
 
 ## Gate state (5.12b, 2026-07-07)
 

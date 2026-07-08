@@ -1,6 +1,6 @@
 # Handoff
 
-_Last updated: 2026-07-07 (post Step 5.12b)_
+_Last updated: 2026-07-08 (post Step 5.13a)_
 
 ## Status
 
@@ -99,6 +99,15 @@ _Last updated: 2026-07-07 (post Step 5.12b)_
   24 new PHP tests (143 total). `docs/seo-adaptation-guide.md` extended with Layers 2-4
   usage instructions, options reference, and troubleshooting.
   Operational verification pending (OV-5.10b-1 through OV-5.10b-17).
+- Step 5.13a complete (July 8, 2026): Wizard engine new step types. Three new
+  step kinds added to the wizard engine and UI: `estimate-display` (computes and
+  displays price mid-wizard; user continues forward or jumps back to adjust),
+  `visual-card-selector` (image card grid, single or multi-select), and
+  `size-bracket-selector` (preset bracket buttons with an exact-dimensions
+  fallback). `AnyStep` discriminated union and `isFieldStep` type guard
+  introduced in `wizard-config.ts`; all domain engine files updated to guard
+  `.fields` access; three new React components added; ADR-0024 accepted.
+  32 new Vitest tests (598→630, 51 test files). PHP and bundle unchanged.
 - Step 5.12b complete (July 7, 2026): Template bug fixes. Three bugs surfaced during
   SCB pilot deployment triage and fixed in the template before SCB customization.
   (1) **REST output buffering:** `SubmissionController::handle()` body wrapped in
@@ -165,12 +174,13 @@ If you are starting a new step:
 The roadmap is sequenced explicitly. See `docs/roadmap.md` for full detail.
 
 **Immediate next action:** Step 5.12 — SCB-specific deployment (first real client).
-Template is now bug-fixed and complete (5.12b). Activate the plugin on a LocalWP SCB
-site, then run `docs/llm-customization-handoff.md` against SCB's business profile to
-perform the full content/SEO/services customization pass. Outstanding OVs
-(OV-5.10b-1 through OV-5.10b-17, OV-5.10a, OV-5.9-R, etc.) can be batched into the
-5.12 deploy session and recorded in `docs/phase-5-evidence.md`. Record any
-customization gaps discovered in a post-5.12 document update.
+Template is now bug-fixed and engine-complete (5.12b + 5.13a). Activate the plugin
+on a LocalWP SCB site, then run `docs/llm-customization-handoff.md` against SCB's
+business profile to perform the full content/SEO/services customization pass.
+To use the new step kinds (5.13a), wire SCB's service configs with `estimate-display`,
+`visual-card-selector`, or `size-bracket-selector` steps as appropriate for the flow
+redesign. Outstanding OVs (OV-5.10b, OV-5.10a, OV-5.9-R, etc.) can be batched into
+the 5.12 deploy session and recorded in `docs/phase-5-evidence.md`.
 
 Each step is sized small and verified before the next begins. See
 `docs/roadmap.md` "Step rationale and dependencies" for why each step is

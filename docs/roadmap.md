@@ -40,6 +40,7 @@ A single-page, structural view of project state. Update on every completed step.
 | 5.10b                 | Complete | SEO Layers 2-4: LocalBusiness schema, Service schema, sitemap.xml, robots.txt                           |
 | 5.11                  | Complete | LLM customization handoff document (`docs/llm-customization-handoff.md`)                                |
 | 5.12b                 | Complete | Template bug fixes (output buffering, media validation, activation rewrite flush)                       |
+| 5.13a                 | Complete | Wizard engine: three new step kinds (estimate-display, visual-card-selector, size-bracket-selector)     |
 | 5.12                  | Planned  | SCB-specific deployment (first real client)                                                             |
 | 6.0                   | Planned  | Production IONOS deployment                                                                             |
 | 6.1+                  | Future   | Second and subsequent clients                                                                           |
@@ -179,8 +180,19 @@ Each fix is preceded by a phase-0 audit doc. 5 new PHP tests (143→148 passed, 
 skipped); no JS changes. Commit 5 (docs webhook-option correction) was skipped
 after Audit A confirmed all docs already used the correct key `goqw_webhook_url`.
 
+**5.13a — Wizard engine new step types.** Adds three new step kinds required
+for the SCB wizard flow redesign: `estimate-display` (shows a computed price
+mid-wizard with Continue / Adjust navigation), `visual-card-selector` (image
+card grid for service or material selection), and `size-bracket-selector`
+(preset size ranges with an exact-entry fallback). Engine-level work only — no
+service configs reconfigured in this step. Introduces `AnyStep` discriminated
+union and `isFieldStep` type guard in `wizard-config.ts`; all domain engine code
+(validation, condition evaluation, navigation, selectors, validate.ts, ReviewField)
+updated to guard `step.fields` access. Three new React components added. ADR-0024
+accepted. 32 new Vitest tests (598→630, 51 test files).
+
 **5.12 — SCB-specific deployment.** First real client adaptation. Applies the
-5.7-5.12b template to SCB Handyman. Selects SCB's services, composes SCB's home
+5.7-5.13a template to SCB Handyman. Selects SCB's services, composes SCB's home
 page, provides SCB's business content, applies visual customization per SCB's
 brand. Operational verification per ADR-0018.
 
