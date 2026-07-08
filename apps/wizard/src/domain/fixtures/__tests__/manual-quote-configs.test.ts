@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import { validateWizardConfig } from '@/domain/validation/validate';
+import { asFieldStep } from './_helpers';
 import { generalRepairsWizardConfig } from '@/domain/fixtures/general-repairs.config';
 import { plumbingWizardConfig } from '@/domain/fixtures/plumbing.config';
 import { electricalWizardConfig } from '@/domain/fixtures/electrical.config';
@@ -37,16 +38,15 @@ describe('manual-quote services — shared structural contract', () => {
   });
 
   it.each(MANUAL_CONFIGS)('$id description step has a required textarea field', ({ config }) => {
-    const step = config.steps.find((s) => s.id === 'description');
-    expect(step).toBeDefined();
-    const field = step!.fields.find((f) => f.type === 'textarea');
+    const step = asFieldStep(config.steps.find((s) => s.id === 'description'));
+    const field = step.fields.find((f) => f.type === 'textarea');
     expect(field).toBeDefined();
     expect(field!.required).toBe(true);
   });
 
   it.each(MANUAL_CONFIGS)('$id has a photo field with maxCount 5 (not required)', ({ config }) => {
-    const step = config.steps.find((s) => s.id === 'site_photos');
-    const photo = step!.fields.find((f) => f.type === 'photo');
+    const step = asFieldStep(config.steps.find((s) => s.id === 'site_photos'));
+    const photo = step.fields.find((f) => f.type === 'photo');
     expect(photo?.maxCount).toBe(5);
     expect(photo?.required).toBe(false);
   });
@@ -54,26 +54,22 @@ describe('manual-quote services — shared structural contract', () => {
 
 describe('manual-quote services — service-specific description prompts', () => {
   it('general-repairs description field label does not mention a specific trade', () => {
-    const step = generalRepairsWizardConfig.steps.find((s) => s.id === 'description');
-    const field = step!.fields[0]!;
-    expect(field.label.toLowerCase()).toContain('repair');
+    const step = asFieldStep(generalRepairsWizardConfig.steps.find((s) => s.id === 'description'));
+    expect(step.fields[0]!.label.toLowerCase()).toContain('repair');
   });
 
   it('plumbing description field label mentions plumbing', () => {
-    const step = plumbingWizardConfig.steps.find((s) => s.id === 'description');
-    const field = step!.fields[0]!;
-    expect(field.label.toLowerCase()).toContain('plumbing');
+    const step = asFieldStep(plumbingWizardConfig.steps.find((s) => s.id === 'description'));
+    expect(step.fields[0]!.label.toLowerCase()).toContain('plumbing');
   });
 
   it('electrical description field label mentions electrical', () => {
-    const step = electricalWizardConfig.steps.find((s) => s.id === 'description');
-    const field = step!.fields[0]!;
-    expect(field.label.toLowerCase()).toContain('electrical');
+    const step = asFieldStep(electricalWizardConfig.steps.find((s) => s.id === 'description'));
+    expect(step.fields[0]!.label.toLowerCase()).toContain('electrical');
   });
 
   it('carpentry description field label mentions carpentry', () => {
-    const step = carpentryWizardConfig.steps.find((s) => s.id === 'description');
-    const field = step!.fields[0]!;
-    expect(field.label.toLowerCase()).toContain('carpentry');
+    const step = asFieldStep(carpentryWizardConfig.steps.find((s) => s.id === 'description'));
+    expect(step.fields[0]!.label.toLowerCase()).toContain('carpentry');
   });
 });

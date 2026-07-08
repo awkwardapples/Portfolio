@@ -19,6 +19,7 @@
 
 import {
   WizardConfigSchema,
+  isFieldStep,
   type WizardConfig,
   type Condition,
 } from '@/domain/config/wizard-config';
@@ -91,6 +92,7 @@ export function validatePricingConfig(
 function collectFieldIds(wizard: WizardConfig): Set<string> {
   const ids = new Set<string>();
   for (const step of wizard.steps) {
+    if (!isFieldStep(step)) continue;
     for (const field of step.fields) {
       ids.add(field.id);
     }
@@ -123,6 +125,8 @@ function crossReferenceWizard(wizard: WizardConfig): ValidationIssue[] {
     if (step.condition) {
       checkConditionRef(step.condition, `steps.${stepIndex}.condition`, allFieldIds, issues);
     }
+
+    if (!isFieldStep(step)) return;
 
     step.fields.forEach((field, fieldIndex) => {
       const base = `steps.${stepIndex}.fields.${fieldIndex}`;

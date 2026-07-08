@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 
 import { validateWizardConfig, validatePublicConfig } from '@/domain/validation/validate';
 import { fencingWizardConfig } from '@/domain/fixtures/fencing.config';
+import { asStep } from './_helpers';
 
 /** Words/phrases banned from validation messaging (4.1 requirement #9). */
 const BANNED_TONE = [
@@ -51,7 +52,7 @@ describe('validation error tone', () => {
 
   it('messages are non-empty and end with terminal punctuation (stable formatting)', () => {
     const bad = clone(fencingWizardConfig);
-    bad.steps[0].fields[0].label = '';
+    asStep(bad.steps[0]).fields[0].label = '';
     const result = validateWizardConfig(bad);
     expect(result.ok).toBe(false);
     if (result.ok) return;

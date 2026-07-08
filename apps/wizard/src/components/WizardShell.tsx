@@ -2,6 +2,7 @@ import { buildFieldKeyMap } from '@/domain/runtime/condition-evaluator';
 import { getVisibleSteps } from '@/domain/runtime/navigation';
 import { getMergedWizard } from '@/domain/runtime/transition';
 import { selectPrice } from '@/domain/pricing';
+import { isFieldStep } from '@/domain/config/wizard-config';
 import { useWizard } from '@/runtime/useWizard';
 import { useWizardStore } from '@/runtime/WizardProvider';
 import { PriceSummary, ProgressBar } from '@/components/composites';
@@ -12,6 +13,9 @@ import {
   SuccessScreen,
 } from '@/components/screens';
 import { StepRenderer } from '@/components/steps';
+import { EstimateDisplayStep } from '@/components/steps/EstimateDisplayStep';
+import { VisualCardSelectorStep } from '@/components/steps/VisualCardSelectorStep';
+import { SizeBracketSelectorStep } from '@/components/steps/SizeBracketSelectorStep';
 
 interface WizardShellProps {
   /** Called when the user presses Back on the first wizard step. */
@@ -79,13 +83,38 @@ export function WizardShell({ onReturnToSelector }: WizardShellProps = {}): JSX.
       </a>
       <main id="wizard-main" className="mx-auto max-w-xl space-y-4 p-6">
         <ProgressBar current={currentIndex + 1} total={visibleSteps.length} />
-        <StepRenderer
-          key={currentStep.id}
-          step={currentStep}
-          isFirst={isFirst}
-          isLast={isLast}
-          onFirstBack={onReturnToSelector}
-        />
+        {isFieldStep(currentStep) ? (
+          <StepRenderer
+            key={currentStep.id}
+            step={currentStep}
+            isFirst={isFirst}
+            isLast={isLast}
+            onFirstBack={onReturnToSelector}
+          />
+        ) : currentStep.stepKind === 'estimate-display' ? (
+          <EstimateDisplayStep
+            key={currentStep.id}
+            step={currentStep}
+            isFirst={isFirst}
+            onFirstBack={onReturnToSelector}
+          />
+        ) : currentStep.stepKind === 'visual-card-selector' ? (
+          <VisualCardSelectorStep
+            key={currentStep.id}
+            step={currentStep}
+            isFirst={isFirst}
+            isLast={isLast}
+            onFirstBack={onReturnToSelector}
+          />
+        ) : (
+          <SizeBracketSelectorStep
+            key={currentStep.id}
+            step={currentStep}
+            isFirst={isFirst}
+            isLast={isLast}
+            onFirstBack={onReturnToSelector}
+          />
+        )}
         {price !== null &&
           price.valid &&
           price.totalPence !== null &&

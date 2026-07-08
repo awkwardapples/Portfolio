@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 
 import { validateWizardConfig, validatePricingConfig } from '@/domain/validation/validate';
 import { jetwashWizardConfig, jetwashPricingConfig } from '@/domain/fixtures/jetwash.config';
+import { asFieldStep } from './_helpers';
 
 describe('jetwash (pressure washing) reference config', () => {
   it('passes wizard validation', () => {
@@ -26,12 +27,11 @@ describe('jetwash (pressure washing) reference config', () => {
   });
 
   it('area step has area_m2 number field (required) and surface_type select', () => {
-    const step = jetwashWizardConfig.steps.find((s) => s.id === 'area');
-    expect(step).toBeDefined();
-    const area = step!.fields.find((f) => f.id === 'area_m2');
+    const step = asFieldStep(jetwashWizardConfig.steps.find((s) => s.id === 'area'));
+    const area = step.fields.find((f) => f.id === 'area_m2');
     expect(area?.type).toBe('number');
     expect(area?.required).toBe(true);
-    const surface = step!.fields.find((f) => f.id === 'surface_type');
+    const surface = step.fields.find((f) => f.id === 'surface_type');
     expect(surface?.type).toBe('select');
   });
 

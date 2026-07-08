@@ -1,4 +1,5 @@
-import type { Field, Step } from '@/domain/config/wizard-config';
+import type { AnyStep, Field } from '@/domain/config/wizard-config';
+import { isFieldStep } from '@/domain/config/wizard-config';
 
 import type { AnswerMap, AnswerValue } from '@/domain/runtime/answer-types';
 import { evaluateCondition } from '@/domain/runtime/condition-evaluator';
@@ -101,10 +102,16 @@ function validateField(field: Field, answer: AnswerValue | undefined): string | 
  * treated as absent. false and 0 are considered valid non-empty answers.
  */
 export function validateStep(
-  step: Step,
+  step: AnyStep,
   answers: AnswerMap,
   fieldKeyById: ReadonlyMap<string, string>,
 ): StepValidationSnapshot {
+  // Non-field steps (estimate-display, visual-card-selector, size-bracket-selector)
+  // have no field-level answers to validate; they are always considered valid.
+  if (!isFieldStep(step)) {
+    return { stepId: step.id, valid: true, issues: [] };
+  }
+
   if (!isStepVisible(step, answers, fieldKeyById)) {
     return { stepId: step.id, valid: true, issues: [] };
   }

@@ -1,6 +1,6 @@
 import { useWizardSelector } from '@/runtime/useWizard';
 import { usePhotoStore } from '@/runtime/hooks/usePhotoStore';
-import type { WizardConfig } from '@/domain/config/wizard-config';
+import { isFieldStep, type WizardConfig } from '@/domain/config/wizard-config';
 import type { AnswerMap, AnswerValue } from '@/domain/runtime/answer-types';
 import { isPhotoAnswerValue } from '@/domain/runtime/photos';
 import type { PhotoStore } from '@/runtime/photos-store';
@@ -25,6 +25,7 @@ function buildAnswerSummary(
 ): SummaryRow[] {
   const rows: SummaryRow[] = [];
   for (const step of wizard.steps) {
+    if (!isFieldStep(step)) continue;
     for (const field of step.fields) {
       if (field.type === 'review') continue;
       const val: AnswerValue | undefined = answers[field.key];

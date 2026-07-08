@@ -4,6 +4,7 @@ import { validateWizardConfig, validatePricingConfig } from '@/domain/validation
 import { patioWizardConfig, patioPricingConfig } from '@/domain/fixtures/patio.config';
 import { drivewayWizardConfig, drivewayPricingConfig } from '@/domain/fixtures/driveway.config';
 import { stepsWizardConfig, stepsPricingConfig } from '@/domain/fixtures/steps.config';
+import { asFieldStep } from './_helpers';
 
 // ---------------------------------------------------------------------------
 // Patio
@@ -33,12 +34,11 @@ describe('patio reference config', () => {
   });
 
   it('area_and_material step has area_m2 number field (required) and material select', () => {
-    const step = patioWizardConfig.steps.find((s) => s.id === 'area_and_material');
-    expect(step).toBeDefined();
-    const area = step!.fields.find((f) => f.id === 'area_m2');
+    const step = asFieldStep(patioWizardConfig.steps.find((s) => s.id === 'area_and_material'));
+    const area = step.fields.find((f) => f.id === 'area_m2');
     expect(area?.type).toBe('number');
     expect(area?.required).toBe(true);
-    const material = step!.fields.find((f) => f.id === 'material');
+    const material = step.fields.find((f) => f.id === 'material');
     expect(material?.type).toBe('select');
   });
 
@@ -76,8 +76,8 @@ describe('driveway reference config', () => {
   });
 
   it('material select has 3 driveway-specific options', () => {
-    const step = drivewayWizardConfig.steps.find((s) => s.id === 'area_and_material');
-    const material = step!.fields.find((f) => f.id === 'material');
+    const step = asFieldStep(drivewayWizardConfig.steps.find((s) => s.id === 'area_and_material'));
+    const material = step.fields.find((f) => f.id === 'material');
     const values = material!.options!.map((o) => o.value);
     expect(values).toEqual(['driveline_50', 'tegula', 'drivesys']);
   });
@@ -116,9 +116,8 @@ describe('steps (garden steps) reference config', () => {
   });
 
   it('design step has shape, material, and step_count fields', () => {
-    const step = stepsWizardConfig.steps.find((s) => s.id === 'design');
-    expect(step).toBeDefined();
-    const ids = step!.fields.map((f) => f.id);
+    const step = asFieldStep(stepsWizardConfig.steps.find((s) => s.id === 'design'));
+    const ids = step.fields.map((f) => f.id);
     expect(ids).toContain('shape');
     expect(ids).toContain('material');
     expect(ids).toContain('step_count');

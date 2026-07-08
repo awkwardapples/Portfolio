@@ -1,4 +1,4 @@
-import type { Step } from '@/domain/config/wizard-config';
+import type { AnyStep } from '@/domain/config/wizard-config';
 
 import { buildFieldKeyMap } from '@/domain/runtime/condition-evaluator';
 import { getNextStepId, getPreviousStepId, getVisibleSteps } from '@/domain/runtime/navigation';
@@ -17,7 +17,10 @@ import type { SessionConfig, StepValidationSnapshot, WizardState } from '@/domai
  * Returns the ordered list of steps that are currently visible given the
  * current answers. Pure function of (state.answers, config.wizard).
  */
-export function selectVisibleSteps(state: WizardState, config: SessionConfig): ReadonlyArray<Step> {
+export function selectVisibleSteps(
+  state: WizardState,
+  config: SessionConfig,
+): ReadonlyArray<AnyStep> {
   const fieldKeyById = buildFieldKeyMap(config.wizard);
   return getVisibleSteps(config.wizard, state.answers, fieldKeyById);
 }
@@ -26,7 +29,7 @@ export function selectVisibleSteps(state: WizardState, config: SessionConfig): R
  * Returns the Step object for the current step, or null when no step is
  * active (idle, terminal phases).
  */
-export function selectCurrentStep(state: WizardState, config: SessionConfig): Step | null {
+export function selectCurrentStep(state: WizardState, config: SessionConfig): AnyStep | null {
   if (state.currentStepId === null) return null;
   return config.wizard.steps.find((s) => s.id === state.currentStepId) ?? null;
 }

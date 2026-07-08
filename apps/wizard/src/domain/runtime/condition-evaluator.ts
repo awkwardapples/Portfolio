@@ -1,4 +1,5 @@
 import type { Condition, WizardConfig } from '@/domain/config/wizard-config';
+import { isFieldStep } from '@/domain/config/wizard-config';
 
 import type { AnswerMap } from '@/domain/runtime/answer-types';
 
@@ -8,10 +9,14 @@ import type { AnswerMap } from '@/domain/runtime/answer-types';
  * Create once at hydration and pass to evaluateCondition; avoids scanning
  * the config on every evaluation. The map is sealed after construction and
  * does not retain a reference to the config.
+ *
+ * Non-field steps (estimate-display, visual-card-selector, size-bracket-selector)
+ * have no field registry entries and are skipped.
  */
 export function buildFieldKeyMap(config: WizardConfig): ReadonlyMap<string, string> {
   const map = new Map<string, string>();
   for (const step of config.steps) {
+    if (!isFieldStep(step)) continue;
     for (const field of step.fields) {
       map.set(field.id, field.key);
     }

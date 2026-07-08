@@ -121,6 +121,143 @@ export const StepSchema = z.strictObject({
 
 export type Step = z.infer<typeof StepSchema>;
 
+// ---------------------------------------------------------------------------
+// New step-kind schemas (5.13a)
+// ---------------------------------------------------------------------------
+
+/**
+ * Estimate Display step — shows the calculated price range with accept/adjust UI.
+ *
+ * The `stepKind` discriminant distinguishes these new step kinds from the default
+ * field step (which has a `fields` array instead).
+ *
+ * On "Continue": the component dispatches STEP_NEXT to advance to the next step
+ * in config order. No explicit `onAcceptGoTo` field is needed.
+ * On "Adjust": the component dispatches STEP_GOTO with `onAdjustGoTo` to return
+ * the user to a specific prior step where they can change their selections.
+ */
+export const EstimateDisplayStepSchema = z.strictObject({
+  stepKind: z.literal('estimate-display'),
+  id: idSchema,
+  title: z.string().min(1),
+  description: z.string().optional(),
+  condition: ConditionSchema.optional(),
+  disclaimer: z.string().min(1),
+  /** When true the displayed price is shown as a range (£min – £max). Default true. */
+  showRangeAsRange: z.boolean().default(true),
+  /** Step ID to jump to when the user clicks "Adjust my selections". */
+  onAdjustGoTo: idSchema,
+});
+
+export type EstimateDisplayStep = z.infer<typeof EstimateDisplayStepSchema>;
+
+/** A selectable option in a VisualCardSelectorStep. */
+export const VisualCardOptionSchema = z.strictObject({
+  id: idSchema,
+  label: z.string().min(1),
+  /** Optional URL to an illustration or photo. Placeholder used when absent. */
+  imageUrl: z.string().optional(),
+  description: z.string().optional(),
+});
+
+export type VisualCardOption = z.infer<typeof VisualCardOptionSchema>;
+
+/**
+ * Visual Card Selector step — renders service/material choices as visual cards
+ * rather than a dropdown or radio group.
+ *
+ * Stores the selected option `id` (or array of ids when `multiple: true`) in
+ * `answers[answerKey]`.
+ */
+export const VisualCardSelectorStepSchema = z.strictObject({
+  stepKind: z.literal('visual-card-selector'),
+  id: idSchema,
+  title: z.string().min(1),
+  description: z.string().optional(),
+  condition: ConditionSchema.optional(),
+  options: z.array(VisualCardOptionSchema).min(1),
+  /** Answer key where the selected option id (or array of ids) is stored. */
+  answerKey: idSchema,
+  /** When true, multiple cards can be selected simultaneously. Default false. */
+  multiple: z.boolean().default(false),
+});
+
+export type VisualCardSelectorStep = z.infer<typeof VisualCardSelectorStepSchema>;
+
+/** One size bracket option in a SizeBracketSelectorStep. */
+export const SizeBracketSchema = z.strictObject({
+  id: idSchema,
+  label: z.string().min(1),
+  minValue: z.number().nonnegative(),
+  maxValue: z.number().positive(),
+  unit: z.string().min(1),
+});
+
+export type SizeBracket = z.infer<typeof SizeBracketSchema>;
+
+/** One numeric input field within the exact-size mode of a SizeBracketSelectorStep. */
+export const ExactFieldSchema = z.strictObject({
+  id: idSchema,
+  label: z.string().min(1),
+  unit: z.string().min(1),
+});
+
+export type ExactField = z.infer<typeof ExactFieldSchema>;
+
+/**
+ * Size Bracket Selector step — offers pre-set size brackets (Small / Medium / Large)
+ * with an "I know the exact size" fallback that reveals numeric input fields.
+ *
+ * Stores the selected bracket `id` in `answers[answerKey]` (e.g. 'small', 'medium',
+ * 'large', or the special value `'exact'` when the user chooses exact entry).
+ * When `'exact'` is selected, each `exactField.id` is used as its own answer key
+ * for the numeric dimension value (e.g. `answers['length_m'] = 6`).
+ */
+export const SizeBracketSelectorStepSchema = z.strictObject({
+  stepKind: z.literal('size-bracket-selector'),
+  id: idSchema,
+  title: z.string().min(1),
+  description: z.string().optional(),
+  condition: ConditionSchema.optional(),
+  brackets: z.array(SizeBracketSchema).min(1),
+  /** Answer key that stores the selected bracket id or 'exact'. */
+  answerKey: idSchema,
+  /** Label for the "exact size" toggle option shown below the brackets. */
+  exactPromptLabel: z.string().min(1),
+  /** Numeric input fields revealed when the user selects exact entry. */
+  exactFields: z.array(ExactFieldSchema).min(1),
+});
+
+export type SizeBracketSelectorStep = z.infer<typeof SizeBracketSelectorStepSchema>;
+
+/**
+ * A wizard step can be a classic field step (Step) or one of the new step kinds.
+ *
+ * Classic field steps are identified by the presence of a `fields` array.
+ * New step kinds carry a `stepKind` discriminant field.
+ */
+export const AnyStepSchema = z.union([
+  StepSchema,
+  EstimateDisplayStepSchema,
+  VisualCardSelectorStepSchema,
+  SizeBracketSelectorStepSchema,
+]);
+
+export type AnyStep = z.infer<typeof AnyStepSchema>;
+
+/**
+ * Type guard: is this step a classic field step?
+ *
+ * Classic steps have a `fields` array; new step kinds carry a `stepKind`
+ * discriminant instead. Use this guard wherever domain code previously assumed
+ * all steps were field steps.
+ */
+export function isFieldStep(step: AnyStep): step is Step {
+  return !('stepKind' in step);
+}
+
+// ---------------------------------------------------------------------------
+
 /**
  * The wizard config. `pricingConfigId` references the pricing config that
  * accompanies this wizard (kept as a separate artifact per the schema
@@ -141,7 +278,7 @@ export const WizardConfigSchema = z.strictObject({
    * by the runtime (config.wizard.quoteMode ?? 'instant').
    */
   quoteMode: z.enum(['instant', 'manual']).optional(),
-  steps: z.array(StepSchema).min(1, 'A wizard must contain at least one step.'),
+  steps: z.array(AnyStepSchema).min(1, 'A wizard must contain at least one step.'),
 });
 
 export type WizardConfig = z.infer<typeof WizardConfigSchema>;

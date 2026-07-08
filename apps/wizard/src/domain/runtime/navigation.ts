@@ -1,4 +1,4 @@
-import type { Step, WizardConfig } from '@/domain/config/wizard-config';
+import type { AnyStep, WizardConfig } from '@/domain/config/wizard-config';
 
 import type { AnswerMap } from '@/domain/runtime/answer-types';
 import { evaluateCondition } from '@/domain/runtime/condition-evaluator';
@@ -17,7 +17,7 @@ import { evaluateCondition } from '@/domain/runtime/condition-evaluator';
  * condition logic exists elsewhere in this module.
  */
 export function isStepVisible(
-  step: Step,
+  step: AnyStep,
   answers: AnswerMap,
   fieldKeyById: ReadonlyMap<string, string>,
 ): boolean {
@@ -39,7 +39,7 @@ export function getVisibleSteps(
   config: WizardConfig,
   answers: AnswerMap,
   fieldKeyById: ReadonlyMap<string, string>,
-): ReadonlyArray<Step> {
+): ReadonlyArray<AnyStep> {
   return config.steps.filter((step) => isStepVisible(step, answers, fieldKeyById));
 }
 
