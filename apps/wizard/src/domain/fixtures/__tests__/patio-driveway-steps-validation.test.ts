@@ -5,7 +5,6 @@ import { patioWizardConfig, patioPricingConfig } from '@/domain/fixtures/patio.c
 import { drivewayWizardConfig, drivewayPricingConfig } from '@/domain/fixtures/driveway.config';
 import { stepsWizardConfig, stepsPricingConfig } from '@/domain/fixtures/steps.config';
 import { isFieldStep } from '@/domain/config/wizard-config';
-import { asFieldStep } from './_helpers';
 
 // ---------------------------------------------------------------------------
 // Patio
@@ -105,7 +104,7 @@ describe('driveway reference config', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Steps (garden steps — redesigned in Commit 4 / 5.13b)
+// Steps (garden steps)
 // ---------------------------------------------------------------------------
 
 describe('steps (garden steps) reference config', () => {
@@ -117,30 +116,56 @@ describe('steps (garden steps) reference config', () => {
     expect(validatePricingConfig(stepsPricingConfig, stepsWizardConfig).ok).toBe(true);
   });
 
-  it('is an instant-quote wizard', () => {
-    expect(stepsWizardConfig.quoteMode).toBe('instant');
-  });
-
-  it('contains exactly 5 steps in expected order', () => {
+  it('contains exactly 6 steps in expected order', () => {
     expect(stepsWizardConfig.steps.map((s) => s.id)).toEqual([
-      'design',
-      'dimensions_and_extras',
-      'site_photos',
+      'shape_step',
+      'material_step',
+      'step_count_step',
+      'estimate',
       'contact',
-      'review',
+      'extras',
     ]);
   });
 
-  it('design step has shape, material, and step_count fields', () => {
-    const step = asFieldStep(stepsWizardConfig.steps.find((s) => s.id === 'design'));
-    const ids = step.fields.map((f) => f.id);
-    expect(ids).toContain('shape');
-    expect(ids).toContain('material');
-    expect(ids).toContain('step_count');
+  it('shape_step is a visual-card-selector with straight/curved/not_sure options', () => {
+    const step = stepsWizardConfig.steps[0];
+    if (!step || isFieldStep(step) || step.stepKind !== 'visual-card-selector')
+      throw new Error('expected visual-card-selector');
+    expect(step.answerKey).toBe('shape');
+    expect(step.options.map((o) => o.id)).toEqual(['straight', 'curved', 'not_sure']);
   });
 
-  it('pricing base uses step_count as quantity field', () => {
+  it('material_step is a visual-card-selector with 5 material options', () => {
+    const step = stepsWizardConfig.steps[1];
+    if (!step || isFieldStep(step) || step.stepKind !== 'visual-card-selector')
+      throw new Error('expected visual-card-selector');
+    expect(step.answerKey).toBe('material');
+    expect(step.options.map((o) => o.id)).toEqual([
+      'brick',
+      'slate',
+      'portland_stone',
+      'cast_stone',
+      'granite',
+    ]);
+  });
+
+  it('step_count_step is a size-bracket-selector with step_count exact field', () => {
+    const step = stepsWizardConfig.steps[2];
+    if (!step || isFieldStep(step) || step.stepKind !== 'size-bracket-selector')
+      throw new Error('expected size-bracket-selector');
+    expect(step.brackets).toHaveLength(3);
+    expect(step.exactFields.map((f) => f.id)).toEqual(['step_count']);
+  });
+
+  it('pricing base uses step_count as quantity field with item unit', () => {
     expect(stepsPricingConfig.base.quantityFieldId).toBe('step_count');
     expect(stepsPricingConfig.base.unit).toBe('item');
+  });
+
+  it('pricing has 6 modifiers covering shape and material variants', () => {
+    expect(stepsPricingConfig.modifiers).toHaveLength(6);
+    const ids = stepsPricingConfig.modifiers.map((m) => m.id);
+    expect(ids).toContain('shape_curved');
+    expect(ids).toContain('material_granite');
   });
 });

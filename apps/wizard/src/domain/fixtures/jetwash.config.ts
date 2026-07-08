@@ -1,10 +1,16 @@
 /**
- * Pressure washing (jetwash) wizard configuration (Step 5.9).
+ * CANONICAL REFERENCE CONFIG — Pressure washing (jetwash) vertical.
  *
- * Instant-quote service. Simple area-based pricing.
- * Placeholder pricing per ADR-0021 Decision 5.
+ * Redesigned in Step 5.13b to use the new step types introduced in 5.13a:
+ *   - SizeBracketSelectorStep for area size (bracket or exact)
+ *   - VisualCardSelectorStep for surface type
+ *   - EstimateDisplayStep mid-wizard with accept/adjust decision
  *
- * MONEY: every monetary value is INTEGER PENCE.
+ * Flow: size → surface type → estimate → contact
+ * No extras step — jetwash is a simple two-factor quote.
+ * The pre-step (ADR-0022) collects name/postcode/phone/email first.
+ *
+ * MONEY: every monetary value is INTEGER PENCE. £4/m² = 400.
  */
 
 import type { WizardConfig } from '@/domain/config/wizard-config';
@@ -17,49 +23,60 @@ export const jetwashWizardConfig: WizardConfig = {
   title: 'Pressure washing',
   steps: [
     {
-      id: 'area',
-      title: 'Area to clean',
-      description: 'Tell us the approximate area that needs pressure washing.',
-      fields: [
+      stepKind: 'size-bracket-selector',
+      id: 'area_size',
+      title: 'How large is the area to clean?',
+      description: 'Choose an approximate size, or enter the exact measurement.',
+      answerKey: 'area_size',
+      brackets: [
         {
-          id: 'area_m2',
-          key: 'area_m2',
-          type: 'number',
-          label: 'Approximate area in square metres',
-          help: 'A rough estimate is fine. Measure the length × width of the surface.',
-          required: true,
+          id: 'small',
+          label: 'Small',
+          minValue: 0,
+          maxValue: 25,
+          unit: 'm²',
+          typicalValue: 15,
         },
         {
-          id: 'surface_type',
-          key: 'surface_type',
-          type: 'select',
-          label: 'Surface type',
-          required: true,
-          options: [
-            { value: 'patio', label: 'Patio or paving' },
-            { value: 'driveway', label: 'Driveway' },
-            { value: 'decking', label: 'Decking or timber' },
-            { value: 'path', label: 'Path or steps' },
-            { value: 'other', label: 'Other outdoor surface' },
-          ],
+          id: 'medium',
+          label: 'Medium',
+          minValue: 25,
+          maxValue: 55,
+          unit: 'm²',
+          typicalValue: 35,
         },
+        {
+          id: 'large',
+          label: 'Large',
+          minValue: 55,
+          maxValue: 150,
+          unit: 'm²',
+          typicalValue: 75,
+        },
+      ],
+      exactPromptLabel: 'I know the exact area',
+      exactFields: [{ id: 'area_m2', label: 'Area in square metres', unit: 'm²' }],
+    },
+    {
+      stepKind: 'visual-card-selector',
+      id: 'surface_type_step',
+      title: 'What type of surface?',
+      description: 'Choose the surface that needs cleaning.',
+      answerKey: 'surface_type',
+      options: [
+        { id: 'patio', label: 'Patio or paving' },
+        { id: 'driveway', label: 'Driveway' },
+        { id: 'decking', label: 'Decking or timber' },
+        { id: 'path', label: 'Path or steps' },
       ],
     },
     {
-      id: 'site_photos',
-      title: 'Photos',
-      description: 'Add photos of the area so we can give a more accurate estimate.',
-      fields: [
-        {
-          id: 'site_photos',
-          key: 'site_photos',
-          type: 'photo',
-          label: 'Photos of the area (optional)',
-          maxCount: 5,
-          required: false,
-          help: 'Up to 5 photos. We accept JPEG, PNG, and WebP.',
-        },
-      ],
+      stepKind: 'estimate-display',
+      id: 'estimate',
+      title: 'Your estimate',
+      description: 'Based on the details you have provided.',
+      disclaimer: 'This is a guide price. We confirm exact costs after a site survey.',
+      onAdjustGoTo: 'area_size',
     },
     {
       id: 'contact',
@@ -89,26 +106,13 @@ export const jetwashWizardConfig: WizardConfig = {
         },
       ],
     },
-    {
-      id: 'review',
-      title: 'Review',
-      description: 'Check your answers before we prepare your quote.',
-      fields: [
-        {
-          id: 'review_summary',
-          key: 'review_summary',
-          type: 'review',
-          label: 'Your answers',
-          required: false,
-        },
-      ],
-    },
   ],
 };
 
 /**
  * Placeholder pricing for pressure washing.
  * Base: £4/m². Small premium for decking (more care required).
+ * A real deployment calibrates these values for their local market.
  */
 export const jetwashPricingConfig: PricingConfig = {
   schemaVersion: 1,

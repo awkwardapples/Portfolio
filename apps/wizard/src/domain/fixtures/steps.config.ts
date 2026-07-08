@@ -1,15 +1,15 @@
 /**
- * Garden / external steps wizard configuration (Step 5.9).
+ * CANONICAL REFERENCE CONFIG — Garden steps vertical.
  *
- * Instant-quote service. Priced per step with material premiums.
- * Placeholder pricing per ADR-0021 Decision 5.
+ * Redesigned in Step 5.13b to use the new step types introduced in 5.13a:
+ *   - VisualCardSelectorStep for shape and material selection
+ *   - SizeBracketSelectorStep for step count (bracket or exact)
+ *   - EstimateDisplayStep mid-wizard with accept/adjust decision
  *
- * PRICING NOTE — step_count as quantity:
- *   step_length_m is collected for the contractor's reference but does not
- *   affect the quoted price in this template (same simplification as width_m
- *   in decking.config.ts). A real deployment may choose a more complex formula.
+ * Flow: shape → material → count → estimate → contact → extras
+ * The pre-step (ADR-0022) collects name/postcode/phone/email first.
  *
- * MONEY: every monetary value is INTEGER PENCE.
+ * MONEY: every monetary value is INTEGER PENCE. £200/step = 20000.
  */
 
 import type { WizardConfig } from '@/domain/config/wizard-config';
@@ -22,93 +22,73 @@ export const stepsWizardConfig: WizardConfig = {
   title: 'Garden steps',
   steps: [
     {
-      id: 'design',
-      title: 'Steps design',
-      description: 'Tell us about the shape and material you have in mind.',
-      fields: [
-        {
-          id: 'shape',
-          key: 'shape',
-          type: 'select',
-          label: 'Step shape',
-          required: true,
-          options: [
-            { value: 'straight', label: 'Straight' },
-            { value: 'curved', label: 'Curved or semi-circular' },
-            { value: 'not_sure', label: "Not sure — let's discuss" },
-          ],
-        },
-        {
-          id: 'material',
-          key: 'material',
-          type: 'select',
-          label: 'Step material',
-          required: true,
-          options: [
-            { value: 'brick', label: 'Brick' },
-            { value: 'slate', label: 'Slate' },
-            { value: 'portland_stone', label: 'Portland Stone' },
-            { value: 'cast_stone', label: 'Cast Stone' },
-            { value: 'granite', label: 'Granite' },
-            { value: 'not_sure', label: "Not sure — let's discuss" },
-          ],
-        },
-        {
-          id: 'step_count',
-          key: 'step_count',
-          type: 'number',
-          label: 'Number of steps',
-          help: 'A rough estimate is fine.',
-          required: true,
-        },
+      stepKind: 'visual-card-selector',
+      id: 'shape_step',
+      title: 'What shape are the steps?',
+      description: 'Choose the step layout that matches your project.',
+      answerKey: 'shape',
+      options: [
+        { id: 'straight', label: 'Straight' },
+        { id: 'curved', label: 'Curved or semi-circular' },
+        { id: 'not_sure', label: "Not sure — let's discuss" },
       ],
     },
     {
-      id: 'dimensions_and_extras',
-      title: 'Dimensions & extras',
-      description: 'Tell us the step width and whether you need threads or risers.',
-      fields: [
-        {
-          id: 'step_length_m',
-          key: 'step_length_m',
-          type: 'number',
-          label: 'Step width in metres',
-          help: 'Collected for the contractor. Does not affect the quoted price in this template.',
-          required: false,
-        },
-        {
-          id: 'step_threads',
-          key: 'step_threads',
-          type: 'checkbox',
-          label: 'Include step threads (horizontal face)',
-          required: false,
-          options: [{ value: 'yes', label: 'Yes, include step threads' }],
-        },
-        {
-          id: 'step_risers',
-          key: 'step_risers',
-          type: 'checkbox',
-          label: 'Include step risers (vertical face)',
-          required: false,
-          options: [{ value: 'yes', label: 'Yes, include step risers' }],
-        },
+      stepKind: 'visual-card-selector',
+      id: 'material_step',
+      title: 'What material?',
+      description: 'Choose the material for your steps.',
+      answerKey: 'material',
+      options: [
+        { id: 'brick', label: 'Brick' },
+        { id: 'slate', label: 'Slate' },
+        { id: 'portland_stone', label: 'Portland Stone' },
+        { id: 'cast_stone', label: 'Cast Stone' },
+        { id: 'granite', label: 'Granite' },
       ],
     },
     {
-      id: 'site_photos',
-      title: 'Photos',
-      description: 'Add photos of the area so we can give a more accurate estimate.',
-      fields: [
+      stepKind: 'size-bracket-selector',
+      id: 'step_count_step',
+      title: 'How many steps?',
+      description: 'Choose an approximate count, or enter the exact number.',
+      answerKey: 'step_count_bracket',
+      brackets: [
         {
-          id: 'site_photos',
-          key: 'site_photos',
-          type: 'photo',
-          label: 'Photos of the area (optional)',
-          maxCount: 5,
-          required: false,
-          help: 'Up to 5 photos. We accept JPEG, PNG, and WebP.',
+          id: 'few',
+          label: 'A few steps',
+          minValue: 1,
+          maxValue: 3,
+          unit: 'steps',
+          typicalValue: 2,
+        },
+        {
+          id: 'several',
+          label: 'Several steps',
+          minValue: 3,
+          maxValue: 7,
+          unit: 'steps',
+          typicalValue: 5,
+        },
+        {
+          id: 'many',
+          label: 'Many steps',
+          minValue: 7,
+          maxValue: 20,
+          unit: 'steps',
+          typicalValue: 9,
         },
       ],
+      exactPromptLabel: 'I know the exact number of steps',
+      exactFields: [{ id: 'step_count', label: 'Number of steps', unit: 'steps' }],
+    },
+    {
+      stepKind: 'estimate-display',
+      id: 'estimate',
+      title: 'Your estimate',
+      description: 'Based on the details you have provided.',
+      disclaimer: 'This is a guide price. We confirm exact costs after a site survey.',
+      onAdjustGoTo: 'shape_step',
     },
     {
       id: 'contact',
@@ -139,16 +119,25 @@ export const stepsWizardConfig: WizardConfig = {
       ],
     },
     {
-      id: 'review',
-      title: 'Review',
-      description: 'Check your answers before we prepare your quote.',
+      id: 'extras',
+      title: 'Extras',
+      description: 'Optional additions to your quote.',
       fields: [
         {
-          id: 'review_summary',
-          key: 'review_summary',
-          type: 'review',
-          label: 'Your answers',
+          id: 'step_threads',
+          key: 'step_threads',
+          type: 'checkbox',
+          label: 'Include step threads (horizontal face)',
           required: false,
+          options: [{ value: 'yes', label: 'Yes, include step threads' }],
+        },
+        {
+          id: 'step_risers',
+          key: 'step_risers',
+          type: 'checkbox',
+          label: 'Include step risers (vertical face)',
+          required: false,
+          options: [{ value: 'yes', label: 'Yes, include step risers' }],
         },
       ],
     },
@@ -157,18 +146,34 @@ export const stepsWizardConfig: WizardConfig = {
 
 /**
  * Placeholder pricing for garden steps.
- * Base: £200/step (brick). Material premiums as modifiers.
+ * Base: £200/step (brick, straight). Shape and material premiums as modifiers.
+ * Threads and risers as flat-rate extras.
+ * A real deployment calibrates these values for their local market.
  */
 export const stepsPricingConfig: PricingConfig = {
   schemaVersion: 1,
   currency: 'GBP',
   base: {
-    label: 'Base rate per step (brick)',
+    label: 'Base rate per step (brick, straight)',
     perUnitPence: 20000, // £200.00 per step
     unit: 'item',
     quantityFieldId: 'step_count',
   },
   modifiers: [
+    {
+      id: 'shape_curved',
+      label: 'Curved steps premium',
+      appliesToFieldId: 'shape',
+      match: { kind: 'equals', value: 'curved' },
+      effect: { kind: 'multiply', factor: 1.4 },
+    },
+    {
+      id: 'shape_not_sure',
+      label: 'Uncertain shape allowance',
+      appliesToFieldId: 'shape',
+      match: { kind: 'equals', value: 'not_sure' },
+      effect: { kind: 'multiply', factor: 1.2 },
+    },
     {
       id: 'material_slate',
       label: 'Slate premium',
@@ -201,14 +206,14 @@ export const stepsPricingConfig: PricingConfig = {
   extras: [
     {
       id: 'step_threads',
-      label: 'Step threads',
+      label: 'Step threads supply and fit',
       appliesToFieldId: 'step_threads',
       match: { kind: 'equals', value: 'yes' },
       amountPence: 30000, // £300 flat
     },
     {
       id: 'step_risers',
-      label: 'Step risers',
+      label: 'Step risers supply and fit',
       appliesToFieldId: 'step_risers',
       match: { kind: 'equals', value: 'yes' },
       amountPence: 20000, // £200 flat
@@ -219,7 +224,7 @@ export const stepsPricingConfig: PricingConfig = {
     maxPence: 5000000, // £50,000 ceiling
     rounding: {
       mode: 'nearest',
-      toPence: 5000, // round to nearest £50
+      toPence: 500, // round to nearest £5
     },
   },
   rangeSpreadBasisPoints: 1500, // ±15%
