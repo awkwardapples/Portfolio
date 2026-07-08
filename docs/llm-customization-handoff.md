@@ -7,8 +7,8 @@ wizard configuration. Visual customization is handled separately by the project 
 
 **Audience:** LLM agent.
 
-**Codebase state reference:** This document reflects template state at commit `180a74d`
-(Step 5.10b, 2026-06-25). Always read actual file contents before editing — this document
+**Codebase state reference:** This document reflects template state at Step 5.13c
+(2026-07-08). Always read actual file contents before editing — this document
 describes structure and intent, not exact verbatim content.
 
 **Cross-referenced documents:**
@@ -302,6 +302,12 @@ The `seo.ogImageUrl` is empty here — no custom OG image. Task 11 handles this 
 | ----------------------- | ---------------------------------------------- |
 | `goqw_enabled_services` | Comma-separated list of enabled service IDs    |
 | `goqw_webhook_url`      | Make.com webhook URL for submission forwarding |
+
+> **Wizard flow note (Step 5.13c):** The pre-step now collects **postcode only** (`key: postcode`).
+> All 7 instant-quote wizard flows end with a `contact-and-address` step that collects name, phone
+> (required), email, and `full_address`. The Make.com webhook payload therefore includes
+> `full_address` in addition to the fields collected previously. Manual-quote services are
+> unaffected.
 
 **Optional overrides:**
 
@@ -2111,5 +2117,5 @@ produces an unrecognized option that is silently ignored, leaving the Acme Fenci
 
 _End of LLM Customization Handoff Document_
 
-_Codebase state: commit `180a74d` (Step 5.10b, 2026-06-25)_
-_Next planned update: after Step 5.12 SCB deployment (captures any gaps discovered in first real use)_
+_Codebase state: Step 5.13c (2026-07-08). Pre-step postcode-only; photo upload + contact-and-address step added to all instant-quote services._
+_Next planned update: after Step 5.14 (SCB deployment)_
