@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 
 import { validateWizardConfig, validatePricingConfig } from '@/domain/validation/validate';
 import { paintingWizardConfig, paintingPricingConfig } from '@/domain/fixtures/painting.config';
-import { asFieldStep } from './_helpers';
+import { isFieldStep } from '@/domain/config/wizard-config';
 
 describe('painting reference config', () => {
   it('passes wizard validation', () => {
@@ -15,37 +15,52 @@ describe('painting reference config', () => {
     expect(result.ok).toBe(true);
   });
 
-  it('is an instant-quote wizard', () => {
-    expect(paintingWizardConfig.quoteMode).toBe('instant');
-  });
-
   it('contains exactly 5 steps in expected order', () => {
     expect(paintingWizardConfig.steps.map((s) => s.id)).toEqual([
-      'rooms',
-      'details',
-      'site_photos',
+      'rooms_step',
+      'what_to_paint_step',
+      'estimate',
       'contact',
-      'review',
+      'extras',
     ]);
   });
 
-  it('rooms step has room_count number field (required) and what_to_paint checkbox', () => {
-    const step = asFieldStep(paintingWizardConfig.steps.find((s) => s.id === 'rooms'));
-    const roomCount = step.fields.find((f) => f.id === 'room_count');
-    expect(roomCount?.type).toBe('number');
-    expect(roomCount?.required).toBe(true);
-    const whatToPaint = step.fields.find((f) => f.id === 'what_to_paint');
-    expect(whatToPaint?.type).toBe('checkbox');
+  it('rooms_step is a size-bracket-selector with 3 brackets and room_count exact field', () => {
+    const step = paintingWizardConfig.steps[0];
+    if (!step || isFieldStep(step) || step.stepKind !== 'size-bracket-selector')
+      throw new Error('expected size-bracket-selector');
+    expect(step.brackets).toHaveLength(3);
+    expect(step.exactFields.map((f) => f.id)).toEqual(['room_count']);
   });
 
-  it('site_photos step has photo field with maxCount 5 and required false', () => {
-    const step = asFieldStep(paintingWizardConfig.steps.find((s) => s.id === 'site_photos'));
-    const photo = step.fields.find((f) => f.type === 'photo');
-    expect(photo?.maxCount).toBe(5);
-    expect(photo?.required).toBe(false);
+  it('what_to_paint_step is a visual-card-selector with multiple:true and 5 options', () => {
+    const step = paintingWizardConfig.steps[1];
+    if (!step || isFieldStep(step) || step.stepKind !== 'visual-card-selector')
+      throw new Error('expected visual-card-selector');
+    expect(step.answerKey).toBe('what_to_paint');
+    expect(step.multiple).toBe(true);
+    expect(step.options.map((o) => o.id)).toEqual([
+      'walls',
+      'ceilings',
+      'skirting',
+      'doors',
+      'windows',
+    ]);
   });
 
-  it('pricing base uses room_count as quantity field', () => {
+  it('estimate step is an estimate-display with onAdjustGoTo rooms_step', () => {
+    const step = paintingWizardConfig.steps[2];
+    if (!step || isFieldStep(step) || step.stepKind !== 'estimate-display')
+      throw new Error('expected estimate-display');
+    expect(step.onAdjustGoTo).toBe('rooms_step');
+  });
+
+  it('pricing base uses room_count as quantity field with item unit', () => {
     expect(paintingPricingConfig.base.quantityFieldId).toBe('room_count');
+    expect(paintingPricingConfig.base.unit).toBe('item');
+  });
+
+  it('pricing has no modifiers', () => {
+    expect(paintingPricingConfig.modifiers).toHaveLength(0);
   });
 });

@@ -1,14 +1,13 @@
 /**
- * Patio / paving wizard configuration (Step 5.9).
+ * CANONICAL REFERENCE CONFIG — Patio & paving vertical.
  *
- * Instant-quote service. Placeholder pricing per ADR-0021 Decision 5.
+ * Redesigned in Step 5.13b to use the new step types introduced in 5.13a:
+ *   - SizeBracketSelectorStep for patio area (bracket or exact)
+ *   - VisualCardSelectorStep for paving material
+ *   - EstimateDisplayStep mid-wizard with accept/adjust decision
  *
- * PRICING NOTE — area_m2 as quantity:
- *   The pricing engine uses a single quantityFieldId. area_m2 is the primary
- *   quantity (square metres of paving). Drainage metres are collected
- *   informally and passed to the contractor; they are not priced by the engine
- *   in this template (per-metre drainage pricing requires the richer DSL
- *   deferred to a future calibration step).
+ * Flow: size → material → estimate → contact → extras
+ * The pre-step (ADR-0022) collects name/postcode/phone/email first.
  *
  * MONEY: every monetary value is INTEGER PENCE.
  */
@@ -23,82 +22,39 @@ export const patioWizardConfig: WizardConfig = {
   title: 'Patio & paving',
   steps: [
     {
-      id: 'area_and_material',
-      title: 'Patio size & material',
-      description: 'Tell us the approximate size and what material you would like.',
-      fields: [
-        {
-          id: 'area_m2',
-          key: 'area_m2',
-          type: 'number',
-          label: 'Approximate area in square metres',
-          help: 'A rough estimate is fine. We confirm exact measurements on site.',
-          required: true,
-        },
-        {
-          id: 'material',
-          key: 'material',
-          type: 'select',
-          label: 'Paving material',
-          required: true,
-          options: [
-            { value: 'riven_slabs', label: '450×450 Riven Slabs' },
-            { value: 'sandstone_indian', label: 'Indian Sandstone' },
-            { value: 'sandstone_sawn', label: 'Sawn Sandstone' },
-          ],
-        },
+      stepKind: 'size-bracket-selector',
+      id: 'patio_size',
+      title: 'How large is the patio area?',
+      description: 'Choose an approximate size, or enter the exact measurement.',
+      answerKey: 'patio_size',
+      brackets: [
+        { id: 'small', label: 'Small', minValue: 0, maxValue: 15, unit: 'm²', typicalValue: 10 },
+        { id: 'medium', label: 'Medium', minValue: 15, maxValue: 35, unit: 'm²', typicalValue: 25 },
+        { id: 'large', label: 'Large', minValue: 35, maxValue: 80, unit: 'm²', typicalValue: 48 },
+      ],
+      exactPromptLabel: 'I know the exact area',
+      exactFields: [{ id: 'area_m2', label: 'Area in square metres', unit: 'm²' }],
+    },
+    {
+      stepKind: 'visual-card-selector',
+      id: 'material_step',
+      title: 'What paving material?',
+      description: 'Choose the material for your patio.',
+      answerKey: 'material',
+      options: [
+        { id: 'riven_slabs', label: '450×450 Riven Slabs' },
+        { id: 'sandstone_indian', label: 'Indian Sandstone' },
+        { id: 'sandstone_sawn', label: 'Sawn Sandstone' },
+        { id: 'porcelain', label: 'Porcelain' },
       ],
     },
     {
-      id: 'extras',
-      title: 'Extras',
-      description: 'Tell us about any additional features.',
-      fields: [
-        {
-          id: 'drainage_m',
-          key: 'drainage_m',
-          type: 'number',
-          label: 'Drainage required (linear metres)',
-          help: 'Enter 0 if no drainage channel is needed.',
-          required: false,
-        },
-        {
-          id: 'edging',
-          key: 'edging',
-          type: 'select',
-          label: 'Patio edging',
-          required: true,
-          options: [
-            { value: 'block_edging', label: 'Block edging' },
-            { value: 'kerb_edging', label: 'Kerb edging' },
-            { value: 'none', label: 'No edging' },
-          ],
-        },
-        {
-          id: 'include_steps',
-          key: 'include_steps',
-          type: 'checkbox',
-          label: 'Include steps',
-          required: false,
-          options: [{ value: 'yes', label: 'Yes, include steps to the patio' }],
-        },
-      ],
-    },
-    {
-      id: 'site_photos',
-      title: 'Photos',
-      description: 'Add photos of the area so we can give a more accurate estimate.',
-      fields: [
-        {
-          id: 'site_photos',
-          key: 'site_photos',
-          type: 'photo',
-          label: 'Photos of the area (optional)',
-          maxCount: 5,
-          required: false,
-          help: 'Up to 5 photos. We accept JPEG, PNG, and WebP.',
-        },
-      ],
+      stepKind: 'estimate-display',
+      id: 'estimate',
+      title: 'Your estimate',
+      description: 'Based on the details you have provided.',
+      disclaimer: 'This is a guide price. We confirm exact costs after a site survey.',
+      onAdjustGoTo: 'patio_size',
     },
     {
       id: 'contact',
@@ -129,16 +85,29 @@ export const patioWizardConfig: WizardConfig = {
       ],
     },
     {
-      id: 'review',
-      title: 'Review',
-      description: 'Check your answers before we prepare your quote.',
+      id: 'extras',
+      title: 'Extras',
+      description: 'Optional additions to your quote.',
       fields: [
         {
-          id: 'review_summary',
-          key: 'review_summary',
-          type: 'review',
-          label: 'Your answers',
+          id: 'edging',
+          key: 'edging',
+          type: 'select',
+          label: 'Patio edging',
+          required: true,
+          options: [
+            { value: 'none', label: 'No edging' },
+            { value: 'block_edging', label: 'Block edging' },
+            { value: 'kerb_edging', label: 'Kerb edging' },
+          ],
+        },
+        {
+          id: 'include_steps',
+          key: 'include_steps',
+          type: 'checkbox',
+          label: 'Include steps',
           required: false,
+          options: [{ value: 'yes', label: 'Yes, include steps to the patio' }],
         },
       ],
     },
@@ -147,7 +116,9 @@ export const patioWizardConfig: WizardConfig = {
 
 /**
  * Placeholder pricing for patio & paving.
- * Base: £75/m² riven slabs. Material premiums as modifiers. Edging and steps as extras.
+ * Base: £75/m² (riven slabs). Material premiums as modifiers. Edging and steps as extras.
+ * Porcelain option added in 5.13b redesign.
+ * A real deployment calibrates these values for their local market.
  */
 export const patioPricingConfig: PricingConfig = {
   schemaVersion: 1,
@@ -172,6 +143,13 @@ export const patioPricingConfig: PricingConfig = {
       appliesToFieldId: 'material',
       match: { kind: 'equals', value: 'sandstone_sawn' },
       effect: { kind: 'multiply', factor: 1.4 },
+    },
+    {
+      id: 'material_porcelain',
+      label: 'Porcelain premium',
+      appliesToFieldId: 'material',
+      match: { kind: 'equals', value: 'porcelain' },
+      effect: { kind: 'multiply', factor: 1.65 },
     },
   ],
   extras: [
@@ -202,7 +180,7 @@ export const patioPricingConfig: PricingConfig = {
     maxPence: 5000000, // £50,000 ceiling
     rounding: {
       mode: 'nearest',
-      toPence: 5000, // round to nearest £50
+      toPence: 500, // round to nearest £5
     },
   },
   rangeSpreadBasisPoints: 1500, // ±15%

@@ -4,6 +4,7 @@ import { validateWizardConfig, validatePricingConfig } from '@/domain/validation
 import { patioWizardConfig, patioPricingConfig } from '@/domain/fixtures/patio.config';
 import { drivewayWizardConfig, drivewayPricingConfig } from '@/domain/fixtures/driveway.config';
 import { stepsWizardConfig, stepsPricingConfig } from '@/domain/fixtures/steps.config';
+import { isFieldStep } from '@/domain/config/wizard-config';
 import { asFieldStep } from './_helpers';
 
 // ---------------------------------------------------------------------------
@@ -19,27 +20,35 @@ describe('patio reference config', () => {
     expect(validatePricingConfig(patioPricingConfig, patioWizardConfig).ok).toBe(true);
   });
 
-  it('is an instant-quote wizard', () => {
-    expect(patioWizardConfig.quoteMode).toBe('instant');
-  });
-
   it('contains exactly 5 steps in expected order', () => {
     expect(patioWizardConfig.steps.map((s) => s.id)).toEqual([
-      'area_and_material',
-      'extras',
-      'site_photos',
+      'patio_size',
+      'material_step',
+      'estimate',
       'contact',
-      'review',
+      'extras',
     ]);
   });
 
-  it('area_and_material step has area_m2 number field (required) and material select', () => {
-    const step = asFieldStep(patioWizardConfig.steps.find((s) => s.id === 'area_and_material'));
-    const area = step.fields.find((f) => f.id === 'area_m2');
-    expect(area?.type).toBe('number');
-    expect(area?.required).toBe(true);
-    const material = step.fields.find((f) => f.id === 'material');
-    expect(material?.type).toBe('select');
+  it('patio_size is a size-bracket-selector with 3 brackets and area_m2 exact field', () => {
+    const step = patioWizardConfig.steps[0];
+    if (!step || isFieldStep(step) || step.stepKind !== 'size-bracket-selector')
+      throw new Error('expected size-bracket-selector');
+    expect(step.brackets).toHaveLength(3);
+    expect(step.exactFields.map((f) => f.id)).toEqual(['area_m2']);
+  });
+
+  it('material_step is a visual-card-selector with 4 material options including porcelain', () => {
+    const step = patioWizardConfig.steps[1];
+    if (!step || isFieldStep(step) || step.stepKind !== 'visual-card-selector')
+      throw new Error('expected visual-card-selector');
+    expect(step.answerKey).toBe('material');
+    expect(step.options.map((o) => o.id)).toEqual([
+      'riven_slabs',
+      'sandstone_indian',
+      'sandstone_sawn',
+      'porcelain',
+    ]);
   });
 
   it('pricing base uses area_m2 as quantity field', () => {
@@ -61,35 +70,42 @@ describe('driveway reference config', () => {
     expect(validatePricingConfig(drivewayPricingConfig, drivewayWizardConfig).ok).toBe(true);
   });
 
-  it('is an instant-quote wizard', () => {
-    expect(drivewayWizardConfig.quoteMode).toBe('instant');
-  });
-
   it('contains exactly 5 steps in expected order', () => {
     expect(drivewayWizardConfig.steps.map((s) => s.id)).toEqual([
-      'area_and_material',
-      'extras',
-      'site_photos',
+      'driveway_size',
+      'material_step',
+      'estimate',
       'contact',
-      'review',
+      'extras',
     ]);
   });
 
-  it('material select has 3 driveway-specific options', () => {
-    const step = asFieldStep(drivewayWizardConfig.steps.find((s) => s.id === 'area_and_material'));
-    const material = step.fields.find((f) => f.id === 'material');
-    const values = material!.options!.map((o) => o.value);
-    expect(values).toEqual(['driveline_50', 'tegula', 'drivesys']);
+  it('material_step is a visual-card-selector with 4 driveway-specific options', () => {
+    const step = drivewayWizardConfig.steps[1];
+    if (!step || isFieldStep(step) || step.stepKind !== 'visual-card-selector')
+      throw new Error('expected visual-card-selector');
+    expect(step.options.map((o) => o.id)).toEqual([
+      'driveline_50',
+      'tegula',
+      'resin_bound',
+      'drivesys',
+    ]);
   });
 
   it('pricing base uses area_m2 and square_metre unit', () => {
     expect(drivewayPricingConfig.base.quantityFieldId).toBe('area_m2');
     expect(drivewayPricingConfig.base.unit).toBe('square_metre');
   });
+
+  it('pricing has 3 modifiers including resin_bound', () => {
+    expect(drivewayPricingConfig.modifiers).toHaveLength(3);
+    const ids = drivewayPricingConfig.modifiers.map((m) => m.id);
+    expect(ids).toContain('material_resin_bound');
+  });
 });
 
 // ---------------------------------------------------------------------------
-// Steps
+// Steps (garden steps — redesigned in Commit 4 / 5.13b)
 // ---------------------------------------------------------------------------
 
 describe('steps (garden steps) reference config', () => {

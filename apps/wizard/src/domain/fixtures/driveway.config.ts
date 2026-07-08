@@ -1,8 +1,13 @@
 /**
- * Driveway wizard configuration (Step 5.9).
+ * CANONICAL REFERENCE CONFIG — Driveway vertical.
  *
- * Instant-quote service. Structurally similar to patio.config.ts but with
- * driveway-specific materials. Placeholder pricing per ADR-0021 Decision 5.
+ * Redesigned in Step 5.13b to use the new step types introduced in 5.13a:
+ *   - SizeBracketSelectorStep for driveway area (bracket or exact)
+ *   - VisualCardSelectorStep for driveway material
+ *   - EstimateDisplayStep mid-wizard with accept/adjust decision
+ *
+ * Flow: size → material → estimate → contact → extras
+ * The pre-step (ADR-0022) collects name/postcode/phone/email first.
  *
  * MONEY: every monetary value is INTEGER PENCE.
  */
@@ -17,82 +22,39 @@ export const drivewayWizardConfig: WizardConfig = {
   title: 'Driveway',
   steps: [
     {
-      id: 'area_and_material',
-      title: 'Driveway size & material',
-      description: 'Tell us the approximate size and your preferred material.',
-      fields: [
-        {
-          id: 'area_m2',
-          key: 'area_m2',
-          type: 'number',
-          label: 'Approximate area in square metres',
-          help: 'A rough estimate is fine. We confirm exact measurements on site.',
-          required: true,
-        },
-        {
-          id: 'material',
-          key: 'material',
-          type: 'select',
-          label: 'Driveway material',
-          required: true,
-          options: [
-            { value: 'driveline_50', label: 'Driveline 50 (block paving)' },
-            { value: 'tegula', label: 'Tegula Style (textured block paving)' },
-            { value: 'drivesys', label: 'Marshall Drivesys (permeable)' },
-          ],
-        },
+      stepKind: 'size-bracket-selector',
+      id: 'driveway_size',
+      title: 'How large is the driveway area?',
+      description: 'Choose an approximate size, or enter the exact measurement.',
+      answerKey: 'driveway_size',
+      brackets: [
+        { id: 'small', label: 'Small', minValue: 0, maxValue: 30, unit: 'm²', typicalValue: 20 },
+        { id: 'medium', label: 'Medium', minValue: 30, maxValue: 60, unit: 'm²', typicalValue: 45 },
+        { id: 'large', label: 'Large', minValue: 60, maxValue: 150, unit: 'm²', typicalValue: 80 },
+      ],
+      exactPromptLabel: 'I know the exact area',
+      exactFields: [{ id: 'area_m2', label: 'Area in square metres', unit: 'm²' }],
+    },
+    {
+      stepKind: 'visual-card-selector',
+      id: 'material_step',
+      title: 'What driveway material?',
+      description: 'Choose the material for your driveway.',
+      answerKey: 'material',
+      options: [
+        { id: 'driveline_50', label: 'Driveline 50 (block paving)' },
+        { id: 'tegula', label: 'Tegula Style (textured block paving)' },
+        { id: 'resin_bound', label: 'Resin bound' },
+        { id: 'drivesys', label: 'Marshall Drivesys (permeable)' },
       ],
     },
     {
-      id: 'extras',
-      title: 'Extras',
-      description: 'Tell us about any additional features.',
-      fields: [
-        {
-          id: 'drainage_m',
-          key: 'drainage_m',
-          type: 'number',
-          label: 'Drainage channel required (linear metres)',
-          help: 'Enter 0 if no drainage channel is needed.',
-          required: false,
-        },
-        {
-          id: 'kerb_edging',
-          key: 'kerb_edging',
-          type: 'select',
-          label: 'Kerb edging',
-          required: true,
-          options: [
-            { value: 'yes_edging', label: 'Yes, include kerb edging' },
-            { value: 'not_sure', label: "Not sure — let's discuss" },
-            { value: 'no_edging', label: 'No kerb edging needed' },
-          ],
-        },
-        {
-          id: 'include_steps',
-          key: 'include_steps',
-          type: 'checkbox',
-          label: 'Include steps',
-          required: false,
-          options: [{ value: 'yes', label: 'Yes, include steps to the driveway' }],
-        },
-      ],
-    },
-    {
-      id: 'site_photos',
-      title: 'Photos',
-      description: 'Add photos of the area so we can give a more accurate estimate.',
-      fields: [
-        {
-          id: 'site_photos',
-          key: 'site_photos',
-          type: 'photo',
-          label: 'Photos of the area (optional)',
-          maxCount: 5,
-          required: false,
-          help: 'Up to 5 photos. We accept JPEG, PNG, and WebP.',
-        },
-      ],
+      stepKind: 'estimate-display',
+      id: 'estimate',
+      title: 'Your estimate',
+      description: 'Based on the details you have provided.',
+      disclaimer: 'This is a guide price. We confirm exact costs after a site survey.',
+      onAdjustGoTo: 'driveway_size',
     },
     {
       id: 'contact',
@@ -123,16 +85,25 @@ export const drivewayWizardConfig: WizardConfig = {
       ],
     },
     {
-      id: 'review',
-      title: 'Review',
-      description: 'Check your answers before we prepare your quote.',
+      id: 'extras',
+      title: 'Extras',
+      description: 'Optional additions to your quote.',
       fields: [
         {
-          id: 'review_summary',
-          key: 'review_summary',
-          type: 'review',
-          label: 'Your answers',
+          id: 'kerb_edging',
+          key: 'kerb_edging',
+          type: 'checkbox',
+          label: 'Kerb edging',
           required: false,
+          options: [{ value: 'yes', label: 'Yes, include kerb edging' }],
+        },
+        {
+          id: 'include_steps',
+          key: 'include_steps',
+          type: 'checkbox',
+          label: 'Include steps',
+          required: false,
+          options: [{ value: 'yes', label: 'Yes, include steps to the driveway' }],
         },
       ],
     },
@@ -141,7 +112,9 @@ export const drivewayWizardConfig: WizardConfig = {
 
 /**
  * Placeholder pricing for driveways.
- * Base: £80/m² block paving (Driveline 50). Material premiums as modifiers.
+ * Base: £80/m² (Driveline 50). Material premiums as modifiers. Extras for kerb edging and steps.
+ * Resin bound option added in 5.13b redesign.
+ * A real deployment calibrates these values for their local market.
  */
 export const drivewayPricingConfig: PricingConfig = {
   schemaVersion: 1,
@@ -161,6 +134,13 @@ export const drivewayPricingConfig: PricingConfig = {
       effect: { kind: 'multiply', factor: 1.2 },
     },
     {
+      id: 'material_resin_bound',
+      label: 'Resin bound premium',
+      appliesToFieldId: 'material',
+      match: { kind: 'equals', value: 'resin_bound' },
+      effect: { kind: 'multiply', factor: 1.25 },
+    },
+    {
       id: 'material_drivesys',
       label: 'Drivesys permeable premium',
       appliesToFieldId: 'material',
@@ -173,7 +153,7 @@ export const drivewayPricingConfig: PricingConfig = {
       id: 'kerb_edging',
       label: 'Kerb edging supply and fit',
       appliesToFieldId: 'kerb_edging',
-      match: { kind: 'equals', value: 'yes_edging' },
+      match: { kind: 'equals', value: 'yes' },
       amountPence: 35000, // £350
     },
     {
@@ -189,7 +169,7 @@ export const drivewayPricingConfig: PricingConfig = {
     maxPence: 5000000, // £50,000 ceiling
     rounding: {
       mode: 'nearest',
-      toPence: 5000, // round to nearest £50
+      toPence: 500, // round to nearest £5
     },
   },
   rangeSpreadBasisPoints: 1500, // ±15%
