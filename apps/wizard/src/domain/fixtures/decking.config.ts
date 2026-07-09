@@ -39,6 +39,7 @@ export const deckingWizardConfig: WizardConfig = {
       title: 'What material?',
       description: 'Choose the decking material.',
       answerKey: 'material',
+      multiple: false,
       options: [
         { id: 'softwood', label: 'Softwood', description: 'Pine or spruce — cost-effective' },
         { id: 'hardwood', label: 'Hardwood', description: 'Oak or ipe — long lasting' },
@@ -51,6 +52,7 @@ export const deckingWizardConfig: WizardConfig = {
       title: 'Your estimate',
       description: 'Based on the details you have provided.',
       disclaimer: 'This is a guide price. We confirm exact costs after a site survey.',
+      showRangeAsRange: true,
       onAdjustGoTo: 'deck_size',
     },
     {

@@ -41,6 +41,7 @@ export const drivewayWizardConfig: WizardConfig = {
       title: 'What driveway material?',
       description: 'Choose the material for your driveway.',
       answerKey: 'material',
+      multiple: false,
       options: [
         { id: 'driveline_50', label: 'Driveline 50 (block paving)' },
         { id: 'tegula', label: 'Tegula Style (textured block paving)' },
@@ -54,6 +55,7 @@ export const drivewayWizardConfig: WizardConfig = {
       title: 'Your estimate',
       description: 'Based on the details you have provided.',
       disclaimer: 'This is a guide price. We confirm exact costs after a site survey.',
+      showRangeAsRange: true,
       onAdjustGoTo: 'driveway_size',
     },
     {

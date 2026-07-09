@@ -41,6 +41,7 @@ export const patioWizardConfig: WizardConfig = {
       title: 'What paving material?',
       description: 'Choose the material for your patio.',
       answerKey: 'material',
+      multiple: false,
       options: [
         { id: 'riven_slabs', label: '450×450 Riven Slabs' },
         { id: 'sandstone_indian', label: 'Indian Sandstone' },
@@ -54,6 +55,7 @@ export const patioWizardConfig: WizardConfig = {
       title: 'Your estimate',
       description: 'Based on the details you have provided.',
       disclaimer: 'This is a guide price. We confirm exact costs after a site survey.',
+      showRangeAsRange: true,
       onAdjustGoTo: 'patio_size',
     },
     {

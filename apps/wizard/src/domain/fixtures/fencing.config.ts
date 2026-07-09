@@ -44,6 +44,7 @@ export const fencingWizardConfig: WizardConfig = {
       title: 'What type of fence?',
       description: 'Choose the fencing style that suits your property.',
       answerKey: 'fence_type',
+      multiple: false,
       options: [
         { id: 'feather_edge', label: 'Feather Edge' },
         { id: 'closeboard', label: 'Closeboard' },
@@ -57,6 +58,7 @@ export const fencingWizardConfig: WizardConfig = {
       title: 'What height?',
       description: 'Choose the approximate fence height.',
       answerKey: 'height',
+      multiple: false,
       options: [
         { id: 'low', label: 'Up to 1.2m' },
         { id: 'standard', label: '1.5m to 1.8m' },
@@ -69,6 +71,7 @@ export const fencingWizardConfig: WizardConfig = {
       title: 'Your estimate',
       description: 'Based on the details you have provided.',
       disclaimer: 'This is a guide price. We confirm exact costs after a site survey.',
+      showRangeAsRange: true,
       onAdjustGoTo: 'fence_size',
     },
     {

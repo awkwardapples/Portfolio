@@ -63,6 +63,7 @@ export const jetwashWizardConfig: WizardConfig = {
       title: 'What type of surface?',
       description: 'Choose the surface that needs cleaning.',
       answerKey: 'surface_type',
+      multiple: false,
       options: [
         { id: 'patio', label: 'Patio or paving' },
         { id: 'driveway', label: 'Driveway' },
@@ -76,6 +77,7 @@ export const jetwashWizardConfig: WizardConfig = {
       title: 'Your estimate',
       description: 'Based on the details you have provided.',
       disclaimer: 'This is a guide price. We confirm exact costs after a site survey.',
+      showRangeAsRange: true,
       onAdjustGoTo: 'area_size',
     },
     {

@@ -27,6 +27,7 @@ export const stepsWizardConfig: WizardConfig = {
       title: 'What shape are the steps?',
       description: 'Choose the step layout that matches your project.',
       answerKey: 'shape',
+      multiple: false,
       options: [
         { id: 'straight', label: 'Straight' },
         { id: 'curved', label: 'Curved or semi-circular' },
@@ -39,6 +40,7 @@ export const stepsWizardConfig: WizardConfig = {
       title: 'What material?',
       description: 'Choose the material for your steps.',
       answerKey: 'material',
+      multiple: false,
       options: [
         { id: 'brick', label: 'Brick' },
         { id: 'slate', label: 'Slate' },
@@ -88,6 +90,7 @@ export const stepsWizardConfig: WizardConfig = {
       title: 'Your estimate',
       description: 'Based on the details you have provided.',
       disclaimer: 'This is a guide price. We confirm exact costs after a site survey.',
+      showRangeAsRange: true,
       onAdjustGoTo: 'shape_step',
     },
     {
