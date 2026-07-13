@@ -39,16 +39,18 @@ final class SubmissionController {
 	/**
 	 * Constructor.
 	 *
-	 * @param SubmissionRepository $repository      Data-access layer for submissions.
-	 * @param Forwarder            $forwarder        Webhook forwarder.
-	 * @param MediaValidator       $media_validator  Photo upload validator.
-	 * @param PhotoStorage         $photo_storage    Saves validated photos to the media library (Step 5.13e).
+	 * @param SubmissionRepository $repository       Data-access layer for submissions.
+	 * @param Forwarder            $forwarder         Webhook forwarder.
+	 * @param MediaValidator       $media_validator   Photo upload validator.
+	 * @param PhotoStorage         $photo_storage     Saves validated photos to the media library (Step 5.13e).
+	 * @param BotProtection        $bot_protection    Honeypot/rate-limit/Turnstile checks (Step 5.13f).
 	 */
 	public function __construct(
 		private readonly SubmissionRepository $repository,
 		private readonly Forwarder $forwarder,
 		private readonly MediaValidator $media_validator = new MediaValidator(),
-		private readonly PhotoStorage $photo_storage = new PhotoStorage()
+		private readonly PhotoStorage $photo_storage = new PhotoStorage(),
+		private readonly BotProtection $bot_protection = new BotProtection()
 	) {}
 
 	/**
@@ -62,8 +64,26 @@ final class SubmissionController {
 		// body. The buffer is discarded unconditionally in the finally block.
 		ob_start();
 		try {
+			/**
+			 * Real WordPress returns null from get_json_params() on an
+			 * invalid-JSON body, even though the stub declares an
+			 * unconditional array return type. Widened back to mixed so the
+			 * is_array() guard below is treated as live, not dead, code.
+			 *
+			 * @var mixed $payload
+			 */
+			$payload = $request->get_json_params();
+
+			// Step 0: bot/spam protection (Step 5.13f, ADR-0027). Runs before
+			// shape validation — honeypot/rate-limit/Turnstile checks are all
+			// cheaper than parsing and validating the full payload.
+			$bot_protection_payload = is_array( $payload ) ? $payload : array();
+			$bot_check              = $this->bot_protection->check( $bot_protection_payload, ClientIp::resolve() );
+			if ( ! $bot_check['allowed'] ) {
+				return $this->bot_protection_error_response( $bot_check );
+			}
+
 			// Step 1: validate.
-			$payload   = $request->get_json_params();
 			$validated = $this->validate( $payload );
 
 			if ( $validated instanceof WP_Error ) {
@@ -290,6 +310,33 @@ final class SubmissionController {
 		foreach ( $attachment_ids as $attachment_id ) {
 			$this->photo_storage->delete_photo( $attachment_id );
 		}
+	}
+
+	/**
+	 * Map a failed BotProtection check to the appropriate REST response.
+	 *
+	 * Honeypot failures deliberately return the same errorCode and status as a
+	 * shape-validation failure ('validation_failed', 400) — a filled honeypot
+	 * should look, to whatever filled it, like an ordinary rejected request,
+	 * not a distinguishable "you're a bot" signal.
+	 *
+	 * @param  array{allowed: bool, errorCode?: string, retryAfterSeconds?: int} $check_result  Result from BotProtection::check().
+	 */
+	private function bot_protection_error_response( array $check_result ): WP_REST_Response {
+		return match ( $check_result['errorCode'] ?? '' ) {
+			'rate_limited' => new WP_REST_Response(
+				array(
+					'errorCode'         => 'rate_limited',
+					'retryAfterSeconds' => $check_result['retryAfterSeconds'] ?? 0,
+				),
+				429
+			),
+			'turnstile_missing', 'turnstile_invalid' => new WP_REST_Response(
+				array( 'errorCode' => 'bot_verification_failed' ),
+				403
+			),
+			default => new WP_REST_Response( array( 'errorCode' => 'validation_failed' ), 400 ),
+		};
 	}
 
 	/**

@@ -10,6 +10,7 @@
 
 declare( strict_types=1 );
 
+use Agency\QuoteWizard\Rest\BotProtection;
 use Agency\QuoteWizard\Rest\SubmissionController;
 use Agency\QuoteWizard\Submissions\Forwarder;
 use Agency\QuoteWizard\Submissions\ForwardResult;
@@ -167,6 +168,27 @@ function spy_photo_storage( array $result ): object {
 	};
 }
 
+/**
+ * Stub bot protection that returns a fixed check() result and records calls.
+ *
+ * @param array{allowed: bool, errorCode?: string, retryAfterSeconds?: int} $result
+ */
+function spy_bot_protection( array $result ): object {
+	return new class ( $result ) extends BotProtection {
+		/** @var list<array{data: array<string,mixed>, ip: string}> */
+		public array $calls = [];
+
+		/** @param array{allowed: bool, errorCode?: string, retryAfterSeconds?: int} $result */
+		public function __construct( private readonly array $result ) {}
+
+		/** @param array<string,mixed> $submission_data */
+		public function check( array $submission_data, string $ip_address ): array {
+			$this->calls[] = array( 'data' => $submission_data, 'ip' => $ip_address );
+			return $this->result;
+		}
+	};
+}
+
 // ---------------------------------------------------------------------------
 // Setup / teardown
 // ---------------------------------------------------------------------------
@@ -176,10 +198,24 @@ beforeEach(
 		Monkey\setUp();
 		Functions\when( 'sanitize_key' )->returnArg();
 		Functions\when( 'sanitize_text_field' )->returnArg();
+		Functions\when( 'wp_unslash' )->returnArg();
 		Functions\when( 'wp_json_encode' )->alias(
 			static fn( mixed $data ): string => (string) json_encode( $data )
 		);
 		Functions\when( 'current_time' )->justReturn( '2026-05-29 12:00:00' );
+		// SubmissionController's default BotProtection collaborator (Step 5.13f)
+		// resolves its config from Settings (get_option) and, when enabled,
+		// checks/records via RateLimiter (get_transient/set_transient). None of
+		// the tests in this file exercise bot protection directly — they use
+		// the real default (enabled, no Turnstile, 5/hour) with these harmless
+		// stubs so every pre-existing test keeps passing. Tests that need to
+		// exercise bot-protection behaviour inject an explicit BotProtection
+		// double instead (see the "Bot protection" section below).
+		Functions\when( 'get_option' )->alias(
+			static fn ( string $key, mixed $default = '' ): mixed => $default
+		);
+		Functions\when( 'get_transient' )->justReturn( false );
+		Functions\when( 'set_transient' )->justReturn( true );
 	}
 );
 
@@ -811,6 +847,112 @@ it(
 		$ctrl->handle( $request );
 
 		expect( $photo_storage->deleted )->toBeEmpty();
+	}
+);
+
+// ---------------------------------------------------------------------------
+// Bot protection (Step 5.13f)
+// ---------------------------------------------------------------------------
+
+it(
+	'passes the raw payload and client IP to BotProtection before validation',
+	function (): void {
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.7';
+		$repo          = spy_repository( 1 );
+		$fwd           = spy_forwarder( ForwardResult::success() );
+		$bot_protection = spy_bot_protection( array( 'allowed' => true ) );
+		$ctrl          = new SubmissionController( $repo, $fwd, bot_protection: $bot_protection );
+
+		$ctrl->handle( make_request( valid_payload( array( 'honeypotValue' => '' ) ) ) );
+
+		expect( $bot_protection->calls )->toHaveCount( 1 );
+		expect( $bot_protection->calls[0]['data']['honeypotValue'] )->toBe( '' );
+		expect( $bot_protection->calls[0]['ip'] )->toBe( '203.0.113.7' );
+
+		unset( $_SERVER['REMOTE_ADDR'] );
+	}
+);
+
+it(
+	'returns 400 validation_failed (fails silently) when the honeypot is filled',
+	function (): void {
+		$repo           = spy_repository();
+		$fwd            = spy_forwarder( ForwardResult::success() );
+		$bot_protection = spy_bot_protection( array( 'allowed' => false, 'errorCode' => 'honeypot_filled' ) );
+		$ctrl           = new SubmissionController( $repo, $fwd, bot_protection: $bot_protection );
+
+		$response = $ctrl->handle( make_request( valid_payload() ) );
+
+		expect( $response->get_status() )->toBe( 400 );
+		expect( $response->get_data()['errorCode'] )->toBe( 'validation_failed' );
+		expect( $repo->inserts )->toBeEmpty();
+		expect( $fwd->calls )->toBeEmpty();
+	}
+);
+
+it(
+	'returns 429 rate_limited with retryAfterSeconds when rate limited',
+	function (): void {
+		$repo           = spy_repository();
+		$fwd            = spy_forwarder( ForwardResult::success() );
+		$bot_protection = spy_bot_protection(
+			array( 'allowed' => false, 'errorCode' => 'rate_limited', 'retryAfterSeconds' => 900 )
+		);
+		$ctrl = new SubmissionController( $repo, $fwd, bot_protection: $bot_protection );
+
+		$response = $ctrl->handle( make_request( valid_payload() ) );
+
+		expect( $response->get_status() )->toBe( 429 );
+		expect( $response->get_data()['errorCode'] )->toBe( 'rate_limited' );
+		expect( $response->get_data()['retryAfterSeconds'] )->toBe( 900 );
+		expect( $repo->inserts )->toBeEmpty();
+	}
+);
+
+it(
+	'returns 403 bot_verification_failed when the Turnstile token is missing',
+	function (): void {
+		$repo           = spy_repository();
+		$fwd            = spy_forwarder( ForwardResult::success() );
+		$bot_protection = spy_bot_protection( array( 'allowed' => false, 'errorCode' => 'turnstile_missing' ) );
+		$ctrl           = new SubmissionController( $repo, $fwd, bot_protection: $bot_protection );
+
+		$response = $ctrl->handle( make_request( valid_payload() ) );
+
+		expect( $response->get_status() )->toBe( 403 );
+		expect( $response->get_data()['errorCode'] )->toBe( 'bot_verification_failed' );
+		expect( $repo->inserts )->toBeEmpty();
+	}
+);
+
+it(
+	'returns 403 bot_verification_failed when the Turnstile token is invalid',
+	function (): void {
+		$repo           = spy_repository();
+		$fwd            = spy_forwarder( ForwardResult::success() );
+		$bot_protection = spy_bot_protection( array( 'allowed' => false, 'errorCode' => 'turnstile_invalid' ) );
+		$ctrl           = new SubmissionController( $repo, $fwd, bot_protection: $bot_protection );
+
+		$response = $ctrl->handle( make_request( valid_payload() ) );
+
+		expect( $response->get_status() )->toBe( 403 );
+		expect( $response->get_data()['errorCode'] )->toBe( 'bot_verification_failed' );
+		expect( $repo->inserts )->toBeEmpty();
+	}
+);
+
+it(
+	'proceeds to normal processing and returns 200 when bot protection allows',
+	function (): void {
+		$repo           = spy_repository( 1 );
+		$fwd            = spy_forwarder( ForwardResult::success() );
+		$bot_protection = spy_bot_protection( array( 'allowed' => true ) );
+		$ctrl           = new SubmissionController( $repo, $fwd, bot_protection: $bot_protection );
+
+		$response = $ctrl->handle( make_request( valid_payload() ) );
+
+		expect( $response->get_status() )->toBe( 200 );
+		expect( $repo->inserts )->not->toBeEmpty();
 	}
 );
 

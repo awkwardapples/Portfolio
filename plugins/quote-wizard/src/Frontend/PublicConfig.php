@@ -27,6 +27,10 @@ defined( 'ABSPATH' ) || exit;
  *     - Agency notification email (internal)
  *     - Any GOQW_* constants from wp-config.php
  *     - Any HubSpot / SMTP credentials (these don't live in WP anyway)
+ *     - Turnstile SECRET key (server-side verification only, ADR-0027)
+ *
+ *   Turnstile SITE key IS exposed (`turnstileSiteKey`) — Cloudflare's own
+ *   design requires it in client-side HTML; it is not a secret.
  *
  * The contract version is a hard integer; bumping it signals that the React
  * side must handle a breaking change.
@@ -47,32 +51,37 @@ final class PublicConfig {
 	public static function build(): array {
 		$config = array(
 			// Contract version — React reads this and warns on mismatch.
-			'contractVersion' => self::CONTRACT_VERSION,
+			'contractVersion'  => self::CONTRACT_VERSION,
 
 			// Wizard vertical selector — matches a key in the JS registry.
-			'wizardId'        => ( (string) get_option( 'goqw_wizard_id', 'fencing' ) !== '' )
+			'wizardId'         => ( (string) get_option( 'goqw_wizard_id', 'fencing' ) !== '' )
 					? get_option( 'goqw_wizard_id', 'fencing' )
 					: 'fencing',
 
 			// Business display info (public — appears in the wizard UI).
-			'businessName'    => Settings::business_name(),
-			'businessPhone'   => Settings::business_phone(),
-			'businessEmail'   => Settings::business_email(),
+			'businessName'     => Settings::business_name(),
+			'businessPhone'    => Settings::business_phone(),
+			'businessEmail'    => Settings::business_email(),
 
 			// Branding.
-			'primaryColor'    => Settings::primary_color(),
+			'primaryColor'     => Settings::primary_color(),
 
 			// CTAs.
-			'calendlyUrl'     => Settings::calendly_url(),
+			'calendlyUrl'      => Settings::calendly_url(),
+
+			// Bot protection (Step 5.13f, ADR-0027). Empty string when Turnstile
+			// isn't configured for this deployment — the wizard treats an empty
+			// key as "Turnstile disabled" and never renders the widget.
+			'turnstileSiteKey' => Settings::turnstile_site_key(),
 
 			// REST contract — used by the submission flow.
-			'restNamespace'   => 'qw/v1',
-			'restUrl'         => esc_url_raw( rest_url( 'qw/v1' ) ),
-			'restNonce'       => wp_create_nonce( 'wp_rest' ),
+			'restNamespace'    => 'qw/v1',
+			'restUrl'          => esc_url_raw( rest_url( 'qw/v1' ) ),
+			'restNonce'        => wp_create_nonce( 'wp_rest' ),
 
 			// Build identity — appears in console for deployment debugging.
-			'pluginVersion'   => GOQW_VERSION,
-			'buildTimestamp'  => self::build_timestamp(),
+			'pluginVersion'    => GOQW_VERSION,
+			'buildTimestamp'   => self::build_timestamp(),
 		);
 
 		// Category navigation flag (ADR-0017, amended 5.9-R). Defaults to true so canonical

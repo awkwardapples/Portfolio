@@ -136,6 +136,38 @@ it(
 );
 
 it(
+	'emits an empty turnstileSiteKey when Turnstile is not configured',
+	function (): void {
+		Functions\when( 'get_option' )->justReturn( '' );
+		Functions\when( 'esc_url_raw' )->returnArg();
+		Functions\when( 'rest_url' )->justReturn( 'https://example.test/wp-json/qw/v1' );
+		Functions\when( 'wp_create_nonce' )->justReturn( 'test-nonce' );
+
+		$config = PublicConfig::build();
+
+		expect( $config['turnstileSiteKey'] )->toBe( '' );
+	}
+);
+
+it(
+	'emits the configured turnstileSiteKey',
+	function (): void {
+		Functions\when( 'get_option' )->alias(
+			static function ( string $key, string $default = '' ): string {
+				return 'goqw_turnstile_site_key' === $key ? '0x4AAAAAAD08xGwhMXvPs1CQ' : $default;
+			}
+		);
+		Functions\when( 'esc_url_raw' )->returnArg();
+		Functions\when( 'rest_url' )->justReturn( 'https://example.test/wp-json/qw/v1' );
+		Functions\when( 'wp_create_nonce' )->justReturn( 'test-nonce' );
+
+		$config = PublicConfig::build();
+
+		expect( $config['turnstileSiteKey'] )->toBe( '0x4AAAAAAD08xGwhMXvPs1CQ' );
+	}
+);
+
+it(
 	'trims whitespace from service ids in the goqw_enabled_services option',
 	function (): void {
 		Functions\when( 'get_option' )->alias(
