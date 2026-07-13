@@ -34,6 +34,7 @@ final class Activator {
 		self::set_default_options();
 		self::schedule_cron_events();
 		self::setup_site_routing();
+		self::create_photo_upload_directory();
 	}
 
 	/**
@@ -98,6 +99,23 @@ final class Activator {
 	private static function schedule_cron_events(): void {
 		if ( ! wp_next_scheduled( 'goqw_prune_submissions' ) ) {
 			wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', 'goqw_prune_submissions' );
+		}
+		if ( ! wp_next_scheduled( 'goqw_photo_retention_cleanup' ) ) {
+			wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', 'goqw_photo_retention_cleanup' );
+		}
+	}
+
+	/**
+	 * Create the /wp-content/uploads/goqw/ base directory (D1) so it exists
+	 * before the first submission photo is saved. wp_handle_upload() would
+	 * create it lazily anyway, but doing it here surfaces permission problems
+	 * at activation time rather than during a user's first submission.
+	 */
+	private static function create_photo_upload_directory(): void {
+		$upload_dir = wp_upload_dir();
+		$goqw_path  = $upload_dir['basedir'] . '/goqw';
+		if ( ! file_exists( $goqw_path ) ) {
+			wp_mkdir_p( $goqw_path );
 		}
 	}
 }

@@ -24,5 +24,6 @@ final class Deactivator {
 	 */
 	public static function deactivate(): void {
 		wp_clear_scheduled_hook( 'goqw_prune_submissions' );
+		wp_clear_scheduled_hook( 'goqw_photo_retention_cleanup' );
 	}
 }
