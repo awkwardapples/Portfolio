@@ -24,8 +24,13 @@ defined( 'ABSPATH' ) || exit;
  */
 class PhotoStorage {
 
-	private const UPLOAD_SUBDIR  = 'goqw';
-	private const PHOTO_META_KEY = '_goqw_photo';
+	private const UPLOAD_SUBDIR = 'goqw';
+
+	/**
+	 * Post meta key tagging every attachment this class creates, so
+	 * PhotoRetention can find them without guessing from file paths.
+	 */
+	public const PHOTO_META_KEY = '_goqw_photo';
 
 	/**
 	 * Process one photo and return a storage result.
