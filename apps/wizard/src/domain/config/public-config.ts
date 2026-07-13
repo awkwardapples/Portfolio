@@ -37,6 +37,8 @@ export const PublicConfigSchema = z.object({
   businessEmail: z.string(),
   primaryColor: z.string(),
   calendlyUrl: z.string(),
+  /** Cloudflare Turnstile site key (Step 5.13f). Empty string = not configured. */
+  turnstileSiteKey: z.string(),
   restNamespace: z.literal('qw/v1'),
   restUrl: z.string(),
   restNonce: z.string(),

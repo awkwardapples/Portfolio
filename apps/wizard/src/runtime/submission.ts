@@ -22,6 +22,19 @@ export interface SubmissionRequest {
     readonly currency: 'GBP';
   };
   readonly clientTimestamp?: string;
+  /**
+   * Honeypot field value (Step 5.13f, ADR-0027). Merged in by
+   * createBotProtectionEnrichedPort at submission time — always empty for a
+   * real user. Absent here means "not yet enriched", not "known empty";
+   * the enriched port always sets it before the real port sees the request.
+   */
+  readonly honeypotValue?: string;
+  /**
+   * Cloudflare Turnstile token (Step 5.13f, ADR-0027). Null when Turnstile
+   * isn't configured for this deployment or a token hasn't been issued yet.
+   * Merged in by createBotProtectionEnrichedPort at submission time.
+   */
+  readonly turnstileToken?: string | null;
 }
 
 // ---------------------------------------------------------------------------

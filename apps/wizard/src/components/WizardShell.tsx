@@ -16,6 +16,7 @@ import { StepRenderer } from '@/components/steps';
 import { EstimateDisplayStep } from '@/components/steps/EstimateDisplayStep';
 import { VisualCardSelectorStep } from '@/components/steps/VisualCardSelectorStep';
 import { SizeBracketSelectorStep } from '@/components/steps/SizeBracketSelectorStep';
+import { HoneypotField } from '@/components/HoneypotField';
 
 interface WizardShellProps {
   /** Called when the user presses Back on the first wizard step. */
@@ -82,6 +83,10 @@ export function WizardShell({ onReturnToSelector }: WizardShellProps = {}): JSX.
         Skip to main content
       </a>
       <main id="wizard-main" className="mx-auto max-w-xl space-y-4 p-6">
+        {/* Mounted once for the whole wizard session (Step 5.13f) — unlike
+            StepRenderer, this element is not keyed by step.id and so never
+            remounts on step change, preserving whatever a bot wrote into it. */}
+        <HoneypotField />
         <ProgressBar current={currentIndex + 1} total={visibleSteps.length} />
         {isFieldStep(currentStep) ? (
           <StepRenderer

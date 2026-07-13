@@ -35,6 +35,7 @@ const DEFAULT_CONFIG: GoqwPublicConfig = {
   businessEmail: '',
   primaryColor: '#0F4C81',
   calendlyUrl: '',
+  turnstileSiteKey: '',
   restNamespace: 'qw/v1',
   restUrl: '',
   restNonce: '',

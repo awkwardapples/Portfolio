@@ -11,6 +11,7 @@ const validBase = {
   businessEmail: 'hello@acme.example',
   primaryColor: '#0F4C81',
   calendlyUrl: '',
+  turnstileSiteKey: '',
   restNamespace: 'qw/v1' as const,
   restUrl: 'https://example.com/wp-json/qw/v1',
   restNonce: 'abc123',
@@ -32,6 +33,32 @@ describe('PublicConfigSchema — contractVersion', () => {
 
   it('rejects contractVersion 2 (v2 wire contract no longer accepted)', () => {
     const result = PublicConfigSchema.safeParse({ ...validBase, contractVersion: 2 });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('PublicConfigSchema — turnstileSiteKey', () => {
+  it('accepts an empty string (Turnstile not configured)', () => {
+    const result = PublicConfigSchema.safeParse(validBase);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.turnstileSiteKey).toBe('');
+    }
+  });
+
+  it('accepts a configured site key', () => {
+    const result = PublicConfigSchema.safeParse({
+      ...validBase,
+      turnstileSiteKey: '0x4AAAAAAD08xGwhMXvPs1CQ',
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.turnstileSiteKey).toBe('0x4AAAAAAD08xGwhMXvPs1CQ');
+    }
+  });
+
+  it('rejects a non-string value', () => {
+    const result = PublicConfigSchema.safeParse({ ...validBase, turnstileSiteKey: 123 });
     expect(result.success).toBe(false);
   });
 });

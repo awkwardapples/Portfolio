@@ -1,11 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { config } from '@/config-loader';
 import type { Step } from '@/domain/config/wizard-config';
 import type { AnswerValue } from '@/domain/runtime/answer-types';
 import { isPhotoAnswerValue } from '@/domain/runtime/photos';
 import { useWizard } from '@/runtime/useWizard';
 import { usePhotoStore } from '@/runtime/hooks/usePhotoStore';
 import { StepCard } from '@/components/composites';
+import { TurnstileWidget } from '@/components/TurnstileWidget';
 
 import { FieldRenderer } from './FieldRenderer';
 import { NavigationControls } from './NavigationControls';
@@ -51,6 +53,16 @@ export function StepRenderer({
       if (!isPhotoAnswerValue(answer)) return false;
       return answer.files.some((meta) => !photoStore.has(meta.fileId));
     });
+
+  // Step 5.13f: when Turnstile is configured for this deployment, disable
+  // Submit on the final step until a token has been issued. Not gated at
+  // all when config.turnstileSiteKey is empty (Turnstile not configured) —
+  // turnstileReady starts true in that case so it never blocks submission.
+  const turnstileConfigured = isLast && config.turnstileSiteKey !== '';
+  const [turnstileReady, setTurnstileReady] = useState(!turnstileConfigured);
+  const handleTurnstileTokenChange = useCallback((token: string | null) => {
+    setTurnstileReady(token !== null);
+  }, []);
 
   // Focus the heading when this step mounts (step change via key prop).
   useEffect(() => {
@@ -125,11 +137,13 @@ export function StepRenderer({
           ))}
         </div>
 
+        {isLast && <TurnstileWidget onTokenChange={handleTurnstileTokenChange} />}
+
         <NavigationControls
           onBack={handleBack}
           onNext={handleNext}
           isLast={isLast}
-          disabled={hasMissingPhotos}
+          disabled={hasMissingPhotos || !turnstileReady}
           onSkip={isLast && step.allowSkip ? handleSkip : undefined}
         />
       </form>

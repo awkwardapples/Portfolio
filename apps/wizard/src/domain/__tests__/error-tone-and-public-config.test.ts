@@ -73,6 +73,7 @@ describe('PublicConfig validation + fallback contract', () => {
     businessEmail: 'hello@test.test',
     primaryColor: '#0F4C81',
     calendlyUrl: '',
+    turnstileSiteKey: '',
     restNamespace: 'qw/v1',
     restUrl: 'https://example.test/wp-json/qw/v1',
     restNonce: 'abc123',

@@ -35,6 +35,10 @@ interface WirePayload {
     readonly currency: 'GBP';
   } | null;
   readonly clientTimestamp: string;
+  /** Step 5.13f — always empty for a real user. */
+  readonly honeypotValue: string;
+  /** Step 5.13f — null when Turnstile isn't configured or no token yet. */
+  readonly turnstileToken: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -121,6 +125,8 @@ function buildPayload(request: SubmissionRequest): WirePayload {
     answers: request.answers as Record<string, unknown>,
     pricing: request.pricing ?? null,
     clientTimestamp: request.clientTimestamp ?? new Date().toISOString(),
+    honeypotValue: request.honeypotValue ?? '',
+    turnstileToken: request.turnstileToken ?? null,
   };
 }
 

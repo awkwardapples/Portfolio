@@ -44,6 +44,14 @@ declare global {
     /** CTA links — empty string when not configured. */
     calendlyUrl: string;
 
+    /**
+     * Cloudflare Turnstile site key (Step 5.13f, ADR-0027). Empty string
+     * when Turnstile isn't configured for this deployment — the wizard
+     * treats that as "disabled" and never renders the widget. Public by
+     * Cloudflare's own design; never a secret.
+     */
+    turnstileSiteKey: string;
+
     /** REST contract for the future submission flow. */
     restNamespace: 'qw/v1';
     restUrl: string;

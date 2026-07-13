@@ -17,6 +17,8 @@ import {
 import type { SubmissionPort } from '@/runtime';
 import { PhotoStore } from '@/runtime/photos-store';
 import { createPhotoEnrichedPort } from '@/runtime/submission-media';
+import { BotProtectionStore } from '@/runtime/bot-protection-store';
+import { createBotProtectionEnrichedPort } from '@/runtime/submission-bot-protection';
 import { useCategorySelection } from '@/runtime/hooks/useCategorySelection';
 import { addressPreStep } from '@/domain/wizards/address-prestep';
 import { ServiceSelector, CategorySelector } from '@/components/selection';
@@ -63,13 +65,15 @@ export function QuotePage(): ReactElement {
     const service = resolveService(selectedId);
     if (service === null) return null;
     const photoStore = new PhotoStore();
-    const enrichedPort = createPhotoEnrichedPort(baseSubmissionPort, photoStore);
+    const botProtectionStore = new BotProtectionStore();
+    const photoEnrichedPort = createPhotoEnrichedPort(baseSubmissionPort, photoStore);
+    const enrichedPort = createBotProtectionEnrichedPort(photoEnrichedPort, botProtectionStore);
     const store = createWizardStore(
       { wizard: service.wizard, pricing: service.pricing, preSteps: [addressPreStep] },
       sessionStorageAdapter,
       enrichedPort,
     );
-    return { store, photoStore };
+    return { store, photoStore, botProtectionStore };
   }, [selectedId]);
 
   if (services.length === 0) {
@@ -85,14 +89,23 @@ export function QuotePage(): ReactElement {
       );
     }
     const fallbackPhotoStore = new PhotoStore();
+    const fallbackBotProtectionStore = new BotProtectionStore();
+    const fallbackPhotoEnrichedPort = createPhotoEnrichedPort(
+      baseSubmissionPort,
+      fallbackPhotoStore,
+    );
     const fallbackStore = createWizardStore(
       { wizard: fallback.wizard, pricing: fallback.pricing, preSteps: [addressPreStep] },
       sessionStorageAdapter,
-      createPhotoEnrichedPort(baseSubmissionPort, fallbackPhotoStore),
+      createBotProtectionEnrichedPort(fallbackPhotoEnrichedPort, fallbackBotProtectionStore),
     );
     return (
       <div className="mx-auto max-w-3xl px-6 py-12">
-        <WizardProvider store={fallbackStore} photoStore={fallbackPhotoStore}>
+        <WizardProvider
+          store={fallbackStore}
+          photoStore={fallbackPhotoStore}
+          botProtectionStore={fallbackBotProtectionStore}
+        >
           <WizardShell />
         </WizardProvider>
       </div>
@@ -135,7 +148,11 @@ export function QuotePage(): ReactElement {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
-      <WizardProvider store={wizardResources.store} photoStore={wizardResources.photoStore}>
+      <WizardProvider
+        store={wizardResources.store}
+        photoStore={wizardResources.photoStore}
+        botProtectionStore={wizardResources.botProtectionStore}
+      >
         <WizardShell onReturnToSelector={() => setSelectedId(null)} />
       </WizardProvider>
     </div>
