@@ -112,6 +112,50 @@ final class Settings {
 	}
 
 	/**
+	 * Whether bot protection (honeypot, rate limiting, Turnstile) is enabled
+	 * at all. The master switch for Step 5.13f — when false, BotProtection
+	 * skips every layer regardless of Turnstile configuration.
+	 */
+	public static function bot_protection_enabled(): bool {
+		return (bool) get_option( 'goqw_bot_protection_enabled', true );
+	}
+
+	/**
+	 * Get the Turnstile site key (public — safe to expose via PublicConfig;
+	 * Cloudflare embeds site keys in client-side HTML by design).
+	 */
+	public static function turnstile_site_key(): string {
+		return (string) get_option( 'goqw_turnstile_site_key', '' );
+	}
+
+	/**
+	 * Get the Turnstile secret key.
+	 *
+	 * Constant: GOQW_TURNSTILE_SECRET_KEY
+	 * Option:   goqw_turnstile_secret_key
+	 *
+	 * SENSITIVE: never expose this value to the browser.
+	 */
+	public static function turnstile_secret_key(): string {
+		return self::resolve( 'GOQW_TURNSTILE_SECRET_KEY', 'goqw_turnstile_secret_key', '' );
+	}
+
+	/**
+	 * Whether both Turnstile keys are configured, i.e. Layer 3 (Turnstile
+	 * verification) should run. Independent of bot_protection_enabled().
+	 */
+	public static function turnstile_configured(): bool {
+		return '' !== self::turnstile_site_key() && '' !== self::turnstile_secret_key();
+	}
+
+	/**
+	 * Get the maximum submissions allowed per IP per hour.
+	 */
+	public static function rate_limit_per_hour(): int {
+		return (int) get_option( 'goqw_rate_limit_per_hour', 5 );
+	}
+
+	/**
 	 * Return a struct safe to pass to the browser via wp_localize_script.
 	 *
 	 * Explicitly enumerates the public-only fields. Adding a sensitive
