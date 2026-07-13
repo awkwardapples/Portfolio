@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-07-08 (post Step 5.13d)_
+_Last updated: 2026-07-13 (post Step 5.13e)_
 
 ## What's working
 
@@ -11,7 +11,7 @@ _Last updated: 2026-07-08 (post Step 5.13d)_
 - Submission pipeline end-to-end in WordPress (validate → persist → forward → respond).
 - Site shell with 5 routes (Home, Services, Our Work, Contact, Quote).
 - Service abstraction (fencing + decking verticals).
-- Photo upload (multi-photo, browser compression, server-side validation, base64 in payload).
+- Photo upload (multi-photo, browser compression, server-side validation). Photos are saved to the WordPress media library and forwarded as public URLs (`url` + `attachmentId`), not base64 — see Step 5.13e / ADR-0026.
 - WordPress page mapping (single root page + rewrite rules + non-invasive front-page policy).
 - SEO Layer 1: per-route titles, meta descriptions, canonical URLs, Open Graph tags, Twitter cards.
 - SEO Layer 2: LocalBusiness JSON-LD schema (name, address, phone, email, hours, sameAs).
@@ -25,16 +25,27 @@ _Last updated: 2026-07-08 (post Step 5.13d)_
 - All 7 instant-quote service wizard configs redesigned to use the new step types (size-bracket → visual-card → estimate → contact flow). Pricing infrastructure extended to resolve `VisualCardSelectorStep.answerKey` and `SizeBracketSelectorStep` fields. `typicalValue` on `SizeBracket` auto-populates the quantity field for immediate pricing on bracket selection.
 - Pre-step (addressPreStep) reduced to postcode only (id `postcode_prestep`). All 7 instant-quote service configs now end with a `site_photos` step (optional, maxCount=5) and a `contact-and-address` step collecting name, phone (required), email, and full_address. Old lightweight `contact` step removed.
 - Optional details step added to all 7 instant-quote services as the final step after `contact-and-address`. Universal fields: `preferred_timeframe` (select, required:false) and `additional_notes` (textarea, required:false). Per-service supplementary fields capture gate details (fencing), removal/condition context (decking, patio, driveway, steps), furniture/pets/paint preferences (painting), and stain type + time preference (jetwash). `allowSkip: true` enables "Skip and Submit" — users bypass the step entirely. Manual-quote services do not receive this step.
+- Photo URL storage (Step 5.13e): `Submissions\PhotoStorage` saves validated photos to `/wp-content/uploads/goqw/YEAR/MONTH/` via `wp_handle_upload`/`wp_insert_attachment`, tags each attachment with `_goqw_photo` post meta, and returns a public URL + attachment ID. `SubmissionController` replaces `dataBase64` with `url`/`attachmentId` in both the persisted `answers_json`/`media_json` and the Make.com webhook payload before persistence. A per-photo failure drops that photo and logs it but never blocks the submission; a submission that fails to persist after photos were saved triggers orphan cleanup (deletes those attachments). `Cron\PhotoRetention` deletes photos older than 6 months via a new daily `goqw_photo_retention_cleanup` wp-cron event. ADR-0026.
 
 ## Gate state (last verified)
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors
-- `pnpm test`: 704/704 (52 test files, +30 from 5.13d)
+- `pnpm test`: 704/704 (52 test files, unchanged — PHP-only step)
 - `pnpm build`: clean
-- `composer test`: 148 passed, 4 skipped (PHP unchanged)
+- `composer test`: 172 passed, 4 skipped (+24 from 5.13e)
 - `composer analyse`: clean (PHPStan level 8, no errors)
 - `composer lint`: 0/0 (PHPCS)
+
+## Gate state (5.13e, 2026-07-13)
+
+- `pnpm lint`: 0/0 (no JS changes)
+- `pnpm typecheck`: 0 errors (no TS changes)
+- `pnpm test`: 704/704 Vitest (unchanged)
+- `pnpm build`: clean (unchanged)
+- `composer lint`: 0/0
+- `composer analyse`: no errors (PHPStan level 8)
+- `composer test`: **172 passed, 4 skipped** (+24 from 5.13e — PhotoStorage 11, SubmissionController 8, PhotoRetention 6, minus 1 obsolete test removed for the `wp_insert_attachment` wp_error contract fix — net +24)
 
 ## Gate state (5.13d, 2026-07-08)
 
@@ -98,7 +109,6 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 ## What's NOT yet built
 
 - Step 5.12 (SCB-specific deployment) — gated on 5.8-5.11.
-- Media retention policy (deferred per 4.8 spec).
 - Idempotency for submission retry (deferred; trigger: first observed duplicate).
 - Rate limiting on submit endpoint (deferred; trigger: >100 submissions/day).
 - Admin replay UI for failed forwards (deferred; trigger: ops team need).
@@ -242,6 +252,23 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   plus the business profile JSON schema, modification map, report template,
   pre-deployment checklist, final verification commands, and three appendices.
   Documentation-only; all gates unchanged (598 Vitest, 143 PHP).
+- **Step 5.13e — Photo URL Storage** (July 2026).
+  `Submissions\PhotoStorage` saves validated submission photos to the WordPress media
+  library (`/wp-content/uploads/goqw/YEAR/MONTH/` via a scoped `upload_dir` filter),
+  tags each attachment with `_goqw_photo` post meta, and returns a public URL +
+  attachment ID. `SubmissionController` runs this after `MediaValidator` and before
+  persistence, mutating the answers so both `answers_json` and `media_json` — and
+  consequently both the `answers` and `media` keys in the Make.com webhook payload —
+  carry the URL instead of base64 (previously both columns/keys duplicated the same
+  raw base64, per `AUDIT-5.13e-photo-handling.md`). A per-photo storage failure drops
+  that photo and logs it but never blocks the submission (D5); if the submission then
+  fails to persist, any attachments already created are deleted since the row that
+  would reference them never existed (D6). New `Cron\PhotoRetention` deletes photos
+  older than 6 months via a daily `goqw_photo_retention_cleanup` wp-cron event
+  (`Activator` schedules it, `Plugin::boot()` hooks it, `Deactivator` clears it) — a
+  real implementation, unlike the still-stubbed `Cron\PruneSubmissions`. Resolves the
+  "Media retention policy" item deferred since Step 4.8. 24 new PHP tests (148→172).
+  PHP unchanged elsewhere; no JS/bundle changes. ADR-0026 accepted.
 - **Step 5.13d — Optional Details Step** (July 2026).
   `optional-details` step added as the final step in all 7 instant-quote service
   configs. New `allowSkip: boolean` flag on `StepSchema` enables "Skip and Submit"
@@ -352,4 +379,4 @@ Strict ordering: validate → persist → forward → respond.
 - typecheck (`pnpm typecheck`)
 - vitest (`pnpm test` → 704/704)
 - build (`pnpm build`)
-- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 148 passed (4 skipped)
+- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 172 passed (4 skipped)

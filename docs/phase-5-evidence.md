@@ -2038,3 +2038,87 @@ passes `onSkip` only when `isLast && step.allowSkip`.
 | 21  | `docs/roadmap.md` gains 5.13d row (Complete)                                                                                                                             | ✅      |
 | 22  | `docs/current-state.md` updated: gate counts 674→704, 5.13d in What's working and Completed Steps                                                                        | ✅      |
 | 23  | `docs/handoff.md` updated: 5.13d completion entry added                                                                                                                  | ✅      |
+
+## Step 5.13e Evidence
+
+_Compiled: 2026-07-13 — Covers Step 5.13e (Photo URL Storage)_
+
+### Summary
+
+Photos saved in a wizard submission are now stored to the WordPress media library
+(`/wp-content/uploads/goqw/YEAR/MONTH/`) instead of persisting as base64. `Submissions\PhotoStorage`
+decodes, uploads via `wp_handle_upload`/`wp_insert_attachment`, tags the attachment with
+`_goqw_photo` post meta, and returns a public URL + attachment ID. `SubmissionController`
+runs this after `MediaValidator` and before persistence, replacing `dataBase64` with
+`url`/`attachmentId` in the answers before both `answers_json` and `media_json` are
+derived — closing a duplication where both columns (and both `answers`/`media` keys in
+the Make.com payload) previously carried the same raw base64 (`AUDIT-5.13e-photo-handling.md`).
+A per-photo failure drops that photo and logs it, never blocking the submission (D5); a
+submission that fails to persist after photos were saved triggers orphan cleanup via
+`PhotoStorage::delete_photo()` (D6). New `Cron\PhotoRetention` deletes photos older than
+6 months via a daily `goqw_photo_retention_cleanup` wp-cron event — a real implementation,
+unlike the long-stubbed `Cron\PruneSubmissions` (`AUDIT-5.13e-cron-pattern.md`). Resolves
+the "Media retention policy" item deferred since Step 4.8.
+
+### Commit Sequence
+
+| #   | Hash      | Message                                                                          |
+| --- | --------- | -------------------------------------------------------------------------------- |
+| C1  | `9e363ec` | chore(audit): Phase 0 audits for 5.13e photo URL storage                         |
+| C2  | `6d264e6` | feat(submissions): new PhotoStorage class for media library integration          |
+| C3  | `3681599` | feat(rest): route photos through PhotoStorage; return URLs not base64            |
+| C4  | `9c71b05` | feat(cron): PhotoRetention class deletes photos older than 6 months (D3)         |
+| C5  | `0bb21e2` | feat(activation): create /goqw/ upload directory + schedule photo retention cron |
+| C6  | _(this)_  | docs: ADR-0026 + 5.13e evidence + standard doc updates                           |
+
+### Gate Results
+
+| Gate               | Result                                                                                                                                                                                         |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm lint`        | 0/0 (no JS changes)                                                                                                                                                                            |
+| `pnpm typecheck`   | 0 errors (no TS changes)                                                                                                                                                                       |
+| `pnpm test`        | 704/704 Vitest (unchanged)                                                                                                                                                                     |
+| `pnpm build`       | Clean (no bundle-size change — PHP-only step)                                                                                                                                                  |
+| `composer lint`    | 0/0                                                                                                                                                                                            |
+| `composer analyse` | No errors (PHPStan level 8)                                                                                                                                                                    |
+| `composer test`    | **172 passed, 4 skipped** (+24 from 5.13e: PhotoStorage 11, SubmissionController 8, PhotoRetention 6, minus 1 test removed when the `wp_insert_attachment` `$wp_error` contract was corrected) |
+
+### Deviations from the original spec (surfaced during Phase 0 audits)
+
+- Spec referred to `Rest/Submit.php`; the actual file is `Rest/SubmissionController.php` (pre-existing naming drift, also noted in 5.12b's audits).
+- Spec's function list for Audit C omitted `wp_update_attachment_metadata()`, required to actually persist what `wp_generate_attachment_metadata()` computes — added.
+- `PhotoStorage::storePhoto()`/`deletePhoto()` renamed to `store_photo()`/`delete_photo()` (snake_case) to match this codebase's PHP method-naming convention (`insert()`, `mark_forwarded()`, `is_success()`, etc.) and satisfy the WordPress PHPCS ruleset; the spec's skeleton used camelCase.
+- `wp_insert_attachment()` is called with `$wp_error = true` (4th arg) so failures surface as `WP_Error` rather than `0`, matching the WordPress stub's conditional return type and avoiding a PHPStan false-positive on an always-false `is_wp_error()` check.
+- `Submissions/ImageHandler.php` — flagged as a dead Step-3D stub superseded by `PhotoStorage`, not deleted (out of scope of the locked D1-D8 decision set). Documented in ADR-0026's Housekeeping section.
+- Activator/Deactivator/Plugin wiring (cron scheduling, upload directory creation, hook registration) is not unit-tested — consistent with the codebase's existing lack of coverage for `Activator`, whose methods route through `dbDelta`/`SiteRootPage`/`RewriteRegistrar`, none of which are mocked in this suite (`AUDIT-5.13e-cron-pattern.md`). Verified via the operational checklist below instead.
+
+### Acceptance Criteria
+
+| #   | Criterion                                                                       | Status                                                                                                                                 |
+| --- | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Phase 0 audits produced (A, B, C, D)                                            | ✅ file review                                                                                                                         |
+| 2   | `PhotoStorage` class exists with proper interface                               | ✅ file review                                                                                                                         |
+| 3   | `PhotoStorage` saves photos to `/wp-content/uploads/goqw/`                      | ✅ test (filter_upload_dir)                                                                                                            |
+| 4   | `PhotoStorage` returns URL and attachment ID on success                         | ✅ test                                                                                                                                |
+| 5   | `PhotoStorage` returns error on failure (invalid base64, upload/insert failure) | ✅ test                                                                                                                                |
+| 6   | REST Submit replaces base64 with URL in answers                                 | ✅ test                                                                                                                                |
+| 7   | REST Submit continues submission even if photo save fails (D5)                  | ✅ test                                                                                                                                |
+| 8   | REST Submit cleans up orphaned attachments on submission failure (D6)           | ✅ test                                                                                                                                |
+| 9   | `PhotoRetention` class exists with 6-month cutoff                               | ✅ file review + test                                                                                                                  |
+| 10  | `PhotoRetention` identifies old photos correctly                                | ✅ test                                                                                                                                |
+| 11  | `PhotoRetention` deletes photos via `wp_delete_attachment`                      | ✅ test                                                                                                                                |
+| 12  | Cron scheduled on activation                                                    | ✅ code review (not unit-tested — see Deviations)                                                                                      |
+| 13  | Upload directory created on activation                                          | ✅ code review (not unit-tested — see Deviations)                                                                                      |
+| 14  | ADR-0026 documented                                                             | ✅                                                                                                                                     |
+| 15  | All 148 prior PHP tests pass                                                    | ✅ test run                                                                                                                            |
+| 16  | ~25 new PHP tests pass                                                          | ✅ test run (24 net new)                                                                                                               |
+| 17  | Bundle unchanged (PHP only changes)                                             | ✅ (no JS/TS files touched)                                                                                                            |
+| 18  | 6 commits in specified sequence                                                 | ✅ `git log`                                                                                                                           |
+| 19  | Tarball produced                                                                | Not produced — no request for a packaged artifact in this conversation; deployment uses the existing fork/onboarding procedure instead |
+| 20  | Submit wizard with 1 photo; verify URL replaces base64 in payload               | ⏳ pending operational verification                                                                                                    |
+| 21  | Submit wizard with 3 photos; verify all URLs present                            | ⏳ pending operational verification                                                                                                    |
+| 22  | Submit wizard with large photo (~10MB); verify still saves or fails cleanly     | ⏳ pending operational verification                                                                                                    |
+| 23  | Verify photo appears in `/wp-content/uploads/goqw/` on disk                     | ⏳ pending operational verification                                                                                                    |
+| 24  | Verify photo URL is accessible in browser                                       | ⏳ pending operational verification                                                                                                    |
+| 25  | Verify Make.com receives URL (not base64) in webhook payload                    | ⏳ pending operational verification                                                                                                    |
+| 26  | Verify Google Sheets photo cell uses `IMAGE()` formula with real URL            | ⏳ pending operational verification (also requires a Make.com scenario config change, not code)                                        |

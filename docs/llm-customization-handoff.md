@@ -7,8 +7,8 @@ wizard configuration. Visual customization is handled separately by the project 
 
 **Audience:** LLM agent.
 
-**Codebase state reference:** This document reflects template state at Step 5.13c
-(2026-07-08). Always read actual file contents before editing — this document
+**Codebase state reference:** This document reflects template state at Step 5.13e
+(2026-07-13). Always read actual file contents before editing — this document
 describes structure and intent, not exact verbatim content.
 
 **Cross-referenced documents:**
@@ -1403,6 +1403,17 @@ before the site goes live.
 Wizard submissions are forwarded to the correct Make.com webhook. Test this end-to-end
 in the Pre-Deployment Checklist.
 
+**Photo field note (Step 5.13e):** since ADR-0026, each photo file in the webhook payload
+carries `url` and `attachmentId` instead of `dataBase64` — the photo is saved to the
+WordPress media library and its public URL is forwarded. If the client's Make.com
+scenario or Google Sheets integration was built against the old base64 shape, update the
+Google Sheets `IMAGE()` formula to reference the `url` field rather than `dataBase64`.
+This is a Make.com scenario config change, not a code change. Photo URLs are public with
+no signing or authentication for the pilot (a deliberate tradeoff, not an oversight) —
+flag this to the client if photo privacy becomes a concern; it is a candidate for a
+future signed-URL or authenticated-media step, not yet built. Photos are retained for 6
+months automatically; there is no per-client override for this window yet.
+
 </task>
 
 ---
@@ -2117,5 +2128,5 @@ produces an unrecognized option that is silently ignored, leaving the Acme Fenci
 
 _End of LLM Customization Handoff Document_
 
-_Codebase state: Step 5.13c (2026-07-08). Pre-step postcode-only; photo upload + contact-and-address step added to all instant-quote services._
+_Codebase state: Step 5.13e (2026-07-13). Pre-step postcode-only; photo upload + contact-and-address step added to all instant-quote services; submission photos stored to the media library as public URLs with 6-month retention (ADR-0026)._
 _Next planned update: after Step 5.14 (SCB deployment)_

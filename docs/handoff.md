@@ -1,9 +1,24 @@
 # Handoff
 
-_Last updated: 2026-07-08 (post Step 5.13d)_
+_Last updated: 2026-07-13 (post Step 5.13e)_
 
 ## Status
 
+- Step 5.13e complete (July 13, 2026): Photo URL storage. `Submissions\PhotoStorage`
+  saves submission photos to the WordPress media library
+  (`/wp-content/uploads/goqw/YEAR/MONTH/`) instead of persisting base64, tags each
+  attachment with `_goqw_photo` post meta, and returns a public URL + attachment ID.
+  `SubmissionController` runs this after `MediaValidator` and before persistence,
+  closing a prior duplication where both `answers_json` and `media_json` (and both
+  `answers`/`media` keys in the Make.com webhook payload) carried the same raw base64.
+  A per-photo failure drops that photo and logs it without blocking the submission
+  (D5); if the submission then fails to persist, any attachments already created are
+  deleted (D6, orphan cleanup). New `Cron\PhotoRetention` deletes photos older than 6
+  months via a daily `goqw_photo_retention_cleanup` wp-cron event — a real
+  implementation, unlike the still-stubbed `Cron\PruneSubmissions`. Resolves the
+  "Media retention policy" item deferred since Step 4.8. 24 new PHP tests (148→172).
+  No JS/bundle changes. ADR-0026 accepted. Operational verification pending
+  (submit-with-photo end-to-end on a live WordPress install).
 - Step 5.5a-remediation complete and operationally verified (June 8, 2026).
 - Step 5.5b complete (June 9, 2026): fork procedure documented in
   `docs/fork-procedure.md`.

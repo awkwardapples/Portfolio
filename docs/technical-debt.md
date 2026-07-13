@@ -107,19 +107,22 @@ in the step's evidence report.
 
 ---
 
-## Media Retention Policy (deferred from Step 4.8)
+## Media Retention Policy (deferred from Step 4.8; resolved in Step 5.13e)
 
-**What was skipped:** Automatic pruning of photo data from `wp_goqw_submissions.media_json`.
-Photos are stored indefinitely. On a busy deployment this column could grow significantly.
+**Status: Resolved.** Step 5.13e (ADR-0026) implemented automatic retention: photos are
+now stored as WordPress media library attachments (not base64 in `media_json`), tagged
+with `_goqw_photo` post meta, and `Cron\PhotoRetention` deletes any older than 6 months
+via a daily `wp-cron` event (`goqw_photo_retention_cleanup`). The retention window (6
+months) was fixed as part of the pilot decision set rather than made client-configurable
+— revisit if a future client needs a different window.
 
-**Why deferred:** No production deployment yet. No client has raised a data retention or
-storage concern. Adding a WP-Cron prune job introduces a policy decision (how long to
-keep photos) that should be made with the client, not assumed.
+**What was originally skipped (Step 4.8):** Automatic pruning of photo data from
+`wp_goqw_submissions.media_json`. Photos were stored indefinitely as base64; on a busy
+deployment this column could grow significantly.
 
-**Trigger:** A client raises a privacy concern, GDPR request, or storage cost issue.
-At that point, implement a configurable retention window (e.g. 30 days) via a WP-Cron
-daily prune that sets `media_json = NULL` on rows older than the window, while
-preserving `answers_json` for operational analytics.
+**Why it was deferred at the time:** No production deployment yet. No client had raised
+a data retention or storage concern. Adding a WP-Cron prune job introduced a policy
+decision (how long to keep photos) that needed to be made deliberately, not assumed.
 
 ---
 
