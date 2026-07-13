@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-07-13 (post Step 5.13e)_
+_Last updated: 2026-07-13 (post Step 5.13f)_
 
 ## What's working
 
@@ -26,16 +26,27 @@ _Last updated: 2026-07-13 (post Step 5.13e)_
 - Pre-step (addressPreStep) reduced to postcode only (id `postcode_prestep`). All 7 instant-quote service configs now end with a `site_photos` step (optional, maxCount=5) and a `contact-and-address` step collecting name, phone (required), email, and full_address. Old lightweight `contact` step removed.
 - Optional details step added to all 7 instant-quote services as the final step after `contact-and-address`. Universal fields: `preferred_timeframe` (select, required:false) and `additional_notes` (textarea, required:false). Per-service supplementary fields capture gate details (fencing), removal/condition context (decking, patio, driveway, steps), furniture/pets/paint preferences (painting), and stain type + time preference (jetwash). `allowSkip: true` enables "Skip and Submit" — users bypass the step entirely. Manual-quote services do not receive this step.
 - Photo URL storage (Step 5.13e): `Submissions\PhotoStorage` saves validated photos to `/wp-content/uploads/goqw/YEAR/MONTH/` via `wp_handle_upload`/`wp_insert_attachment`, tags each attachment with `_goqw_photo` post meta, and returns a public URL + attachment ID. `SubmissionController` replaces `dataBase64` with `url`/`attachmentId` in both the persisted `answers_json`/`media_json` and the Make.com webhook payload before persistence. A per-photo failure drops that photo and logs it but never blocks the submission; a submission that fails to persist after photos were saved triggers orphan cleanup (deletes those attachments). `Cron\PhotoRetention` deletes photos older than 6 months via a new daily `goqw_photo_retention_cleanup` wp-cron event. ADR-0026.
+- Bot & spam protection (Step 5.13f): three-layer defense on the submit endpoint, enabled by default. `Rest\BotProtection` runs honeypot (`honeypotValue` field, rejected as an ordinary `validation_failed`), rate limiting (`Rest\RateLimiter`, WordPress transients, 5/hour default via `goqw_rate_limit_per_hour`), then Cloudflare Turnstile verification (`Support\TurnstileClient`, only when `goqw_turnstile_site_key`/`goqw_turnstile_secret_key` are both configured). `PublicConfig` exposes `turnstileSiteKey` (public by design); the secret key never leaves `Settings::turnstile_secret_key()`. On the frontend, `BotProtectionStore` + `createBotProtectionEnrichedPort` mirror the Step 4.8 photo-enrichment pattern; `HoneypotField` mounts once per wizard session in `WizardShell`; `TurnstileWidget` mounts only on the final step and dynamically loads Cloudflare's SDK (not bundled) only when configured. `goqw_bot_protection_enabled` (default on) disables all three layers at once. ADR-0027.
 
 ## Gate state (last verified)
 
 - `pnpm lint`: 0/0
-- `pnpm typecheck`: 0 errors
-- `pnpm test`: 704/704 (52 test files, unchanged — PHP-only step)
-- `pnpm build`: clean
-- `composer test`: 172 passed, 4 skipped (+24 from 5.13e)
+- `pnpm typecheck`: 0 errors (pre-existing, unrelated `tsconfig.test.json` type errors in `non-field-step-engine.test.ts` predate this step — last touched in the 5.13a/5.13b commits)
+- `pnpm test`: **717/717** (54 test files, +13 from 5.13f)
+- `pnpm build`: clean (bundle 87.96 kB gzip, +~0.8 kB — Turnstile SDK loaded dynamically from Cloudflare, not bundled)
+- `composer test`: **210 passed, 4 skipped** (+38 from 5.13f)
 - `composer analyse`: clean (PHPStan level 8, no errors)
-- `composer lint`: 0/0 (PHPCS)
+- `composer lint`: 0/0 for all files touched this step (pre-existing, unrelated drift in `quote-wizard.php` predates 5.13e/5.13f)
+
+## Gate state (5.13f, 2026-07-13)
+
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: 0 errors (see pre-existing note above)
+- `pnpm test`: **717/717 Vitest** (+13 from 5.13f, 54 test files)
+- `pnpm build`: clean (bundle 87.20 → 87.96 kB gzip)
+- `composer lint`: 0/0 for files touched this step
+- `composer analyse`: no errors (PHPStan level 8)
+- `composer test`: **210 passed, 4 skipped** (+38 from 5.13f, across new RateLimiter/TurnstileClient/BotProtection/ClientIp suites plus Settings/SubmissionController/PublicConfig additions)
 
 ## Gate state (5.13e, 2026-07-13)
 
@@ -109,8 +120,7 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 ## What's NOT yet built
 
 - Step 5.12 (SCB-specific deployment) — gated on 5.8-5.11.
-- Idempotency for submission retry (deferred; trigger: first observed duplicate).
-- Rate limiting on submit endpoint (deferred; trigger: >100 submissions/day).
+- Idempotency for submission retry (deferred; trigger: first observed duplicate) — Step 5.13g.
 - Admin replay UI for failed forwards (deferred; trigger: ops team need).
 - Second client deployment (Step 6 candidate; trigger: business decision).
 
@@ -252,6 +262,25 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   plus the business profile JSON schema, modification map, report template,
   pre-deployment checklist, final verification commands, and three appendices.
   Documentation-only; all gates unchanged (598 Vitest, 143 PHP).
+- **Step 5.13f — Bot & Spam Protection** (July 2026).
+  Three-layer defense on the submit endpoint, enabled by default: honeypot field
+  (`honeypotValue`, rejected as an ordinary `validation_failed`/400 so a bot can't tell
+  it was caught), rate limiting (`Rest\RateLimiter`, WordPress transients, 5/hour default),
+  and optional Cloudflare Turnstile verification (`Support\TurnstileClient`, only runs
+  when both `goqw_turnstile_site_key`/`goqw_turnstile_secret_key` are configured).
+  `Rest\BotProtection` runs all three (cheapest first) in `SubmissionController` before
+  shape validation. `Settings` gains the four bot-protection getters instead of a new
+  `BotProtectionConfig` class. `PublicConfig` exposes `turnstileSiteKey` (public by
+  Cloudflare's design); the secret key never leaves `Settings::turnstile_secret_key()`.
+  Frontend: `BotProtectionStore` + `createBotProtectionEnrichedPort` mirror the Step 4.8
+  photo-enrichment pattern exactly (volatile, never persisted — a Turnstile token is
+  single-use and expires in ~5 minutes). `HoneypotField` mounts once per wizard session
+  in `WizardShell` (not `StepRenderer`, which remounts on every step change).
+  `TurnstileWidget` mounts only on the final step and dynamically loads Cloudflare's SDK
+  from CDN — not bundled — only when configured; bundle grew ~0.8 kB gzip (87.20→87.96 kB).
+  Submit is disabled on the final step until a token is issued, only when Turnstile is
+  configured. Resolves the "Rate limiting on submit endpoint" item deferred since Step
+  4.6. 38 new PHP tests (172→210), 13 new Vitest tests (704→717). ADR-0027 accepted.
 - **Step 5.13e — Photo URL Storage** (July 2026).
   `Submissions\PhotoStorage` saves validated submission photos to the WordPress media
   library (`/wp-content/uploads/goqw/YEAR/MONTH/` via a scoped `upload_dir` filter),
@@ -377,6 +406,6 @@ Strict ordering: validate → persist → forward → respond.
 
 - lint (`pnpm lint` → 0 errors, 0 warnings)
 - typecheck (`pnpm typecheck`)
-- vitest (`pnpm test` → 704/704)
+- vitest (`pnpm test` → 717/717)
 - build (`pnpm build`)
-- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 172 passed (4 skipped)
+- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 210 passed (4 skipped)

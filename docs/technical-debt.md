@@ -237,17 +237,25 @@ grows to the point where duplicates cause operational problems.
 
 ---
 
-## Rate Limiting on qw/v1/submit (deferred from Step 4.6)
+## Rate Limiting on qw/v1/submit (deferred from Step 4.6; resolved in Step 5.13f)
 
-**What was skipped:** Per-IP throttling on the REST submission endpoint. Currently
-protected only by WP REST nonce.
+**Status: Resolved.** Step 5.13f (ADR-0027) implemented `Rest\RateLimiter`
+(WordPress-transient-based, 5 submissions per IP per hour by default, configurable via
+`goqw_rate_limit_per_hour`) as Layer 2 of `Rest\BotProtection`, alongside a honeypot
+field and optional Cloudflare Turnstile verification.
 
-**Why deferred:** The WP nonce provides adequate protection for low-traffic single-client
-deployments. Adding a rate limiter (WP transient-based or nginx-level) adds
-deployment complexity.
+**What was originally skipped (Step 4.6):** Per-IP throttling on the REST submission
+endpoint. Was protected only by the WP REST nonce at the time.
 
-**Trigger:** Before any high-traffic deployment, or as part of a security hardening
-pass before Phase 5 goes to production.
+**Why it was deferred at the time:** The WP nonce provided adequate protection for
+low-traffic single-client deployments; a rate limiter added deployment complexity that
+wasn't yet justified.
+
+**Known limitation carried forward:** `ClientIp::resolve()` reads
+`$_SERVER['REMOTE_ADDR']` only — no reverse-proxy/CDN header trust
+(`X-Forwarded-For`, etc.). Behind a proxy that doesn't preserve the real client IP
+there, rate limiting keys off the proxy's IP instead. Trusting those headers safely
+needs a trusted-proxy allowlist this template doesn't have yet.
 
 ---
 

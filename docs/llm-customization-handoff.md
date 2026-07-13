@@ -7,7 +7,7 @@ wizard configuration. Visual customization is handled separately by the project 
 
 **Audience:** LLM agent.
 
-**Codebase state reference:** This document reflects template state at Step 5.13e
+**Codebase state reference:** This document reflects template state at Step 5.13f
 (2026-07-13). Always read actual file contents before editing — this document
 describes structure and intent, not exact verbatim content.
 
@@ -1470,6 +1470,57 @@ the gap documented in the report.
 
 ---
 
+### Task 11b — Bot Protection Setup (Cloudflare Turnstile)
+
+<task id="bot-protection">
+
+**Goal:** Configure Cloudflare Turnstile so the wizard's Layer 3 bot check is active for
+this client (Step 5.13f, ADR-0027). Honeypot and rate limiting are already active by
+default — no action needed for those two layers.
+
+**Input from business profile:**
+
+- `security.turnstileSiteKey` (only if the client/agency has already created a
+  Cloudflare Turnstile widget)
+- `security.turnstileSecretKey`
+
+**Actions:**
+
+If both keys are present and non-empty:
+
+```bash
+wp option update goqw_turnstile_site_key "0x4AAAAAAA..."
+wp option update goqw_turnstile_secret_key "0x0000..."
+```
+
+**Option keys:** `goqw_turnstile_site_key` (public — appears in the browser, not a
+secret) and `goqw_turnstile_secret_key` (sensitive — server-side only; also accepts a
+`GOQW_TURNSTILE_SECRET_KEY` PHP constant in `wp-config.php`, which takes precedence over
+the option, mirroring `goqw_webhook_url`/`GOQW_MAKE_WEBHOOK_URL`).
+
+If the business profile doesn't yet have a Cloudflare Turnstile widget, creating one
+(Cloudflare Dashboard → Turnstile → Add widget, add the client's live domain, Managed
+mode recommended) is a manual task for the project owner, not something this LLM
+customization pass can do — flag it in the report rather than guessing keys.
+
+**Handling missing data:**
+
+If `security.turnstileSiteKey`/`security.turnstileSecretKey` are absent: do NOT set
+either option. The wizard still has honeypot + rate limiting (5 submissions per IP per
+hour by default) — Turnstile (Layer 3) is simply skipped, which `BotProtection` treats
+as a normal, safe deployment state, not a degraded one. Log this in the report; a
+Turnstile widget can be added at any time after launch without a code change.
+
+**Expected outcome:**
+
+Either both Turnstile keys are configured and the widget appears on the final wizard
+step, or bot protection runs with honeypot + rate limiting only and the gap is
+documented in the Pre-Deployment Checklist (Section 7).
+
+</task>
+
+---
+
 ### Task 12 — Final State Audit
 
 <task id="final-audit">
@@ -2128,5 +2179,5 @@ produces an unrecognized option that is silently ignored, leaving the Acme Fenci
 
 _End of LLM Customization Handoff Document_
 
-_Codebase state: Step 5.13e (2026-07-13). Pre-step postcode-only; photo upload + contact-and-address step added to all instant-quote services; submission photos stored to the media library as public URLs with 6-month retention (ADR-0026)._
+_Codebase state: Step 5.13f (2026-07-13). Pre-step postcode-only; photo upload + contact-and-address step added to all instant-quote services; submission photos stored to the media library as public URLs with 6-month retention (ADR-0026); honeypot + rate limiting + optional Cloudflare Turnstile bot protection active on the submit endpoint (ADR-0027)._
 _Next planned update: after Step 5.14 (SCB deployment)_

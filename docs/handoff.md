@@ -1,9 +1,26 @@
 # Handoff
 
-_Last updated: 2026-07-13 (post Step 5.13e)_
+_Last updated: 2026-07-13 (post Step 5.13f)_
 
 ## Status
 
+- Step 5.13f complete (July 13, 2026): Bot & spam protection. Three-layer defense on
+  the submit endpoint, enabled by default: honeypot field (`honeypotValue`, rejected as
+  an ordinary `validation_failed`/400 so a bot can't tell it was caught), rate limiting
+  (`Rest\RateLimiter`, WordPress transients, 5/hour default via
+  `goqw_rate_limit_per_hour`), and optional Cloudflare Turnstile verification
+  (`Support\TurnstileClient`, only runs when both Turnstile keys are configured).
+  `Rest\BotProtection` runs all three (cheapest first) before shape validation.
+  `Settings` gains the bot-protection getters instead of a new `BotProtectionConfig`
+  class. `PublicConfig` exposes `turnstileSiteKey` (public by Cloudflare's design).
+  Frontend: `BotProtectionStore` + `createBotProtectionEnrichedPort` mirror the Step
+  4.8 photo-enrichment pattern (volatile, never persisted). `HoneypotField` mounts once
+  per wizard session in `WizardShell`; `TurnstileWidget` mounts only on the final step
+  and dynamically loads Cloudflare's SDK from CDN only when configured (bundle grew
+  ~0.8 kB gzip, not the ~10-15 kB the spec estimated for a bundled SDK). Resolves the
+  "Rate limiting on submit endpoint" item deferred since Step 4.6. 38 new PHP tests
+  (172→210), 13 new Vitest tests (704→717). ADR-0027 accepted. Operational verification
+  pending (Turnstile widget behavior, rate-limit trip, honeypot trip on a live site).
 - Step 5.13e complete (July 13, 2026): Photo URL storage. `Submissions\PhotoStorage`
   saves submission photos to the WordPress media library
   (`/wp-content/uploads/goqw/YEAR/MONTH/`) instead of persisting base64, tags each

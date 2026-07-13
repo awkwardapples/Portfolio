@@ -45,6 +45,7 @@ A single-page, structural view of project state. Update on every completed step.
 | 5.13c                 | Complete | Pre-step reduced to postcode-only; photo upload + contact-and-address step added to all 7 instant-quote services |
 | 5.13d                 | Complete | Optional details step added to all 7 instant-quote services; allowSkip engine support; ADR-0025                  |
 | 5.13e                 | Complete | Photo URL storage: media library integration, 6-month retention, orphan cleanup; ADR-0026                        |
+| 5.13f                 | Complete | Bot & spam protection: honeypot, rate limiting, optional Cloudflare Turnstile; ADR-0027                          |
 | 5.12                  | Planned  | SCB-specific deployment (first real client)                                                                      |
 | 6.0                   | Planned  | Production IONOS deployment                                                                                      |
 | 6.1+                  | Future   | Second and subsequent clients                                                                                    |
@@ -231,8 +232,9 @@ Notable triggers:
   or first-client refinement requests.
 - **Interactive pricing configuration:** triggered by config-file editing
   becoming a bottleneck after multiple adaptations.
-- **Operational hardening (idempotency, rate limiting, replay UI):** triggered
-  by real operational events (duplicate leads, volume, retry needs).
+- **Operational hardening (idempotency, replay UI):** triggered by real
+  operational events (duplicate leads, retry needs). Rate limiting shipped in
+  Step 5.13f (ADR-0027).
 - **Make.com workflow per-client:** owned per client in 5.4 and onward; each
   client's Make.com setup is independent.
 

@@ -173,6 +173,53 @@ verified before the deployment goes live:
    `wp_goqw_submissions` has a non-null `media_json` column, and confirm
    Make.com received the media array.
 
+## Bot protection deployment checklist (Step 5.13f)
+
+Bot protection (honeypot + rate limiting + Cloudflare Turnstile, ADR-0027) is
+**enabled by default** on every install — honeypot and rate limiting need no
+setup. Turnstile is optional per client and needs a one-time Cloudflare setup:
+
+1. **Create a Cloudflare Turnstile widget.** Cloudflare Dashboard → Turnstile
+   → Add widget. Add the client's live domain(s). "Managed" mode is
+   recommended (silent for most visitors, falls back to an interactive
+   challenge only when Cloudflare's risk signal is uncertain).
+
+2. **Set the keys.**
+
+   ```bash
+   wp option update goqw_turnstile_site_key "0x..."
+   wp option update goqw_turnstile_secret_key "0x..."
+   ```
+
+   The site key is public (embedded in client-side HTML by Cloudflare's own
+   design) and appears in the wizard's browser console/network tab — that is
+   expected, not a leak. The secret key must never be committed to the repo;
+   set it directly on the deployment target.
+
+3. **Optional: adjust the rate limit** (default 5 submissions per IP per
+   hour):
+
+   ```bash
+   wp option update goqw_rate_limit_per_hour 10
+   ```
+
+4. **Optional: disable bot protection entirely** (not recommended — only for
+   debugging a suspected false-positive block):
+
+   ```bash
+   wp option update goqw_bot_protection_enabled 0
+   ```
+
+5. **Smoke test.** Submit the wizard normally — Turnstile should validate
+   silently (no visible challenge for a real user in Managed mode). Then, in
+   DevTools, manually set the honeypot input's value and submit — confirm the
+   request is rejected with `validation_failed` (400), indistinguishable from
+   an ordinary validation error.
+
+If the site key/secret key are left blank (the default), the deployment still
+gets honeypot + rate limiting; Turnstile (Layer 3) is simply skipped. This is
+a safe default for a pilot that hasn't set up Cloudflare yet.
+
 ## The daily development loop
 
 Once set up, your inner loop is short.

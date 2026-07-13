@@ -2122,3 +2122,101 @@ the "Media retention policy" item deferred since Step 4.8.
 | 24  | Verify photo URL is accessible in browser                                       | ⏳ pending operational verification                                                                                                    |
 | 25  | Verify Make.com receives URL (not base64) in webhook payload                    | ⏳ pending operational verification                                                                                                    |
 | 26  | Verify Google Sheets photo cell uses `IMAGE()` formula with real URL            | ⏳ pending operational verification (also requires a Make.com scenario config change, not code)                                        |
+
+## Step 5.13f Evidence
+
+_Compiled: 2026-07-13 — Covers Step 5.13f (Bot & Spam Protection)_
+
+### Summary
+
+Three-layer bot/spam defense added to the submit endpoint, enabled by default:
+honeypot field, per-IP rate limiting, and optional Cloudflare Turnstile verification.
+`Rest\BotProtection` runs all three (cheapest first — honeypot, then rate limit, then
+the one network call) as Step 0 of `SubmissionController::handle()`, before shape
+validation. A honeypot failure returns the same `errorCode`/status as an ordinary
+validation failure (`validation_failed`, 400) so a bot can't distinguish being caught
+from any other rejection. Rate limiting (`Rest\RateLimiter`, WordPress transients,
+5/hour default) counts successful submissions only — a honeypot-rejected request never
+consumes a slot. Turnstile (`Support\TurnstileClient`) only runs when both
+`goqw_turnstile_site_key`/`goqw_turnstile_secret_key` are configured
+(`Settings::turnstile_configured()`).
+
+On the frontend, `BotProtectionStore` + `createBotProtectionEnrichedPort` mirror the
+Step 4.8 `PhotoStore`/`createPhotoEnrichedPort` pattern exactly — bot-protection data is
+volatile and never persisted (a Turnstile token is single-use and expires in ~5
+minutes; the honeypot value has no reason to survive a reload). `HoneypotField` mounts
+once per wizard session in `WizardShell` (not `StepRenderer`, which remounts on every
+step change and would discard whatever a bot wrote in). `TurnstileWidget` mounts only
+on the final step and dynamically loads Cloudflare's SDK from CDN — never bundled —
+only when `config.turnstileSiteKey` is configured. Submit is disabled on the final step
+until a token is issued, only when Turnstile is configured for the deployment. Resolves
+"Rate limiting on submit endpoint," deferred since Step 4.6.
+
+### Commit Sequence
+
+| #   | Hash      | Message                                                                |
+| --- | --------- | ---------------------------------------------------------------------- |
+| C1  | `1a98595` | chore(audit): Phase 0 audits for 5.13f bot & spam protection           |
+| C2  | `b159d57` | feat(rest): RateLimiter class using WordPress transients               |
+| C3  | `e0ac397` | feat(support): TurnstileClient for server-side Cloudflare verification |
+| C4  | `783a195` | feat(rest): BotProtection middleware combining all three layers        |
+| C5  | `63a93ff` | feat(rest): integrate BotProtection into the submit endpoint           |
+| C6  | `3351353` | feat(wizard): honeypot + Turnstile widget in final submission step     |
+| C7  | _(this)_  | docs: ADR-0027 + 5.13f evidence + standard doc updates                 |
+
+`TurnstileClient` and the `Settings` extension (replacing `BotProtectionConfig`) landed
+together in C3 since they're the same audited decision.
+
+### Gate Results
+
+| Gate               | Result                                                                                                                                            |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm lint`        | 0/0                                                                                                                                               |
+| `pnpm typecheck`   | 0 errors (pre-existing, unrelated `tsconfig.test.json` errors in `non-field-step-engine.test.ts` predate this step — last touched in 5.13a/5.13b) |
+| `pnpm test`        | **717/717 Vitest** (+13 from 5.13f, 54 test files)                                                                                                |
+| `pnpm build`       | Clean — bundle 87.20 → 87.96 kB gzip (+~0.8 kB; Turnstile SDK loaded dynamically, not bundled)                                                    |
+| `composer lint`    | 0/0 for files touched this step (pre-existing, unrelated drift in `quote-wizard.php` predates 5.13e/5.13f)                                        |
+| `composer analyse` | No errors (PHPStan level 8)                                                                                                                       |
+| `composer test`    | **210 passed, 4 skipped** (+38 from 5.13f)                                                                                                        |
+
+### Deviations from the original spec (surfaced during Phase 0 audits)
+
+- Spec referred to `Rest/Submit.php`; the actual file is `Rest/SubmissionController.php` (same drift documented in every prior step's audits).
+- `Support/BotProtectionConfig.php` → extended `Support/Settings.php` instead. `Settings` already owns "typed access to plugin settings" with a documented constant-over-option precedence chain; a second class with the same responsibility would fork that abstraction for no reason.
+- Wire keys are camelCase (`honeypotValue`, `turnstileToken`), not the spec's snake_case (`website_field`, `turnstile_token`) — matches every other top-level payload key in this wire contract.
+- Bot-protection data lives in a volatile `BotProtectionStore`, not `WizardState`/FSM — `WizardStore`'s own docblock excludes anything but wizard-answer state, and the honeypot value/Turnstile token must never reach the sessionStorage persistence adapter.
+- The honeypot mounts once in `WizardShell`, not inside `StepRenderer`'s "final submission form" — `StepRenderer` remounts on every step change via `key={step.id}` and would discard whatever a bot wrote in before the last step.
+- The Turnstile SDK is not bundled — `TurnstileWidget` dynamically injects the `<script>` tag on mount, only when configured, only once per page. Bundle grew ~0.8 kB gzip instead of the spec's estimated 10-15 kB.
+- No dedicated component tests for `HoneypotField`/`TurnstileWidget` — this codebase has zero `.test.tsx` files anywhere and `vitest.config.ts` deliberately runs the domain/runtime suite in the `node` environment (no DOM) to prove domain purity. Every other component in `src/components/` is verified operationally, not unit-tested; these two follow the same convention.
+- `apps/wizard/src/domain/steps/multi-field-form/component.tsx` (referenced in the spec's Audit C) does not exist; the real final-step rendering is `StepRenderer.tsx` + `NavigationControls.tsx`, audited and used instead.
+
+### Acceptance Criteria
+
+| #   | Criterion                                                                    | Status                                                                                                                                    |
+| --- | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Phase 0 audits produced (A, B, C, D)                                         | ✅ file review                                                                                                                            |
+| 2   | RateLimiter enforces 5-per-hour default                                      | ✅ test                                                                                                                                   |
+| 3   | RateLimiter tracks IPs independently                                         | ✅ test                                                                                                                                   |
+| 4   | TurnstileClient verifies tokens correctly                                    | ✅ test                                                                                                                                   |
+| 5   | BotProtection rejects filled honeypot                                        | ✅ test                                                                                                                                   |
+| 6   | BotProtection rejects rate-limited requests                                  | ✅ test                                                                                                                                   |
+| 7   | BotProtection rejects invalid Turnstile tokens                               | ✅ test                                                                                                                                   |
+| 8   | BotProtection allows valid submissions                                       | ✅ test                                                                                                                                   |
+| 9   | REST Submit calls BotProtection before processing                            | ✅ test                                                                                                                                   |
+| 10  | Rate limit response includes retry time                                      | ✅ test                                                                                                                                   |
+| 11  | Honeypot field in wizard form (invisible)                                    | ✅ code review (no component-test infra in this codebase — see Deviations)                                                                |
+| 12  | Turnstile widget on final step                                               | ✅ code review (no component-test infra — see Deviations)                                                                                 |
+| 13  | Turnstile token included in submission payload                               | ✅ test (`submission-bot-protection.test.ts`)                                                                                             |
+| 14  | WordPress options for configuration                                          | ✅ file review (`Settings.php`)                                                                                                           |
+| 15  | ADR-0027 documented                                                          | ✅                                                                                                                                        |
+| 16  | LLM handoff Task added (Task 11b, not Task 9 — see Deviations)               | ✅ file review                                                                                                                            |
+| 17  | All 172 prior PHP tests pass                                                 | ✅ test run                                                                                                                               |
+| 18  | ~34 new PHP tests pass                                                       | ✅ test run (38 net new)                                                                                                                  |
+| 19  | Bundle within budget                                                         | ✅ (+~0.8 kB, well under the ~10-15 kB estimate)                                                                                          |
+| 20  | 7 commits in specified sequence                                              | ✅ `git log`                                                                                                                              |
+| 21  | Tarball produced                                                             | Not produced — no request for a packaged artifact in this conversation                                                                    |
+| 22  | Configure WordPress with test Turnstile keys                                 | ⏳ pending operational verification                                                                                                       |
+| 23  | Submit wizard normally: Turnstile validates silently, submission succeeds    | ⏳ pending operational verification                                                                                                       |
+| 24  | Fill honeypot manually via DevTools: submission fails with validation_error  | ⏳ pending operational verification (errorCode is `validation_failed`, matching the existing shape-validation errorCode — see Deviations) |
+| 25  | Rapidly submit 6+ times from same IP: 6th is rate limited                    | ⏳ pending operational verification                                                                                                       |
+| 26  | Test Turnstile invalid: submit without token, expect bot_verification_failed | ⏳ pending operational verification                                                                                                       |
