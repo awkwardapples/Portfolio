@@ -13,6 +13,7 @@ declare( strict_types=1 );
 use Agency\QuoteWizard\Rest\SubmissionController;
 use Agency\QuoteWizard\Submissions\Forwarder;
 use Agency\QuoteWizard\Submissions\ForwardResult;
+use Agency\QuoteWizard\Submissions\PhotoStorage;
 use Agency\QuoteWizard\Submissions\SubmissionRepository;
 use Brain\Monkey;
 use Brain\Monkey\Functions;
@@ -115,6 +116,53 @@ function spy_forwarder( ForwardResult $result ): object {
 		public function forward( int $submission_id, array $payload ): ForwardResult {
 			$this->calls[] = array( 'id' => $submission_id, 'payload' => $payload );
 			return $this->result;
+		}
+	};
+}
+
+/**
+ * Stub validator that always passes, so photo-storage-focused tests don't
+ * need real image bytes to satisfy MediaValidator's magic-byte checks.
+ */
+function stub_media_validator_ok(): object {
+	return new class extends \Agency\QuoteWizard\Submissions\MediaValidator {
+		/** @return array{ok: bool, issues: list<array{fileIndex: int, code: string}>} */
+		public function validate( array $answers ): array {
+			return array( 'ok' => true, 'issues' => array() );
+		}
+	};
+}
+
+/**
+ * Stub photo storage (Step 5.13e) that returns a fixed store_photo() result
+ * for every call and records calls to both methods, so tests can assert on
+ * SubmissionController's orchestration without touching real WP media functions
+ * (that's PhotoStorageTest's job).
+ *
+ * @param array{success: bool, url?: string, attachmentId?: int, error?: string} $result  Value store_photo() returns.
+ */
+function spy_photo_storage( array $result ): object {
+	return new class ( $result ) extends PhotoStorage {
+		/** @var list<array{base64: string, mime: string, name: string}> */
+		public array $store_calls = [];
+		/** @var list<int> */
+		public array $deleted = [];
+
+		/** @param array{success: bool, url?: string, attachmentId?: int, error?: string} $result */
+		public function __construct( private readonly array $result ) {}
+
+		public function store_photo( string $base64_data, string $mime_type, string $original_name ): array {
+			$this->store_calls[] = array(
+				'base64' => $base64_data,
+				'mime'   => $mime_type,
+				'name'   => $original_name,
+			);
+			return $this->result;
+		}
+
+		public function delete_photo( int $attachment_id ): bool {
+			$this->deleted[] = $attachment_id;
+			return true;
 		}
 	};
 }
@@ -512,7 +560,10 @@ it(
 				return array( 'ok' => true, 'issues' => array() );
 			}
 		};
-		$ctrl    = new SubmissionController( $repo, $fwd, $validator );
+		$photo_storage = spy_photo_storage(
+			array( 'success' => true, 'url' => 'https://example.test/photo.jpg', 'attachmentId' => 5 )
+		);
+		$ctrl    = new SubmissionController( $repo, $fwd, $validator, $photo_storage );
 		$payload = valid_payload(
 			array(
 				'answers' => array(
@@ -537,6 +588,229 @@ it(
 		expect( $repo->inserts[0]['media_json'] )->not->toBeNull();
 		$decoded = json_decode( $repo->inserts[0]['media_json'], true );
 		expect( $decoded[0]['fieldKey'] )->toBe( 'photos' );
+	}
+);
+
+// ---------------------------------------------------------------------------
+// Photo URL storage (Step 5.13e)
+// ---------------------------------------------------------------------------
+
+it(
+	'replaces dataBase64 with url and attachmentId in the persisted answers_json',
+	function (): void {
+		$repo          = spy_repository( 1 );
+		$fwd           = spy_forwarder( ForwardResult::success() );
+		$photo_storage = spy_photo_storage(
+			array( 'success' => true, 'url' => 'https://example.test/wp-content/uploads/goqw/2026/07/x.jpg', 'attachmentId' => 42 )
+		);
+		$ctrl    = new SubmissionController( $repo, $fwd, stub_media_validator_ok(), $photo_storage );
+		$payload = valid_payload(
+			array(
+				'answers' => array(
+					'site_photos' => array(
+						'files' => array(
+							array(
+								'fileId'       => 'f1',
+								'originalName' => 'x.jpg',
+								'mimeType'     => 'image/jpeg',
+								'dataBase64'   => 'fakeb64',
+							),
+						),
+					),
+				),
+			)
+		);
+
+		$ctrl->handle( make_request( $payload ) );
+
+		$answers = json_decode( $repo->inserts[0]['answers_json'], true );
+		$file    = $answers['site_photos']['files'][0];
+
+		expect( $file )->not->toHaveKey( 'dataBase64' );
+		expect( $file['url'] )->toBe( 'https://example.test/wp-content/uploads/goqw/2026/07/x.jpg' );
+		expect( $file['attachmentId'] )->toBe( 42 );
+	}
+);
+
+it(
+	'forwards the URL-replaced answers to the webhook, not base64',
+	function (): void {
+		$repo          = spy_repository( 1 );
+		$fwd           = spy_forwarder( ForwardResult::success() );
+		$photo_storage = spy_photo_storage(
+			array( 'success' => true, 'url' => 'https://example.test/x.jpg', 'attachmentId' => 7 )
+		);
+		$ctrl    = new SubmissionController( $repo, $fwd, stub_media_validator_ok(), $photo_storage );
+		$payload = valid_payload(
+			array(
+				'answers' => array(
+					'site_photos' => array(
+						'files' => array(
+							array(
+								'fileId'       => 'f1',
+								'originalName' => 'x.jpg',
+								'mimeType'     => 'image/jpeg',
+								'dataBase64'   => 'fakeb64',
+							),
+						),
+					),
+				),
+			)
+		);
+
+		$ctrl->handle( make_request( $payload ) );
+
+		$forwarded_file = $fwd->calls[0]['payload']['answers_json'];
+		$decoded        = json_decode( $forwarded_file, true );
+
+		expect( $decoded['site_photos']['files'][0] )->not->toHaveKey( 'dataBase64' );
+		expect( $decoded['site_photos']['files'][0]['url'] )->toBe( 'https://example.test/x.jpg' );
+	}
+);
+
+it(
+	'calls store_photo with the file dataBase64, mimeType, and originalName',
+	function (): void {
+		$repo          = spy_repository( 1 );
+		$fwd           = spy_forwarder( ForwardResult::success() );
+		$photo_storage = spy_photo_storage(
+			array( 'success' => true, 'url' => 'https://example.test/x.jpg', 'attachmentId' => 1 )
+		);
+		$ctrl    = new SubmissionController( $repo, $fwd, stub_media_validator_ok(), $photo_storage );
+		$payload = valid_payload(
+			array(
+				'answers' => array(
+					'site_photos' => array(
+						'files' => array(
+							array(
+								'fileId'       => 'f1',
+								'originalName' => 'garden.jpg',
+								'mimeType'     => 'image/jpeg',
+								'dataBase64'   => 'abc123',
+							),
+						),
+					),
+				),
+			)
+		);
+
+		$ctrl->handle( make_request( $payload ) );
+
+		expect( $photo_storage->store_calls )->toHaveCount( 1 );
+		expect( $photo_storage->store_calls[0] )->toBe(
+			array( 'base64' => 'abc123', 'mime' => 'image/jpeg', 'name' => 'garden.jpg' )
+		);
+	}
+);
+
+it(
+	'drops the failed photo but still submits successfully (D5)',
+	function (): void {
+		$repo          = spy_repository( 1 );
+		$fwd           = spy_forwarder( ForwardResult::success() );
+		$photo_storage = spy_photo_storage( array( 'success' => false, 'error' => 'attachment_insert_failed' ) );
+		$ctrl          = new SubmissionController( $repo, $fwd, stub_media_validator_ok(), $photo_storage );
+		$payload       = valid_payload(
+			array(
+				'answers' => array(
+					'site_photos' => array(
+						'files' => array(
+							array(
+								'fileId'       => 'f1',
+								'originalName' => 'x.jpg',
+								'mimeType'     => 'image/jpeg',
+								'dataBase64'   => 'fakeb64',
+							),
+						),
+					),
+				),
+			)
+		);
+
+		$response = $ctrl->handle( make_request( $payload ) );
+
+		expect( $response->get_status() )->toBe( 200 );
+		expect( $repo->inserts )->not->toBeEmpty();
+		$answers = json_decode( $repo->inserts[0]['answers_json'], true );
+		expect( $answers['site_photos']['files'] )->toBeEmpty();
+	}
+);
+
+it(
+	'does not mark any attachment for cleanup when the photo save fails (D5)',
+	function (): void {
+		$repo          = spy_repository( 1 );
+		$fwd           = spy_forwarder( ForwardResult::success() );
+		$photo_storage = spy_photo_storage( array( 'success' => false, 'error' => 'attachment_insert_failed' ) );
+		$ctrl          = new SubmissionController( $repo, $fwd, stub_media_validator_ok(), $photo_storage );
+		$payload       = valid_payload(
+			array(
+				'answers' => array(
+					'site_photos' => array(
+						'files' => array(
+							array(
+								'fileId'       => 'f1',
+								'originalName' => 'x.jpg',
+								'mimeType'     => 'image/jpeg',
+								'dataBase64'   => 'fakeb64',
+							),
+						),
+					),
+				),
+			)
+		);
+
+		$ctrl->handle( make_request( $payload ) );
+
+		expect( $photo_storage->deleted )->toBeEmpty();
+	}
+);
+
+it(
+	'deletes photos already stored when the submission then fails to persist (D6)',
+	function (): void {
+		$repo          = spy_repository( throw_on_insert: true );
+		$fwd           = spy_forwarder( ForwardResult::success() );
+		$photo_storage = spy_photo_storage(
+			array( 'success' => true, 'url' => 'https://example.test/x.jpg', 'attachmentId' => 99 )
+		);
+		$ctrl    = new SubmissionController( $repo, $fwd, stub_media_validator_ok(), $photo_storage );
+		$payload = valid_payload(
+			array(
+				'answers' => array(
+					'site_photos' => array(
+						'files' => array(
+							array(
+								'fileId'       => 'f1',
+								'originalName' => 'x.jpg',
+								'mimeType'     => 'image/jpeg',
+								'dataBase64'   => 'fakeb64',
+							),
+						),
+					),
+				),
+			)
+		);
+
+		$response = $ctrl->handle( make_request( $payload ) );
+
+		expect( $response->get_status() )->toBe( 500 );
+		expect( $photo_storage->deleted )->toBe( [ 99 ] );
+	}
+);
+
+it(
+	'does not delete anything on persistence failure when no photos were stored',
+	function (): void {
+		$repo          = spy_repository( throw_on_insert: true );
+		$fwd           = spy_forwarder( ForwardResult::success() );
+		$photo_storage = spy_photo_storage( array( 'success' => true, 'url' => 'unused', 'attachmentId' => 1 ) );
+		$ctrl          = new SubmissionController( $repo, $fwd, stub_media_validator_ok(), $photo_storage );
+		$request       = make_request( valid_payload() );
+
+		$ctrl->handle( $request );
+
+		expect( $photo_storage->deleted )->toBeEmpty();
 	}
 );
 

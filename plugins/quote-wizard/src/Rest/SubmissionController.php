@@ -11,6 +11,7 @@ namespace Agency\QuoteWizard\Rest;
 
 use Agency\QuoteWizard\Submissions\Forwarder;
 use Agency\QuoteWizard\Submissions\MediaValidator;
+use Agency\QuoteWizard\Submissions\PhotoStorage;
 use Agency\QuoteWizard\Submissions\SubmissionRepository;
 use Agency\QuoteWizard\Support\Logger;
 use WP_REST_Request;
@@ -41,11 +42,13 @@ final class SubmissionController {
 	 * @param SubmissionRepository $repository      Data-access layer for submissions.
 	 * @param Forwarder            $forwarder        Webhook forwarder.
 	 * @param MediaValidator       $media_validator  Photo upload validator.
+	 * @param PhotoStorage         $photo_storage    Saves validated photos to the media library (Step 5.13e).
 	 */
 	public function __construct(
 		private readonly SubmissionRepository $repository,
 		private readonly Forwarder $forwarder,
-		private readonly MediaValidator $media_validator = new MediaValidator()
+		private readonly MediaValidator $media_validator = new MediaValidator(),
+		private readonly PhotoStorage $photo_storage = new PhotoStorage()
 	) {}
 
 	/**
@@ -71,9 +74,11 @@ final class SubmissionController {
 			}
 
 			// Step 1b: validate media entries (photo fields) before persisting.
-			$media_result = $this->media_validator->validate(
-				is_array( $payload['answers'] ?? null ) ? $payload['answers'] : array()
-			);
+			// Runs against the raw base64 answers — PhotoStorage (step 1c) must not
+			// run first, or magic-byte/dimension checks would have nothing to check
+			// (AUDIT-5.13e-media-validator.md).
+			$answers      = $validated['answers'];
+			$media_result = $this->media_validator->validate( $answers );
 			if ( ! $media_result['ok'] ) {
 				return new WP_REST_Response(
 					array(
@@ -84,11 +89,25 @@ final class SubmissionController {
 				);
 			}
 
+			// Step 1c: save validated photos to the media library, replacing
+			// dataBase64 with a public URL + attachmentId in the answers (D2).
+			// A per-photo storage failure does not block the submission — the
+			// failing photo is dropped and logged, submission continues (D5).
+			$photo_result = $this->store_photos( $answers );
+			$answers      = $photo_result['answers'];
+
+			$validated['answers_json'] = wp_json_encode( $answers );
+			$validated['media_json']   = $this->extract_media_json( $answers );
+			unset( $validated['answers'] );
+
 			// Step 2: persist durably (must succeed before any forward attempt).
 			try {
 				$submission_id = $this->repository->insert( $validated );
 			} catch ( \Throwable $e ) {
 				Logger::operational( 'submission persist failed: ' . $e->getMessage() );
+				// D6: the submission row never existed, so any photos already
+				// saved to the media library for it are orphaned. Delete them.
+				$this->cleanup_orphaned_photos( $photo_result['attachmentIds'] );
 				return new WP_REST_Response(
 					array( 'errorCode' => 'persistence_failed' ),
 					500
@@ -193,11 +212,84 @@ final class SubmissionController {
 				? $payload['schemaVersion']
 				: 1,
 			'quote_mode'       => $quote_mode,
-			'answers_json'     => wp_json_encode( $answers ),
+			// Plain array, not yet JSON-encoded: store_photos() must mutate this
+			// (replacing dataBase64 with url/attachmentId) before answers_json
+			// and media_json are derived from it. See handle().
+			'answers'          => $answers,
 			'pricing_json'     => null !== $pricing ? wp_json_encode( $pricing ) : null,
-			'media_json'       => $this->extract_media_json( $answers ),
 			'client_timestamp' => sanitize_text_field( $client_ts ),
 		);
+	}
+
+	/**
+	 * Save every photo file in the answers map to the media library, replacing
+	 * dataBase64 with a public URL + attachmentId (Step 5.13e, D2). A file that
+	 * fails to store is dropped from its field's files array and logged; it
+	 * never blocks the rest of the submission (D5).
+	 *
+	 * @param  array<string,mixed> $answers  Decoded, already media-validated answers.
+	 * @return array{answers: array<string,mixed>, attachmentIds: list<int>}
+	 */
+	private function store_photos( array $answers ): array {
+		$attachment_ids = array();
+
+		foreach ( $answers as $field_key => $value ) {
+			if ( ! is_array( $value ) || ! isset( $value['files'] ) || ! is_array( $value['files'] ) ) {
+				continue;
+			}
+
+			$stored_files = array();
+			foreach ( $value['files'] as $file ) {
+				if ( ! is_array( $file ) || ! isset( $file['dataBase64'] ) ) {
+					continue;
+				}
+
+				$result = $this->photo_storage->store_photo(
+					(string) $file['dataBase64'],
+					isset( $file['mimeType'] ) ? (string) $file['mimeType'] : '',
+					isset( $file['originalName'] ) ? (string) $file['originalName'] : ''
+				);
+
+				if ( ! $result['success'] ) {
+					Logger::operational(
+						sprintf(
+							'photo storage failed for field "%s": %s',
+							(string) $field_key,
+							$result['error'] ?? 'unknown'
+						)
+					);
+					continue;
+				}
+
+				$stored_file = $file;
+				unset( $stored_file['dataBase64'] );
+				$stored_file['url']          = $result['url'];
+				$stored_file['attachmentId'] = $result['attachmentId'];
+
+				$stored_files[]   = $stored_file;
+				$attachment_ids[] = $result['attachmentId'];
+			}
+
+			$answers[ $field_key ]['files'] = $stored_files;
+		}
+
+		return array(
+			'answers'       => $answers,
+			'attachmentIds' => $attachment_ids,
+		);
+	}
+
+	/**
+	 * Delete attachments created during a submission that ultimately failed to
+	 * persist (D6). Best-effort: failures here are not surfaced to the client
+	 * since the persistence_failed response has already been decided.
+	 *
+	 * @param int[] $attachment_ids  Attachment IDs created by store_photos().
+	 */
+	private function cleanup_orphaned_photos( array $attachment_ids ): void {
+		foreach ( $attachment_ids as $attachment_id ) {
+			$this->photo_storage->delete_photo( $attachment_id );
+		}
 	}
 
 	/**
