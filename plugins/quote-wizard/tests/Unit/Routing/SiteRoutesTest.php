@@ -11,8 +11,8 @@ use Agency\QuoteWizard\Routing\SiteRoutes;
 use Brain\Monkey;
 use Brain\Monkey\Functions;
 
-it( 'PATHS contains exactly 5 entries', function (): void {
-	expect( SiteRoutes::PATHS )->toHaveCount( 5 );
+it( 'PATHS contains exactly 6 entries', function (): void {
+	expect( SiteRoutes::PATHS )->toHaveCount( 6 );
 } );
 
 it( 'every PATHS entry begins with /', function (): void {
@@ -71,8 +71,8 @@ it( 'PATHS contains /', function (): void {
 	expect( SiteRoutes::PATHS )->toContain( '/' );
 } );
 
-it( 'PATHS contains all five expected paths', function (): void {
-	$expected = array( '/', '/services', '/our-work', '/contact', '/quote' );
+it( 'PATHS contains all six expected paths', function (): void {
+	$expected = array( '/', '/services', '/our-work', '/contact', '/quote', '/privacy' );
 	foreach ( $expected as $path ) {
 		expect( SiteRoutes::PATHS )->toContain( $path );
 	}

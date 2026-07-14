@@ -60,6 +60,11 @@ final class SEORouteContent {
 			'description' => 'Use our online quote wizard to receive an instant estimate for your project.',
 			'og_type'     => 'website',
 		),
+		'/privacy'  => array(
+			'title'       => 'Privacy Policy — Acme Fencing',
+			'description' => 'How Acme Fencing collects, uses, and protects your personal data.',
+			'og_type'     => 'website',
+		),
 	);
 
 	/**

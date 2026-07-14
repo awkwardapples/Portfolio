@@ -23,7 +23,7 @@ afterEach(
 	}
 );
 
-it( 'generates XML containing all 5 React routes', function (): void {
+it( 'generates XML containing all 6 React routes', function (): void {
 	Functions\when( 'get_option' )->justReturn( '' );
 	Functions\when( 'home_url' )->alias(
 		static function ( string $path ): string {
@@ -40,6 +40,7 @@ it( 'generates XML containing all 5 React routes', function (): void {
 	expect( $xml )->toContain( 'http://example.test/services' );
 	expect( $xml )->toContain( 'http://example.test/our-work' );
 	expect( $xml )->toContain( 'http://example.test/contact' );
+	expect( $xml )->toContain( 'http://example.test/privacy' );
 } );
 
 it( 'generates valid XML sitemap structure', function (): void {
@@ -83,9 +84,9 @@ it( 'each URL entry includes changefreq and priority elements', function (): voi
 
 	$xml = SitemapGenerator::generate_sitemap_xml();
 
-	expect( substr_count( $xml, '<changefreq>' ) )->toBe( 5 );
-	expect( substr_count( $xml, '<priority>' ) )->toBe( 5 );
-	expect( substr_count( $xml, '<lastmod>' ) )->toBe( 5 );
+	expect( substr_count( $xml, '<changefreq>' ) )->toBe( 6 );
+	expect( substr_count( $xml, '<priority>' ) )->toBe( 6 );
+	expect( substr_count( $xml, '<lastmod>' ) )->toBe( 6 );
 } );
 
 it( 'uses goqw_sitemap_lastmod override when set', function (): void {

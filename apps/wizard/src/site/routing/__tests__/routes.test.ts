@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { ROUTES, DEFAULT_ROUTE, matchRoute } from '@/site/routing/routes';
 
 describe('route table', () => {
-  it('contains exactly five routes', () => {
-    expect(ROUTES).toHaveLength(5);
+  it('contains exactly six routes', () => {
+    expect(ROUTES).toHaveLength(6);
   });
 
   it('every route has a non-empty path, title, navLabel, and element factory', () => {
@@ -27,6 +27,17 @@ describe('route table', () => {
   it('DEFAULT_ROUTE is the home route', () => {
     expect(DEFAULT_ROUTE.path).toBe('/');
   });
+
+  it('/privacy is excluded from primary nav (showInNav: false)', () => {
+    const privacy = ROUTES.find((r) => r.path === '/privacy');
+    expect(privacy?.showInNav).toBe(false);
+  });
+
+  it('every other route defaults to visible in nav (showInNav is not false)', () => {
+    for (const r of ROUTES.filter((r) => r.path !== '/privacy')) {
+      expect(r.showInNav).not.toBe(false);
+    }
+  });
 });
 
 describe('matchRoute', () => {
@@ -36,6 +47,7 @@ describe('matchRoute', () => {
     ['/our-work', '/our-work'],
     ['/contact', '/contact'],
     ['/quote', '/quote'],
+    ['/privacy', '/privacy'],
   ])('matches %s to %s', (input, expected) => {
     expect(matchRoute(input).path).toBe(expected);
   });

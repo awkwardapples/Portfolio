@@ -78,10 +78,10 @@ it( 'empty option value falls back to template default', function (): void {
 	expect( $content['title'] )->toContain( 'Acme Fencing' );
 } );
 
-it( 'all five routes return non-null content', function (): void {
+it( 'all six routes return non-null content', function (): void {
 	Functions\when( 'get_option' )->justReturn( '' );
 
-	foreach ( array( '/', '/services', '/our-work', '/contact', '/quote' ) as $route ) {
+	foreach ( array( '/', '/services', '/our-work', '/contact', '/quote', '/privacy' ) as $route ) {
 		expect( SEORouteContent::get_content( $route ) )->not->toBeNull();
 	}
 } );

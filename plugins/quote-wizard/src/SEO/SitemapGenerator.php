@@ -30,6 +30,7 @@ defined( 'ABSPATH' ) || exit;
  *   /services priority 0.8  changefreq monthly
  *   /our-work priority 0.7  changefreq monthly
  *   /contact  priority 0.7  changefreq monthly
+ *   /privacy  priority 0.3  changefreq yearly
  */
 final class SitemapGenerator {
 
@@ -58,6 +59,10 @@ final class SitemapGenerator {
 		'/contact'  => array(
 			'priority'   => '0.7',
 			'changefreq' => 'monthly',
+		),
+		'/privacy'  => array(
+			'priority'   => '0.3',
+			'changefreq' => 'yearly',
 		),
 	);
 

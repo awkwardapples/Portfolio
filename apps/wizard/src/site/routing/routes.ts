@@ -13,12 +13,20 @@ import { ServicesPage } from '@/site/pages/ServicesPage';
 import { OurWorkPage } from '@/site/pages/OurWorkPage';
 import { ContactPage } from '@/site/pages/ContactPage';
 import { QuotePage } from '@/site/pages/QuotePage';
+import { PrivacyPolicyPage } from '@/site/pages/PrivacyPolicyPage';
 
 export interface RouteEntry {
   readonly path: string;
   readonly title: string;
   readonly navLabel: string;
   readonly element: () => ReactElement;
+  /**
+   * Whether this route appears as a link in the primary site navigation
+   * (Nav.tsx). Defaults to true when omitted. Legal/policy routes (e.g.
+   * /privacy) are reachable via the footer's legalLinks instead and should
+   * not clutter the primary nav.
+   */
+  readonly showInNav?: boolean;
 }
 
 export const ROUTES: readonly RouteEntry[] = [
@@ -46,6 +54,13 @@ export const ROUTES: readonly RouteEntry[] = [
     title: 'Get a quote',
     navLabel: 'Get a free quote',
     element: () => createElement(QuotePage),
+  },
+  {
+    path: '/privacy',
+    title: 'Privacy Policy',
+    navLabel: 'Privacy Policy',
+    element: () => createElement(PrivacyPolicyPage),
+    showInNav: false,
   },
 ] as const;
 

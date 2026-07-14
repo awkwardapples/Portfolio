@@ -7,16 +7,19 @@ interface NavProps {
 }
 
 /**
- * Primary site navigation. Renders all routes from the static table.
+ * Primary site navigation. Renders every route from the static table except
+ * those explicitly opted out via `showInNav: false` (e.g. /privacy, reachable
+ * from the footer instead — Step 5.14).
  *
  * Active route gets aria-current="page" and a visible underline. Mobile
  * (narrow viewports): horizontal scroll on overflow (ADR-0016).
  */
 export function Nav({ currentPath }: NavProps): ReactElement {
+  const navRoutes = ROUTES.filter((route) => route.showInNav !== false);
   return (
     <nav aria-label="Primary">
       <ul className="flex gap-6 overflow-x-auto whitespace-nowrap" role="list">
-        {ROUTES.map((route) => {
+        {navRoutes.map((route) => {
           const isActive = isActiveRoute(route.path, currentPath);
           return (
             <li key={route.path}>

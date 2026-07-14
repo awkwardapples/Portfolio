@@ -24,7 +24,7 @@ final class SiteRoutes {
 	 * The ordered list of paths handled by the React app. Order matches the
 	 * nav order defined in routes.ts.
 	 */
-	public const PATHS = array( '/', '/services', '/our-work', '/contact', '/quote' );
+	public const PATHS = array( '/', '/services', '/our-work', '/contact', '/quote', '/privacy' );
 
 	/**
 	 * Normalize a request path the same way matchRoute() does in routes.ts:
