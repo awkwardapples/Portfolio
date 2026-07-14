@@ -37,7 +37,10 @@ class SubmissionRepository {
 	/**
 	 * Insert a new submission row in 'persisted' state.
 	 *
-	 * @param array<string,mixed> $payload Validated and sanitised payload.
+	 * @param array<string,mixed> $payload Validated and sanitised payload. Optional
+	 *                                     `is_duplicate` (bool) and `duplicate_of` (int|null)
+	 *                                     keys record duplicate-detection results (Step
+	 *                                     5.13g, ADR-0028); both default to "not a duplicate".
 	 * @return int  Auto-increment row ID.
 	 * @throws \RuntimeException  On DB insert failure.
 	 */
@@ -53,8 +56,10 @@ class SubmissionRepository {
 				'client_timestamp' => $payload['client_timestamp'],
 				'status'           => 'persisted',
 				'created_at'       => current_time( 'mysql', true ),
+				'is_duplicate'     => ! empty( $payload['is_duplicate'] ) ? 1 : 0,
+				'duplicate_of'     => $payload['duplicate_of'] ?? null,
 			),
-			array( '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s' )
+			array( '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d' )
 		);
 
 		if ( false === $result ) {
@@ -62,6 +67,56 @@ class SubmissionRepository {
 		}
 
 		return (int) $this->wpdb->insert_id;
+	}
+
+	/**
+	 * Find the most recent non-duplicate submission whose contact_email or
+	 * contact_phone answer matches the given normalized value(s), created at
+	 * or after $window_start (Step 5.13g, ADR-0028, D1/D2).
+	 *
+	 * Uses JSON_UNQUOTE(JSON_EXTRACT(...)) rather than a bare JSON_EXTRACT()
+	 * comparison — the latter compares against a quoted JSON string and
+	 * relies on implicit cast semantics that vary by engine; unquoting first
+	 * is unambiguous on both MySQL and MariaDB (AUDIT-5.13g-schema.md).
+	 *
+	 * A '' value for either argument omits that half of the OR from matching
+	 * (an empty contact_email/contact_phone answer should never match rows
+	 * whose JSON path is absent or empty).
+	 *
+	 * @param string $normalized_email  Lowercased, trimmed email, or '' to skip.
+	 * @param string $normalized_phone  Digits-only phone, or '' to skip.
+	 * @param string $window_start      MySQL datetime (UTC), inclusive lower bound.
+	 * @return int|null  ID of the matching submission, or null when none found.
+	 */
+	public function find_recent_by_contact( string $normalized_email, string $normalized_phone, string $window_start ): ?int {
+		// Local $wpdb alias, and {$wpdb->prefix}goqw_submissions inline (matching
+		// Schema::table_name()'s suffix) rather than $this->table(): this is the
+		// one pattern WordPress.DB.PreparedSQL recognises as safe for a dynamic
+		// table name inside a prepare()'d template (AUDIT-5.13g-schema.md).
+		$wpdb = $this->wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$row = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT id FROM {$wpdb->prefix}goqw_submissions
+				WHERE is_duplicate = 0
+				AND created_at >= %s
+				AND (
+					( %s <> '' AND LOWER( JSON_UNQUOTE( JSON_EXTRACT( answers_json, '\$.contact_email' ) ) ) = %s )
+					OR
+					( %s <> '' AND JSON_UNQUOTE( JSON_EXTRACT( answers_json, '\$.contact_phone' ) ) = %s )
+				)
+				ORDER BY created_at DESC
+				LIMIT 1",
+				$window_start,
+				$normalized_email,
+				$normalized_email,
+				$normalized_phone,
+				$normalized_phone
+			)
+		);
+
+		return null !== $row ? (int) $row->id : null;
 	}
 
 	/**

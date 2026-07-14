@@ -48,6 +48,10 @@ final class Schema {
 	 * below; on an existing dev install the new columns are added and the
 	 * old Phase-3 columns (trade, contact_*, payload, …) remain but are
 	 * unused. For a clean slate deactivate, drop the table, and reactivate.
+	 *
+	 * is_duplicate / duplicate_of (Step 5.13g, ADR-0028): added the same way
+	 * — via dbDelta, not a hand-rolled ALTER TABLE — so an existing install
+	 * picks these up idempotently the next time the plugin is (re)activated.
 	 */
 	public static function submissions_table_sql(): string {
 		global $wpdb;
@@ -68,10 +72,13 @@ final class Schema {
 			forwarded_at DATETIME NULL,
 			forward_attempted_at DATETIME NULL,
 			forward_error TEXT NULL,
+			is_duplicate TINYINT(1) NOT NULL DEFAULT 0,
+			duplicate_of BIGINT UNSIGNED NULL,
 			PRIMARY KEY  (id),
 			KEY idx_created_at (created_at),
 			KEY idx_status (status),
-			KEY idx_wizard_id (wizard_id)
+			KEY idx_wizard_id (wizard_id),
+			KEY idx_duplicate_lookup (created_at, is_duplicate)
 		) {$charset_collate};";
 	}
 }
