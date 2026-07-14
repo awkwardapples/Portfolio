@@ -12,6 +12,7 @@ declare( strict_types=1 );
 
 use Agency\QuoteWizard\Rest\BotProtection;
 use Agency\QuoteWizard\Rest\SubmissionController;
+use Agency\QuoteWizard\Submissions\ConsentValidator;
 use Agency\QuoteWizard\Submissions\DuplicateDetector;
 use Agency\QuoteWizard\Submissions\Forwarder;
 use Agency\QuoteWizard\Submissions\ForwardResult;
@@ -27,27 +28,39 @@ use Brain\Monkey\Functions;
 /**
  * Build a valid wire payload array.
  *
+ * `answers` is merged (not replaced) with the default when `$overrides`
+ * supplies its own `answers` array, so every test keeps a valid
+ * data_processing_consent answer (Step 5.14) without having to repeat it —
+ * unless a test deliberately overrides that key to exercise the consent
+ * check itself.
+ *
  * @param array<string,mixed> $overrides  Fields to override.
  * @return array<string,mixed>
  */
 function valid_payload( array $overrides = [] ): array {
-	return array_merge(
-		array(
-			'contractVersion' => 3,
-			'wizardId'        => 'fencing',
-			'schemaVersion'   => 1,
-			'quoteMode'       => 'instant',
-			'answers'         => array( 'fence_type' => 'wooden' ),
-			'pricing'         => array(
-				'totalPence' => 50000,
-				'lowPence'   => 45000,
-				'highPence'  => 55000,
-				'currency'   => 'GBP',
-			),
-			'clientTimestamp' => '2026-05-29T12:00:00Z',
+	$defaults = array(
+		'contractVersion' => 3,
+		'wizardId'        => 'fencing',
+		'schemaVersion'   => 1,
+		'quoteMode'       => 'instant',
+		'answers'         => array(
+			'fence_type'              => 'wooden',
+			'data_processing_consent' => array( 'agreed' ),
 		),
-		$overrides
+		'pricing'         => array(
+			'totalPence' => 50000,
+			'lowPence'   => 45000,
+			'highPence'  => 55000,
+			'currency'   => 'GBP',
+		),
+		'clientTimestamp' => '2026-05-29T12:00:00Z',
 	);
+
+	if ( isset( $overrides['answers'] ) && is_array( $overrides['answers'] ) ) {
+		$overrides['answers'] = array_merge( $defaults['answers'], $overrides['answers'] );
+	}
+
+	return array_merge( $defaults, $overrides );
 }
 
 /**
@@ -211,6 +224,27 @@ function spy_duplicate_detector( array $result ): object {
 
 		public function check( string $email, string $phone ): array {
 			$this->calls[] = array( 'email' => $email, 'phone' => $phone );
+			return $this->result;
+		}
+	};
+}
+
+/**
+ * Stub consent validator (Step 5.14) that returns a fixed is_given() result
+ * and records calls, so controller tests can assert on orchestration
+ * (reject-before-persist, consent metadata written) without depending on
+ * the real answer-key/checkbox-array logic — that's ConsentValidatorTest's job.
+ */
+function spy_consent_validator( bool $result ): object {
+	return new class ( $result ) extends ConsentValidator {
+		/** @var list<array<string,mixed>> */
+		public array $calls = [];
+
+		public function __construct( private readonly bool $result ) {}
+
+		/** @param array<string,mixed> $answers */
+		public function is_given( array $answers ): bool {
+			$this->calls[] = $answers;
 			return $this->result;
 		}
 	};
@@ -1088,5 +1122,79 @@ it(
 		expect( $repo->inserts[0]['duplicate_of'] )->toBeNull();
 		expect( $fwd->calls )->toHaveCount( 1 );
 		expect( $repo->forwarded )->toContain( 56 );
+	}
+);
+
+// ---------------------------------------------------------------------------
+// Consent validation (Step 5.14, ADR-0029)
+// ---------------------------------------------------------------------------
+
+it(
+	'returns 400 consent_required and neither persists nor forwards when consent is missing',
+	function (): void {
+		$repo    = spy_repository();
+		$fwd     = spy_forwarder( ForwardResult::success() );
+		$consent = spy_consent_validator( false );
+		$ctrl    = new SubmissionController( $repo, $fwd, consent_validator: $consent );
+		$request = make_request( valid_payload( array( 'answers' => array( 'data_processing_consent' => array() ) ) ) );
+
+		$response = $ctrl->handle( $request );
+
+		expect( $response->get_status() )->toBe( 400 );
+		expect( $response->get_data() )->toBe( array( 'errorCode' => 'consent_required' ) );
+		expect( $repo->inserts )->toBeEmpty();
+		expect( $fwd->calls )->toBeEmpty();
+	}
+);
+
+it(
+	'passes the answers map to the consent validator before duplicate detection',
+	function (): void {
+		$repo    = spy_repository( 1 );
+		$fwd     = spy_forwarder( ForwardResult::success() );
+		$consent = spy_consent_validator( true );
+		$dup     = spy_duplicate_detector( array( 'isDuplicate' => false ) );
+		$ctrl    = new SubmissionController( $repo, $fwd, consent_validator: $consent, duplicate_detector: $dup );
+
+		$ctrl->handle( make_request( valid_payload() ) );
+
+		expect( $consent->calls )->toHaveCount( 1 );
+		expect( $consent->calls[0] )->toHaveKey( 'data_processing_consent' );
+		expect( $dup->calls )->toHaveCount( 1 );
+	}
+);
+
+it(
+	'persists consent_given=true and a consent_timestamp when consent is given',
+	function (): void {
+		$repo    = spy_repository( 1 );
+		$fwd     = spy_forwarder( ForwardResult::success() );
+		$request = make_request( valid_payload() );
+		$ctrl    = new SubmissionController( $repo, $fwd );
+
+		$response = $ctrl->handle( $request );
+
+		expect( $response->get_status() )->toBe( 200 );
+		expect( $repo->inserts[0]['consent_given'] )->toBeTrue();
+		expect( $repo->inserts[0]['consent_timestamp'] )->toBe( '2026-05-29 12:00:00' );
+	}
+);
+
+it(
+	'does not reach the consent check when shape validation fails first',
+	function (): void {
+		$repo    = spy_repository();
+		$fwd     = spy_forwarder( ForwardResult::success() );
+		$consent = spy_consent_validator( false );
+		$ctrl    = new SubmissionController( $repo, $fwd, consent_validator: $consent );
+		$payload = valid_payload();
+		unset( $payload['wizardId'] );
+		$request = make_request( $payload );
+
+		$response = $ctrl->handle( $request );
+
+		expect( $response->get_status() )->toBe( 400 );
+		expect( $response->get_data()['errorCode'] )->toBe( 'validation_failed' );
+		expect( $consent->calls )->toBeEmpty();
 	}
 );

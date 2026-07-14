@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace Agency\QuoteWizard\Rest;
 
+use Agency\QuoteWizard\Submissions\ConsentValidator;
 use Agency\QuoteWizard\Submissions\DuplicateDetector;
 use Agency\QuoteWizard\Submissions\Forwarder;
 use Agency\QuoteWizard\Submissions\MediaValidator;
@@ -22,16 +23,19 @@ use WP_Error;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Handles wizard submission requests (ADR-0001, ADR-0005, ADR-0015, ADR-0028).
+ * Handles wizard submission requests (ADR-0001, ADR-0005, ADR-0015, ADR-0028, ADR-0029).
  *
  * Strict ordering — every request follows exactly these steps:
  *   1. Validate nonce + payload shape. On failure → 400, nothing persisted.
- *      1a. Check for a duplicate submission (contact_email/contact_phone
+ *      1a. Check for consent to data processing (Step 5.14). On failure →
+ *          400 { errorCode: 'consent_required' }, nothing persisted.
+ *      1b. Check for a duplicate submission (contact_email/contact_phone
  *          matching a non-duplicate submission within 24h — Step 5.13g).
  *   2. INSERT into wp_goqw_submissions (status = 'persisted'), recording the
- *      duplicate flag either way. On failure → 500, NO forward attempted.
- *      A duplicate is persisted normally but responds here (200,
- *      { reference, isDuplicate: true }) — Forwarder is never called.
+ *      duplicate flag and consent metadata either way. On failure → 500, NO
+ *      forward attempted. A duplicate is persisted normally but responds
+ *      here (200, { reference, isDuplicate: true }) — Forwarder is never
+ *      called.
  *   3. Forward to Make.com webhook synchronously (non-duplicates only).
  *      On failure → update row to 'forward_failed', return 502.
  *   4. Update row to 'forwarded', return 200 { reference }.
@@ -61,6 +65,7 @@ final class SubmissionController {
 	 * @param MediaValidator         $media_validator      Photo upload validator.
 	 * @param PhotoStorage           $photo_storage        Saves validated photos to the media library (Step 5.13e).
 	 * @param BotProtection          $bot_protection       Honeypot/rate-limit/Turnstile checks (Step 5.13f).
+	 * @param ConsentValidator       $consent_validator    Data-processing consent check (Step 5.14).
 	 * @param DuplicateDetector|null $duplicate_detector   Defaults to a detector built from $repository (Step 5.13g).
 	 */
 	public function __construct(
@@ -69,6 +74,7 @@ final class SubmissionController {
 		private readonly MediaValidator $media_validator = new MediaValidator(),
 		private readonly PhotoStorage $photo_storage = new PhotoStorage(),
 		private readonly BotProtection $bot_protection = new BotProtection(),
+		private readonly ConsentValidator $consent_validator = new ConsentValidator(),
 		?DuplicateDetector $duplicate_detector = null
 	) {
 		$this->duplicate_detector = $duplicate_detector ?? new DuplicateDetector( $repository );
@@ -114,18 +120,30 @@ final class SubmissionController {
 				);
 			}
 
-			// Step 1a: duplicate detection (Step 5.13g, ADR-0028). Checked on the
+			$answers = $validated['answers'];
+
+			// Step 1a: consent validation (Step 5.14, ADR-0029, D9). Server-side
+			// trust boundary — a crafted request bypassing the wizard UI cannot
+			// skip this. Checked before duplicate detection since it is a hard
+			// stop: nothing is persisted without consent.
+			if ( ! $this->consent_validator->is_given( $answers ) ) {
+				return new WP_REST_Response(
+					array( 'errorCode' => 'consent_required' ),
+					400
+				);
+			}
+
+			// Step 1b: duplicate detection (Step 5.13g, ADR-0028). Checked on the
 			// raw contact answers, before photo validation/storage — a duplicate
 			// is still fully persisted with its photos (D3), only flagged and not
 			// forwarded (D7), so nothing about the rest of the pipeline changes.
-			$answers         = $validated['answers'];
 			$duplicate_check = $this->duplicate_detector->check(
 				(string) ( $answers['contact_email'] ?? '' ),
 				(string) ( $answers['contact_phone'] ?? '' )
 			);
 
-			// Step 1b: validate media entries (photo fields) before persisting.
-			// Runs against the raw base64 answers — PhotoStorage (step 1c) must not
+			// Step 1c: validate media entries (photo fields) before persisting.
+			// Runs against the raw base64 answers — PhotoStorage (step 1d) must not
 			// run first, or magic-byte/dimension checks would have nothing to check
 			// (AUDIT-5.13e-media-validator.md).
 			$media_result = $this->media_validator->validate( $answers );
@@ -139,17 +157,19 @@ final class SubmissionController {
 				);
 			}
 
-			// Step 1c: save validated photos to the media library, replacing
+			// Step 1d: save validated photos to the media library, replacing
 			// dataBase64 with a public URL + attachmentId in the answers (D2).
 			// A per-photo storage failure does not block the submission — the
 			// failing photo is dropped and logged, submission continues (D5).
 			$photo_result = $this->store_photos( $answers );
 			$answers      = $photo_result['answers'];
 
-			$validated['answers_json'] = wp_json_encode( $answers );
-			$validated['media_json']   = $this->extract_media_json( $answers );
-			$validated['is_duplicate'] = $duplicate_check['isDuplicate'];
-			$validated['duplicate_of'] = $duplicate_check['originalSubmissionId'] ?? null;
+			$validated['answers_json']      = wp_json_encode( $answers );
+			$validated['media_json']        = $this->extract_media_json( $answers );
+			$validated['is_duplicate']      = $duplicate_check['isDuplicate'];
+			$validated['duplicate_of']      = $duplicate_check['originalSubmissionId'] ?? null;
+			$validated['consent_given']     = true;
+			$validated['consent_timestamp'] = current_time( 'mysql', true );
 			unset( $validated['answers'] );
 
 			// Step 2: persist durably (must succeed before any forward attempt).
