@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-07-13 (post Step 5.13f)_
+_Last updated: 2026-07-14 (post Step 5.13g)_
 
 ## What's working
 
@@ -27,16 +27,27 @@ _Last updated: 2026-07-13 (post Step 5.13f)_
 - Optional details step added to all 7 instant-quote services as the final step after `contact-and-address`. Universal fields: `preferred_timeframe` (select, required:false) and `additional_notes` (textarea, required:false). Per-service supplementary fields capture gate details (fencing), removal/condition context (decking, patio, driveway, steps), furniture/pets/paint preferences (painting), and stain type + time preference (jetwash). `allowSkip: true` enables "Skip and Submit" — users bypass the step entirely. Manual-quote services do not receive this step.
 - Photo URL storage (Step 5.13e): `Submissions\PhotoStorage` saves validated photos to `/wp-content/uploads/goqw/YEAR/MONTH/` via `wp_handle_upload`/`wp_insert_attachment`, tags each attachment with `_goqw_photo` post meta, and returns a public URL + attachment ID. `SubmissionController` replaces `dataBase64` with `url`/`attachmentId` in both the persisted `answers_json`/`media_json` and the Make.com webhook payload before persistence. A per-photo failure drops that photo and logs it but never blocks the submission; a submission that fails to persist after photos were saved triggers orphan cleanup (deletes those attachments). `Cron\PhotoRetention` deletes photos older than 6 months via a new daily `goqw_photo_retention_cleanup` wp-cron event. ADR-0026.
 - Bot & spam protection (Step 5.13f): three-layer defense on the submit endpoint, enabled by default. `Rest\BotProtection` runs honeypot (`honeypotValue` field, rejected as an ordinary `validation_failed`), rate limiting (`Rest\RateLimiter`, WordPress transients, 5/hour default via `goqw_rate_limit_per_hour`), then Cloudflare Turnstile verification (`Support\TurnstileClient`, only when `goqw_turnstile_site_key`/`goqw_turnstile_secret_key` are both configured). `PublicConfig` exposes `turnstileSiteKey` (public by design); the secret key never leaves `Settings::turnstile_secret_key()`. On the frontend, `BotProtectionStore` + `createBotProtectionEnrichedPort` mirror the Step 4.8 photo-enrichment pattern; `HoneypotField` mounts once per wizard session in `WizardShell`; `TurnstileWidget` mounts only on the final step and dynamically loads Cloudflare's SDK (not bundled) only when configured. `goqw_bot_protection_enabled` (default on) disables all three layers at once. ADR-0027.
+- Duplicate submission prevention (Step 5.13g): `Submissions\DuplicateDetector` flags a submission as a duplicate when its normalized `contact_email` or `contact_phone` matches a non-duplicate submission from the last 24 hours. A duplicate is still fully persisted (photos included) but marked `is_duplicate`/`duplicate_of` and never forwarded to Make.com/WhatsApp — the response is still `200 { reference, isDuplicate: true }`. `SuccessScreen` renders different, client-owned copy for a duplicate. ADR-0028.
 
 ## Gate state (last verified)
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors (pre-existing, unrelated `tsconfig.test.json` type errors in `non-field-step-engine.test.ts` predate this step — last touched in the 5.13a/5.13b commits)
-- `pnpm test`: **717/717** (54 test files, +13 from 5.13f)
-- `pnpm build`: clean (bundle 87.96 kB gzip, +~0.8 kB — Turnstile SDK loaded dynamically from Cloudflare, not bundled)
-- `composer test`: **210 passed, 4 skipped** (+38 from 5.13f)
+- `pnpm test`: **721/721** (54 test files, +4 from 5.13g)
+- `pnpm build`: clean (bundle 88.09 kB gzip, +~0.1 kB from 5.13f)
+- `composer test`: **220 passed, 4 skipped** (+10 from 5.13g)
 - `composer analyse`: clean (PHPStan level 8, no errors)
-- `composer lint`: 0/0 for all files touched this step (pre-existing, unrelated drift in `quote-wizard.php` predates 5.13e/5.13f)
+- `composer lint`: 0/0 for all files touched this step (pre-existing, unrelated drift in `quote-wizard.php` predates 5.13e/5.13f/5.13g)
+
+## Gate state (5.13g, 2026-07-14)
+
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: 0 errors (see pre-existing note above)
+- `pnpm test`: **721/721 Vitest** (+4 from 5.13g, 54 test files)
+- `pnpm build`: clean (bundle 87.96 → 88.09 kB gzip)
+- `composer lint`: 0/0 for files touched this step
+- `composer analyse`: no errors (PHPStan level 8)
+- `composer test`: **220 passed, 4 skipped** (+10 from 5.13g — DuplicateDetector 7, SubmissionController 3)
 
 ## Gate state (5.13f, 2026-07-13)
 
@@ -262,6 +273,19 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   plus the business profile JSON schema, modification map, report template,
   pre-deployment checklist, final verification commands, and three appendices.
   Documentation-only; all gates unchanged (598 Vitest, 143 PHP).
+- **Step 5.13g — Duplicate Submission Prevention** (July 2026).
+  `Submissions\DuplicateDetector` normalizes `contact_email` (lowercase+trim) and
+  `contact_phone` (digits-only) and checks `SubmissionRepository::find_recent_by_contact()`
+  for a non-duplicate submission matching either within the last 24 hours (UTC-computed
+  window). `SubmissionController` runs this right after shape validation (Step 1a); a
+  duplicate is still fully persisted (photos included), flagged `is_duplicate`/
+  `duplicate_of`, and responds `200 { reference, isDuplicate: true }` — `Forwarder` is
+  never called, so no WhatsApp/Sheets noise. Schema gains `is_duplicate`, `duplicate_of`,
+  and `idx_duplicate_lookup` via the existing `dbDelta` mechanism, not a new migration
+  path. Frontend: `isDuplicate` threads through `SubmissionPortResult` →
+  `SubmitSucceededEvent` → `SubmissionResult` → `SuccessScreen`, which renders its own
+  "We already have your request" copy — the server never echoes prose to the client. 10
+  new PHP tests (210→220), 4 new Vitest tests (717→721). ADR-0028 accepted.
 - **Step 5.13f — Bot & Spam Protection** (July 2026).
   Three-layer defense on the submit endpoint, enabled by default: honeypot field
   (`honeypotValue`, rejected as an ordinary `validation_failed`/400 so a bot can't tell

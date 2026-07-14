@@ -220,6 +220,24 @@ If the site key/secret key are left blank (the default), the deployment still
 gets honeypot + rate limiting; Turnstile (Layer 3) is simply skipped. This is
 a safe default for a pilot that hasn't set up Cloudflare yet.
 
+## Duplicate submission prevention (Step 5.13g)
+
+Duplicate detection (ADR-0028) is **always on, with no configuration** — there
+is no option to set or key to configure. A submission whose `contact_email` or
+`contact_phone` matches a non-duplicate submission from the last 24 hours is
+still saved (with photos) but flagged `is_duplicate`/`duplicate_of` in
+`wp_goqw_submissions` and never forwarded to Make.com/WhatsApp; the user still
+sees a success screen, with different copy ("We already have your request").
+
+**Smoke test.** Submit the wizard once normally, then submit it again with the
+same email or phone within 24 hours — the second submission should still show
+a success screen, but no second WhatsApp notification/Sheets row should
+appear. Query the table directly to confirm the flag:
+
+```bash
+wp db query "SELECT id, is_duplicate, duplicate_of, created_at FROM wp_goqw_submissions ORDER BY id DESC LIMIT 5;"
+```
+
 ## The daily development loop
 
 Once set up, your inner loop is short.

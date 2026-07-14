@@ -46,6 +46,7 @@ A single-page, structural view of project state. Update on every completed step.
 | 5.13d                 | Complete | Optional details step added to all 7 instant-quote services; allowSkip engine support; ADR-0025                  |
 | 5.13e                 | Complete | Photo URL storage: media library integration, 6-month retention, orphan cleanup; ADR-0026                        |
 | 5.13f                 | Complete | Bot & spam protection: honeypot, rate limiting, optional Cloudflare Turnstile; ADR-0027                          |
+| 5.13g                 | Complete | Duplicate submission prevention: 24h contact-match detection, no re-forward; ADR-0028                            |
 | 5.12                  | Planned  | SCB-specific deployment (first real client)                                                                      |
 | 6.0                   | Planned  | Production IONOS deployment                                                                                      |
 | 6.1+                  | Future   | Second and subsequent clients                                                                                    |
@@ -234,7 +235,9 @@ Notable triggers:
   becoming a bottleneck after multiple adaptations.
 - **Operational hardening (idempotency, replay UI):** triggered by real
   operational events (duplicate leads, retry needs). Rate limiting shipped in
-  Step 5.13f (ADR-0027).
+  Step 5.13f (ADR-0027); contact-based duplicate detection (24h window) shipped
+  in Step 5.13g (ADR-0028) — an exact-content idempotency key remains deferred
+  (`docs/technical-debt.md`).
 - **Make.com workflow per-client:** owned per client in 5.4 and onward; each
   client's Make.com setup is independent.
 

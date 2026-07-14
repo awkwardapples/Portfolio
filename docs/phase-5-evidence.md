@@ -2220,3 +2220,96 @@ together in C3 since they're the same audited decision.
 | 24  | Fill honeypot manually via DevTools: submission fails with validation_error  | ⏳ pending operational verification (errorCode is `validation_failed`, matching the existing shape-validation errorCode — see Deviations) |
 | 25  | Rapidly submit 6+ times from same IP: 6th is rate limited                    | ⏳ pending operational verification                                                                                                       |
 | 26  | Test Turnstile invalid: submit without token, expect bot_verification_failed | ⏳ pending operational verification                                                                                                       |
+
+## Step 5.13g Evidence
+
+_Compiled: 2026-07-14 — Covers Step 5.13g (Duplicate Submission Prevention)_
+
+### Summary
+
+Same-person duplicate submissions (matching `contact_email` OR `contact_phone` within a
+24-hour window) are now detected, still fully persisted (including photos), flagged
+(`is_duplicate`, `duplicate_of`), and never forwarded to Make.com/WhatsApp.
+`Submissions\DuplicateDetector` normalizes the two contact fields (lowercase+trim email,
+digits-only phone) and delegates the lookup to a new
+`SubmissionRepository::find_recent_by_contact()` query
+(`JSON_UNQUOTE(JSON_EXTRACT(answers_json, '$.contact_email'/'$.contact_phone'))`,
+excluding rows already flagged as duplicates, within a UTC-computed 24h window).
+`SubmissionController` runs the check right after shape validation (Step 1a), carries
+the result through photo storage, and — for a duplicate — returns `200
+{ reference, isDuplicate: true }` immediately after the DB insert, skipping
+`Forwarder` entirely.
+
+On the frontend, `isDuplicate` threads through `SubmissionPortResult` →
+`SubmitSucceededEvent` → `SubmissionResult` → `SuccessScreen`, which renders different
+(client-owned, not server-echoed) copy for a duplicate — consistent with this
+codebase's existing convention that user-facing text is never sent from the server.
+
+### Commit Sequence
+
+| #   | Hash      | Message                                                                     |
+| --- | --------- | --------------------------------------------------------------------------- |
+| C1  | `d04841d` | chore(audit): Phase 0 audits for 5.13g duplicate detection                  |
+| C2  | `889f8c0` | feat(db): add is_duplicate + duplicate_of columns to submissions schema     |
+| C3  | `58a2b99` | feat(submissions): DuplicateDetector class for finding matching submissions |
+| C4  | `28a203b` | feat(submissions): integrate duplicate detection into submission handler    |
+| C5  | `4e2fbeb` | feat(wizard): render duplicate-submission response in SuccessScreen         |
+| C6  | _(this)_  | docs: ADR-0028 + 5.13g evidence + standard doc updates                      |
+
+Six commits, not the spec's proposed six-with-a-separate-Forwarder-commit — the
+Forwarder skip lives in `SubmissionController` (C4), so there is no standalone
+"Forwarder" commit; the client-side wiring (spec's C6-equivalent scope) became its own
+commit (C5) instead since it touches ~10 frontend files.
+
+### Gate Results
+
+| Gate               | Result                                                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `pnpm lint`        | 0/0                                                                                                                 |
+| `pnpm typecheck`   | 0 errors (pre-existing, unrelated `tsconfig.test.json` errors in `non-field-step-engine.test.ts` predate this step) |
+| `pnpm test`        | **721/721 Vitest** (+4 from 5.13g, 54 test files)                                                                   |
+| `pnpm build`       | Clean — bundle 87.96 → 88.09 kB gzip (+~0.1 kB, mostly PHP-side work)                                               |
+| `composer lint`    | 0/0 for files touched this step (pre-existing, unrelated drift in `quote-wizard.php` predates 5.13e/5.13f/5.13g)    |
+| `composer analyse` | No errors (PHPStan level 8)                                                                                         |
+| `composer test`    | **220 passed, 4 skipped** (+10 from 5.13g)                                                                          |
+
+### Deviations from the original spec (surfaced during Phase 0 audits)
+
+- Spec referred to `Rest/Submit.php`; the actual file is `Rest/SubmissionController.php` (same drift documented in every prior step's audits).
+- `contact_email`/`contact_phone` are not dedicated columns — they're keys inside `answers_json`. The spec's proposed raw `JSON_EXTRACT()` comparison is corrected to `JSON_UNQUOTE(JSON_EXTRACT(...))`, avoiding an implicit-cast comparison footgun.
+- Schema change goes through the existing `dbDelta` mechanism (`Schema::submissions_table_sql()`), not a hand-rolled `SHOW COLUMNS`/`ALTER TABLE` idempotency check in `Activator`.
+- `Forwarder.php` is unmodified — it has no DB access and no by-ID lookup; the controller already holds the duplicate-check result at the point it decides whether to call `forward()`, so the skip lives there instead (`AUDIT-5.13g-forwarder.md`).
+- No server-supplied "message" string in the response — only a boolean `isDuplicate` flag. The client owns all user-facing copy, matching the existing convention (`http-submission-port.ts`'s hardcoded messages, never echoing server prose).
+- `DuplicateDetector` is a plain `class`, not `final` — every other `SubmissionController` dependency follows this convention specifically so tests can extend it as an anonymous spy double.
+- Duplicate-detection window computed via `gmdate()` (UTC), not the spec's `date()` (local server time) — `created_at` is stored in GMT; local time would silently shift the 24h boundary by the server's UTC offset.
+- No automated test exercises the raw SQL query against a real MySQL/MariaDB instance (none reachable in this environment) — `DuplicateDetector`'s normalization/window/delegation logic is fully unit-tested against a fake repository; real-DB query correctness is a pending operational-verification item, consistent with 5.13e/5.13f precedent.
+
+### Acceptance Criteria
+
+| #   | Criterion                                                                 | Status                                                                                                    |
+| --- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 1   | Phase 0 audits produced (A, B, C, D)                                      | ✅ file review                                                                                            |
+| 2   | Database columns added (is_duplicate, duplicate_of)                       | ✅ file review (`Schema.php`, via dbDelta)                                                                |
+| 3   | Database migration idempotent (safe on repeated activation)               | ✅ by construction (dbDelta) — not independently unit-tested, see Deviations                              |
+| 4   | DuplicateDetector finds email match within 24h                            | ✅ test                                                                                                   |
+| 5   | DuplicateDetector finds phone match within 24h                            | ✅ test                                                                                                   |
+| 6   | DuplicateDetector returns false outside 24h window                        | ✅ test (asserts window_start computation; SQL filtering itself is untested — no live DB, see Deviations) |
+| 7   | DuplicateDetector normalizes inputs (case, whitespace)                    | ✅ test                                                                                                   |
+| 8   | Duplicate submission saved with is_duplicate=1, duplicate_of=X            | ✅ test                                                                                                   |
+| 9   | Duplicate response includes isDuplicate flag                              | ✅ test                                                                                                   |
+| 10  | Forwarder skipped for duplicate submissions                               | ✅ test (skip lives in SubmissionController, not Forwarder — see Deviations)                              |
+| 11  | Client shows duplicate message ("We have already received...")            | ✅ code review (`SuccessScreen.tsx`; no component-test infra in this codebase)                            |
+| 12  | ADR-0028 documented                                                       | ✅                                                                                                        |
+| 13  | All 210 prior PHP tests pass                                              | ✅ test run                                                                                               |
+| 14  | ~25 new PHP tests pass                                                    | ✅ test run (10 net new: 7 DuplicateDetector + 3 SubmissionController)                                    |
+| 15  | Bundle unchanged (mostly PHP)                                             | ✅ (+~0.1 kB gzip)                                                                                        |
+| 16  | 6 commits in specified sequence                                           | ✅ `git log` (sequence adjusted — see Commit Sequence note)                                               |
+| 17  | Tarball produced                                                          | Not produced — no request for a packaged artifact in this conversation                                    |
+| 18  | Submit wizard once; verify normal WhatsApp + Sheets flow                  | ⏳ pending operational verification                                                                       |
+| 19  | Submit wizard within 24h with same email; verify duplicate detected       | ⏳ pending operational verification                                                                       |
+| 20  | Verify duplicate saved to database with correct flags                     | ⏳ pending operational verification                                                                       |
+| 21  | Verify no WhatsApp sent for duplicate submission                          | ⏳ pending operational verification                                                                       |
+| 22  | Verify user sees duplicate confirmation message                           | ⏳ pending operational verification                                                                       |
+| 23  | Submit wizard with same email 24h+ later; verify NOT flagged              | ⏳ pending operational verification                                                                       |
+| 24  | Submit wizard with same phone but different email; verify still duplicate | ⏳ pending operational verification                                                                       |
+| 25  | Submit wizard with different email AND phone; verify NOT duplicate        | ⏳ pending operational verification                                                                       |

@@ -7,8 +7,8 @@ wizard configuration. Visual customization is handled separately by the project 
 
 **Audience:** LLM agent.
 
-**Codebase state reference:** This document reflects template state at Step 5.13f
-(2026-07-13). Always read actual file contents before editing — this document
+**Codebase state reference:** This document reflects template state at Step 5.13g
+(2026-07-14). Always read actual file contents before editing — this document
 describes structure and intent, not exact verbatim content.
 
 **Cross-referenced documents:**
@@ -2179,5 +2179,5 @@ produces an unrecognized option that is silently ignored, leaving the Acme Fenci
 
 _End of LLM Customization Handoff Document_
 
-_Codebase state: Step 5.13f (2026-07-13). Pre-step postcode-only; photo upload + contact-and-address step added to all instant-quote services; submission photos stored to the media library as public URLs with 6-month retention (ADR-0026); honeypot + rate limiting + optional Cloudflare Turnstile bot protection active on the submit endpoint (ADR-0027)._
+_Codebase state: Step 5.13g (2026-07-14). Pre-step postcode-only; photo upload + contact-and-address step added to all instant-quote services; submission photos stored to the media library as public URLs with 6-month retention (ADR-0026); honeypot + rate limiting + optional Cloudflare Turnstile bot protection active on the submit endpoint (ADR-0027); duplicate submissions (matching contact_email/contact_phone within 24h) persisted but not re-forwarded, no per-client configuration needed (ADR-0028)._
 _Next planned update: after Step 5.14 (SCB deployment)_

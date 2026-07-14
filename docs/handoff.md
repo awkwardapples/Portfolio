@@ -1,9 +1,24 @@
 # Handoff
 
-_Last updated: 2026-07-13 (post Step 5.13f)_
+_Last updated: 2026-07-14 (post Step 5.13g)_
 
 ## Status
 
+- Step 5.13g complete (July 14, 2026): Duplicate submission prevention.
+  `Submissions\DuplicateDetector` flags a submission whose normalized `contact_email` or
+  `contact_phone` matches a non-duplicate submission from the last 24 hours (UTC
+  window). A duplicate is still fully persisted (photos included) but marked
+  `is_duplicate`/`duplicate_of` and never forwarded to Make.com/WhatsApp — response is
+  still `200 { reference, isDuplicate: true }`. `SubmissionController` runs the check
+  right after shape validation, before photo storage. `Forwarder.php` is unmodified —
+  the skip lives in the controller, which already holds the check result at the point
+  it decides whether to forward. Schema gains `is_duplicate`/`duplicate_of`/
+  `idx_duplicate_lookup` via the existing `dbDelta` mechanism. Frontend: `isDuplicate`
+  threads through `SubmissionPortResult` → `SubmitSucceededEvent` → `SubmissionResult` →
+  `SuccessScreen`, which owns its own "already received" copy (server never echoes
+  prose). 10 new PHP tests (210→220), 4 new Vitest tests (717→721). ADR-0028 accepted.
+  Operational verification pending (live-DB duplicate detection, 24h window boundary,
+  WhatsApp suppression on a live site).
 - Step 5.13f complete (July 13, 2026): Bot & spam protection. Three-layer defense on
   the submit endpoint, enabled by default: honeypot field (`honeypotValue`, rejected as
   an ordinary `validation_failed`/400 so a bot can't tell it was caught), rate limiting

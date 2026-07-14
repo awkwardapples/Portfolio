@@ -235,6 +235,17 @@ that is not yet justified.
 **Trigger:** When a client reports duplicate lead rows, or when submission volume
 grows to the point where duplicates cause operational problems.
 
+**Partial mitigation (Step 5.13g, ADR-0028):** `Submissions\DuplicateDetector` now
+flags — but does not prevent — a submission whose `contact_email`/`contact_phone`
+matches a non-duplicate submission from the last 24 hours, regardless of answer content
+or `clientTimestamp`. A SUBMIT_RETRY duplicate row would typically be caught by this
+(the retry carries the same contact fields), so it no longer triggers a second
+WhatsApp/Sheets forward — but this is a broader, contact-based window, not the
+content-hash idempotency key described above, and two genuinely different submissions
+from the same person within 24 hours are also (correctly, per 5.13g's own design)
+flagged as duplicates. Item left open, not resolved: an exact-content idempotency key
+is still not implemented.
+
 ---
 
 ## Rate Limiting on qw/v1/submit (deferred from Step 4.6; resolved in Step 5.13f)
