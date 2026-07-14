@@ -54,6 +54,28 @@ describe('httpSubmissionPort — success path', () => {
   });
 });
 
+describe('httpSubmissionPort — isDuplicate extraction (Step 5.13g)', () => {
+  it('200 with isDuplicate:true → ok:true with isDuplicate true', async () => {
+    const mock = vi
+      .fn()
+      .mockResolvedValue(
+        fakeResponse(200, JSON.stringify({ reference: 'GOQW-42', isDuplicate: true })),
+      );
+    const result = await portWithMock(mock).submit(VALID_REQUEST);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.isDuplicate).toBe(true);
+  });
+
+  it('200 without isDuplicate → ok:true with isDuplicate false', async () => {
+    const mock = vi
+      .fn()
+      .mockResolvedValue(fakeResponse(200, JSON.stringify({ reference: 'GOQW-42' })));
+    const result = await portWithMock(mock).submit(VALID_REQUEST);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.isDuplicate).toBe(false);
+  });
+});
+
 describe('httpSubmissionPort — server error paths', () => {
   it('502 → forwarder_unavailable with operational message', async () => {
     const mock = vi

@@ -81,6 +81,25 @@ describe('submission lifecycle — success path', () => {
     expect(state.submissionResult).toEqual({
       outcome: 'success',
       submissionId: 'GOQW-42',
+      isDuplicate: false,
+    });
+  });
+
+  it('200 with isDuplicate:true → submit_success with isDuplicate flag set', async () => {
+    const mock = vi
+      .fn()
+      .mockResolvedValue(
+        fakeResponse(200, JSON.stringify({ reference: 'GOQW-43', isDuplicate: true })),
+      );
+
+    const store = await reachSubmitting(mock);
+    const state = store.getSnapshot();
+
+    expect(state.phase).toBe('submit_success');
+    expect(state.submissionResult).toEqual({
+      outcome: 'success',
+      submissionId: 'GOQW-43',
+      isDuplicate: true,
     });
   });
 });

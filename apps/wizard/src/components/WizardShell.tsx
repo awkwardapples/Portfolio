@@ -47,7 +47,9 @@ export function WizardShell({ onReturnToSelector }: WizardShellProps = {}): JSX.
   if (phase === 'submit_success') {
     const submissionId =
       state.submissionResult?.outcome === 'success' ? state.submissionResult.submissionId : null;
-    return <SuccessScreen submissionId={submissionId} />;
+    const isDuplicate =
+      state.submissionResult?.outcome === 'success' && state.submissionResult.isDuplicate;
+    return <SuccessScreen submissionId={submissionId} isDuplicate={isDuplicate} />;
   }
 
   if (phase === 'submit_failure') {

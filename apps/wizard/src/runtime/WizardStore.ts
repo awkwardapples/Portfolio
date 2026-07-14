@@ -83,7 +83,11 @@ export function createWizardStore(
     try {
       const result = await submission.submit(request);
       if (result.ok) {
-        dispatch({ type: 'SUBMIT_SUCCEEDED', submissionId: result.reference });
+        dispatch({
+          type: 'SUBMIT_SUCCEEDED',
+          submissionId: result.reference,
+          isDuplicate: result.isDuplicate ?? false,
+        });
       } else {
         dispatch({ type: 'SUBMIT_FAILED', error: result.error });
       }

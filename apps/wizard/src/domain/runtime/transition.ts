@@ -240,7 +240,11 @@ function handleSubmitSucceeded(state: WizardState, event: SubmitSucceededEvent):
     ...state,
     phase: 'submit_success',
     currentStepId: null,
-    submissionResult: { outcome: 'success', submissionId: event.submissionId },
+    submissionResult: {
+      outcome: 'success',
+      submissionId: event.submissionId,
+      isDuplicate: event.isDuplicate ?? false,
+    },
   };
 }
 

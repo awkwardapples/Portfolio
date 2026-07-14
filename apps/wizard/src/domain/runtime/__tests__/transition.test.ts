@@ -559,8 +559,25 @@ describe('transition — SUBMIT_SUCCEEDED', () => {
       config,
     );
     expect(next.phase).toBe('submit_success');
-    expect(next.submissionResult).toEqual({ outcome: 'success', submissionId: 'sub-1' });
+    expect(next.submissionResult).toEqual({
+      outcome: 'success',
+      submissionId: 'sub-1',
+      isDuplicate: false,
+    });
     expect(next.currentStepId).toBeNull();
+  });
+
+  it('submitting + SUBMIT_SUCCEEDED with isDuplicate:true → submissionResult.isDuplicate is true', () => {
+    const next = transition(
+      submittingState(),
+      { type: 'SUBMIT_SUCCEEDED', submissionId: 'sub-dup', isDuplicate: true },
+      config,
+    );
+    expect(next.submissionResult).toEqual({
+      outcome: 'success',
+      submissionId: 'sub-dup',
+      isDuplicate: true,
+    });
   });
 
   it('non-submitting + SUBMIT_SUCCEEDED is a no-op', () => {

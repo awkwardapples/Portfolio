@@ -142,7 +142,7 @@ async function mapResponse(response: Response): Promise<SubmissionPortResult> {
   if (response.status === 200) {
     const reference = extractReference(body);
     if (reference === null) return err_(ERR_BAD_RESPONSE, MSG_FALLBACK);
-    return { ok: true, reference };
+    return { ok: true, reference, isDuplicate: extractIsDuplicate(body) };
   }
 
   if (response.status === 502) {
@@ -167,6 +167,13 @@ function extractReference(body: unknown): string | null {
     if (typeof ref === 'string' && ref.length > 0) return ref;
   }
   return null;
+}
+
+function extractIsDuplicate(body: unknown): boolean {
+  if (body !== null && typeof body === 'object' && 'isDuplicate' in body) {
+    return (body as { isDuplicate: unknown }).isDuplicate === true;
+  }
+  return false;
 }
 
 function extractMediaIssues(body: unknown): readonly MediaIssue[] | undefined {

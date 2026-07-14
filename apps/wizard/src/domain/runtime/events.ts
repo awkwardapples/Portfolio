@@ -71,11 +71,20 @@ export type SubmitRequestedEvent = {
 };
 
 /**
- * Server confirmed the submission was persisted and forwarded successfully.
+ * Server confirmed the submission was persisted and (unless a duplicate)
+ * forwarded successfully.
  */
 export type SubmitSucceededEvent = {
   readonly type: 'SUBMIT_SUCCEEDED';
   readonly submissionId: string;
+  /**
+   * True when the server flagged this as a duplicate of a submission made in
+   * the last 24 hours (Step 5.13g, ADR-0028) — still a genuine success, but
+   * SuccessScreen shows different copy and no forward was sent. Optional so
+   * existing call sites/tests that predate 5.13g don't need updating;
+   * treated as false when absent (handleSubmitSucceeded in transition.ts).
+   */
+  readonly isDuplicate?: boolean;
 };
 
 /**

@@ -141,6 +141,10 @@ describe('manual mode submitting phase is terminal-safe', () => {
       config,
     );
     expect(succeeded.phase).toBe('submit_success');
-    expect(succeeded.submissionResult).toEqual({ outcome: 'success', submissionId: 'abc-123' });
+    expect(succeeded.submissionResult).toEqual({
+      outcome: 'success',
+      submissionId: 'abc-123',
+      isDuplicate: false,
+    });
   });
 });

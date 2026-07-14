@@ -102,7 +102,7 @@ export interface SubmissionErrorInfo {
  * Stored in WizardState.submissionResult once submission completes.
  */
 export type SubmissionResult =
-  | { readonly outcome: 'success'; readonly submissionId: string }
+  | { readonly outcome: 'success'; readonly submissionId: string; readonly isDuplicate: boolean }
   | { readonly outcome: 'failure'; readonly error: SubmissionErrorInfo };
 
 // ---------------------------------------------------------------------------

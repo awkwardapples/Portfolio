@@ -49,7 +49,7 @@ export interface SubmissionRequest {
  * the WizardStore can dispatch deterministically without a try/catch.
  */
 export type SubmissionPortResult =
-  | { readonly ok: true; readonly reference: string }
+  | { readonly ok: true; readonly reference: string; readonly isDuplicate?: boolean }
   | { readonly ok: false; readonly error: SubmissionErrorInfo };
 
 // ---------------------------------------------------------------------------
