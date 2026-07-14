@@ -12,6 +12,7 @@ declare( strict_types=1 );
 
 use Agency\QuoteWizard\Rest\BotProtection;
 use Agency\QuoteWizard\Rest\SubmissionController;
+use Agency\QuoteWizard\Submissions\DuplicateDetector;
 use Agency\QuoteWizard\Submissions\Forwarder;
 use Agency\QuoteWizard\Submissions\ForwardResult;
 use Agency\QuoteWizard\Submissions\PhotoStorage;
@@ -184,6 +185,32 @@ function spy_bot_protection( array $result ): object {
 		/** @param array<string,mixed> $submission_data */
 		public function check( array $submission_data, string $ip_address ): array {
 			$this->calls[] = array( 'data' => $submission_data, 'ip' => $ip_address );
+			return $this->result;
+		}
+	};
+}
+
+/**
+ * Stub duplicate detector (Step 5.13g) that returns a fixed check() result and
+ * records calls, so controller tests can assert on orchestration (persist
+ * flags, forward skip, response shape) without touching real $wpdb — real
+ * detection logic is DuplicateDetectorTest's job.
+ *
+ * @param array{isDuplicate: bool, originalSubmissionId?: int} $result
+ */
+function spy_duplicate_detector( array $result ): object {
+	return new class ( $result ) extends DuplicateDetector {
+		/** @var list<array{email: string, phone: string}> */
+		public array $calls = [];
+
+		/** @param array{isDuplicate: bool, originalSubmissionId?: int} $result */
+		public function __construct( private readonly array $result ) {
+			// Parent constructor not called: check() is overridden below and
+			// never touches the real SubmissionRepository dependency.
+		}
+
+		public function check( string $email, string $phone ): array {
+			$this->calls[] = array( 'email' => $email, 'phone' => $phone );
 			return $this->result;
 		}
 	};
@@ -989,5 +1016,77 @@ it(
 		$level_after = ob_get_level();
 
 		expect( $level_after )->toBe( $level_before );
+	}
+);
+
+// ---------------------------------------------------------------------------
+// Duplicate detection (Step 5.13g, ADR-0028)
+// ---------------------------------------------------------------------------
+
+it(
+	'passes contact_email and contact_phone from answers to the duplicate detector',
+	function (): void {
+		$repo = spy_repository( 1 );
+		$fwd  = spy_forwarder( ForwardResult::success() );
+		$dup  = spy_duplicate_detector( array( 'isDuplicate' => false ) );
+		$ctrl = new SubmissionController( $repo, $fwd, duplicate_detector: $dup );
+
+		$request = make_request(
+			valid_payload(
+				array(
+					'answers' => array(
+						'contact_email' => 'jane@example.com',
+						'contact_phone' => '07123456789',
+					),
+				)
+			)
+		);
+
+		$ctrl->handle( $request );
+
+		expect( $dup->calls )->toHaveCount( 1 );
+		expect( $dup->calls[0] )->toBe(
+			array( 'email' => 'jane@example.com', 'phone' => '07123456789' )
+		);
+	}
+);
+
+it(
+	'persists is_duplicate=true and duplicate_of, skips forward, and returns 200 with isDuplicate',
+	function (): void {
+		$repo = spy_repository( 55 );
+		$fwd  = spy_forwarder( ForwardResult::success() );
+		$dup  = spy_duplicate_detector( array( 'isDuplicate' => true, 'originalSubmissionId' => 12 ) );
+		$ctrl = new SubmissionController( $repo, $fwd, duplicate_detector: $dup );
+		$request = make_request( valid_payload() );
+
+		$response = $ctrl->handle( $request );
+
+		expect( $response->get_status() )->toBe( 200 );
+		expect( $response->get_data() )->toBe( array( 'reference' => 'GOQW-55', 'isDuplicate' => true ) );
+		expect( $repo->inserts[0]['is_duplicate'] )->toBeTrue();
+		expect( $repo->inserts[0]['duplicate_of'] )->toBe( 12 );
+		expect( $fwd->calls )->toBeEmpty();
+		expect( $repo->forwarded )->toBeEmpty();
+	}
+);
+
+it(
+	'persists is_duplicate=false and duplicate_of=null, and still forwards normally, for a non-duplicate',
+	function (): void {
+		$repo = spy_repository( 56 );
+		$fwd  = spy_forwarder( ForwardResult::success() );
+		$dup  = spy_duplicate_detector( array( 'isDuplicate' => false ) );
+		$ctrl = new SubmissionController( $repo, $fwd, duplicate_detector: $dup );
+		$request = make_request( valid_payload() );
+
+		$response = $ctrl->handle( $request );
+
+		expect( $response->get_status() )->toBe( 200 );
+		expect( $response->get_data() )->not->toHaveKey( 'isDuplicate' );
+		expect( $repo->inserts[0]['is_duplicate'] )->toBeFalse();
+		expect( $repo->inserts[0]['duplicate_of'] )->toBeNull();
+		expect( $fwd->calls )->toHaveCount( 1 );
+		expect( $repo->forwarded )->toContain( 56 );
 	}
 );

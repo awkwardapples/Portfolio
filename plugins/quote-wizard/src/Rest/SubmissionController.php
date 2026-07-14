@@ -9,6 +9,7 @@ declare( strict_types=1 );
 
 namespace Agency\QuoteWizard\Rest;
 
+use Agency\QuoteWizard\Submissions\DuplicateDetector;
 use Agency\QuoteWizard\Submissions\Forwarder;
 use Agency\QuoteWizard\Submissions\MediaValidator;
 use Agency\QuoteWizard\Submissions\PhotoStorage;
@@ -21,13 +22,17 @@ use WP_Error;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Handles wizard submission requests (ADR-0001, ADR-0005, ADR-0015).
+ * Handles wizard submission requests (ADR-0001, ADR-0005, ADR-0015, ADR-0028).
  *
  * Strict ordering — every request follows exactly these steps:
  *   1. Validate nonce + payload shape. On failure → 400, nothing persisted.
- *   2. INSERT into wp_goqw_submissions (status = 'persisted').
- *      On failure → 500, NO forward attempted.
- *   3. Forward to Make.com webhook synchronously.
+ *      1a. Check for a duplicate submission (contact_email/contact_phone
+ *          matching a non-duplicate submission within 24h — Step 5.13g).
+ *   2. INSERT into wp_goqw_submissions (status = 'persisted'), recording the
+ *      duplicate flag either way. On failure → 500, NO forward attempted.
+ *      A duplicate is persisted normally but responds here (200,
+ *      { reference, isDuplicate: true }) — Forwarder is never called.
+ *   3. Forward to Make.com webhook synchronously (non-duplicates only).
  *      On failure → update row to 'forward_failed', return 502.
  *   4. Update row to 'forwarded', return 200 { reference }.
  *
@@ -37,21 +42,37 @@ defined( 'ABSPATH' ) || exit;
 final class SubmissionController {
 
 	/**
+	 * Resolved duplicate detector (injected or built from $repository).
+	 *
+	 * Not constructor-promoted: its default depends on the $repository
+	 * parameter, which isn't a constant expression PHP allows in a promoted
+	 * parameter's default value (the same constraint that keeps
+	 * BotProtection's own sub-dependencies non-promoted).
+	 *
+	 * @var DuplicateDetector
+	 */
+	private readonly DuplicateDetector $duplicate_detector;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param SubmissionRepository $repository       Data-access layer for submissions.
-	 * @param Forwarder            $forwarder         Webhook forwarder.
-	 * @param MediaValidator       $media_validator   Photo upload validator.
-	 * @param PhotoStorage         $photo_storage     Saves validated photos to the media library (Step 5.13e).
-	 * @param BotProtection        $bot_protection    Honeypot/rate-limit/Turnstile checks (Step 5.13f).
+	 * @param SubmissionRepository   $repository          Data-access layer for submissions.
+	 * @param Forwarder              $forwarder            Webhook forwarder.
+	 * @param MediaValidator         $media_validator      Photo upload validator.
+	 * @param PhotoStorage           $photo_storage        Saves validated photos to the media library (Step 5.13e).
+	 * @param BotProtection          $bot_protection       Honeypot/rate-limit/Turnstile checks (Step 5.13f).
+	 * @param DuplicateDetector|null $duplicate_detector   Defaults to a detector built from $repository (Step 5.13g).
 	 */
 	public function __construct(
 		private readonly SubmissionRepository $repository,
 		private readonly Forwarder $forwarder,
 		private readonly MediaValidator $media_validator = new MediaValidator(),
 		private readonly PhotoStorage $photo_storage = new PhotoStorage(),
-		private readonly BotProtection $bot_protection = new BotProtection()
-	) {}
+		private readonly BotProtection $bot_protection = new BotProtection(),
+		?DuplicateDetector $duplicate_detector = null
+	) {
+		$this->duplicate_detector = $duplicate_detector ?? new DuplicateDetector( $repository );
+	}
 
 	/**
 	 * Handle a POST /wp-json/qw/v1/submit request.
@@ -93,11 +114,20 @@ final class SubmissionController {
 				);
 			}
 
+			// Step 1a: duplicate detection (Step 5.13g, ADR-0028). Checked on the
+			// raw contact answers, before photo validation/storage — a duplicate
+			// is still fully persisted with its photos (D3), only flagged and not
+			// forwarded (D7), so nothing about the rest of the pipeline changes.
+			$answers         = $validated['answers'];
+			$duplicate_check = $this->duplicate_detector->check(
+				(string) ( $answers['contact_email'] ?? '' ),
+				(string) ( $answers['contact_phone'] ?? '' )
+			);
+
 			// Step 1b: validate media entries (photo fields) before persisting.
 			// Runs against the raw base64 answers — PhotoStorage (step 1c) must not
 			// run first, or magic-byte/dimension checks would have nothing to check
 			// (AUDIT-5.13e-media-validator.md).
-			$answers      = $validated['answers'];
 			$media_result = $this->media_validator->validate( $answers );
 			if ( ! $media_result['ok'] ) {
 				return new WP_REST_Response(
@@ -118,6 +148,8 @@ final class SubmissionController {
 
 			$validated['answers_json'] = wp_json_encode( $answers );
 			$validated['media_json']   = $this->extract_media_json( $answers );
+			$validated['is_duplicate'] = $duplicate_check['isDuplicate'];
+			$validated['duplicate_of'] = $duplicate_check['originalSubmissionId'] ?? null;
 			unset( $validated['answers'] );
 
 			// Step 2: persist durably (must succeed before any forward attempt).
@@ -131,6 +163,27 @@ final class SubmissionController {
 				return new WP_REST_Response(
 					array( 'errorCode' => 'persistence_failed' ),
 					500
+				);
+			}
+
+			// Step 2b: a duplicate is fully persisted (D3) but never forwarded
+			// (D7, no WhatsApp/Sheets noise) — respond immediately, skipping
+			// Forwarder entirely. See AUDIT-5.13g-forwarder.md for why this
+			// short-circuit lives here rather than inside Forwarder itself.
+			if ( $duplicate_check['isDuplicate'] ) {
+				Logger::operational(
+					sprintf(
+						'submission %d is a duplicate of %d; forward skipped',
+						$submission_id,
+						$duplicate_check['originalSubmissionId']
+					)
+				);
+				return new WP_REST_Response(
+					array(
+						'reference'   => $this->reference_for( $submission_id ),
+						'isDuplicate' => true,
+					),
+					200
 				);
 			}
 

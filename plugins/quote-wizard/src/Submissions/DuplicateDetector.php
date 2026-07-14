@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
  * with client-side format validation but are not server-normalized before
  * this step).
  */
-final class DuplicateDetector {
+class DuplicateDetector {
 
 	/**
 	 * Duplicate-detection window (D2). Uses DAY_IN_SECONDS rather than a
