@@ -161,4 +161,29 @@ class SubmissionRepository {
 			array( '%d' )
 		);
 	}
+
+	/**
+	 * Delete every submission row created before the given cutoff (Step
+	 * 5.14, data retention). Used by Cron\PruneSubmissions; the cutoff is
+	 * computed by the caller from Settings::retention_days().
+	 *
+	 * @param string $cutoff  MySQL datetime (UTC), exclusive upper bound.
+	 * @return int  Number of rows deleted.
+	 */
+	public function delete_older_than( string $cutoff ): int {
+		// Local $wpdb alias, and {$wpdb->prefix}goqw_submissions inline, matching
+		// find_recent_by_contact() — the one pattern WordPress.DB.PreparedSQL
+		// recognises as safe for a dynamic table name inside prepare().
+		$wpdb = $this->wpdb;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$deleted = $wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->prefix}goqw_submissions WHERE created_at < %s",
+				$cutoff
+			)
+		);
+
+		return is_int( $deleted ) ? $deleted : 0;
+	}
 }

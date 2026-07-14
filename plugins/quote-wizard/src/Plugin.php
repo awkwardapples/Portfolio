@@ -10,6 +10,7 @@ declare( strict_types=1 );
 namespace Agency\QuoteWizard;
 
 use Agency\QuoteWizard\Cron\PhotoRetention;
+use Agency\QuoteWizard\Cron\PruneSubmissions;
 use Agency\QuoteWizard\Frontend\AssetLoader;
 use Agency\QuoteWizard\Frontend\Shortcode;
 use Agency\QuoteWizard\Rest\SubmissionController;
@@ -71,9 +72,13 @@ final class Plugin {
 		// SEO Layer 4: robots.txt Sitemap directive (ADR-0023 amendment).
 		RobotsTxtCustomizer::register();
 
-		// Cron: photo retention cleanup (D3). Unlike goqw_prune_submissions
-		// (still a Step-3D stub, never hooked), this callback is real.
+		// Cron: photo retention cleanup (Step 5.13e, D3).
 		add_action( 'goqw_photo_retention_cleanup', array( PhotoRetention::class, 'run' ) );
+
+		// Cron: submission retention cleanup (Step 5.14, ADR-0029). The event
+		// has been scheduled in Activator since Step 3D; this is the first
+		// step to hook a real callback to it (AUDIT-5.13e-cron-pattern.md).
+		add_action( 'goqw_prune_submissions', array( PruneSubmissions::class, 'run' ) );
 
 		// Frontend: shortcode that renders the wizard mount point.
 		add_shortcode( Shortcode::TAG, array( Shortcode::class, 'render' ) );
