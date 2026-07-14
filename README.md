@@ -1,8 +1,8 @@
 # Growth Operations Platform
 
-A WordPress-based lead generation platform with an embedded React quote wizard, built for local trades businesses. This repository is the source of truth for the React engine, the WordPress plugin, the Make.com automation blueprints, and all supporting documentation.
+A template WordPress-based lead generation platform with an embedded React quote wizard, built for local trades businesses with vanilla UI to be adapted per client. This repository is the source of truth for the React engine, the WordPress plugin, the Make.com automation blueprints, and all supporting documentation.
 
-> **Status:** Closing Phase 5 - Wired the WordPress plugin to do real work and ready to connect to Make.com, HubSpot, and email.. This README is updated as later phases land.
+> **Status:** Main Development Closed - additional develoopment will continue as small updates every now and then.
 
 ---
 
@@ -47,10 +47,6 @@ pnpm install
 pnpm format:check
 ```
 
-At this point in Phase 3A there is nothing to run yet — the React app and plugin code arrive in steps 3B and 3D. The current state is "the repo is scaffolded; formatting and Git hooks work." See [`docs/04-implementation-roadmap.md`](docs/04-implementation-roadmap.md) for what comes next.
-
----
-
 ## Documentation map
 
 Start here:
@@ -70,3 +66,7 @@ Before opening a pull request, read [`CONTRIBUTING.md`](CONTRIBUTING.md).
 ## Licence
 
 This codebase is proprietary and not licensed for redistribution. See [`LICENSE`](LICENSE).
+
+## How to use:
+
+- [`docs\Agency Docs\Technical Onboarding.IPYNB`](docs\Agency Docs\Technical Onboarding.IPYNB) — Exactly how to clone this repo for a custom client site delivery.
