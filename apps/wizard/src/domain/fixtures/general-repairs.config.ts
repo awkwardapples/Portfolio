@@ -146,6 +146,20 @@ export const generalRepairsWizardConfig: WizardConfig = {
           label: 'Postcode',
           required: true,
         },
+        {
+          id: 'data_processing_consent',
+          key: 'data_processing_consent',
+          type: 'checkbox',
+          label: 'Data processing consent',
+          required: true,
+          options: [
+            {
+              value: 'agreed',
+              label:
+                'I agree to my personal data being processed to provide this quote, as described in our Privacy Policy (see the link in the site footer).',
+            },
+          ],
+        },
       ],
     },
   ],

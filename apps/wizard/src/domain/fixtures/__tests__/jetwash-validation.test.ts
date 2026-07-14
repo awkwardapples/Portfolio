@@ -63,7 +63,13 @@ describe('jetwash (pressure washing) reference config', () => {
     if (!step || !isFieldStep(step)) throw new Error('expected field step at index 4');
     expect(step.id).toBe('contact-and-address');
     const keys = step.fields.map((f) => f.key);
-    expect(keys).toEqual(['contact_name', 'contact_phone', 'contact_email', 'full_address']);
+    expect(keys).toEqual([
+      'contact_name',
+      'contact_phone',
+      'contact_email',
+      'full_address',
+      'data_processing_consent',
+    ]);
     for (const field of step.fields) {
       expect(field.required).toBe(true);
     }
