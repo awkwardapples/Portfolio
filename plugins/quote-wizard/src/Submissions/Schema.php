@@ -52,6 +52,10 @@ final class Schema {
 	 * is_duplicate / duplicate_of (Step 5.13g, ADR-0028): added the same way
 	 * — via dbDelta, not a hand-rolled ALTER TABLE — so an existing install
 	 * picks these up idempotently the next time the plugin is (re)activated.
+	 *
+	 * consent_given / consent_timestamp (Step 5.14, ADR-0029): same dbDelta
+	 * mechanism, added for the same reason — compliance metadata the server
+	 * must be able to query independently of answers_json.
 	 */
 	public static function submissions_table_sql(): string {
 		global $wpdb;
@@ -74,6 +78,8 @@ final class Schema {
 			forward_error TEXT NULL,
 			is_duplicate TINYINT(1) NOT NULL DEFAULT 0,
 			duplicate_of BIGINT UNSIGNED NULL,
+			consent_given TINYINT(1) NOT NULL DEFAULT 0,
+			consent_timestamp DATETIME NULL,
 			PRIMARY KEY  (id),
 			KEY idx_created_at (created_at),
 			KEY idx_status (status),

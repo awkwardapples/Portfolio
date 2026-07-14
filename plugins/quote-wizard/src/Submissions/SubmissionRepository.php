@@ -41,6 +41,9 @@ class SubmissionRepository {
 	 *                                     `is_duplicate` (bool) and `duplicate_of` (int|null)
 	 *                                     keys record duplicate-detection results (Step
 	 *                                     5.13g, ADR-0028); both default to "not a duplicate".
+	 *                                     Optional `consent_given` (bool) and
+	 *                                     `consent_timestamp` (string|null) keys record consent
+	 *                                     (Step 5.14, ADR-0029); both default to "no consent".
 	 * @return int  Auto-increment row ID.
 	 * @throws \RuntimeException  On DB insert failure.
 	 */
@@ -48,18 +51,20 @@ class SubmissionRepository {
 		$result = $this->wpdb->insert(
 			$this->table(),
 			array(
-				'wizard_id'        => $payload['wizard_id'],
-				'schema_version'   => $payload['schema_version'],
-				'answers_json'     => $payload['answers_json'],
-				'pricing_json'     => $payload['pricing_json'],
-				'media_json'       => $payload['media_json'] ?? null,
-				'client_timestamp' => $payload['client_timestamp'],
-				'status'           => 'persisted',
-				'created_at'       => current_time( 'mysql', true ),
-				'is_duplicate'     => ! empty( $payload['is_duplicate'] ) ? 1 : 0,
-				'duplicate_of'     => $payload['duplicate_of'] ?? null,
+				'wizard_id'         => $payload['wizard_id'],
+				'schema_version'    => $payload['schema_version'],
+				'answers_json'      => $payload['answers_json'],
+				'pricing_json'      => $payload['pricing_json'],
+				'media_json'        => $payload['media_json'] ?? null,
+				'client_timestamp'  => $payload['client_timestamp'],
+				'status'            => 'persisted',
+				'created_at'        => current_time( 'mysql', true ),
+				'is_duplicate'      => ! empty( $payload['is_duplicate'] ) ? 1 : 0,
+				'duplicate_of'      => $payload['duplicate_of'] ?? null,
+				'consent_given'     => ! empty( $payload['consent_given'] ) ? 1 : 0,
+				'consent_timestamp' => $payload['consent_timestamp'] ?? null,
 			),
-			array( '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d' )
+			array( '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%d', '%s' )
 		);
 
 		if ( false === $result ) {
