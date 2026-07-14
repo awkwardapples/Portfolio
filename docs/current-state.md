@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-07-14 (post Step 5.13g)_
+_Last updated: 2026-07-14 (post Step 5.14)_
 
 ## What's working
 
@@ -9,7 +9,7 @@ _Last updated: 2026-07-14 (post Step 5.13g)_
 - Manual-quote routing: wizards with `quoteMode: 'manual'` bypass pricing and go directly to submission.
 - Category navigation (optional): CategorySelector phase before service selection when `enableCategoryNavigation` is true.
 - Submission pipeline end-to-end in WordPress (validate → persist → forward → respond).
-- Site shell with 5 routes (Home, Services, Our Work, Contact, Quote).
+- Site shell with 6 routes (Home, Services, Our Work, Contact, Quote, Privacy Policy).
 - Service abstraction (fencing + decking verticals).
 - Photo upload (multi-photo, browser compression, server-side validation). Photos are saved to the WordPress media library and forwarded as public URLs (`url` + `attachmentId`), not base64 — see Step 5.13e / ADR-0026.
 - WordPress page mapping (single root page + rewrite rules + non-invasive front-page policy).
@@ -28,16 +28,27 @@ _Last updated: 2026-07-14 (post Step 5.13g)_
 - Photo URL storage (Step 5.13e): `Submissions\PhotoStorage` saves validated photos to `/wp-content/uploads/goqw/YEAR/MONTH/` via `wp_handle_upload`/`wp_insert_attachment`, tags each attachment with `_goqw_photo` post meta, and returns a public URL + attachment ID. `SubmissionController` replaces `dataBase64` with `url`/`attachmentId` in both the persisted `answers_json`/`media_json` and the Make.com webhook payload before persistence. A per-photo failure drops that photo and logs it but never blocks the submission; a submission that fails to persist after photos were saved triggers orphan cleanup (deletes those attachments). `Cron\PhotoRetention` deletes photos older than 6 months via a new daily `goqw_photo_retention_cleanup` wp-cron event. ADR-0026.
 - Bot & spam protection (Step 5.13f): three-layer defense on the submit endpoint, enabled by default. `Rest\BotProtection` runs honeypot (`honeypotValue` field, rejected as an ordinary `validation_failed`), rate limiting (`Rest\RateLimiter`, WordPress transients, 5/hour default via `goqw_rate_limit_per_hour`), then Cloudflare Turnstile verification (`Support\TurnstileClient`, only when `goqw_turnstile_site_key`/`goqw_turnstile_secret_key` are both configured). `PublicConfig` exposes `turnstileSiteKey` (public by design); the secret key never leaves `Settings::turnstile_secret_key()`. On the frontend, `BotProtectionStore` + `createBotProtectionEnrichedPort` mirror the Step 4.8 photo-enrichment pattern; `HoneypotField` mounts once per wizard session in `WizardShell`; `TurnstileWidget` mounts only on the final step and dynamically loads Cloudflare's SDK (not bundled) only when configured. `goqw_bot_protection_enabled` (default on) disables all three layers at once. ADR-0027.
 - Duplicate submission prevention (Step 5.13g): `Submissions\DuplicateDetector` flags a submission as a duplicate when its normalized `contact_email` or `contact_phone` matches a non-duplicate submission from the last 24 hours. A duplicate is still fully persisted (photos included) but marked `is_duplicate`/`duplicate_of` and never forwarded to Make.com/WhatsApp — the response is still `200 { reference, isDuplicate: true }`. `SuccessScreen` renders different, client-owned copy for a duplicate. ADR-0028.
+- Data protection & UK GDPR compliance (Step 5.14): a required `data_processing_consent` checkbox field on the last mandatory step of every one of the 11 wizard configs; `Submissions\ConsentValidator` enforces it server-side (`400 consent_required` if missing, nothing persisted); accepted submissions gain `consent_given`/`consent_timestamp` columns. New `/privacy` route (sixth site route) renders a real UK GDPR privacy policy from `site/content/privacy-content.ts`, closing a pre-existing dangling footer link. `Cron\PruneSubmissions` — scheduled since Step 3D but never implemented — now deletes submissions older than `Settings::retention_days()` (default 90 days) and is finally hooked in `Plugin::boot()`; photo retention (`PhotoRetention`, 6 months) is unchanged and independent. ADR-0029.
 
 ## Gate state (last verified)
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors (pre-existing, unrelated `tsconfig.test.json` type errors in `non-field-step-engine.test.ts` predate this step — last touched in the 5.13a/5.13b commits)
-- `pnpm test`: **721/721** (54 test files, +4 from 5.13g)
-- `pnpm build`: clean (bundle 88.09 kB gzip, +~0.1 kB from 5.13f)
-- `composer test`: **220 passed, 4 skipped** (+10 from 5.13g)
+- `pnpm test`: **759/759** (56 test files, +38 from 5.13g)
+- `pnpm build`: clean (bundle 89.65 kB gzip, +~1.6 kB from 5.13g)
+- `composer test`: **233 passed, 4 skipped** (+13 from 5.13g)
 - `composer analyse`: clean (PHPStan level 8, no errors)
-- `composer lint`: 0/0 for all files touched this step (pre-existing, unrelated drift in `quote-wizard.php` predates 5.13e/5.13f/5.13g)
+- `composer lint`: 0/0 for all files touched this step (pre-existing, unrelated drift in `quote-wizard.php` predates 5.13e/5.13f/5.13g/5.14)
+
+## Gate state (5.14, 2026-07-14)
+
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: 0 errors (see pre-existing note above)
+- `pnpm test`: **759/759 Vitest** (+38 from 5.13g, 56 test files)
+- `pnpm build`: clean (bundle 88.09 → 89.65 kB gzip)
+- `composer lint`: 0/0 for files touched this step
+- `composer analyse`: no errors (PHPStan level 8)
+- `composer test`: **233 passed, 4 skipped** (+13 from 5.13g — ConsentValidator 6, PruneSubmissions 3, SubmissionController 4)
 
 ## Gate state (5.13g, 2026-07-14)
 
@@ -273,6 +284,24 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   plus the business profile JSON schema, modification map, report template,
   pre-deployment checklist, final verification commands, and three appendices.
   Documentation-only; all gates unchanged (598 Vitest, 143 PHP).
+- **Step 5.14 — Data Protection & UK GDPR Compliance** (July 2026).
+  A required `data_processing_consent` checkbox (single option `agreed`) on the last
+  mandatory step of every one of the 11 wizard configs — `contact-and-address` for
+  instant-quote services, `address` for manual-quote services, never on the skippable
+  `optional-details` step. `Submissions\ConsentValidator` is the real trust boundary:
+  `SubmissionController` rejects a missing/invalid consent answer with
+  `400 { errorCode: 'consent_required' }` before anything is persisted; an accepted
+  submission gets `consent_given`/`consent_timestamp` columns (dbDelta, matching
+  `is_duplicate`/`duplicate_of`'s precedent) alongside the existing duplicate-detection
+  fields. A new `/privacy` route — registered the same way as every other marketing
+  route (`SiteRoutes::PATHS`/`routes.ts`, kept in sync by `CrossLanguageRoutesTest`) —
+  renders a real 10-section UK GDPR privacy policy from a new `privacy-content.ts`,
+  closing a `footer-content.ts` link that had pointed nowhere since before this step.
+  `Cron\PruneSubmissions`, scheduled since Step 3D but never implemented, now deletes
+  submissions older than `Settings::retention_days()` (already-existing option, default
+  90 days) and is hooked in `Plugin::boot()` for the first time; photo retention
+  (`PhotoRetention`, independent, 6 months) is untouched. 13 new PHP tests (220→233), 38
+  new Vitest tests (721→759). ADR-0029 accepted.
 - **Step 5.13g — Duplicate Submission Prevention** (July 2026).
   `Submissions\DuplicateDetector` normalizes `contact_email` (lowercase+trim) and
   `contact_phone` (digits-only) and checks `SubmissionRepository::find_recent_by_contact()`
@@ -417,7 +446,7 @@ Strict ordering: validate → persist → forward → respond.
 
 | Class                      | What                                                                                                     |
 | -------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `Routing\SiteRoutes`       | PHP copy of the 5 recognized paths; `normalize()`, `is_recognized()`, `is_current_request_react_route()` |
+| `Routing\SiteRoutes`       | PHP copy of the 6 recognized paths; `normalize()`, `is_recognized()`, `is_current_request_react_route()` |
 | `Routing\SiteRootPage`     | Idempotent lifecycle for the single WP page backing all routes                                           |
 | `Routing\FrontPagePolicy`  | Sets Site Root as front page if not already configured; admin notice otherwise                           |
 | `Routing\RewriteRegistrar` | Registers WP rewrite rules for the 4 non-root paths; exposes `goqw_route` query var                      |

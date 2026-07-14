@@ -238,6 +238,48 @@ appear. Query the table directly to confirm the flag:
 wp db query "SELECT id, is_duplicate, duplicate_of, created_at FROM wp_goqw_submissions ORDER BY id DESC LIMIT 5;"
 ```
 
+## Data protection & consent (Step 5.14)
+
+Every wizard now has a required consent checkbox (`data_processing_consent`) on its
+last mandatory step — `contact-and-address` for instant-quote services, `address` for
+manual-quote services (never the skippable `optional-details` step). The checkbox is
+enforced both client-side (the wizard won't let you advance without it) and
+server-side (`Submissions\ConsentValidator` — a crafted request that skips the UI
+entirely is still rejected with `400 consent_required`, nothing persisted).
+
+A real Privacy Policy page is live at `/privacy` (linked from the site footer on every
+page), rendering content from `apps/wizard/src/site/content/privacy-content.ts` — there
+is no wp-admin page to edit for this; it's a client-side route like `/contact`.
+
+Submission records are now automatically deleted after `Settings::retention_days()`
+(default 90 days, `goqw_retention_days` option) via a daily wp-cron job
+(`Cron\PruneSubmissions`, hooked to the pre-existing `goqw_prune_submissions` event).
+Photo retention (6 months, `Cron\PhotoRetention`) is unchanged and runs independently.
+
+**Smoke test.** Submit the wizard once with the consent checkbox ticked — should
+succeed as normal. Try submitting via a raw `curl` POST to `qw/v1/submit` without a
+`data_processing_consent` answer — should get back `400 { errorCode:
+'consent_required' }` and no new row in `wp_goqw_submissions`. Then confirm consent was
+recorded on a real submission:
+
+```bash
+wp db query "SELECT id, consent_given, consent_timestamp FROM wp_goqw_submissions ORDER BY id DESC LIMIT 5;"
+```
+
+Visit `/privacy` in a browser and confirm the page renders (not a redirect to Home) and
+the footer's "Privacy Policy" link on any page navigates there.
+
+To smoke-test retention without waiting 90 days, backdate a row and trigger the cron
+manually:
+
+```bash
+wp db query "UPDATE wp_goqw_submissions SET created_at = DATE_SUB(NOW(), INTERVAL 91 DAY) WHERE id = 1;"
+wp cron event run goqw_prune_submissions
+wp db query "SELECT id FROM wp_goqw_submissions WHERE id = 1;"
+```
+
+The last query should return no rows.
+
 ## The daily development loop
 
 Once set up, your inner loop is short.

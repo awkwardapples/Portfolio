@@ -1,9 +1,22 @@
 # Handoff
 
-_Last updated: 2026-07-14 (post Step 5.13g)_
+_Last updated: 2026-07-14 (post Step 5.14)_
 
 ## Status
 
+- Step 5.14 complete (July 14, 2026): Data protection & UK GDPR compliance.
+  A required `data_processing_consent` checkbox on the last mandatory step of every
+  wizard config (never the skippable `optional-details`); `Submissions\ConsentValidator`
+  rejects a missing/invalid consent answer with `400 consent_required` before anything
+  is persisted. Accepted submissions gain `consent_given`/`consent_timestamp` columns
+  (via dbDelta, matching 5.13g's precedent). New `/privacy` route renders a real UK
+  GDPR privacy policy (10 sections) from `site/content/privacy-content.ts`, resolving a
+  footer link that had pointed nowhere. `Cron\PruneSubmissions` — scheduled since Step
+  3D but never implemented — now deletes submissions past `Settings::retention_days()`
+  (default 90 days) and is hooked in `Plugin::boot()` for the first time; photo
+  retention (`PhotoRetention`, 6 months) is unchanged. 13 new PHP tests (220→233), 38
+  new Vitest tests (721→759). ADR-0029 accepted. Operational verification pending
+  (consent enforcement, retention cron, and the privacy policy page on a live site).
 - Step 5.13g complete (July 14, 2026): Duplicate submission prevention.
   `Submissions\DuplicateDetector` flags a submission whose normalized `contact_email` or
   `contact_phone` matches a non-duplicate submission from the last 24 hours (UTC

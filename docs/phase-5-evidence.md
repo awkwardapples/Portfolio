@@ -2313,3 +2313,140 @@ commit (C5) instead since it touches ~10 frontend files.
 | 23  | Submit wizard with same email 24h+ later; verify NOT flagged              | ⏳ pending operational verification                                                                       |
 | 24  | Submit wizard with same phone but different email; verify still duplicate | ⏳ pending operational verification                                                                       |
 | 25  | Submit wizard with different email AND phone; verify NOT duplicate        | ⏳ pending operational verification                                                                       |
+
+## Step 5.14 Evidence
+
+_Compiled: 2026-07-14 — Covers Step 5.14 (Data Protection & UK GDPR Compliance)_
+
+### Summary
+
+Every wizard submission now requires explicit consent, enforced server-side. A required
+`data_processing_consent` checkbox (single option `agreed`) sits on the last mandatory
+step of every one of the 11 wizard configs — `contact-and-address` for the 7
+instant-quote services, `address` for the 4 manual-quote services — never on the
+skippable `optional-details` step. `Submissions\ConsentValidator` is the real trust
+boundary: `SubmissionController` rejects a missing/invalid consent answer with
+`400 { errorCode: 'consent_required' }` before anything is persisted; an accepted
+submission gets `consent_given`/`consent_timestamp` columns (via the existing dbDelta
+mechanism, matching `is_duplicate`/`duplicate_of`'s precedent from 5.13g) alongside
+duplicate-detection metadata.
+
+A new `/privacy` route — registered exactly like every other marketing route
+(`SiteRoutes::PATHS`/`routes.ts`, kept in sync by the pre-existing
+`CrossLanguageRoutesTest`) — renders a real 10-section UK GDPR privacy policy from a new
+`site/content/privacy-content.ts`, resolving a `footer-content.ts` link that had pointed
+at a route which never existed (silently falling back to Home per ADR-0016).
+
+`Cron\PruneSubmissions` — scheduled in `Activator` since Step 3D but never given a real
+implementation — now deletes submission rows older than `Settings::retention_days()`
+(an already-existing, already-configurable option, default 90 days) and is hooked to
+its cron event in `Plugin::boot()` for the first time. Photo retention (`PhotoRetention`,
+independent, 6-month cadence) is unchanged.
+
+### Commit Sequence
+
+| #   | Hash      | Message                                                                      |
+| --- | --------- | ---------------------------------------------------------------------------- |
+| C1  | `b385fe2` | chore(audit): Phase 0 audits for 5.14 data protection                        |
+| C2  | `757fe13` | feat(db): add consent_given + consent_timestamp columns to submissions       |
+| C3  | `52cdcad` | feat(submissions): ConsentValidator class                                    |
+| C4  | `391064f` | feat(privacy): add /privacy route with real Privacy Policy content           |
+| C5  | `50cf3fe` | feat(rest): integrate consent validation into the submission flow            |
+| C6  | `fbb0175` | feat(cron): implement submission retention via PruneSubmissions              |
+| C7  | `9d08cc9` | feat(wizard): required consent checkbox on the final submit step             |
+| C8  | _(this)_  | docs: ADR-0029 + business owner guide + 5.14 evidence + standard doc updates |
+
+Eight commits, matching the spec's proposed sequence, though the underlying scope of
+each differs from what the spec assumed per-commit (privacy policy is a route/content
+commit, not a WordPress-page-creation commit; retention is "implement the existing
+stub", not "add a new class").
+
+### Gate Results
+
+| Gate               | Result                                                                                                                |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| `pnpm lint`        | 0/0                                                                                                                   |
+| `pnpm typecheck`   | 0 errors (pre-existing, unrelated `tsconfig.test.json` errors in `non-field-step-engine.test.ts` predate this step)   |
+| `pnpm test`        | **759/759 Vitest** (+38 from 5.13g, 56 test files)                                                                    |
+| `pnpm build`       | Clean — bundle 88.09 → 89.65 kB gzip (+~1.6 kB, new privacy policy content + checkbox field)                          |
+| `composer lint`    | 0/0 for files touched this step (pre-existing, unrelated drift in `quote-wizard.php` predates 5.13e/5.13f/5.13g/5.14) |
+| `composer analyse` | No errors (PHPStan level 8)                                                                                           |
+| `composer test`    | **233 passed, 4 skipped** (+13 from 5.13g)                                                                            |
+
+### Deviations from the original spec (surfaced during Phase 0 audits)
+
+- **No `PrivacyPolicyPage.php` / `wp_insert_post()` page creation.** The spec assumed the
+  same page-creation pattern as `SiteRootPage`, which is wrong: `SiteRootPage` creates
+  exactly one content-less mount point for the whole React app, not a per-content page.
+  The site's real marketing pages are a static client-side route table backed by plain
+  content files (`AUDIT-5.14-page-creation.md`). `/privacy` is implemented as a sixth
+  route, closing a `footer-content.ts` link that had pointed nowhere since before this
+  step.
+- **No `{{BUSINESS_NAME}}`/`{{BUSINESS_EMAIL}}`/`{{BUSINESS_ADDRESS}}` placeholder
+  template.** The privacy policy imports `siteContent` directly, same as
+  `ContactPage.tsx` — per-client business identity is already covered by the existing
+  instruction to edit `site-content.ts` (`AUDIT-5.14-business-metadata.md`).
+- **No new `SubmissionRetention` class or `goqw_submission_retention_cleanup` cron
+  event.** `Cron\PruneSubmissions` already existed for exactly this purpose (scheduled
+  since Step 3D, explicitly documented as an unimplemented stub in
+  `AUDIT-5.13e-cron-pattern.md`), and `Settings::retention_days()` (default 90 days)
+  already existed as the option it should consume. This step fills in the stub rather
+  than building a parallel mechanism.
+- **Photo attachments are not deleted by `PruneSubmissions`.** `PhotoRetention` (Step
+  5.13e) already owns photo lifecycle independently on its own 6-month cadence, driven
+  by attachment post meta/date, not submission-row existence — coupling the two would
+  add a redundant deletion path.
+- **No `optional-details`-step consent checkbox, no bespoke React component.** The
+  spec's assumption placed consent on the one step deliberately built to be skippable
+  (`AUDIT-5.14-consent-integration.md`). The wizard engine's existing `checkbox` field
+  type and generic required-field validation already enforce "cannot submit without
+  checking" once the field sits on each config's actual last mandatory step — no new
+  component, no `useState`, no second Skip-and-Submit variant.
+- **No inline hyperlink in the consent checkbox label.** Field labels/help are plain
+  strings everywhere in this wizard's rendering layer, by design. The checkbox
+  references the Privacy Policy in plain text; the full policy is one click away via
+  the persistent site footer link, visible on the same page throughout the wizard flow.
+- **Lawful basis is consent, not legitimate interest** — a deliberate choice (see
+  ADR-0029), since the wizard already has a natural, non-skippable point to capture
+  explicit, timestamped consent at no extra engineering cost.
+- No automated test exercises `SubmissionRepository::delete_older_than()` against a
+  real MySQL/MariaDB instance (none reachable in this environment) — `PruneSubmissions`'s
+  cutoff-computation logic is fully unit-tested against a fake repository; real-DB
+  deletion correctness is a pending operational-verification item, consistent with
+  5.13e/5.13g precedent.
+
+### Acceptance Criteria
+
+| #   | Criterion                                                            | Status                                                                                               |
+| --- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| 1   | Phase 0 audits produced (A, B, C, D)                                 | ✅ file review                                                                                       |
+| 2   | Consent columns added to submissions table                           | ✅ file review (`Schema.php`, via dbDelta)                                                           |
+| 3   | Migration is idempotent                                              | ✅ by construction (dbDelta) — not independently unit-tested, see Deviations                         |
+| 4   | ConsentValidator rejects submissions without consent                 | ✅ test                                                                                              |
+| 5   | ConsentValidator accepts valid consent                               | ✅ test                                                                                              |
+| 6   | Privacy policy page reachable and renders real content               | ✅ file review + content test (`privacy-content.test.ts`) — no live-site render, see below           |
+| 7   | Privacy policy not duplicated / route stable across requests         | ✅ by construction (static route table, no activation-time creation)                                 |
+| 8   | SubmissionController integrates consent validation                   | ✅ test                                                                                              |
+| 9   | Consent timestamp stored with submission                             | ✅ test                                                                                              |
+| 10  | SubmissionRetention deletes submissions past retention period        | ✅ test (fake repository; real-DB deletion untested, see Deviations)                                 |
+| 11  | Photos of deleted submissions are also deleted                       | Not applicable by design — see Deviations (PhotoRetention owns photo lifecycle independently)        |
+| 12  | Retention cron scheduled and hooked on activation/boot               | ✅ file review (`Activator` schedules; `Plugin::boot()` now hooks the callback)                      |
+| 13  | Wizard shows consent checkbox on final step                          | ✅ test (`consent-field.test.ts`, all 11 configs)                                                    |
+| 14  | Cannot submit without checked consent                                | ✅ by construction (existing required-field validation engine) + server-side test                    |
+| 15  | Privacy policy link navigates to policy page                         | ✅ code review (`footer-content.ts` → `/privacy` → `routes.ts`) — no live-site nav test              |
+| 16  | ADR-0029 documented                                                  | ✅                                                                                                   |
+| 17  | Business owner guide created                                         | ✅ `docs/business-owner-data-handling-guide.md`                                                      |
+| 18  | Privacy policy template created                                      | ✅ `docs/privacy-policy-template.md` (points to the real `privacy-content.ts`, not a duplicate copy) |
+| 19  | LLM handoff updated with a privacy policy customization task         | ✅ Task 11c (spec's proposed "Task 10" collided with the existing Make.com Webhook task)             |
+| 20  | All 220 prior PHP tests pass                                         | ✅ test run                                                                                          |
+| 21  | ~29 new PHP tests pass                                               | ✅ test run (13 net new: 6 ConsentValidator + 3 PruneSubmissions + 4 SubmissionController)           |
+| 22  | Bundle within budget                                                 | ✅ (+~1.6 kB gzip)                                                                                   |
+| 23  | 8 commits in specified sequence                                      | ✅ `git log`                                                                                         |
+| 24  | Tarball produced                                                     | Not produced — no request for a packaged artifact in this conversation                               |
+| 25  | Submit wizard successfully with consent checked                      | ⏳ pending operational verification                                                                  |
+| 26  | Try submit without consent; verify blocked                           | ⏳ pending operational verification                                                                  |
+| 27  | Verify consent timestamp in database                                 | ⏳ pending operational verification                                                                  |
+| 28  | Navigate to /privacy/; verify page exists                            | ⏳ pending operational verification                                                                  |
+| 29  | Read privacy policy content; verify it reflects the deployed client  | ⏳ pending operational verification                                                                  |
+| 30  | Manually trigger retention cron; verify old submissions deleted      | ⏳ pending operational verification                                                                  |
+| 31  | Verify photos are unaffected by the retention cron (independent job) | ⏳ pending operational verification                                                                  |

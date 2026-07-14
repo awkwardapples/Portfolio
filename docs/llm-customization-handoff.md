@@ -7,7 +7,7 @@ wizard configuration. Visual customization is handled separately by the project 
 
 **Audience:** LLM agent.
 
-**Codebase state reference:** This document reflects template state at Step 5.13g
+**Codebase state reference:** This document reflects template state at Step 5.14
 (2026-07-14). Always read actual file contents before editing — this document
 describes structure and intent, not exact verbatim content.
 
@@ -1521,6 +1521,62 @@ documented in the Pre-Deployment Checklist (Section 7).
 
 ---
 
+### Task 11c — Privacy Policy Customization
+
+<task id="privacy-policy">
+
+**Goal:** Adapt the privacy policy at `/privacy` for this client (Step 5.14, ADR-0029).
+
+**Important — this is not a wp-admin task.** Unlike a typical WordPress site, `/privacy`
+is a client-side route rendered from `apps/wizard/src/site/content/privacy-content.ts`,
+the same way every other marketing page on this site is (`site-content.ts`,
+`footer-content.ts`) — there is no "Pages → Privacy Policy" screen in `/wp-admin/` to
+edit for this template.
+
+**Input from business profile:**
+
+None beyond what Task 6 (`site-content.ts`) already collected. Business name, contact
+email, and postal address are read directly from `siteContent` by
+`privacy-content.ts` — do not duplicate them.
+
+**Actions:**
+
+1. Confirm Task 6 (`site-content.ts`) is already complete — the privacy policy's "Who
+   we are" and "Contact us" sections read `siteContent.businessName`,
+   `siteContent.contact.email`, and `siteContent.contact.address` directly, so they are
+   already correct once that task is done. No edit needed here for business identity.
+2. If this client's deployment uses a different retention period than the 90-day
+   default (i.e. `goqw_retention_days` was set to something else in Task 1), update the
+   `how-long-we-keep-it` section's body text in `privacy-content.ts` to match — the
+   policy text is static prose, not read from the live option.
+3. If this client's deployment omits or replaces a third-party processor (e.g. no
+   Cloudflare Turnstile configured in Task 11b, or a different automation tool instead
+   of Make.com), update the `who-we-share-it-with` section accordingly.
+4. Update the `lastUpdated` constant to today's date.
+
+**Handling missing data:** Nothing here is client-required; if none of the above apply,
+leave `privacy-content.ts` unmodified beyond whatever Task 6 already changed upstream in
+`site-content.ts`.
+
+**Recommendation to flag in the report:** This template's privacy policy has not had
+professional legal review. Recommend the client have a UK solicitor review it before
+production use if they'll handle meaningful data volume — note this in the
+Customization Report rather than skipping it silently.
+
+**Expected outcome:**
+
+`/privacy` reflects this client's business identity (inherited automatically from
+`site-content.ts`), retention period, and third-party processors. No Acme Fencing
+placeholders remain in `privacy-content.ts` (it has almost none by design — verify in
+Task 12).
+
+See `docs/privacy-policy-template.md` and `docs/business-owner-data-handling-guide.md`
+for more detail.
+
+</task>
+
+---
+
 ### Task 12 — Final State Audit
 
 <task id="final-audit">
@@ -1575,7 +1631,9 @@ git diff --name-only apps/wizard/src/site/pages/footer-content.ts
 git diff --name-only apps/wizard/src/site/pages/home-page-content.ts
 ```
 
-Should show the content files you edited in Tasks 6-9.
+Should show the content files you edited in Tasks 6-9 (`site/content/` also covers
+`privacy-content.ts` from Task 11c, if it needed changes beyond what Task 6 already
+inherited).
 
 5. **Identify sections left as template defaults:**
 
