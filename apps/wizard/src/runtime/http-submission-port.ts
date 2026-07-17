@@ -51,6 +51,7 @@ const ERR_BAD_RESPONSE = 'bad_response' as const;
 const ERR_VALIDATION = 'validation_failed' as const;
 const ERR_UNAUTHORIZED = 'unauthorized' as const;
 const ERR_FORWARDER = 'forwarder_unavailable' as const;
+const ERR_RATE_LIMITED = 'rate_limited' as const;
 const ERR_SERVER = 'server_error' as const;
 
 const MSG_FALLBACK = 'Submission could not be completed. Please try again.';
@@ -158,7 +159,24 @@ async function mapResponse(response: Response): Promise<SubmissionPortResult> {
     return err_(ERR_UNAUTHORIZED, MSG_FALLBACK, false);
   }
 
+  if (response.status === 429) {
+    return err_(ERR_RATE_LIMITED, buildRateLimitMessage(extractRetryAfterSeconds(body)), false);
+  }
+
   return err_(ERR_SERVER, MSG_FALLBACK);
+}
+
+function extractRetryAfterSeconds(body: unknown): number {
+  if (body !== null && typeof body === 'object' && 'retryAfterSeconds' in body) {
+    const seconds = (body as { retryAfterSeconds: unknown }).retryAfterSeconds;
+    if (typeof seconds === 'number' && Number.isFinite(seconds) && seconds >= 0) return seconds;
+  }
+  return 0;
+}
+
+function buildRateLimitMessage(retryAfterSeconds: number): string {
+  const minutes = Math.max(1, Math.ceil(retryAfterSeconds / 60));
+  return `Please try again in ${minutes} minute${minutes === 1 ? '' : 's'}.`;
 }
 
 function extractReference(body: unknown): string | null {

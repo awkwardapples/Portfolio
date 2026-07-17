@@ -31,6 +31,7 @@ interface FailureScreenProps {
 export function FailureScreen({ error, onRetry }: FailureScreenProps): JSX.Element {
   const canRetry = error?.retryable ?? true;
   const referenceId = error?.submissionId;
+  const isRateLimited = error?.code === 'rate_limited';
 
   return (
     <div className="mx-auto max-w-xl p-6">
@@ -38,7 +39,9 @@ export function FailureScreen({ error, onRetry }: FailureScreenProps): JSX.Eleme
         <div className="mb-4 flex justify-center">
           <AlertCircleIcon />
         </div>
-        <h1 className="text-xl font-semibold text-text">Something went wrong</h1>
+        <h1 className="text-xl font-semibold text-text">
+          {isRateLimited ? 'Please wait a moment' : 'Something went wrong'}
+        </h1>
         <p className="mt-2 text-base text-text-muted">
           {error?.message ?? 'Your request could not be submitted. Please try again.'}
         </p>

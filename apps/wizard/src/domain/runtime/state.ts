@@ -60,6 +60,8 @@ export interface StepValidationSnapshot {
  *   bad_response          Server returned 200 but the body was unparseable.
  *   validation_failed     400/422: server rejected the payload shape.
  *   unauthorized          401/403: nonce expired or missing.
+ *   rate_limited          429 from BotProtection's rate limiter (Step 5.13f).
+ *                         Not retryable until retryAfterSeconds elapses.
  *   server_error          Any other non-502 server error.
  */
 export type SubmissionErrorCode =
@@ -69,6 +71,7 @@ export type SubmissionErrorCode =
   | 'bad_response'
   | 'validation_failed'
   | 'unauthorized'
+  | 'rate_limited'
   | 'server_error';
 
 /**

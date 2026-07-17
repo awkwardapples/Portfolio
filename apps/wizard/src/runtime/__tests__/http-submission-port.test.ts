@@ -121,6 +121,59 @@ describe('httpSubmissionPort — server error paths', () => {
   });
 });
 
+describe('httpSubmissionPort — rate limit path (Step 5.14.1)', () => {
+  it('429 → rate_limited with a retry-after message built from retryAfterSeconds', async () => {
+    const mock = vi
+      .fn()
+      .mockResolvedValue(
+        fakeResponse(429, JSON.stringify({ errorCode: 'rate_limited', retryAfterSeconds: 300 })),
+      );
+    const result = await portWithMock(mock).submit(VALID_REQUEST);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('rate_limited');
+      expect(result.error.message).toBe('Please try again in 5 minutes.');
+    }
+  });
+
+  it('429 → not retryable (retrying immediately cannot succeed within the window)', async () => {
+    const mock = vi
+      .fn()
+      .mockResolvedValue(
+        fakeResponse(429, JSON.stringify({ errorCode: 'rate_limited', retryAfterSeconds: 120 })),
+      );
+    const result = await portWithMock(mock).submit(VALID_REQUEST);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.retryable).toBe(false);
+  });
+
+  it('429 with a missing/malformed retryAfterSeconds still resolves to rate_limited, not server_error', async () => {
+    const mock = vi
+      .fn()
+      .mockResolvedValue(fakeResponse(429, JSON.stringify({ errorCode: 'rate_limited' })));
+    const result = await portWithMock(mock).submit(VALID_REQUEST);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).toBe('rate_limited');
+      expect(result.error.message).toBe('Please try again in 1 minute.');
+    }
+  });
+
+  it('429 does not fall through to the generic server_error code', async () => {
+    const mock = vi
+      .fn()
+      .mockResolvedValue(
+        fakeResponse(429, JSON.stringify({ errorCode: 'rate_limited', retryAfterSeconds: 60 })),
+      );
+    const result = await portWithMock(mock).submit(VALID_REQUEST);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.code).not.toBe('server_error');
+      expect(result.error.message).not.toBe('Submission could not be completed. Please try again.');
+    }
+  });
+});
+
 describe('httpSubmissionPort — network failure paths', () => {
   it('network rejection → network_unreachable', async () => {
     const err = Object.assign(new Error('Failed to fetch'), { name: 'TypeError' });
