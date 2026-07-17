@@ -1,9 +1,25 @@
 # Handoff
 
-_Last updated: 2026-07-14 (post Step 5.14)_
+_Last updated: 2026-07-17 (post Step 5.14.1)_
 
 ## Status
 
+- Step 5.14.1 complete (July 17, 2026): Environmental robustness + namespace
+  prefixes. Fixes discovered during SCB pilot testing, not new features. (1)
+  `Submissions\PhotoStorage::store_photo()` called `wp_tempnam()` before
+  `ensure_upload_functions_loaded()` had run — the require now runs first,
+  unconditionally, fixing a real photo-upload failure. (2) Every WordPress core
+  function call in namespaced plugin PHP (33 files, 208 call sites) is now
+  backslash-prefixed, per `AUDIT-5.14.1-admin-includes.md` and ADR-0030. (3)
+  `httpSubmissionPort.mapResponse()` had no branch for HTTP 429 — a rate-limited
+  submission fell through to a generic `server_error` and discarded
+  `retryAfterSeconds` entirely; it now returns a `'rate_limited'` code with a
+  "Please try again in N minute(s)" message, `retryable: false`, and
+  `FailureScreen` shows "Please wait a moment" instead of "Something went
+  wrong." (4) `docs/onboarding.md` gained LocalWP `DB_HOST` port configuration
+  and PHP OpCache troubleshooting sections. 9 new PHP tests (233→242), 4 new
+  Vitest tests (759→763). Operational verification pending (fresh-clone deploy,
+  photo upload on a live site, rate-limit UX on a live site).
 - Step 5.14 complete (July 14, 2026): Data protection & UK GDPR compliance.
   A required `data_processing_consent` checkbox on the last mandatory step of every
   wizard config (never the skippable `optional-details`); `Submissions\ConsentValidator`

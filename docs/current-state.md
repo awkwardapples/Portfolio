@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-07-14 (post Step 5.14)_
+_Last updated: 2026-07-17 (post Step 5.14.1)_
 
 ## What's working
 
@@ -29,8 +29,19 @@ _Last updated: 2026-07-14 (post Step 5.14)_
 - Bot & spam protection (Step 5.13f): three-layer defense on the submit endpoint, enabled by default. `Rest\BotProtection` runs honeypot (`honeypotValue` field, rejected as an ordinary `validation_failed`), rate limiting (`Rest\RateLimiter`, WordPress transients, 5/hour default via `goqw_rate_limit_per_hour`), then Cloudflare Turnstile verification (`Support\TurnstileClient`, only when `goqw_turnstile_site_key`/`goqw_turnstile_secret_key` are both configured). `PublicConfig` exposes `turnstileSiteKey` (public by design); the secret key never leaves `Settings::turnstile_secret_key()`. On the frontend, `BotProtectionStore` + `createBotProtectionEnrichedPort` mirror the Step 4.8 photo-enrichment pattern; `HoneypotField` mounts once per wizard session in `WizardShell`; `TurnstileWidget` mounts only on the final step and dynamically loads Cloudflare's SDK (not bundled) only when configured. `goqw_bot_protection_enabled` (default on) disables all three layers at once. ADR-0027.
 - Duplicate submission prevention (Step 5.13g): `Submissions\DuplicateDetector` flags a submission as a duplicate when its normalized `contact_email` or `contact_phone` matches a non-duplicate submission from the last 24 hours. A duplicate is still fully persisted (photos included) but marked `is_duplicate`/`duplicate_of` and never forwarded to Make.com/WhatsApp — the response is still `200 { reference, isDuplicate: true }`. `SuccessScreen` renders different, client-owned copy for a duplicate. ADR-0028.
 - Data protection & UK GDPR compliance (Step 5.14): a required `data_processing_consent` checkbox field on the last mandatory step of every one of the 11 wizard configs; `Submissions\ConsentValidator` enforces it server-side (`400 consent_required` if missing, nothing persisted); accepted submissions gain `consent_given`/`consent_timestamp` columns. New `/privacy` route (sixth site route) renders a real UK GDPR privacy policy from `site/content/privacy-content.ts`, closing a pre-existing dangling footer link. `Cron\PruneSubmissions` — scheduled since Step 3D but never implemented — now deletes submissions older than `Settings::retention_days()` (default 90 days) and is finally hooked in `Plugin::boot()`; photo retention (`PhotoRetention`, 6 months) is unchanged and independent. ADR-0029.
+- Environmental robustness & namespace prefixes (Step 5.14.1): `Submissions\PhotoStorage` now loads its wp-admin includes (`ensure_upload_functions_loaded()`) as the first statement in `store_photo()`, before `wp_tempnam()` can be reached — fixes an SCB-pilot photo-upload failure caused by the require running too late. Every WordPress core function call in namespaced plugin PHP (33 files) is now backslash-prefixed (ADR-0030). The client's `httpSubmissionPort` handles HTTP 429 as a distinct `rate_limited` error code with a "Please try again in N minute(s)" message instead of falling through to a generic server error. `docs/onboarding.md` gained LocalWP DB_HOST and PHP OpCache guidance.
 
 ## Gate state (last verified)
+
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: 0 errors (pre-existing, unrelated `tsconfig.test.json` type errors in `non-field-step-engine.test.ts` predate this step — last touched in the 5.13a/5.13b commits)
+- `pnpm test`: **763/763** (56 test files, +4 from 5.14)
+- `pnpm build`: clean (bundle 89.79 kB gzip, +0.14 kB from 5.14)
+- `composer test`: **242 passed, 4 skipped** (+9 from 5.14)
+- `composer analyse`: clean (PHPStan level 8, no errors)
+- `composer lint`: 0/0 for all files touched this step (pre-existing, unrelated drift in `quote-wizard.php` predates 5.13e/5.13f/5.13g/5.14/5.14.1)
+
+## Gate state (5.14, 2026-07-14)
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors (pre-existing, unrelated `tsconfig.test.json` type errors in `non-field-step-engine.test.ts` predate this step — last touched in the 5.13a/5.13b commits)
@@ -284,6 +295,21 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   plus the business profile JSON schema, modification map, report template,
   pre-deployment checklist, final verification commands, and three appendices.
   Documentation-only; all gates unchanged (598 Vitest, 143 PHP).
+- **Step 5.14.1 — Environmental Robustness + Namespace Prefixes** (July 2026).
+  ADR-0030 accepted. Fixes discovered during SCB pilot testing, not new features.
+  `Submissions\PhotoStorage::store_photo()` called `wp_tempnam()` before its
+  wp-admin/includes require had run (`ensure_upload_functions_loaded()` ran too late)
+  — the require now runs first, unconditionally. Every WordPress core function call in
+  namespaced plugin PHP (33 files, 208 call sites) is now backslash-prefixed, per
+  `AUDIT-5.14.1-admin-includes.md`; `SitemapGenerator::add_rewrite_rule()`, the class's
+  own static method, is deliberately excluded. `httpSubmissionPort.mapResponse()`
+  gained a 429 branch: a `'rate_limited'` `SubmissionErrorCode` with a
+  "Please try again in N minute(s)" message built from the server's
+  `retryAfterSeconds`, `retryable: false`; `FailureScreen` shows "Please wait a
+  moment" instead of "Something went wrong" for this code — previously a 429 fell
+  through to the generic `server_error` path and discarded the wait-time entirely.
+  `docs/onboarding.md` gained LocalWP MySQL port (`DB_HOST`) and PHP OpCache
+  troubleshooting sections. 9 new PHP tests (233→242), 4 new Vitest tests (759→763).
 - **Step 5.14 — Data Protection & UK GDPR Compliance** (July 2026).
   A required `data_processing_consent` checkbox (single option `agreed`) on the last
   mandatory step of every one of the 11 wizard configs — `contact-and-address` for
@@ -459,6 +485,6 @@ Strict ordering: validate → persist → forward → respond.
 
 - lint (`pnpm lint` → 0 errors, 0 warnings)
 - typecheck (`pnpm typecheck`)
-- vitest (`pnpm test` → 717/717)
+- vitest (`pnpm test` → 763/763)
 - build (`pnpm build`)
-- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 210 passed (4 skipped)
+- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 242 passed (4 skipped)

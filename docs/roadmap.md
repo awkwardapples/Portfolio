@@ -15,42 +15,43 @@ A single-page, structural view of project state. Update on every completed step.
 
 ## Step status
 
-| Step                  | Status   | What                                                                                                              |
-| --------------------- | -------- | ----------------------------------------------------------------------------------------------------------------- |
-| 4.7                   | Complete | Service abstraction + decking vertical                                                                            |
-| 4.8                   | Complete | Photo upload capability + tests                                                                                   |
-| 5.0                   | Complete | Site shell + 5 reference pages                                                                                    |
-| 5.1                   | Complete | WordPress page mapping + production routing                                                                       |
-| 5.2                   | Complete | OV-001 remediation (verified end-to-end in WordPress)                                                             |
-| 5.3                   | Complete | Adaptation runbook (documentation of clone-and-customize)                                                         |
-| 5.4                   | Complete | Make.com integration documentation                                                                                |
-| 5.5a                  | Complete | Template capabilities (category nav + manual-quote mode)                                                          |
-| 5.5a-remediation      | Complete | Wire contract drift fix; operational verification under ADR-0018; build-pipeline composition correction           |
-| 5.5b                  | Complete | Operational fork procedure documentation                                                                          |
-| 5.5b-architecture     | Complete | Rendering architecture implementation (Option C hybrid; ADR-0019)                                                 |
-| 5.5b-architecture-fix | Complete | Asset enqueue gate fix; React app now mounts and renders on React routes                                          |
-| 5.6                   | Complete | Product vision rewrite + roadmap revision                                                                         |
-| 5.7                   | Complete | Section library: composition mechanism + 7 sections                                                               |
-| 5.7-remediation       | Complete | CTA routing (SectionLink); canonical redirect fix; viewport sizing                                                |
-| 5.8                   | Complete | Footer: template structure + per-client content slots                                                             |
-| 5.9                   | Complete | Wizard service library: 11 services (5 instant + 4 manual + 2 original)                                           |
-| 5.9-remediation       | Complete | 6 OV findings: pre-step, back-button fix, UK validators, category nav default, copy, ADR-0022                     |
-| 5.10a                 | Complete | SEO Layer 1: per-route titles, meta, canonical, OG/Twitter; category back button; ADR-0023                        |
-| 5.10a-docs            | Complete | SEO Adaptation Guide (Layer 1) for per-client deployments                                                         |
-| 5.10b                 | Complete | SEO Layers 2-4: LocalBusiness schema, Service schema, sitemap.xml, robots.txt                                     |
-| 5.11                  | Complete | LLM customization handoff document (`docs/llm-customization-handoff.md`)                                          |
-| 5.12b                 | Complete | Template bug fixes (output buffering, media validation, activation rewrite flush)                                 |
-| 5.13a                 | Complete | Wizard engine: three new step kinds (estimate-display, visual-card-selector, size-bracket-selector)               |
-| 5.13b                 | Complete | All 7 instant-quote service flows redesigned with new step types; pricing infrastructure extended                 |
-| 5.13c                 | Complete | Pre-step reduced to postcode-only; photo upload + contact-and-address step added to all 7 instant-quote services  |
-| 5.13d                 | Complete | Optional details step added to all 7 instant-quote services; allowSkip engine support; ADR-0025                   |
-| 5.13e                 | Complete | Photo URL storage: media library integration, 6-month retention, orphan cleanup; ADR-0026                         |
-| 5.13f                 | Complete | Bot & spam protection: honeypot, rate limiting, optional Cloudflare Turnstile; ADR-0027                           |
-| 5.13g                 | Complete | Duplicate submission prevention: 24h contact-match detection, no re-forward; ADR-0028                             |
-| 5.14                  | Complete | Data protection & UK GDPR compliance: consent capture, /privacy policy route, submission retention cron; ADR-0029 |
-| 5.12                  | Planned  | SCB-specific deployment (first real client)                                                                       |
-| 6.0                   | Planned  | Production IONOS deployment                                                                                       |
-| 6.1+                  | Future   | Second and subsequent clients                                                                                     |
+| Step                  | Status   | What                                                                                                                         |
+| --------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 4.7                   | Complete | Service abstraction + decking vertical                                                                                       |
+| 4.8                   | Complete | Photo upload capability + tests                                                                                              |
+| 5.0                   | Complete | Site shell + 5 reference pages                                                                                               |
+| 5.1                   | Complete | WordPress page mapping + production routing                                                                                  |
+| 5.2                   | Complete | OV-001 remediation (verified end-to-end in WordPress)                                                                        |
+| 5.3                   | Complete | Adaptation runbook (documentation of clone-and-customize)                                                                    |
+| 5.4                   | Complete | Make.com integration documentation                                                                                           |
+| 5.5a                  | Complete | Template capabilities (category nav + manual-quote mode)                                                                     |
+| 5.5a-remediation      | Complete | Wire contract drift fix; operational verification under ADR-0018; build-pipeline composition correction                      |
+| 5.5b                  | Complete | Operational fork procedure documentation                                                                                     |
+| 5.5b-architecture     | Complete | Rendering architecture implementation (Option C hybrid; ADR-0019)                                                            |
+| 5.5b-architecture-fix | Complete | Asset enqueue gate fix; React app now mounts and renders on React routes                                                     |
+| 5.6                   | Complete | Product vision rewrite + roadmap revision                                                                                    |
+| 5.7                   | Complete | Section library: composition mechanism + 7 sections                                                                          |
+| 5.7-remediation       | Complete | CTA routing (SectionLink); canonical redirect fix; viewport sizing                                                           |
+| 5.8                   | Complete | Footer: template structure + per-client content slots                                                                        |
+| 5.9                   | Complete | Wizard service library: 11 services (5 instant + 4 manual + 2 original)                                                      |
+| 5.9-remediation       | Complete | 6 OV findings: pre-step, back-button fix, UK validators, category nav default, copy, ADR-0022                                |
+| 5.10a                 | Complete | SEO Layer 1: per-route titles, meta, canonical, OG/Twitter; category back button; ADR-0023                                   |
+| 5.10a-docs            | Complete | SEO Adaptation Guide (Layer 1) for per-client deployments                                                                    |
+| 5.10b                 | Complete | SEO Layers 2-4: LocalBusiness schema, Service schema, sitemap.xml, robots.txt                                                |
+| 5.11                  | Complete | LLM customization handoff document (`docs/llm-customization-handoff.md`)                                                     |
+| 5.12b                 | Complete | Template bug fixes (output buffering, media validation, activation rewrite flush)                                            |
+| 5.13a                 | Complete | Wizard engine: three new step kinds (estimate-display, visual-card-selector, size-bracket-selector)                          |
+| 5.13b                 | Complete | All 7 instant-quote service flows redesigned with new step types; pricing infrastructure extended                            |
+| 5.13c                 | Complete | Pre-step reduced to postcode-only; photo upload + contact-and-address step added to all 7 instant-quote services             |
+| 5.13d                 | Complete | Optional details step added to all 7 instant-quote services; allowSkip engine support; ADR-0025                              |
+| 5.13e                 | Complete | Photo URL storage: media library integration, 6-month retention, orphan cleanup; ADR-0026                                    |
+| 5.13f                 | Complete | Bot & spam protection: honeypot, rate limiting, optional Cloudflare Turnstile; ADR-0027                                      |
+| 5.13g                 | Complete | Duplicate submission prevention: 24h contact-match detection, no re-forward; ADR-0028                                        |
+| 5.14                  | Complete | Data protection & UK GDPR compliance: consent capture, /privacy policy route, submission retention cron; ADR-0029            |
+| 5.14.1                | Complete | Environmental robustness: wp_tempnam load-order fix, namespace prefix defense, rate-limit UX, DB_HOST/OpCache docs; ADR-0030 |
+| 5.12                  | Planned  | SCB-specific deployment (first real client)                                                                                  |
+| 6.0                   | Planned  | Production IONOS deployment                                                                                                  |
+| 6.1+                  | Future   | Second and subsequent clients                                                                                                |
 
 ## Step rationale and dependencies
 

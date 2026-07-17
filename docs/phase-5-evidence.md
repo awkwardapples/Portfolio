@@ -2450,3 +2450,73 @@ stub", not "add a new class").
 | 29  | Read privacy policy content; verify it reflects the deployed client  | ⏳ pending operational verification                                                                  |
 | 30  | Manually trigger retention cron; verify old submissions deleted      | ⏳ pending operational verification                                                                  |
 | 31  | Verify photos are unaffected by the retention cron (independent job) | ⏳ pending operational verification                                                                  |
+
+## Step 5.14.1 Evidence
+
+**Step:** Environmental Robustness + Namespace Prefixes (2026-07-17)
+
+### Summary
+
+Fixes discovered during SCB pilot testing, not new features: (1) `PhotoStorage`
+called `wp_tempnam()` before the admin include that declares it had loaded, causing
+photo uploads to fail; (2) every namespaced plugin PHP file called WordPress core
+functions unqualified rather than backslash-prefixed; (3) the client had no branch for
+HTTP 429, so a rate-limited user saw a generic "Something went wrong" instead of a
+wait-time message; (4) `docs/onboarding.md` had no DB_HOST or OpCache guidance. ADR-0030
+accepted.
+
+### Gate state
+
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: 0 errors (pre-existing, unrelated `tsconfig.test.json` type errors
+  in `non-field-step-engine.test.ts` predate this step, per `docs/current-state.md`)
+- `pnpm test`: **763/763 Vitest** (+4 from 5.14, 56 test files)
+- `pnpm build`: clean (bundle 89.65 → 89.79 kB gzip)
+- `composer lint`: 0/0 for all files touched this step (`quote-wizard.php` carries
+  pre-existing, unrelated drift predating 5.13e/5.13f/5.13g/5.14/5.14.1)
+- `composer analyse`: no errors (PHPStan level 8)
+- `composer test`: **242 passed, 4 skipped** (+9 from 5.14 — 5 PhotoStorage, 2
+  Activator, 1 FrontPagePolicy, 1 SiteRootPage)
+
+### Deviations from the spec
+
+- **No `Admin/SettingsPage.php` changes** — still an unimplemented stub with no
+  WordPress function calls to prefix.
+- **Function list extended beyond the spec's illustrative `$wpFunctions` array** —
+  `wp_update_attachment_metadata`, `update_post_meta`, `rest_url`, `get_query_var`,
+  `get_edit_post_link`, `esc_html__`, `esc_url_raw`, `wp_add_inline_style`,
+  `is_singular`, `get_posts`, `wp_clear_scheduled_hook`, `plugin_dir_path`,
+  `plugin_dir_url`, `register_activation_hook`, `register_deactivation_hook` — all
+  found during the comprehensive Audit A sweep (`AUDIT-5.14.1-admin-includes.md`).
+  Per ADR-0030, this is completeness, not scope creep — the spec's own list was
+  explicitly a starting point for a "comprehensive audit."
+- **No dedicated `FailureScreen` test file added.** The 4 new client tests live in
+  `http-submission-port.test.ts` alongside the existing response-mapping tests
+  (matches the existing file organization — response mapping, not screen rendering,
+  is what changed); `FailureScreen`'s heading branch has no pre-existing test file to
+  extend and adding one was judged out of proportion to a one-line conditional.
+
+### Acceptance Criteria
+
+| #   | Criterion                                              | Status                                                                          |
+| --- | ------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| 1   | Phase 0 audits produced (A, B, C, D)                   | ✅ file review                                                                  |
+| 2   | PhotoStorage loads admin includes before wp_tempnam    | ✅ tests + file review                                                          |
+| 3   | PhotoStorage uses `\` prefix on all WordPress calls    | ✅ tests + grep                                                                 |
+| 4   | Activator uses `\` prefix on all WordPress calls       | ✅ test + grep                                                                  |
+| 5   | FrontPagePolicy uses `\` prefix on all WordPress calls | ✅ test + grep                                                                  |
+| 6   | SiteRootPage uses `\` prefix on all WordPress calls    | ✅ test + grep                                                                  |
+| 7   | Client shows retry-after for rate_limited response     | ✅ Vitest tests                                                                 |
+| 8   | Client hides generic error for rate_limited response   | ✅ Vitest test                                                                  |
+| 9   | ADR-0030 documented                                    | ✅                                                                              |
+| 10  | onboarding.md has DB_HOST section                      | ✅ file review                                                                  |
+| 11  | onboarding.md has OpCache section                      | ✅ file review                                                                  |
+| 12  | All 233 prior PHP tests pass                           | ✅ test run                                                                     |
+| 13  | 9 new PHP tests pass                                   | ✅ test run                                                                     |
+| 14  | Bundle unchanged (backslash is compile-time)           | ✅ +0.14 kB gzip (4 new client-side error-handling lines, not the prefix sweep) |
+| 15  | 6 commits in specified sequence                        | ✅ `git log`                                                                    |
+| 16  | Tarball produced                                       | ✅ `step-5.14.1-environmental-robustness.tar.gz`                                |
+| 17  | Fresh clone from template deploys cleanly              | ⏳ pending operational verification                                             |
+| 18  | DB_HOST section resolves per-client issue              | ⏳ pending operational verification                                             |
+| 19  | Photo upload succeeds without wp_tempnam error         | ⏳ pending operational verification                                             |
+| 20  | Rate limit response shows retry-after message          | ⏳ pending operational verification                                             |
