@@ -59,9 +59,9 @@ final class PhotoRetention {
 	 * @return int[]
 	 */
 	private function find_expired_attachment_ids(): array {
-		$cutoff = gmdate( 'Y-m-d H:i:s', strtotime( '-' . self::RETENTION_MONTHS . ' months' ) );
+		$cutoff = \gmdate( 'Y-m-d H:i:s', strtotime( '-' . self::RETENTION_MONTHS . ' months' ) );
 
-		$ids = get_posts(
+		$ids = \get_posts(
 			array(
 				'post_type'      => 'attachment',
 				'post_status'    => 'inherit',

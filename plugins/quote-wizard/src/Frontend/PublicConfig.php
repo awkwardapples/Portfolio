@@ -54,8 +54,8 @@ final class PublicConfig {
 			'contractVersion'  => self::CONTRACT_VERSION,
 
 			// Wizard vertical selector — matches a key in the JS registry.
-			'wizardId'         => ( (string) get_option( 'goqw_wizard_id', 'fencing' ) !== '' )
-					? get_option( 'goqw_wizard_id', 'fencing' )
+			'wizardId'         => ( (string) \get_option( 'goqw_wizard_id', 'fencing' ) !== '' )
+					? \get_option( 'goqw_wizard_id', 'fencing' )
 					: 'fencing',
 
 			// Business display info (public — appears in the wizard UI).
@@ -76,8 +76,8 @@ final class PublicConfig {
 
 			// REST contract — used by the submission flow.
 			'restNamespace'    => 'qw/v1',
-			'restUrl'          => esc_url_raw( rest_url( 'qw/v1' ) ),
-			'restNonce'        => wp_create_nonce( 'wp_rest' ),
+			'restUrl'          => \esc_url_raw( \rest_url( 'qw/v1' ) ),
+			'restNonce'        => \wp_create_nonce( 'wp_rest' ),
 
 			// Build identity — appears in console for deployment debugging.
 			'pluginVersion'    => GOQW_VERSION,
@@ -86,7 +86,7 @@ final class PublicConfig {
 
 		// Category navigation flag (ADR-0017, amended 5.9-R). Defaults to true so canonical
 		// installs enable category navigation without manual WP option configuration.
-		$config['enableCategoryNavigation'] = (bool) get_option( 'goqw_enable_category_navigation', true );
+		$config['enableCategoryNavigation'] = (bool) \get_option( 'goqw_enable_category_navigation', true );
 
 		// Emit enabledServiceIds only when non-empty (additive, optional field).
 		$ids = self::enabled_service_ids();
@@ -105,7 +105,7 @@ final class PublicConfig {
 	 * @return string[]
 	 */
 	private static function enabled_service_ids(): array {
-		$option = (string) get_option( 'goqw_enabled_services', '' );
+		$option = (string) \get_option( 'goqw_enabled_services', '' );
 		return array_values(
 			array_filter(
 				array_map( 'trim', explode( ',', $option ) ),
@@ -123,7 +123,7 @@ final class PublicConfig {
 		if ( is_readable( $path ) ) {
 			$mtime = filemtime( $path );
 			if ( false !== $mtime ) {
-				return gmdate( 'c', $mtime );
+				return \gmdate( 'c', $mtime );
 			}
 		}
 		return '';
@@ -140,7 +140,7 @@ final class PublicConfig {
 	public static function to_inline_json(): string {
 		$flags = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
 
-		$encoded = wp_json_encode( self::build(), $flags );
+		$encoded = \wp_json_encode( self::build(), $flags );
 
 		if ( false === $encoded || '' === $encoded ) {
 			return '{}';

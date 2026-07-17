@@ -50,12 +50,12 @@ final class Plugin {
 
 		$renderer = new SiteRenderer( $page );
 
-		add_action( 'init', array( $registrar, 'register' ) );
-		add_filter( 'query_vars', array( $registrar, 'add_query_vars' ) );
-		add_action( 'pre_get_posts', array( $interceptor, 'maybe_intercept' ) );
-		add_action( 'init', array( $healer, 'check' ) );
-		add_action( 'admin_notices', array( $policy, 'maybe_render_notice' ) );
-		add_filter( 'the_content', array( $renderer, 'filter_content' ), 5 );
+		\add_action( 'init', array( $registrar, 'register' ) );
+		\add_filter( 'query_vars', array( $registrar, 'add_query_vars' ) );
+		\add_action( 'pre_get_posts', array( $interceptor, 'maybe_intercept' ) );
+		\add_action( 'init', array( $healer, 'check' ) );
+		\add_action( 'admin_notices', array( $policy, 'maybe_render_notice' ) );
+		\add_filter( 'the_content', array( $renderer, 'filter_content' ), 5 );
 
 		// Rendering architecture: plugin-provided minimal template for React routes (ADR-0019).
 		RenderingArchitecture::register();
@@ -73,24 +73,24 @@ final class Plugin {
 		RobotsTxtCustomizer::register();
 
 		// Cron: photo retention cleanup (Step 5.13e, D3).
-		add_action( 'goqw_photo_retention_cleanup', array( PhotoRetention::class, 'run' ) );
+		\add_action( 'goqw_photo_retention_cleanup', array( PhotoRetention::class, 'run' ) );
 
 		// Cron: submission retention cleanup (Step 5.14, ADR-0029). The event
 		// has been scheduled in Activator since Step 3D; this is the first
 		// step to hook a real callback to it (AUDIT-5.13e-cron-pattern.md).
-		add_action( 'goqw_prune_submissions', array( PruneSubmissions::class, 'run' ) );
+		\add_action( 'goqw_prune_submissions', array( PruneSubmissions::class, 'run' ) );
 
 		// Frontend: shortcode that renders the wizard mount point.
-		add_shortcode( Shortcode::TAG, array( Shortcode::class, 'render' ) );
+		\add_shortcode( Shortcode::TAG, array( Shortcode::class, 'render' ) );
 
 		// Frontend: enqueue the built React bundle when the shortcode is on the page.
-		add_action( 'wp_enqueue_scripts', array( AssetLoader::class, 'maybe_enqueue' ) );
+		\add_action( 'wp_enqueue_scripts', array( AssetLoader::class, 'maybe_enqueue' ) );
 
 		// Admin: surface a notice anywhere in wp-admin when the build is missing.
-		add_action( 'admin_notices', array( AssetLoader::class, 'render_admin_notice' ) );
+		\add_action( 'admin_notices', array( AssetLoader::class, 'render_admin_notice' ) );
 
 		// REST: register the submit endpoint (ADR-0015).
-		add_action(
+		\add_action(
 			'rest_api_init',
 			static function (): void {
 				global $wpdb;
@@ -98,7 +98,7 @@ final class Plugin {
 				$forwarder  = new Forwarder();
 				$controller = new SubmissionController( $repository, $forwarder );
 
-				register_rest_route(
+				\register_rest_route(
 					'qw/v1',
 					'/submit',
 					array(
@@ -109,7 +109,7 @@ final class Plugin {
 						// wp_verify_nonce returns 1 or 2 on success, false on failure.
 						'permission_callback' => static function ( \WP_REST_Request $req ): bool {
 							$nonce = $req->get_header( 'X-WP-Nonce' );
-							return null !== $nonce && false !== wp_verify_nonce( $nonce, 'wp_rest' );
+							return null !== $nonce && false !== \wp_verify_nonce( $nonce, 'wp_rest' );
 						},
 					)
 				);

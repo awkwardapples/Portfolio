@@ -33,7 +33,7 @@ final class RewriteRegistrar {
 			}
 
 			$regex = '^' . ltrim( $path, '/' ) . '/?$';
-			add_rewrite_rule(
+			\add_rewrite_rule(
 				$regex,
 				'index.php?' . self::QUERY_VAR . '=' . rawurlencode( $path ),
 				'top'

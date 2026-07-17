@@ -23,7 +23,7 @@ final class Deactivator {
 	 * Entry point registered via register_deactivation_hook in quote-wizard.php.
 	 */
 	public static function deactivate(): void {
-		wp_clear_scheduled_hook( 'goqw_prune_submissions' );
-		wp_clear_scheduled_hook( 'goqw_photo_retention_cleanup' );
+		\wp_clear_scheduled_hook( 'goqw_prune_submissions' );
+		\wp_clear_scheduled_hook( 'goqw_photo_retention_cleanup' );
 	}
 }

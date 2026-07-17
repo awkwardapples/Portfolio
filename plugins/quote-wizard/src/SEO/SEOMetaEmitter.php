@@ -35,8 +35,8 @@ final class SEOMetaEmitter {
 	 */
 	public static function register(): void {
 		// Priority 5: emit before other plugins / themes that also use wp_head.
-		add_action( 'wp_head', array( __CLASS__, 'emit' ), 5 );
-		add_filter( 'pre_get_document_title', array( __CLASS__, 'maybe_override_title' ) );
+		\add_action( 'wp_head', array( __CLASS__, 'emit' ), 5 );
+		\add_filter( 'pre_get_document_title', array( __CLASS__, 'maybe_override_title' ) );
 	}
 
 	/**
@@ -62,22 +62,22 @@ final class SEOMetaEmitter {
 			return;
 		}
 
-		$canonical_url = home_url( $route );
+		$canonical_url = \home_url( $route );
 		$og_image      = SEORouteContent::get_og_image_url();
-		$site_name     = get_bloginfo( 'name' );
+		$site_name     = \get_bloginfo( 'name' );
 
-		echo "\n\t<meta name=\"description\" content=\"" . esc_attr( $content['description'] ) . "\">\n";
-		echo "\t<link rel=\"canonical\" href=\"" . esc_url( $canonical_url ) . "\">\n";
-		echo "\t<meta property=\"og:type\" content=\"" . esc_attr( $content['og_type'] ) . "\">\n";
-		echo "\t<meta property=\"og:title\" content=\"" . esc_attr( $content['title'] ) . "\">\n";
-		echo "\t<meta property=\"og:description\" content=\"" . esc_attr( $content['description'] ) . "\">\n";
-		echo "\t<meta property=\"og:url\" content=\"" . esc_url( $canonical_url ) . "\">\n";
-		echo "\t<meta property=\"og:image\" content=\"" . esc_url( $og_image ) . "\">\n";
-		echo "\t<meta property=\"og:site_name\" content=\"" . esc_attr( $site_name ) . "\">\n";
+		echo "\n\t<meta name=\"description\" content=\"" . \esc_attr( $content['description'] ) . "\">\n";
+		echo "\t<link rel=\"canonical\" href=\"" . \esc_url( $canonical_url ) . "\">\n";
+		echo "\t<meta property=\"og:type\" content=\"" . \esc_attr( $content['og_type'] ) . "\">\n";
+		echo "\t<meta property=\"og:title\" content=\"" . \esc_attr( $content['title'] ) . "\">\n";
+		echo "\t<meta property=\"og:description\" content=\"" . \esc_attr( $content['description'] ) . "\">\n";
+		echo "\t<meta property=\"og:url\" content=\"" . \esc_url( $canonical_url ) . "\">\n";
+		echo "\t<meta property=\"og:image\" content=\"" . \esc_url( $og_image ) . "\">\n";
+		echo "\t<meta property=\"og:site_name\" content=\"" . \esc_attr( $site_name ) . "\">\n";
 		echo "\t<meta name=\"twitter:card\" content=\"summary_large_image\">\n";
-		echo "\t<meta name=\"twitter:title\" content=\"" . esc_attr( $content['title'] ) . "\">\n";
-		echo "\t<meta name=\"twitter:description\" content=\"" . esc_attr( $content['description'] ) . "\">\n";
-		echo "\t<meta name=\"twitter:image\" content=\"" . esc_url( $og_image ) . "\">\n";
+		echo "\t<meta name=\"twitter:title\" content=\"" . \esc_attr( $content['title'] ) . "\">\n";
+		echo "\t<meta name=\"twitter:description\" content=\"" . \esc_attr( $content['description'] ) . "\">\n";
+		echo "\t<meta name=\"twitter:image\" content=\"" . \esc_url( $og_image ) . "\">\n";
 	}
 
 	/**

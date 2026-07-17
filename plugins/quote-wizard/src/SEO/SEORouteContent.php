@@ -96,7 +96,7 @@ final class SEORouteContent {
 	 * placeholder image shipped in plugin assets.
 	 */
 	public static function get_og_image_url(): string {
-		$override = get_option( 'goqw_seo_og_image' );
+		$override = \get_option( 'goqw_seo_og_image' );
 		if ( is_string( $override ) && '' !== $override ) {
 			return $override;
 		}
@@ -130,7 +130,7 @@ final class SEORouteContent {
 	 * @param string $fallback   Value to return when the option is unset or empty.
 	 */
 	private static function get_option_or_default( string $option_key, string $fallback ): string {
-		$value = get_option( $option_key );
+		$value = \get_option( $option_key );
 		if ( ! is_string( $value ) || '' === $value ) {
 			return $fallback;
 		}

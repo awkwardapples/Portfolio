@@ -122,7 +122,7 @@ final class ServiceSchemaEmitter {
 	 * Register the wp_head hook.
 	 */
 	public static function register(): void {
-		add_action( 'wp_head', array( __CLASS__, 'emit' ), 11 );
+		\add_action( 'wp_head', array( __CLASS__, 'emit' ), 11 );
 	}
 
 	/**
@@ -139,7 +139,7 @@ final class ServiceSchemaEmitter {
 		}
 
 		$business_name = self::get_business_name();
-		$service_area  = get_option( 'goqw_business_service_area' );
+		$service_area  = \get_option( 'goqw_business_service_area' );
 		$service_area  = is_string( $service_area ) && '' !== $service_area ? $service_area : null;
 
 		foreach ( $services as $id => $service ) {
@@ -147,7 +147,7 @@ final class ServiceSchemaEmitter {
 
 			echo "\n<script type=\"application/ld+json\">\n";
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode
-			echo wp_json_encode( $schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT );
+			echo \wp_json_encode( $schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT );
 			echo "\n</script>\n";
 		}
 	}
@@ -162,7 +162,7 @@ final class ServiceSchemaEmitter {
 	 * @return array<string, array{name: string, description: string, category: string}>
 	 */
 	public static function get_active_services(): array {
-		$enabled_option = get_option( 'goqw_enabled_services', '' );
+		$enabled_option = \get_option( 'goqw_enabled_services', '' );
 
 		if ( ! is_string( $enabled_option ) || '' === trim( $enabled_option ) ) {
 			return self::SERVICES;
@@ -217,10 +217,10 @@ final class ServiceSchemaEmitter {
 	 * Get business name from option or fall back to site name.
 	 */
 	private static function get_business_name(): string {
-		$name = get_option( 'goqw_business_name' );
+		$name = \get_option( 'goqw_business_name' );
 		if ( is_string( $name ) && '' !== $name ) {
 			return $name;
 		}
-		return get_bloginfo( 'name' );
+		return \get_bloginfo( 'name' );
 	}
 }

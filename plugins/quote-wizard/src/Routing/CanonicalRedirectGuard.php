@@ -33,7 +33,7 @@ final class CanonicalRedirectGuard {
 	 * Register the canonical-redirect filter. Idempotent.
 	 */
 	public static function register(): void {
-		add_filter(
+		\add_filter(
 			'redirect_canonical',
 			array( __CLASS__, 'maybe_suppress_redirect' ),
 			10,

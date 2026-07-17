@@ -46,7 +46,7 @@ final class LocalBusinessSchemaEmitter {
 	 * Register the wp_head hook.
 	 */
 	public static function register(): void {
-		add_action( 'wp_head', array( __CLASS__, 'emit' ), 10 );
+		\add_action( 'wp_head', array( __CLASS__, 'emit' ), 10 );
 	}
 
 	/**
@@ -61,7 +61,7 @@ final class LocalBusinessSchemaEmitter {
 
 		echo "\n<script type=\"application/ld+json\">\n";
 		// phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode
-		echo wp_json_encode( $schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT );
+		echo \wp_json_encode( $schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT );
 		echo "\n</script>\n";
 	}
 
@@ -78,20 +78,20 @@ final class LocalBusinessSchemaEmitter {
 			'@context' => 'https://schema.org',
 			'@type'    => 'LocalBusiness',
 			'name'     => self::get_business_name(),
-			'url'      => home_url( '/' ),
+			'url'      => \home_url( '/' ),
 		);
 
-		$description = get_option( 'goqw_business_description' );
+		$description = \get_option( 'goqw_business_description' );
 		if ( is_string( $description ) && '' !== $description ) {
 			$schema['description'] = $description;
 		}
 
-		$phone = get_option( 'goqw_business_phone' );
+		$phone = \get_option( 'goqw_business_phone' );
 		if ( is_string( $phone ) && '' !== $phone ) {
 			$schema['telephone'] = $phone;
 		}
 
-		$email = get_option( 'goqw_business_email' );
+		$email = \get_option( 'goqw_business_email' );
 		if ( is_string( $email ) && '' !== $email ) {
 			$schema['email'] = $email;
 		}
@@ -101,19 +101,19 @@ final class LocalBusinessSchemaEmitter {
 			$schema['address'] = $address;
 		}
 
-		$hours = get_option( 'goqw_business_hours' );
+		$hours = \get_option( 'goqw_business_hours' );
 		if ( is_string( $hours ) && '' !== $hours ) {
 			$schema['openingHours'] = $hours;
 		}
 
-		$service_area = get_option( 'goqw_business_service_area' );
+		$service_area = \get_option( 'goqw_business_service_area' );
 		if ( is_string( $service_area ) && '' !== $service_area ) {
 			$schema['areaServed'] = $service_area;
 		}
 
 		$schema['image'] = SEORouteContent::get_og_image_url();
 
-		$price_range = get_option( 'goqw_business_price_range' );
+		$price_range = \get_option( 'goqw_business_price_range' );
 		if ( is_string( $price_range ) && '' !== $price_range ) {
 			$schema['priceRange'] = $price_range;
 		}
@@ -130,11 +130,11 @@ final class LocalBusinessSchemaEmitter {
 	 * Get business name from option or fall back to site name.
 	 */
 	private static function get_business_name(): string {
-		$name = get_option( 'goqw_business_name' );
+		$name = \get_option( 'goqw_business_name' );
 		if ( is_string( $name ) && '' !== $name ) {
 			return $name;
 		}
-		return get_bloginfo( 'name' );
+		return \get_bloginfo( 'name' );
 	}
 
 	/**
@@ -152,7 +152,7 @@ final class LocalBusinessSchemaEmitter {
 	 *                                    when no address option is set.
 	 */
 	private static function build_address_schema(): ?array {
-		$structured = get_option( 'goqw_business_address_structured' );
+		$structured = \get_option( 'goqw_business_address_structured' );
 		if ( is_string( $structured ) && '' !== $structured ) {
 			$decoded = json_decode( $structured, true );
 			if ( is_array( $decoded ) ) {
@@ -160,7 +160,7 @@ final class LocalBusinessSchemaEmitter {
 			}
 		}
 
-		$address_string = get_option( 'goqw_business_address' );
+		$address_string = \get_option( 'goqw_business_address' );
 		if ( ! is_string( $address_string ) || '' === $address_string ) {
 			return null;
 		}
@@ -208,7 +208,7 @@ final class LocalBusinessSchemaEmitter {
 
 		$urls = array();
 		foreach ( $platforms as $option_key ) {
-			$value = get_option( $option_key );
+			$value = \get_option( $option_key );
 			if ( is_string( $value ) && '' !== $value ) {
 				$urls[] = $value;
 			}

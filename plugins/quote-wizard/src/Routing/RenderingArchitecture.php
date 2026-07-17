@@ -33,7 +33,7 @@ final class RenderingArchitecture {
 	 * Register the template-filtering hook. Idempotent; safe to call multiple times.
 	 */
 	public static function register(): void {
-		add_filter( 'template_include', array( __CLASS__, 'filter_template_for_react_routes' ), 100 );
+		\add_filter( 'template_include', array( __CLASS__, 'filter_template_for_react_routes' ), 100 );
 	}
 
 	/**

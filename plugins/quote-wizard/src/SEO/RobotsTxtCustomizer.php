@@ -34,7 +34,7 @@ final class RobotsTxtCustomizer {
 	 * Register the filter hook.
 	 */
 	public static function register(): void {
-		add_filter( 'robots_txt', array( __CLASS__, 'customize' ), 10, 2 );
+		\add_filter( 'robots_txt', array( __CLASS__, 'customize' ), 10, 2 );
 	}
 
 	/**
@@ -49,6 +49,6 @@ final class RobotsTxtCustomizer {
 			return $output;
 		}
 
-		return $output . "\nSitemap: " . home_url( '/sitemap.xml' ) . "\n";
+		return $output . "\nSitemap: " . \home_url( '/sitemap.xml' ) . "\n";
 	}
 }

@@ -100,11 +100,11 @@ final class AssetLoader {
 	 * Does the current request render a page whose content includes the shortcode?
 	 */
 	private static function current_page_has_shortcode(): bool {
-		if ( ! is_singular() ) {
+		if ( ! \is_singular() ) {
 			return false;
 		}
 
-		$post = get_post();
+		$post = \get_post();
 
 		if ( ! ( $post instanceof \WP_Post ) ) {
 			return false;
@@ -123,7 +123,7 @@ final class AssetLoader {
 		$css_url = ManifestReader::asset_url( $manifest['css'] );
 
 		// CSS first.
-		wp_enqueue_style(
+		\wp_enqueue_style(
 			self::STYLE_HANDLE,
 			$css_url,
 			array(),
@@ -132,13 +132,13 @@ final class AssetLoader {
 
 		// Inject primary color CSS variable.
 		$primary_rgb = self::hex_to_rgb_triplet( PublicConfig::build()['primaryColor'] );
-		wp_add_inline_style(
+		\wp_add_inline_style(
 			self::STYLE_HANDLE,
-			':root { --goqw-primary: ' . esc_attr( $primary_rgb ) . '; }'
+			':root { --goqw-primary: ' . \esc_attr( $primary_rgb ) . '; }'
 		);
 
 		// JS in footer as module.
-		wp_enqueue_script(
+		\wp_enqueue_script(
 			self::SCRIPT_HANDLE,
 			$js_url,
 			array(),
@@ -150,7 +150,7 @@ final class AssetLoader {
 		);
 
 		// Make script a module.
-		add_filter(
+		\add_filter(
 			'script_loader_tag',
 			static function ( string $tag, string $handle ): string {
 				if ( self::SCRIPT_HANDLE !== $handle ) {
@@ -163,7 +163,7 @@ final class AssetLoader {
 		);
 
 		// Inject config before the bundle.
-		wp_add_inline_script(
+		\wp_add_inline_script(
 			self::SCRIPT_HANDLE,
 			'window.GOQW_CONFIG = ' . PublicConfig::to_inline_json() . ';',
 			'before'
@@ -214,7 +214,7 @@ final class AssetLoader {
 	 * Render admin notice when build assets are missing.
 	 */
 	public static function render_admin_notice(): void {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! \current_user_can( 'manage_options' ) ) {
 			return;
 		}
 
@@ -224,9 +224,9 @@ final class AssetLoader {
 
 		printf(
 			'<div class="notice notice-error"><p><strong>%1$s</strong> %2$s</p><p>%3$s</p></div>',
-			esc_html__( 'Quote Wizard:', 'quote-wizard' ),
-			esc_html__( 'compiled React assets are missing or unreadable.', 'quote-wizard' ),
-			esc_html__( 'Run "pnpm build-plugin" from the project root to rebuild.', 'quote-wizard' )
+			\esc_html__( 'Quote Wizard:', 'quote-wizard' ),
+			\esc_html__( 'compiled React assets are missing or unreadable.', 'quote-wizard' ),
+			\esc_html__( 'Run "pnpm build-plugin" from the project root to rebuild.', 'quote-wizard' )
 		);
 	}
 }

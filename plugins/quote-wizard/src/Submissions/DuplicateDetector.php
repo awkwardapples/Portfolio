@@ -58,7 +58,7 @@ class DuplicateDetector {
 		// Window is computed in UTC (gmdate), matching created_at's storage
 		// convention (current_time('mysql', true)) — using local server time
 		// here would silently shift the window by the server's UTC offset.
-		$window_start = gmdate( 'Y-m-d H:i:s', time() - self::WINDOW_SECONDS );
+		$window_start = \gmdate( 'Y-m-d H:i:s', time() - self::WINDOW_SECONDS );
 
 		$match_id = $this->repository->find_recent_by_contact( $normalized_email, $normalized_phone, $window_start );
 

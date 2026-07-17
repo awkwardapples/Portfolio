@@ -82,7 +82,7 @@ class RateLimiter {
 
 		if ( null === $entry ) {
 			$expires_at = time() + $this->window_seconds;
-			set_transient(
+			\set_transient(
 				$this->transient_key( $ip_address ),
 				array(
 					'count'      => 1,
@@ -95,7 +95,7 @@ class RateLimiter {
 
 		// Preserve the original window's expiry; only the count advances.
 		$remaining_ttl = max( 1, $entry['expires_at'] - time() );
-		set_transient(
+		\set_transient(
 			$this->transient_key( $ip_address ),
 			array(
 				'count'      => $entry['count'] + 1,
@@ -113,7 +113,7 @@ class RateLimiter {
 	 * @return array{count: int, expires_at: int}|null
 	 */
 	private function read( string $ip_address ): ?array {
-		$value = get_transient( $this->transient_key( $ip_address ) );
+		$value = \get_transient( $this->transient_key( $ip_address ) );
 
 		if ( ! is_array( $value ) || ! isset( $value['count'], $value['expires_at'] ) ) {
 			return null;

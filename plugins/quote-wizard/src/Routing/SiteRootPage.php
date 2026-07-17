@@ -45,10 +45,10 @@ class SiteRootPage {
 	 * @throws \RuntimeException When page creation fails.
 	 */
 	public function ensure(): int {
-		$stored_id = (int) get_option( self::OPTION_KEY, 0 );
+		$stored_id = (int) \get_option( self::OPTION_KEY, 0 );
 
 		if ( $stored_id > 0 ) {
-			$post = get_post( $stored_id );
+			$post = \get_post( $stored_id );
 			if (
 				$post instanceof \WP_Post &&
 				$post->post_status === 'publish' &&
@@ -58,7 +58,7 @@ class SiteRootPage {
 			}
 		}
 
-		$page_id = wp_insert_post(
+		$page_id = \wp_insert_post(
 			array(
 				'post_title'     => self::TITLE,
 				'post_name'      => self::SLUG,
@@ -71,13 +71,13 @@ class SiteRootPage {
 			true
 		);
 
-		if ( is_wp_error( $page_id ) ) {
+		if ( \is_wp_error( $page_id ) ) {
 			throw new \RuntimeException(
 				'Failed to create Site Root page: ' . $page_id->get_error_message() // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
 			);
 		}
 
-		update_option( self::OPTION_KEY, (int) $page_id );
+		\update_option( self::OPTION_KEY, (int) $page_id );
 		return (int) $page_id;
 	}
 
@@ -88,7 +88,7 @@ class SiteRootPage {
 	 * should use ensure() instead.
 	 */
 	public function id(): int {
-		return (int) get_option( self::OPTION_KEY, 0 );
+		return (int) \get_option( self::OPTION_KEY, 0 );
 	}
 
 	/**
@@ -97,8 +97,8 @@ class SiteRootPage {
 	public function delete(): void {
 		$id = $this->id();
 		if ( $id > 0 ) {
-			wp_delete_post( $id, true );
+			\wp_delete_post( $id, true );
 		}
-		delete_option( self::OPTION_KEY );
+		\delete_option( self::OPTION_KEY );
 	}
 }

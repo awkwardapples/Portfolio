@@ -164,12 +164,12 @@ final class SubmissionController {
 			$photo_result = $this->store_photos( $answers );
 			$answers      = $photo_result['answers'];
 
-			$validated['answers_json']      = wp_json_encode( $answers );
+			$validated['answers_json']      = \wp_json_encode( $answers );
 			$validated['media_json']        = $this->extract_media_json( $answers );
 			$validated['is_duplicate']      = $duplicate_check['isDuplicate'];
 			$validated['duplicate_of']      = $duplicate_check['originalSubmissionId'] ?? null;
 			$validated['consent_given']     = true;
-			$validated['consent_timestamp'] = current_time( 'mysql', true );
+			$validated['consent_timestamp'] = \current_time( 'mysql', true );
 			unset( $validated['answers'] );
 
 			// Step 2: persist durably (must succeed before any forward attempt).
@@ -300,7 +300,7 @@ final class SubmissionController {
 		}
 
 		return array(
-			'wizard_id'        => sanitize_key( $wizard_id ),
+			'wizard_id'        => \sanitize_key( $wizard_id ),
 			'schema_version'   => isset( $payload['schemaVersion'] ) && is_int( $payload['schemaVersion'] )
 				? $payload['schemaVersion']
 				: 1,
@@ -309,8 +309,8 @@ final class SubmissionController {
 			// (replacing dataBase64 with url/attachmentId) before answers_json
 			// and media_json are derived from it. See handle().
 			'answers'          => $answers,
-			'pricing_json'     => null !== $pricing ? wp_json_encode( $pricing ) : null,
-			'client_timestamp' => sanitize_text_field( $client_ts ),
+			'pricing_json'     => null !== $pricing ? \wp_json_encode( $pricing ) : null,
+			'client_timestamp' => \sanitize_text_field( $client_ts ),
 		);
 	}
 
@@ -431,7 +431,7 @@ final class SubmissionController {
 				);
 			}
 		}
-		return empty( $media ) ? null : wp_json_encode( $media );
+		return empty( $media ) ? null : \wp_json_encode( $media );
 	}
 
 	/**

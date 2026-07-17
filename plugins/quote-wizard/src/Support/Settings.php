@@ -58,7 +58,7 @@ final class Settings {
 		return self::resolve(
 			'GOQW_AGENCY_NOTIFICATION_EMAIL',
 			'goqw_agency_notification_email',
-			(string) get_option( 'admin_email', '' )
+			(string) \get_option( 'admin_email', '' )
 		);
 	}
 
@@ -68,21 +68,21 @@ final class Settings {
 	 * Option only: goqw_business_name (no constant — clients edit this themselves).
 	 */
 	public static function business_name(): string {
-		return (string) get_option( 'goqw_business_name', (string) get_option( 'blogname', '' ) );
+		return (string) \get_option( 'goqw_business_name', (string) \get_option( 'blogname', '' ) );
 	}
 
 	/**
 	 * Get the business phone for the fallback CTA (public).
 	 */
 	public static function business_phone(): string {
-		return (string) get_option( 'goqw_business_phone', '' );
+		return (string) \get_option( 'goqw_business_phone', '' );
 	}
 
 	/**
 	 * Get the business contact email (public).
 	 */
 	public static function business_email(): string {
-		return (string) get_option( 'goqw_business_email', '' );
+		return (string) \get_option( 'goqw_business_email', '' );
 	}
 
 	/**
@@ -91,14 +91,14 @@ final class Settings {
 	 * Default keeps the dev-time placeholder used in apps/wizard/index.html.
 	 */
 	public static function primary_color(): string {
-		return (string) get_option( 'goqw_primary_color', '#0F4C81' );
+		return (string) \get_option( 'goqw_primary_color', '#0F4C81' );
 	}
 
 	/**
 	 * Get the Calendly URL for the post-submission CTA (public, optional).
 	 */
 	public static function calendly_url(): string {
-		return (string) get_option( 'goqw_calendly_url', '' );
+		return (string) \get_option( 'goqw_calendly_url', '' );
 	}
 
 	/**
@@ -108,7 +108,7 @@ final class Settings {
 	 * Default 90 days per the operational policy.
 	 */
 	public static function retention_days(): int {
-		return (int) get_option( 'goqw_retention_days', 90 );
+		return (int) \get_option( 'goqw_retention_days', 90 );
 	}
 
 	/**
@@ -117,7 +117,7 @@ final class Settings {
 	 * skips every layer regardless of Turnstile configuration.
 	 */
 	public static function bot_protection_enabled(): bool {
-		return (bool) get_option( 'goqw_bot_protection_enabled', true );
+		return (bool) \get_option( 'goqw_bot_protection_enabled', true );
 	}
 
 	/**
@@ -125,7 +125,7 @@ final class Settings {
 	 * Cloudflare embeds site keys in client-side HTML by design).
 	 */
 	public static function turnstile_site_key(): string {
-		return (string) get_option( 'goqw_turnstile_site_key', '' );
+		return (string) \get_option( 'goqw_turnstile_site_key', '' );
 	}
 
 	/**
@@ -152,7 +152,7 @@ final class Settings {
 	 * Get the maximum submissions allowed per IP per hour.
 	 */
 	public static function rate_limit_per_hour(): int {
-		return (int) get_option( 'goqw_rate_limit_per_hour', 5 );
+		return (int) \get_option( 'goqw_rate_limit_per_hour', 5 );
 	}
 
 	/**
@@ -195,7 +195,7 @@ final class Settings {
 			}
 		}
 
-		$option_value = get_option( $option_name, '' );
+		$option_value = \get_option( $option_name, '' );
 		if ( is_string( $option_value ) && '' !== $option_value ) {
 			return $option_value;
 		}

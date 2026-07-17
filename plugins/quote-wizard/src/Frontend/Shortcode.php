@@ -66,13 +66,13 @@ final class Shortcode {
 
 		$mount = sprintf(
 			'<div id="%1$s" data-mount="quote-wizard"></div>',
-			esc_attr( self::MOUNT_ID )
+			\esc_attr( self::MOUNT_ID )
 		);
 
 		// If the build is missing, add an admin-visible warning ABOVE the mount
 		// div so the developer/operator sees the cause immediately. Regular
 		// visitors with no manage_options capability see only the empty mount.
-		if ( 'missing' === AssetLoader::build_state() && current_user_can( 'manage_options' ) ) {
+		if ( 'missing' === AssetLoader::build_state() && \current_user_can( 'manage_options' ) ) {
 			return self::admin_warning_html() . $mount;
 		}
 
@@ -92,14 +92,14 @@ final class Shortcode {
 	 * function calls.
 	 */
 	private static function admin_warning_html(): string {
-		$title = esc_html__( 'Quote Wizard: build assets missing', 'quote-wizard' );
+		$title = \esc_html__( 'Quote Wizard: build assets missing', 'quote-wizard' );
 
-		$message = esc_html__(
+		$message = \esc_html__(
 			'The plugin could not find or read the compiled React assets. This message is only visible to administrators.',
 			'quote-wizard'
 		);
 
-		$hint = esc_html__(
+		$hint = \esc_html__(
 			'Run the build pipeline from the repo root: pnpm build-plugin.',
 			'quote-wizard'
 		);
@@ -112,10 +112,10 @@ final class Shortcode {
 
 		$style_hint = 'margin:0;color:#50575e;font-size:13px;';
 
-		$html  = '<div style="' . esc_attr( $style_box ) . '">';
-		$html .= '<p style="' . esc_attr( $style_head ) . '">' . $title . '</p>';
-		$html .= '<p style="' . esc_attr( $style_body ) . '">' . $message . '</p>';
-		$html .= '<p style="' . esc_attr( $style_hint ) . '">' . $hint . '</p>';
+		$html  = '<div style="' . \esc_attr( $style_box ) . '">';
+		$html .= '<p style="' . \esc_attr( $style_head ) . '">' . $title . '</p>';
+		$html .= '<p style="' . \esc_attr( $style_body ) . '">' . $message . '</p>';
+		$html .= '<p style="' . \esc_attr( $style_hint ) . '">' . $hint . '</p>';
 		$html .= '</div>';
 
 		return $html;

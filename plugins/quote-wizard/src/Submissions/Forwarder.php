@@ -43,7 +43,7 @@ class Forwarder {
 			return ForwardResult::failure( 'webhook_not_configured' );
 		}
 
-		$body = wp_json_encode(
+		$body = \wp_json_encode(
 			array(
 				'submission_id'    => $submission_id,
 				'wizard_id'        => $payload['wizard_id'],
@@ -60,7 +60,7 @@ class Forwarder {
 			)
 		);
 
-		$response = wp_remote_post(
+		$response = \wp_remote_post(
 			$webhook_url,
 			array(
 				'method'  => 'POST',
@@ -70,11 +70,11 @@ class Forwarder {
 			)
 		);
 
-		if ( is_wp_error( $response ) ) {
+		if ( \is_wp_error( $response ) ) {
 			return ForwardResult::failure( 'transport_error: ' . $response->get_error_message() );
 		}
 
-		$code = (int) wp_remote_retrieve_response_code( $response );
+		$code = (int) \wp_remote_retrieve_response_code( $response );
 
 		if ( $code < 200 || $code >= 300 ) {
 			return ForwardResult::failure( sprintf( 'http_status_%d', $code ) );
@@ -91,6 +91,6 @@ class Forwarder {
 			return (string) GOQW_MAKE_WEBHOOK_URL;
 		}
 
-		return (string) get_option( 'goqw_webhook_url', '' );
+		return (string) \get_option( 'goqw_webhook_url', '' );
 	}
 }

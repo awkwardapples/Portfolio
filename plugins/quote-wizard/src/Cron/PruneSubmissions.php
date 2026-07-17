@@ -51,7 +51,7 @@ final class PruneSubmissions {
 	 * Delete every submission row older than Settings::retention_days().
 	 */
 	public function execute(): void {
-		$cutoff = gmdate( 'Y-m-d H:i:s', time() - Settings::retention_days() * DAY_IN_SECONDS );
+		$cutoff = \gmdate( 'Y-m-d H:i:s', time() - Settings::retention_days() * DAY_IN_SECONDS );
 		$this->repository()->delete_older_than( $cutoff );
 	}
 

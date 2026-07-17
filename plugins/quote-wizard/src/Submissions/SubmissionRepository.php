@@ -58,7 +58,7 @@ class SubmissionRepository {
 				'media_json'        => $payload['media_json'] ?? null,
 				'client_timestamp'  => $payload['client_timestamp'],
 				'status'            => 'persisted',
-				'created_at'        => current_time( 'mysql', true ),
+				'created_at'        => \current_time( 'mysql', true ),
 				'is_duplicate'      => ! empty( $payload['is_duplicate'] ) ? 1 : 0,
 				'duplicate_of'      => $payload['duplicate_of'] ?? null,
 				'consent_given'     => ! empty( $payload['consent_given'] ) ? 1 : 0,
@@ -68,7 +68,7 @@ class SubmissionRepository {
 		);
 
 		if ( false === $result ) {
-			throw new \RuntimeException( 'DB insert failed: ' . esc_html( $this->wpdb->last_error ) );
+			throw new \RuntimeException( 'DB insert failed: ' . \esc_html( $this->wpdb->last_error ) );
 		}
 
 		return (int) $this->wpdb->insert_id;
@@ -134,7 +134,7 @@ class SubmissionRepository {
 			$this->table(),
 			array(
 				'status'       => 'forwarded',
-				'forwarded_at' => current_time( 'mysql', true ),
+				'forwarded_at' => \current_time( 'mysql', true ),
 			),
 			array( 'id' => $submission_id ),
 			array( '%s', '%s' ),
@@ -154,7 +154,7 @@ class SubmissionRepository {
 			array(
 				'status'               => 'forward_failed',
 				'forward_error'        => substr( $error_message, 0, 1000 ),
-				'forward_attempted_at' => current_time( 'mysql', true ),
+				'forward_attempted_at' => \current_time( 'mysql', true ),
 			),
 			array( 'id' => $submission_id ),
 			array( '%s', '%s', '%s' ),

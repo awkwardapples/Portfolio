@@ -131,3 +131,24 @@ it( 'delete() does not call wp_delete_post when no page is stored', function ():
 	$page = new SiteRootPage();
 	$page->delete();
 } );
+
+// ---------------------------------------------------------------------------
+// Namespace prefix defense (Step 5.14.1)
+// ---------------------------------------------------------------------------
+
+it( 'every WordPress function call in SiteRootPage.php is backslash-prefixed', function (): void {
+	$source = (string) file_get_contents( __DIR__ . '/../../../src/Routing/SiteRootPage.php' );
+
+	assert_wp_calls_are_prefixed(
+		$source,
+		[
+			'get_option',
+			'update_option',
+			'delete_option',
+			'get_post',
+			'wp_insert_post',
+			'wp_delete_post',
+			'is_wp_error',
+		]
+	);
+} );

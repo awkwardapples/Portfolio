@@ -33,6 +33,6 @@ final class ClientIp {
 			return '';
 		}
 
-		return sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+		return \sanitize_text_field( \wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
 	}
 }

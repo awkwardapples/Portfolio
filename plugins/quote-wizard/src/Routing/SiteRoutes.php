@@ -56,7 +56,7 @@ final class SiteRoutes {
 	 * in each consumer (AssetLoader, RenderingArchitecture, RouteInterceptor).
 	 */
 	public static function is_current_request_react_route(): bool {
-		if ( is_admin() ) {
+		if ( \is_admin() ) {
 			return false;
 		}
 		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {

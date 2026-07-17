@@ -29,7 +29,7 @@ final class SelfHealer {
 	 * Skip in non-frontend contexts (admin, REST, CLI, cron).
 	 */
 	public function check(): void {
-		if ( is_admin() ) {
+		if ( \is_admin() ) {
 			return;
 		}
 		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
@@ -48,7 +48,7 @@ final class SelfHealer {
 			return;
 		}
 
-		$post = get_post( $stored_id );
+		$post = \get_post( $stored_id );
 		if ( ! ( $post instanceof \WP_Post ) || $post->post_status !== 'publish' ) {
 			$this->page->ensure();
 		}

@@ -49,7 +49,7 @@ final class SiteRenderer {
 			header( 'Cache-Control: no-cache, must-revalidate, max-age=0' );
 		}
 
-		$initial_path = esc_attr( SiteRoutes::current_request_path() );
+		$initial_path = \esc_attr( SiteRoutes::current_request_path() );
 		return sprintf(
 			'<div id="qw-root" data-initial-path="%s"></div>',
 			$initial_path
@@ -61,7 +61,7 @@ final class SiteRenderer {
 	 * inside the main loop (not a widget, query, or admin context).
 	 */
 	private function is_site_root_in_main_loop(): bool {
-		if ( is_admin() ) {
+		if ( \is_admin() ) {
 			return false;
 		}
 		if ( ! in_the_loop() ) {
@@ -71,6 +71,6 @@ final class SiteRenderer {
 		if ( $site_root_id <= 0 ) {
 			return false;
 		}
-		return (int) get_the_ID() === $site_root_id;
+		return (int) \get_the_ID() === $site_root_id;
 	}
 }

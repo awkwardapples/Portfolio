@@ -37,7 +37,7 @@ class TurnstileClient {
 	 * @return array{success: bool, errorCodes: list<string>}
 	 */
 	public function verify( string $token, string $remote_ip ): array {
-		$response = wp_remote_post(
+		$response = \wp_remote_post(
 			self::VERIFY_URL,
 			array(
 				'body'    => array(
@@ -49,14 +49,14 @@ class TurnstileClient {
 			)
 		);
 
-		if ( is_wp_error( $response ) ) {
+		if ( \is_wp_error( $response ) ) {
 			return array(
 				'success'    => false,
 				'errorCodes' => array( 'network_error' ),
 			);
 		}
 
-		$decoded = json_decode( (string) wp_remote_retrieve_body( $response ), true );
+		$decoded = json_decode( (string) \wp_remote_retrieve_body( $response ), true );
 
 		if ( ! is_array( $decoded ) ) {
 			return array(

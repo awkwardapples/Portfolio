@@ -82,7 +82,7 @@ final class Logger {
 		$line = '[goqw-ops] ' . $message;
 
 		if ( ! empty( $context ) ) {
-			$encoded = wp_json_encode( $context );
+			$encoded = \wp_json_encode( $context );
 			if ( is_string( $encoded ) ) {
 				$line .= ' ' . $encoded;
 			}
@@ -103,7 +103,7 @@ final class Logger {
 		$line = self::PREFIX . ' [' . $level . '] ' . $message;
 
 		if ( ! empty( $context ) ) {
-			$encoded = wp_json_encode( $context );
+			$encoded = \wp_json_encode( $context );
 			if ( is_string( $encoded ) ) {
 				$line .= ' ' . $encoded;
 			}

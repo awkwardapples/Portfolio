@@ -70,10 +70,10 @@ final class SitemapGenerator {
 	 * Register hooks: disable WP core sitemap, add rewrite rule, serve.
 	 */
 	public static function register(): void {
-		add_filter( 'wp_sitemaps_enabled', '__return_false' );
-		add_action( 'init', array( __CLASS__, 'add_rewrite_rule' ) );
-		add_filter( 'query_vars', array( __CLASS__, 'add_query_var' ) );
-		add_action( 'template_redirect', array( __CLASS__, 'maybe_serve_sitemap' ), 1 );
+		\add_filter( 'wp_sitemaps_enabled', '__return_false' );
+		\add_action( 'init', array( __CLASS__, 'add_rewrite_rule' ) );
+		\add_filter( 'query_vars', array( __CLASS__, 'add_query_var' ) );
+		\add_action( 'template_redirect', array( __CLASS__, 'maybe_serve_sitemap' ), 1 );
 	}
 
 	/**
@@ -83,7 +83,7 @@ final class SitemapGenerator {
 	 * /sitemap.xml is never handled by the React SPA template.
 	 */
 	public static function add_rewrite_rule(): void {
-		add_rewrite_rule( '^sitemap\.xml$', 'index.php?goqw_sitemap=1', 'top' );
+		\add_rewrite_rule( '^sitemap\.xml$', 'index.php?goqw_sitemap=1', 'top' );
 	}
 
 	/**
@@ -104,11 +104,11 @@ final class SitemapGenerator {
 	 * normal template loading.
 	 */
 	public static function maybe_serve_sitemap(): void {
-		if ( ! (bool) get_query_var( 'goqw_sitemap' ) ) {
+		if ( ! (bool) \get_query_var( 'goqw_sitemap' ) ) {
 			return;
 		}
 
-		header( 'Content-Type: application/xml; charset=' . get_bloginfo( 'charset' ) );
+		header( 'Content-Type: application/xml; charset=' . \get_bloginfo( 'charset' ) );
 		header( 'X-Robots-Tag: noindex' );
 
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -129,10 +129,10 @@ final class SitemapGenerator {
 
 		foreach ( self::ROUTE_METADATA as $path => $metadata ) {
 			$xml .= "  <url>\n";
-			$xml .= '    <loc>' . esc_url( home_url( $path ) ) . "</loc>\n";
-			$xml .= '    <lastmod>' . esc_html( $lastmod ) . "</lastmod>\n";
-			$xml .= '    <changefreq>' . esc_html( $metadata['changefreq'] ) . "</changefreq>\n";
-			$xml .= '    <priority>' . esc_html( $metadata['priority'] ) . "</priority>\n";
+			$xml .= '    <loc>' . \esc_url( \home_url( $path ) ) . "</loc>\n";
+			$xml .= '    <lastmod>' . \esc_html( $lastmod ) . "</lastmod>\n";
+			$xml .= '    <changefreq>' . \esc_html( $metadata['changefreq'] ) . "</changefreq>\n";
+			$xml .= '    <priority>' . \esc_html( $metadata['priority'] ) . "</priority>\n";
 			$xml .= "  </url>\n";
 		}
 
@@ -147,10 +147,10 @@ final class SitemapGenerator {
 	 * otherwise today's date in Y-m-d format.
 	 */
 	private static function get_lastmod_date(): string {
-		$override = get_option( 'goqw_sitemap_lastmod' );
+		$override = \get_option( 'goqw_sitemap_lastmod' );
 		if ( is_string( $override ) && '' !== $override ) {
 			return $override;
 		}
-		return gmdate( 'Y-m-d' );
+		return \gmdate( 'Y-m-d' );
 	}
 }

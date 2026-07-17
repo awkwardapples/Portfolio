@@ -191,3 +191,26 @@ it( 'deletes the transient after rendering (one-shot)', function (): void {
 	$policy->maybe_render_notice();
 	ob_end_clean();
 } );
+
+// ---------------------------------------------------------------------------
+// Namespace prefix defense (Step 5.14.1)
+// ---------------------------------------------------------------------------
+
+it( 'every WordPress function call in FrontPagePolicy.php is backslash-prefixed', function (): void {
+	$source = (string) file_get_contents( __DIR__ . '/../../../src/Routing/FrontPagePolicy.php' );
+
+	assert_wp_calls_are_prefixed(
+		$source,
+		[
+			'get_option',
+			'update_option',
+			'set_transient',
+			'get_transient',
+			'delete_transient',
+			'current_user_can',
+			'esc_url',
+			'admin_url',
+			'get_edit_post_link',
+		]
+	);
+} );
