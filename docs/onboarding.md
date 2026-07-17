@@ -90,6 +90,55 @@ If you see a `.js.map` line, something regressed — that file should never reac
 3. Once the site is running, note its database port: LocalWP assigns each site its own MySQL port (for example `10005`). You rarely need it directly, but it is the reason WP-CLI and database tools must be run from LocalWP's own shell — running them from a generic terminal can connect to the wrong database. This bit us during development; always use LocalWP's "Open site shell" for `wp` commands.
 4. Set the active theme to **Kadence**. The wizard relies on the normal WordPress content-render lifecycle. Block/Full-Site-Editing themes that use a "canvas" template can bypass that lifecycle and prevent the shortcode from rendering. Kadence is the confirmed-working theme for the first client. (If a future client uses an FSE theme, the fix is to place the shortcode on a content-rendering template, not the canvas template.)
 
+## LocalWP MySQL Port Configuration
+
+A fresh LocalWP site's generated `wp-config.php` ships with
+`define( 'DB_HOST', 'localhost' )` — no port. LocalWP does not run MySQL on the
+default port 3306; every site gets its own port (typically in the 10000–11000
+range), so this default fails outright for any direct database connection,
+including some tooling that reads `wp-config.php` rather than going through
+`wp`. (Step 3, point 3, above covers the related but separate issue of running
+`wp`/database tools from the wrong shell — this section covers fixing the
+config file itself.)
+
+### Finding your MySQL port
+
+**Option 1 — LocalWP UI:** click your site in LocalWP, open the "Database" tab,
+note the port shown.
+
+**Option 2 — PowerShell**, from LocalWP's own site shell:
+
+```powershell
+wp config get DB_HOST
+```
+
+If this already shows a port (`localhost:10012`), LocalWP set it correctly at
+site creation and you can skip the rest of this section.
+
+### Updating wp-config.php
+
+If `DB_HOST` has no port, edit
+`C:\Users\<you>\Local Sites\<site>\app\public\wp-config.php`:
+
+```php
+// Before
+define( 'DB_HOST', 'localhost' );
+
+// After (replace 10012 with the port from LocalWP's Database tab)
+define( 'DB_HOST', 'localhost:10012' );
+```
+
+Verify from LocalWP's site shell:
+
+```bash
+wp db query "SELECT 1;"
+# Should return: 1
+```
+
+Without this fix, `wp db` commands and any direct MySQL connection fail with
+`Can't connect to MySQL server on 'localhost:3306'` — even from LocalWP's own
+site shell.
+
 ## Step 4 — Link the plugin into WordPress (about 3 minutes)
 
 You want the plugin in your repo to be the same plugin WordPress runs, so edits show up without copying files around. Use a directory symlink (junction) from the LocalWP plugins directory to your repo's plugin folder.
@@ -696,6 +745,41 @@ the JSON body. The `if ( ! defined( ... ) )` guard prevents this. Set
 `WP_DEBUG_DISPLAY` to `false` so notices go to `wp-content/debug.log` and are
 not prepended to REST responses. For production deployments, set `WP_DEBUG` to
 `false`.
+
+### Plugin development — OpCache awareness
+
+PHP OpCache caches _compiled_ PHP bytecode, independent of `pnpm build-plugin`
+(which only rebuilds the React bundle — plugin PHP files are `require`d
+directly with no build step of their own). If you edit a plugin PHP file
+in-place on a running LocalWP site and OpCache is enabled, WordPress can keep
+serving the previously-compiled version of that file until the cache is
+invalidated.
+
+**Symptom:** the debug log references a line number or behavior that doesn't
+match the current file content, or an error persists after you've already
+fixed the code that caused it.
+
+**Fastest fix — deactivate/reactivate the plugin** (from LocalWP's site shell):
+
+```bash
+wp plugin deactivate quote-wizard
+wp plugin activate quote-wizard
+```
+
+**Alternative — restart the LocalWP site:** click Stop in the LocalWP UI, wait
+a few seconds, click Start.
+
+**Last resort — touch the plugin's main file** to bump its mtime, which some
+OpCache configurations use as an invalidation signal:
+
+```powershell
+$file = "C:\Users\<you>\Local Sites\<site>\app\public\wp-content\plugins\quote-wizard\quote-wizard.php"
+(Get-Item $file).LastWriteTime = Get-Date
+```
+
+This is unrelated to the symlink-vs-copy distinction in the daily development
+loop above — OpCache staleness can happen either way, since it caches compiled
+bytecode per file path regardless of how that path was populated.
 
 ### Common pitfalls
 
