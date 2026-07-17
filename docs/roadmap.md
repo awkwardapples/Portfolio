@@ -49,6 +49,7 @@ A single-page, structural view of project state. Update on every completed step.
 | 5.13g                 | Complete | Duplicate submission prevention: 24h contact-match detection, no re-forward; ADR-0028                                        |
 | 5.14                  | Complete | Data protection & UK GDPR compliance: consent capture, /privacy policy route, submission retention cron; ADR-0029            |
 | 5.14.1                | Complete | Environmental robustness: wp_tempnam load-order fix, namespace prefix defense, rate-limit UX, DB_HOST/OpCache docs; ADR-0030 |
+| 5.14.2                | Complete | Photo upload extension/MIME consistency: client + server filename correction for compressed JPEG output; ADR-0031            |
 | 5.12                  | Planned  | SCB-specific deployment (first real client)                                                                                  |
 | 6.0                   | Planned  | Production IONOS deployment                                                                                                  |
 | 6.1+                  | Future   | Second and subsequent clients                                                                                                |

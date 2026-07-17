@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-07-17 (post Step 5.14.1)_
+_Last updated: 2026-07-17 (post Step 5.14.2)_
 
 ## What's working
 
@@ -30,8 +30,19 @@ _Last updated: 2026-07-17 (post Step 5.14.1)_
 - Duplicate submission prevention (Step 5.13g): `Submissions\DuplicateDetector` flags a submission as a duplicate when its normalized `contact_email` or `contact_phone` matches a non-duplicate submission from the last 24 hours. A duplicate is still fully persisted (photos included) but marked `is_duplicate`/`duplicate_of` and never forwarded to Make.com/WhatsApp — the response is still `200 { reference, isDuplicate: true }`. `SuccessScreen` renders different, client-owned copy for a duplicate. ADR-0028.
 - Data protection & UK GDPR compliance (Step 5.14): a required `data_processing_consent` checkbox field on the last mandatory step of every one of the 11 wizard configs; `Submissions\ConsentValidator` enforces it server-side (`400 consent_required` if missing, nothing persisted); accepted submissions gain `consent_given`/`consent_timestamp` columns. New `/privacy` route (sixth site route) renders a real UK GDPR privacy policy from `site/content/privacy-content.ts`, closing a pre-existing dangling footer link. `Cron\PruneSubmissions` — scheduled since Step 3D but never implemented — now deletes submissions older than `Settings::retention_days()` (default 90 days) and is finally hooked in `Plugin::boot()`; photo retention (`PhotoRetention`, 6 months) is unchanged and independent. ADR-0029.
 - Environmental robustness & namespace prefixes (Step 5.14.1): `Submissions\PhotoStorage` now loads its wp-admin includes (`ensure_upload_functions_loaded()`) as the first statement in `store_photo()`, before `wp_tempnam()` can be reached — fixes an SCB-pilot photo-upload failure caused by the require running too late. Every WordPress core function call in namespaced plugin PHP (33 files) is now backslash-prefixed (ADR-0030). The client's `httpSubmissionPort` handles HTTP 429 as a distinct `rate_limited` error code with a "Please try again in N minute(s)" message instead of falling through to a generic server error. `docs/onboarding.md` gained LocalWP DB_HOST and PHP OpCache guidance.
+- Photo upload extension/MIME consistency (Step 5.14.2): browser-side compression (`image-compression.ts`) always re-encodes to JPEG, but the wizard was submitting the pre-compression filename (e.g. `holiday.png`) alongside the correct `image/jpeg` MIME claim — WordPress's `wp_handle_upload()` rejects that mismatch via `wp_check_filetype_and_ext()`. Fixed client-side (`correctedJpegFileName()` in `image-compression.ts`, consumed via a new `buildPhotoMetadata()` helper in `domain/runtime/photos.ts`) and server-side (`Submissions\PhotoStorage::correct_filename_extension()`, a `MIME_TO_EXTENSION` map applied before `wp_handle_upload()` runs, independent of client behavior). ADR-0031.
 
 ## Gate state (last verified)
+
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: 0 errors (pre-existing, unrelated `tsconfig.test.json` type errors in `non-field-step-engine.test.ts` predate this step — last touched in the 5.13a/5.13b commits)
+- `pnpm test`: **772/772** (59 test files, +9 from 5.14.1)
+- `pnpm build`: clean (bundle unchanged in practice)
+- `composer test`: **247 passed, 4 skipped** (+5 from 5.14.1)
+- `composer analyse`: clean (PHPStan level 8, no errors)
+- `composer lint`: 0/0 for all files touched this step (pre-existing, unrelated drift in `quote-wizard.php` predates 5.13e/5.13f/5.13g/5.14/5.14.1/5.14.2)
+
+## Gate state (5.14.1, 2026-07-17)
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors (pre-existing, unrelated `tsconfig.test.json` type errors in `non-field-step-engine.test.ts` predate this step — last touched in the 5.13a/5.13b commits)
@@ -295,6 +306,21 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
   plus the business profile JSON schema, modification map, report template,
   pre-deployment checklist, final verification commands, and three appendices.
   Documentation-only; all gates unchanged (598 Vitest, 143 PHP).
+- **Step 5.14.2 — Photo Upload Extension/MIME Consistency** (July 2026).
+  ADR-0031 accepted. Browser-side compression (`image-compression.ts`) always
+  re-encodes selected photos to JPEG, but `PhotoField.tsx` was submitting each
+  photo's pre-compression filename (e.g. `holiday.png`) alongside the correct
+  `image/jpeg` MIME claim — WordPress's `wp_handle_upload()` rejects that
+  filename/MIME mismatch via `wp_check_filetype_and_ext()`, a real-WordPress-only
+  failure this project's mocked test suite could never catch. Defense-in-depth fix:
+  client-side, `compressImage()` returns a new `correctedFileName` field via the
+  extracted pure `correctedJpegFileName()` helper, consumed by a new
+  `buildPhotoMetadata()` helper in `domain/runtime/photos.ts` that `PhotoField.tsx`
+  now calls instead of building `PhotoMetadata` inline; server-side,
+  `Submissions\PhotoStorage` gains a `MIME_TO_EXTENSION` map and
+  `correct_filename_extension()`, applied before `wp_handle_upload()` runs,
+  independent of what the client sends. 5 new PHP tests (242→247), 9 new Vitest
+  tests (763→772).
 - **Step 5.14.1 — Environmental Robustness + Namespace Prefixes** (July 2026).
   ADR-0030 accepted. Fixes discovered during SCB pilot testing, not new features.
   `Submissions\PhotoStorage::store_photo()` called `wp_tempnam()` before its
@@ -485,6 +511,6 @@ Strict ordering: validate → persist → forward → respond.
 
 - lint (`pnpm lint` → 0 errors, 0 warnings)
 - typecheck (`pnpm typecheck`)
-- vitest (`pnpm test` → 763/763)
+- vitest (`pnpm test` → 772/772)
 - build (`pnpm build`)
-- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 242 passed (4 skipped)
+- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 247 passed (4 skipped)

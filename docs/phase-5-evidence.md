@@ -2520,3 +2520,74 @@ accepted.
 | 18  | DB_HOST section resolves per-client issue              | ⏳ pending operational verification                                             |
 | 19  | Photo upload succeeds without wp_tempnam error         | ⏳ pending operational verification                                             |
 | 20  | Rate limit response shows retry-after message          | ⏳ pending operational verification                                             |
+
+## Step 5.14.2 Evidence
+
+**Step:** Photo Upload Extension/MIME Consistency (2026-07-17)
+
+### Summary
+
+Fixes a real photo-upload bug: browser-side compression (`image-compression.ts`)
+always re-encodes to JPEG, but the wizard was submitting the _pre-compression_
+filename (e.g. `holiday.png`) alongside the (correct) `image/jpeg` MIME claim.
+WordPress's `wp_handle_upload()` internally rejects that filename/MIME mismatch via
+`wp_check_filetype_and_ext()` — a real-WordPress-only failure the mocked test suite
+could never catch (`AUDIT-5.14.2-integration.md`). Defense-in-depth fix per spec Q1=C:
+client (`correctedJpegFileName()` in compression, consumed via `buildPhotoMetadata()`)
+and server (`PhotoStorage::correct_filename_extension()`, a `MIME_TO_EXTENSION` safety
+net independent of client behavior). ADR-0031 accepted.
+
+### Gate state
+
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: 0 errors (pre-existing, unrelated `tsconfig.test.json` type errors
+  in `non-field-step-engine.test.ts` predate this step)
+- `pnpm test`: **772/772 Vitest** (+9 from 5.14.1, 59 test files)
+- `pnpm build`: clean (bundle unchanged in practice — new code is a few lines of pure
+  filename logic)
+- `composer lint`: 0/0 for all files touched this step (`quote-wizard.php` carries
+  pre-existing, unrelated drift predating 5.13e)
+- `composer analyse`: no errors (PHPStan level 8)
+- `composer test`: **247 passed, 4 skipped** (+5 from 5.14.1 — 3 PhotoStorage extension
+  correction, 2 regression/integration-style)
+
+### Deviations from the spec
+
+- **No `WP_UnitTestCase`-based integration test.** This project has never had a
+  real-WordPress test environment; `PhotoUploadExtensionTest.php` reproduces the
+  reported scenario via a call-argument spy on the mocked `wp_handle_upload()` instead.
+  See `AUDIT-5.14.2-integration.md` and ADR-0031's Deviations section.
+- **`correct_filename_extension()` stays `private`**, tested via the same spy technique
+  rather than widened to `public` as the spec's test sketch implied.
+- **`post_title` also corrected**, not just the `wp_handle_upload()` `'name'` key — the
+  spec's code sample only touched the latter; using the corrected name everywhere
+  `original_name` appears avoids a narrower, second inconsistency.
+- **`compressImage()` itself is not directly unit-tested** (it needs
+  `canvas`/`createImageBitmap`, unavailable in this project's `node`-only Vitest
+  environment — a pre-existing constraint, not new to this step). The filename logic is
+  extracted into the pure, independently-testable `correctedJpegFileName()` instead.
+
+### Acceptance Criteria
+
+| #   | Criterion                                                     | Status                                             |
+| --- | ------------------------------------------------------------- | -------------------------------------------------- |
+| 1   | Phase 0 audits produced (A, B, C)                             | ✅ file review                                     |
+| 2   | CompressedPhoto includes correctedFileName field              | ✅ type check                                      |
+| 3   | compressImage returns correctedFileName with .jpg             | ✅ Vitest tests (via correctedJpegFileName helper) |
+| 4   | Wizard uses correctedFileName in payload                      | ✅ Vitest tests (via buildPhotoMetadata helper)    |
+| 5   | PhotoStorage has MIME_TO_EXTENSION mapping                    | ✅ file review                                     |
+| 6   | PhotoStorage corrects filename extension when needed          | ✅ PHP tests                                       |
+| 7   | Integration test: matching MIME/extension succeeds            | ✅ PHP test                                        |
+| 8   | Integration test: mismatched extension corrected successfully | ✅ PHP test                                        |
+| 9   | ADR-0031 documented                                           | ✅                                                 |
+| 10  | All 242 prior PHP tests pass                                  | ✅ test run                                        |
+| 11  | 5 new PHP tests pass                                          | ✅ test run                                        |
+| 12  | 9 new Vitest tests pass                                       | ✅ test run                                        |
+| 13  | Bundle within budget                                          | ✅ negligible change                               |
+| 14  | 6 commits in specified sequence                               | ✅ `git log`                                       |
+| 15  | Tarball produced                                              | ✅ `step-5.14.2-photo-extension-mime.tar.gz`       |
+| 16  | Submit wizard with PNG source image; verify photo uploads     | ⏳ pending operational verification                |
+| 17  | Submit wizard with JPEG source image; verify photo uploads    | ⏳ pending operational verification                |
+| 18  | Verify photo appears in /wp-content/uploads/goqw/YEAR/MONTH/  | ⏳ pending operational verification                |
+| 19  | Verify photo URL is accessible in browser                     | ⏳ pending operational verification                |
+| 20  | Verify Google Sheets IMAGE formula renders photo              | ⏳ pending operational verification                |

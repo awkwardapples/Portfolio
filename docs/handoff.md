@@ -1,9 +1,25 @@
 # Handoff
 
-_Last updated: 2026-07-17 (post Step 5.14.1)_
+_Last updated: 2026-07-17 (post Step 5.14.2)_
 
 ## Status
 
+- Step 5.14.2 complete (July 17, 2026): Photo upload extension/MIME consistency.
+  Browser-side compression (`image-compression.ts`) always re-encodes selected photos
+  to JPEG, but the wizard was submitting each photo's pre-compression filename (e.g.
+  `holiday.png`) alongside the correct `image/jpeg` MIME claim — WordPress's
+  `wp_handle_upload()` rejects that mismatch via `wp_check_filetype_and_ext()`, a
+  real-WordPress-only failure the mocked test suite could never catch. Fixed
+  client-side (`correctedJpegFileName()` helper in `image-compression.ts`, consumed via
+  a new `buildPhotoMetadata()` helper `PhotoField.tsx` now calls) and server-side
+  (`Submissions\PhotoStorage::correct_filename_extension()`, a `MIME_TO_EXTENSION`
+  safety net applied before `wp_handle_upload()` runs, independent of client behavior —
+  defense-in-depth per ADR-0031). This project has no `WP_UnitTestCase`/real WordPress
+  test environment, so the regression test spies on the mocked `wp_handle_upload()`'s
+  call arguments rather than exercising a real upload pipeline (see
+  `AUDIT-5.14.2-integration.md`). 5 new PHP tests (242→247), 9 new Vitest tests
+  (763→772). Operational verification pending (PNG/JPEG source uploads on a live site,
+  Google Sheets IMAGE formula rendering).
 - Step 5.14.1 complete (July 17, 2026): Environmental robustness + namespace
   prefixes. Fixes discovered during SCB pilot testing, not new features. (1)
   `Submissions\PhotoStorage::store_photo()` called `wp_tempnam()` before
