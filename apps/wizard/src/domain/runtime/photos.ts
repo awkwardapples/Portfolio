@@ -46,3 +46,39 @@ export function isPhotoAnswerValue(value: unknown): value is PhotoAnswerValue {
     Array.isArray((value as PhotoAnswerValue).files)
   );
 }
+
+/**
+ * Shape of a compressed photo relevant to building its PhotoMetadata entry.
+ * Matches (a subset of) CompressedPhoto from @/utils/image-compression —
+ * defined locally rather than imported to keep this pure domain module
+ * decoupled from the DOM-dependent compression module.
+ */
+interface CompressedPhotoLike {
+  readonly blob: Blob;
+  readonly width: number;
+  readonly height: number;
+  readonly correctedFileName: string;
+}
+
+/**
+ * Build the PhotoMetadata entry for one compressed photo (Step 5.14.2).
+ *
+ * Uses `compressed.correctedFileName`, not the source File's own name:
+ * compression always re-encodes to JPEG, so the original extension (.png,
+ * .webp, ...) would no longer match the actual bytes — see
+ * AUDIT-5.14.2-photo-preparation.md. Pure and DOM-free so it's independently
+ * testable, unlike the React field component that calls it.
+ *
+ * @param fileId      Generated ID keying the base64 bytes in the PhotoStore.
+ * @param compressed  Result of compressImage().
+ */
+export function buildPhotoMetadata(fileId: string, compressed: CompressedPhotoLike): PhotoMetadata {
+  return {
+    fileId,
+    originalName: compressed.correctedFileName,
+    mimeType: 'image/jpeg',
+    sizeBytes: compressed.blob.size,
+    width: compressed.width,
+    height: compressed.height,
+  };
+}

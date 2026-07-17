@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react';
 
-import { isPhotoAnswerValue } from '@/domain/runtime/photos';
+import { isPhotoAnswerValue, buildPhotoMetadata } from '@/domain/runtime/photos';
 import type { PhotoMetadata } from '@/domain/runtime/photos';
 import { compressImage, blobToBase64 } from '@/utils/image-compression';
 import { usePhotoStore } from '@/runtime/hooks/usePhotoStore';
@@ -117,14 +117,7 @@ export function PhotoField({
           const fileId = pendingIds[i]!;
           photoStore?.set(fileId, base64);
 
-          return {
-            fileId,
-            originalName: file.name,
-            mimeType: 'image/jpeg',
-            sizeBytes: compressed.blob.size,
-            width: compressed.width,
-            height: compressed.height,
-          };
+          return buildPhotoMetadata(fileId, compressed);
         }),
       );
 
