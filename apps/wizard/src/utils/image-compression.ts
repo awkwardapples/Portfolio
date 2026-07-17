@@ -19,6 +19,15 @@ export interface CompressedPhoto {
   readonly width: number;
   readonly height: number;
   readonly mimeType: 'image/jpeg';
+  /**
+   * The original filename with its extension corrected to `.jpg` — compression
+   * always re-encodes to JPEG (see module comment), so a source file's original
+   * extension (`.png`, `.webp`, ...) no longer matches the actual bytes. Callers
+   * must use this instead of the source File's own `name` when building the
+   * answer/payload filename (Step 5.14.2; a mismatched extension causes
+   * WordPress's wp_handle_upload() to reject the file server-side).
+   */
+  readonly correctedFileName: string;
 }
 
 export interface CompressionOptions {
@@ -69,7 +78,27 @@ export async function compressImage(
   );
   if (blob === null) throw new Error('canvas_encode_failed');
 
-  return { blob, width: targetWidth, height: targetHeight, mimeType: 'image/jpeg' };
+  return {
+    blob,
+    width: targetWidth,
+    height: targetHeight,
+    mimeType: 'image/jpeg',
+    correctedFileName: correctedJpegFileName(file.name),
+  };
+}
+
+/**
+ * Derive the filename compressed output should be reported under: the
+ * original basename (extension stripped) with a `.jpg` extension appended,
+ * since compressImage() always re-encodes to JPEG regardless of source
+ * format. Pure and DOM-free so it's independently testable in Node — unlike
+ * compressImage() itself, which requires canvas/createImageBitmap.
+ *
+ * @param originalName  The source File's name, e.g. "photo.png".
+ */
+export function correctedJpegFileName(originalName: string): string {
+  const baseName = originalName.replace(/\.[^./\\]+$/, '');
+  return `${baseName || 'photo'}.jpg`;
 }
 
 /**

@@ -7,7 +7,7 @@
  */
 import { describe, it, expect } from 'vitest';
 
-import { scaleToFit, blobToBase64 } from '@/utils/image-compression';
+import { scaleToFit, blobToBase64, correctedJpegFileName } from '@/utils/image-compression';
 
 // ---------------------------------------------------------------------------
 // scaleToFit
@@ -74,5 +74,34 @@ describe('blobToBase64', () => {
     expect(decoded.charCodeAt(1)).toBe(0xd8);
     expect(decoded.charCodeAt(2)).toBe(0xff);
     expect(decoded.charCodeAt(3)).toBe(0xe0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// correctedJpegFileName (Step 5.14.2)
+// ---------------------------------------------------------------------------
+
+describe('correctedJpegFileName', () => {
+  it('replaces a non-jpg extension with .jpg', () => {
+    expect(correctedJpegFileName('photo.png')).toBe('photo.jpg');
+    expect(correctedJpegFileName('photo.webp')).toBe('photo.jpg');
+    expect(correctedJpegFileName('photo.HEIC')).toBe('photo.jpg');
+  });
+
+  it('leaves an already-.jpg/.jpeg basename functionally unchanged (still .jpg)', () => {
+    expect(correctedJpegFileName('photo.jpg')).toBe('photo.jpg');
+    expect(correctedJpegFileName('photo.jpeg')).toBe('photo.jpg');
+  });
+
+  it('handles a filename with no extension', () => {
+    expect(correctedJpegFileName('photo')).toBe('photo.jpg');
+  });
+
+  it('handles a filename with multiple dots by stripping only the last extension', () => {
+    expect(correctedJpegFileName('my.holiday.photo.png')).toBe('my.holiday.photo.jpg');
+  });
+
+  it('falls back to a generic name when the basename would be empty', () => {
+    expect(correctedJpegFileName('.png')).toBe('photo.jpg');
   });
 });
