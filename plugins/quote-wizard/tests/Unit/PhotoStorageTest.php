@@ -248,6 +248,122 @@ it(
 // Upload directory routing (D1)
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Admin-includes ordering (Step 5.14.1 — wp_tempnam loading bug)
+// ---------------------------------------------------------------------------
+
+/**
+ * Test double that records call order onto a public log property instead of
+ * no-op'ing ensure_upload_functions_loaded(), so ordering relative to
+ * wp_tempnam() can be asserted.
+ */
+function make_order_tracking_photo_storage(): PhotoStorage {
+	return new class() extends PhotoStorage {
+		/** @var array<int,string> */
+		public array $log = [];
+
+		protected function ensure_upload_functions_loaded(): void {
+			$this->log[] = 'admin_includes_loaded';
+		}
+	};
+}
+
+it(
+	'loads admin includes before write_temp_file calls wp_tempnam',
+	function (): void {
+		$storage = make_order_tracking_photo_storage();
+
+		Functions\when( 'wp_tempnam' )->alias(
+			function () use ( $storage ): string {
+				$storage->log[]                                = 'wp_tempnam_called';
+				$path                                          = sys_get_temp_dir() . '/goqw-test-' . uniqid( '', true );
+				$GLOBALS['__photo_storage_test_tmp_files'][] = $path;
+				return $path;
+			}
+		);
+		Functions\when( 'wp_handle_upload' )->justReturn(
+			[ 'file' => '/tmp/x.jpg', 'url' => 'https://example.test/x.jpg', 'type' => 'image/jpeg' ]
+		);
+		Functions\when( 'wp_insert_attachment' )->justReturn( 1 );
+		Functions\when( 'wp_get_attachment_url' )->justReturn( 'https://example.test/x.jpg' );
+
+		$storage->store_photo( base64_encode( 'bytes' ), 'image/jpeg', 'x.jpg' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+
+		expect( $storage->log )->toBe( [ 'admin_includes_loaded', 'wp_tempnam_called' ] );
+	}
+);
+
+it(
+	'loads admin includes even when the base64 payload is invalid (fails before wp_tempnam is reached)',
+	function (): void {
+		$storage = make_order_tracking_photo_storage();
+
+		$result = $storage->store_photo( '', 'image/jpeg', 'test.jpg' );
+
+		expect( $result['success'] )->toBeFalse();
+		expect( $storage->log )->toBe( [ 'admin_includes_loaded' ] );
+	}
+);
+
+it(
+	'loads admin includes exactly once per store_photo call, before any wp-admin-only function runs',
+	function (): void {
+		$storage = make_order_tracking_photo_storage();
+		stub_wp_tempnam();
+		Functions\when( 'wp_handle_upload' )->alias(
+			function () use ( $storage ): array {
+				$storage->log[] = 'wp_handle_upload_called';
+				return [ 'file' => '/tmp/x.jpg', 'url' => 'https://example.test/x.jpg', 'type' => 'image/jpeg' ];
+			}
+		);
+		Functions\when( 'wp_insert_attachment' )->justReturn( 1 );
+		Functions\when( 'wp_get_attachment_url' )->justReturn( 'https://example.test/x.jpg' );
+
+		$storage->store_photo( base64_encode( 'bytes' ), 'image/jpeg', 'x.jpg' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+
+		expect( array_count_values( $storage->log )['admin_includes_loaded'] ?? 0 )->toBe( 1 );
+		expect( array_search( 'admin_includes_loaded', $storage->log, true ) )
+			->toBeLessThan( array_search( 'wp_handle_upload_called', $storage->log, true ) );
+	}
+);
+
+// ---------------------------------------------------------------------------
+// Namespace prefix defense (Step 5.14.1)
+// ---------------------------------------------------------------------------
+
+it(
+	'every WordPress function call in PhotoStorage.php is backslash-prefixed',
+	function (): void {
+		$source = (string) file_get_contents( __DIR__ . '/../../src/Submissions/PhotoStorage.php' );
+
+		$unprefixable = [ 'add_filter', 'remove_filter', 'sanitize_file_name', 'is_wp_error', 'update_post_meta' ];
+		foreach ( $unprefixable as $fn ) {
+			$bare_count = preg_match_all( '/(?<![\\\\:>])\b' . preg_quote( $fn, '/' ) . '\s*\(/', $source );
+			expect( $bare_count )->toBe( 0, "Found unprefixed call to {$fn}() in PhotoStorage.php" );
+		}
+	}
+);
+
+it(
+	'PhotoStorage.php prefixes every admin-include-dependent WordPress function it calls',
+	function (): void {
+		$source = (string) file_get_contents( __DIR__ . '/../../src/Submissions/PhotoStorage.php' );
+
+		assert_wp_calls_are_prefixed(
+			$source,
+			[
+				'wp_tempnam',
+				'wp_handle_upload',
+				'wp_insert_attachment',
+				'wp_generate_attachment_metadata',
+				'wp_update_attachment_metadata',
+				'wp_get_attachment_url',
+				'wp_delete_attachment',
+			]
+		);
+	}
+);
+
 it(
 	'filter_upload_dir routes uploads into the goqw subdirectory ahead of year/month',
 	function (): void {

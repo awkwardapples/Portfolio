@@ -41,6 +41,12 @@ class PhotoStorage {
 	 * @return array{success: bool, url?: string, attachmentId?: int, error?: string}
 	 */
 	public function store_photo( string $base64_data, string $mime_type, string $original_name ): array {
+		// Must run before write_temp_file(): wp_tempnam() lives in the same
+		// wp-admin/includes/file.php this method loads, and REST requests don't
+		// autoload it. Loading it after the wp_tempnam() call (as a prior
+		// revision did) is too late — see AUDIT-5.14.1-admin-includes.md.
+		$this->ensure_upload_functions_loaded();
+
 		$raw_bytes = $this->decode( $base64_data );
 		if ( null === $raw_bytes ) {
 			return array(
@@ -57,19 +63,17 @@ class PhotoStorage {
 			);
 		}
 
-		$this->ensure_upload_functions_loaded();
-
 		$file = array(
-			'name'     => sanitize_file_name( '' !== $original_name ? $original_name : 'photo' ),
+			'name'     => \sanitize_file_name( '' !== $original_name ? $original_name : 'photo' ),
 			'type'     => $mime_type,
 			'tmp_name' => $tmp_path,
 			'error'    => 0,
 			'size'     => strlen( $raw_bytes ),
 		);
 
-		add_filter( 'upload_dir', array( $this, 'filter_upload_dir' ) );
-		$result = wp_handle_upload( $file, array( 'test_form' => false ) );
-		remove_filter( 'upload_dir', array( $this, 'filter_upload_dir' ) );
+		\add_filter( 'upload_dir', array( $this, 'filter_upload_dir' ) );
+		$result = \wp_handle_upload( $file, array( 'test_form' => false ) );
+		\remove_filter( 'upload_dir', array( $this, 'filter_upload_dir' ) );
 
 		if ( isset( $result['error'] ) ) {
 			$this->delete_temp_file( $tmp_path );
@@ -79,10 +83,10 @@ class PhotoStorage {
 			);
 		}
 
-		$attachment_id = wp_insert_attachment(
+		$attachment_id = \wp_insert_attachment(
 			array(
 				'post_mime_type' => $result['type'],
-				'post_title'     => sanitize_file_name( $original_name ),
+				'post_title'     => \sanitize_file_name( $original_name ),
 				'post_content'   => '',
 				'post_status'    => 'inherit',
 			),
@@ -91,7 +95,7 @@ class PhotoStorage {
 			true
 		);
 
-		if ( is_wp_error( $attachment_id ) ) {
+		if ( \is_wp_error( $attachment_id ) ) {
 			return array(
 				'success' => false,
 				'error'   => 'attachment_insert_failed',
@@ -100,14 +104,14 @@ class PhotoStorage {
 
 		// Tags every attachment PhotoStorage creates so PhotoRetention can find
 		// them without guessing from file paths (ADR-0026).
-		update_post_meta( $attachment_id, self::PHOTO_META_KEY, 1 );
+		\update_post_meta( $attachment_id, self::PHOTO_META_KEY, 1 );
 
-		$metadata = wp_generate_attachment_metadata( $attachment_id, $result['file'] );
-		wp_update_attachment_metadata( $attachment_id, $metadata );
+		$metadata = \wp_generate_attachment_metadata( $attachment_id, $result['file'] );
+		\wp_update_attachment_metadata( $attachment_id, $metadata );
 
 		return array(
 			'success'      => true,
-			'url'          => (string) wp_get_attachment_url( $attachment_id ),
+			'url'          => (string) \wp_get_attachment_url( $attachment_id ),
 			'attachmentId' => (int) $attachment_id,
 		);
 	}
@@ -118,7 +122,7 @@ class PhotoStorage {
 	 * @param int $attachment_id  WordPress attachment post ID.
 	 */
 	public function delete_photo( int $attachment_id ): bool {
-		return false !== wp_delete_attachment( $attachment_id, true );
+		return false !== \wp_delete_attachment( $attachment_id, true );
 	}
 
 	/**
@@ -171,7 +175,7 @@ class PhotoStorage {
 	 * @param string $raw_bytes  Decoded photo bytes.
 	 */
 	private function write_temp_file( string $raw_bytes ): ?string {
-		$tmp_path = wp_tempnam();
+		$tmp_path = \wp_tempnam();
 		if ( '' === $tmp_path ) {
 			return null;
 		}
