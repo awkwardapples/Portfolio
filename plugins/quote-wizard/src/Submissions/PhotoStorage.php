@@ -33,6 +33,23 @@ class PhotoStorage {
 	public const PHOTO_META_KEY = '_goqw_photo';
 
 	/**
+	 * MIME type to expected file extension. Used to correct a filename whose
+	 * extension doesn't match its actual content before wp_handle_upload() —
+	 * WordPress's wp_check_filetype_and_ext() rejects that mismatch outright
+	 * (Step 5.14.2). The client already sends a corrected name (see
+	 * AUDIT-5.14.2-photo-preparation.md), but the server cannot trust that; this
+	 * is the safety net for a modified client, a replayed request, or a future
+	 * client bug.
+	 */
+	private const MIME_TO_EXTENSION = array(
+		'image/jpeg' => 'jpg',
+		'image/jpg'  => 'jpg', // Some clients send this non-standard variant.
+		'image/png'  => 'png',
+		'image/webp' => 'webp',
+		'image/gif'  => 'gif',
+	);
+
+	/**
 	 * Process one photo and return a storage result.
 	 *
 	 * @param  string $base64_data    Raw or data-URL-prefixed base64.
@@ -63,8 +80,13 @@ class PhotoStorage {
 			);
 		}
 
+		$corrected_name = $this->correct_filename_extension(
+			'' !== $original_name ? $original_name : 'photo',
+			$mime_type
+		);
+
 		$file = array(
-			'name'     => \sanitize_file_name( '' !== $original_name ? $original_name : 'photo' ),
+			'name'     => \sanitize_file_name( $corrected_name ),
 			'type'     => $mime_type,
 			'tmp_name' => $tmp_path,
 			'error'    => 0,
@@ -86,7 +108,7 @@ class PhotoStorage {
 		$attachment_id = \wp_insert_attachment(
 			array(
 				'post_mime_type' => $result['type'],
-				'post_title'     => \sanitize_file_name( $original_name ),
+				'post_title'     => \sanitize_file_name( $corrected_name ),
 				'post_content'   => '',
 				'post_status'    => 'inherit',
 			),
@@ -114,6 +136,34 @@ class PhotoStorage {
 			'url'          => (string) \wp_get_attachment_url( $attachment_id ),
 			'attachmentId' => (int) $attachment_id,
 		);
+	}
+
+	/**
+	 * Ensure a filename's extension matches its actual MIME type, correcting it
+	 * if not (Step 5.14.2).
+	 *
+	 * For an unrecognized MIME type, the filename is returned unchanged —
+	 * MediaValidator's allowlist check already rejects any submission before it
+	 * reaches PhotoStorage, so this path is unreachable in practice for a
+	 * genuine request; it exists so this method has a defined, non-throwing
+	 * result for every input.
+	 *
+	 * @param  string $original_name  Client-supplied filename.
+	 * @param  string $mime_type      Claimed MIME type (already verified by MediaValidator).
+	 */
+	private function correct_filename_extension( string $original_name, string $mime_type ): string {
+		$expected_ext = self::MIME_TO_EXTENSION[ strtolower( $mime_type ) ] ?? null;
+		if ( null === $expected_ext ) {
+			return $original_name;
+		}
+
+		$current_ext = strtolower( pathinfo( $original_name, PATHINFO_EXTENSION ) );
+		if ( $current_ext === $expected_ext ) {
+			return $original_name;
+		}
+
+		$base_name = pathinfo( $original_name, PATHINFO_FILENAME );
+		return ( '' !== $base_name ? $base_name : 'photo' ) . '.' . $expected_ext;
 	}
 
 	/**

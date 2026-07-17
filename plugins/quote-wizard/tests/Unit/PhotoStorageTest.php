@@ -385,3 +385,56 @@ it(
 		expect( $result['url'] )->toBe( 'https://example.test/wp-content/uploads/goqw/2026/07' );
 	}
 );
+
+// ---------------------------------------------------------------------------
+// Filename extension/MIME correction (Step 5.14.2)
+// ---------------------------------------------------------------------------
+
+/**
+ * Runs store_photo() and returns the 'name' key the (mocked) wp_handle_upload()
+ * was actually called with — the observable result of correct_filename_extension(),
+ * a private method, without widening its visibility for tests.
+ */
+function store_photo_and_capture_upload_name( string $original_name, string $mime_type ): string {
+	stub_wp_tempnam();
+	$captured_name = null;
+	Functions\when( 'wp_handle_upload' )->alias(
+		static function ( array $file ) use ( &$captured_name ): array {
+			$captured_name = $file['name'];
+			return [ 'file' => '/tmp/x', 'url' => 'https://example.test/x', 'type' => $file['type'] ];
+		}
+	);
+	Functions\when( 'wp_insert_attachment' )->justReturn( 1 );
+	Functions\when( 'wp_get_attachment_url' )->justReturn( 'https://example.test/x' );
+
+	$storage = make_photo_storage();
+	$storage->store_photo( base64_encode( 'bytes' ), $mime_type, $original_name ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+
+	return (string) $captured_name;
+}
+
+it(
+	'corrects a mismatched extension for each known MIME type',
+	function (): void {
+		expect( store_photo_and_capture_upload_name( 'photo.png', 'image/jpeg' ) )->toBe( 'photo.jpg' );
+		expect( store_photo_and_capture_upload_name( 'photo.gif', 'image/png' ) )->toBe( 'photo.png' );
+		expect( store_photo_and_capture_upload_name( 'photo.jpg', 'image/webp' ) )->toBe( 'photo.webp' );
+		expect( store_photo_and_capture_upload_name( 'photo.png', 'image/gif' ) )->toBe( 'photo.gif' );
+		expect( store_photo_and_capture_upload_name( 'photo', 'image/jpeg' ) )->toBe( 'photo.jpg' );
+	}
+);
+
+it(
+	'leaves an already-correct filename unchanged',
+	function (): void {
+		expect( store_photo_and_capture_upload_name( 'photo.jpg', 'image/jpeg' ) )->toBe( 'photo.jpg' );
+		expect( store_photo_and_capture_upload_name( 'photo.PNG', 'image/png' ) )->toBe( 'photo.PNG' );
+	}
+);
+
+it(
+	'passes the filename through unchanged for an unrecognized MIME type',
+	function (): void {
+		expect( store_photo_and_capture_upload_name( 'photo.bmp', 'image/bmp' ) )->toBe( 'photo.bmp' );
+	}
+);
