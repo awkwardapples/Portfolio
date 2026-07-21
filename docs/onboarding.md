@@ -139,6 +139,44 @@ Without this fix, `wp db` commands and any direct MySQL connection fail with
 `Can't connect to MySQL server on 'localhost:3306'` — even from LocalWP's own
 site shell.
 
+## WP_TEMP_DIR Configuration (LocalWP)
+
+On Windows via LocalWP, PHP's default temporary directory (`C:\Windows\TEMP`) is
+not writable by the PHP process LocalWP runs. The plugin's photo-upload path calls
+`wp_tempnam()` (see `Submissions\PhotoStorage`) to write a decoded photo to a temp
+file before handing it to WordPress — if PHP can't resolve a writable temp
+directory, that call fails and the photo upload fails with it.
+
+**Fix:** add to `wp-config.php` (before `/* That's all, stop editing! Happy
+publishing. */`):
+
+```php
+define( 'WP_TEMP_DIR', 'C:/Users/YOUR-USER/Local Sites/YOUR-SITE/app/public/wp-content/uploads/tmp' );
+```
+
+Replace `YOUR-USER` and `YOUR-SITE` with your actual values. `wp_tempnam()` checks
+`WP_TEMP_DIR` first, before falling back to PHP's system default — defining it
+here takes precedence regardless of the underlying OS temp configuration.
+
+Create the directory:
+
+```powershell
+$tmpDir = "C:\Users\YOUR-USER\Local Sites\YOUR-SITE\app\public\wp-content\uploads\tmp"
+if (-not (Test-Path $tmpDir)) { New-Item -ItemType Directory -Path $tmpDir }
+```
+
+Verify from LocalWP's site shell:
+
+```bash
+wp eval "echo 'writable: ' . (is_writable(WP_TEMP_DIR) ? 'YES' : 'NO') . PHP_EOL;"
+```
+
+Should return `writable: YES`.
+
+**Not required for Linux production hosts** — `/tmp` is typically writable there,
+so this is a LocalWP/Windows-specific step, not something to carry into a
+production deployment checklist.
+
 ## Step 4 — Link the plugin into WordPress (about 3 minutes)
 
 You want the plugin in your repo to be the same plugin WordPress runs, so edits show up without copying files around. Use a directory symlink (junction) from the LocalWP plugins directory to your repo's plugin folder.
@@ -221,6 +259,24 @@ verified before the deployment goes live:
 3. **Smoke test.** Upload a multi-photo quote, confirm the submission row in
    `wp_goqw_submissions` has a non-null `media_json` column, and confirm
    Make.com received the media array.
+
+### Photo display in local development
+
+Photos uploaded via the wizard are stored at local URLs like
+`http://your-site.local/wp-content/uploads/goqw/...`. These URLs are only
+accessible from your own machine. Google Sheets' `IMAGE()` formula (part of the
+Make.com → Sheets workflow, see `docs/make-com-integration.md`) fails to render
+images from local URLs because Google's servers cannot reach them — this is
+expected behavior during local testing, not a broken pipeline.
+
+**In production** (a real, publicly-reachable domain), `IMAGE()` renders normally.
+
+For local demonstration, either:
+
+- View the photo directly in WordPress admin (Media Library), which can display
+  local URLs from the same machine.
+- Use a tunneling service like ngrok to temporarily expose the local site with a
+  publicly-reachable URL.
 
 ## Bot protection deployment checklist (Step 5.13f)
 
