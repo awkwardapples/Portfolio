@@ -1,9 +1,23 @@
 # Handoff
 
-_Last updated: 2026-07-17 (post Step 5.14.2)_
+_Last updated: 2026-07-17 (post Step 5.14.3)_
 
 ## Status
 
+- Step 5.14.3 complete (July 17, 2026): wp_handle_upload → wp_handle_sideload. The
+  real production bug behind every SCB pilot photo-upload failure:
+  `wp_handle_upload()` requires `is_uploaded_file()` to return true, which is always
+  false for a photo `Submissions\PhotoStorage` decoded and wrote to a temp file
+  itself — never an actual HTTP `$_FILES` upload. Every photo submission, on every
+  deployment, was rejected with "Specified file failed upload test." Swapped to
+  `wp_handle_sideload()` (uses `is_readable()` instead — the correct WordPress API
+  for programmatic uploads) with an explicit `mimes` allowlist matching
+  `MediaValidator`'s four supported formats. `docs/onboarding.md` gained `WP_TEMP_DIR`
+  (LocalWP) configuration guidance and a note on why locally-hosted photo URLs don't
+  render via Google Sheets' `IMAGE()` formula. No `[goqw-debug]` logging existed to
+  remove (audited and confirmed absent — the spec's cleanup instructions were a no-op
+  here). 2 new PHP tests (247→249); no JS/TS changes. ADR-0032 accepted. Operational
+  verification pending (fresh-clone photo submission on a live site).
 - Step 5.14.2 complete (July 17, 2026): Photo upload extension/MIME consistency.
   Browser-side compression (`image-compression.ts`) always re-encodes selected photos
   to JPEG, but the wizard was submitting each photo's pre-compression filename (e.g.

@@ -2591,3 +2591,71 @@ net independent of client behavior). ADR-0031 accepted.
 | 18  | Verify photo appears in /wp-content/uploads/goqw/YEAR/MONTH/  | ⏳ pending operational verification                |
 | 19  | Verify photo URL is accessible in browser                     | ⏳ pending operational verification                |
 | 20  | Verify Google Sheets IMAGE formula renders photo              | ⏳ pending operational verification                |
+
+## Step 5.14.3 Evidence
+
+**Step:** wp_handle_upload → wp_handle_sideload (2026-07-17)
+
+### Summary
+
+Fixes the real production bug hit by every SCB pilot photo submission:
+`wp_handle_upload()` requires `is_uploaded_file()` to return `true`, which is always
+`false` for a photo `PhotoStorage` decoded and wrote to a temp file itself (not
+received as an HTTP `$_FILES` upload). Every photo submission, on every deployment,
+failed with "Specified file failed upload test." Swapped to `wp_handle_sideload()`
+(which uses `is_readable()` instead) and added an explicit `mimes` allowlist matching
+`MediaValidator`'s four supported formats. ADR-0032 accepted. No `[goqw-debug]`
+logging existed to remove — the spec's cleanup instructions were a no-op here
+(`AUDIT-5.14.3-current-state.md`).
+
+### Gate state
+
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: 0 errors (pre-existing, unrelated `tsconfig.test.json` type errors
+  in `non-field-step-engine.test.ts` predate this step)
+- `pnpm test`: **772/772 Vitest** (unchanged — no JS/TS changes this step)
+- `pnpm build`: clean (bundle unchanged — no JS/TS changes this step)
+- `composer lint`: 0/0 for all files touched this step (`quote-wizard.php` carries
+  pre-existing, unrelated drift predating 5.13e)
+- `composer analyse`: no errors (PHPStan level 8)
+- `composer test`: **249 passed, 4 skipped** (+2 from 5.14.2 — new tests verifying
+  `wp_handle_sideload` is called and the `mimes` allowlist is passed correctly; the
+  existing suite's `wp_handle_upload` mocks were renamed to `wp_handle_sideload`
+  in place, not added to)
+
+### Deviations from the spec
+
+- **No debug-logging removal.** `AUDIT-5.14.3-current-state.md` found zero
+  `error_log()` calls anywhere in `PhotoStorage.php` before this step — the spec's
+  twelve `[goqw-debug]` lines to remove don't exist in this codebase. Per the spec's
+  own cover note, this is a no-op, not a missed fix. Commit 5 is a verification-only
+  commit confirming this.
+- **Test count is +2, not the spec's ~7.** Most of the spec's projected test count
+  reflected _updating_ existing tests (renaming `wp_handle_upload` mocks to
+  `wp_handle_sideload`) rather than _adding_ new ones — the existing "success returns
+  URL/attachmentId" and "failure returns error" coverage already exercised those
+  paths and needed only the mock rename, not new assertions. 2 genuinely new tests
+  were added: one confirming `wp_handle_sideload` (not `wp_handle_upload`) is called,
+  one confirming the exact `mimes` allowlist passed.
+
+### Acceptance Criteria
+
+| #   | Criterion                                                 | Status                                 |
+| --- | --------------------------------------------------------- | -------------------------------------- |
+| 1   | Phase 0 audits produced (A, B, C)                         | ✅ file review                         |
+| 2   | PhotoStorage uses wp_handle_sideload                      | ✅ grep + file review                  |
+| 3   | Mimes parameter is passed with correct types              | ✅ PHP test                            |
+| 4   | Diagnostic debug logging removed                          | ✅ n/a — none existed (grep confirms)  |
+| 5   | Existing PhotoStorage tests updated to reflect API change | ✅ tests pass                          |
+| 6   | New tests verify mimes parameter                          | ✅ PHP test                            |
+| 7   | ADR-0032 documented                                       | ✅                                     |
+| 8   | onboarding.md has WP_TEMP_DIR section                     | ✅ file review                         |
+| 9   | onboarding.md notes local URL behavior                    | ✅ file review                         |
+| 10  | All 247 prior PHP tests pass (after updates)              | ✅ test run                            |
+| 11  | Bundle unchanged                                          | ✅ no JS/TS changes this step          |
+| 12  | 5 commits in specified sequence                           | ✅ `git log`                           |
+| 13  | Tarball produced                                          | ✅ `step-5.14.3-photo-sideload.tar.gz` |
+| 14  | Fresh clone from template deploys cleanly                 | ⏳ pending operational verification    |
+| 15  | Photo submission with JPEGs succeeds                      | ⏳ pending operational verification    |
+| 16  | Photos appear in /wp-content/uploads/goqw/                | ⏳ pending operational verification    |
+| 17  | URLs in database and webhook payload                      | ⏳ pending operational verification    |
