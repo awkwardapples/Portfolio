@@ -13,9 +13,14 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Decodes base64 photo data (already validated by MediaValidator, ADR-0026)
- * to a temp file, routes it through wp_handle_upload into the
+ * to a temp file, routes it through wp_handle_sideload into the
  * /wp-content/uploads/goqw/YEAR/MONTH/ subdirectory (D1), and registers it
  * as a WordPress attachment so it has a stable public URL (D2).
+ *
+ * Uses wp_handle_sideload(), not wp_handle_upload(), because the temp file
+ * was written by this class via file_put_contents(), not received as an
+ * HTTP $_FILES upload — wp_handle_upload() requires is_uploaded_file() to
+ * return true, which is never the case here (Step 5.14.3, ADR-0032).
  *
  * This class does not re-validate MIME type, magic bytes, or dimensions —
  * that is MediaValidator's job and must run first (see
@@ -27,6 +32,19 @@ class PhotoStorage {
 	private const UPLOAD_SUBDIR = 'goqw';
 
 	/**
+	 * Explicit MIME allowlist passed to wp_handle_sideload(), matching
+	 * MediaValidator's own allowlist (Step 5.14.3) — bypasses any
+	 * theme/plugin-registered upload_mimes filter that might otherwise
+	 * restrict or expand what this call accepts.
+	 */
+	private const ALLOWED_UPLOAD_MIMES = array(
+		'jpg|jpeg|jpe' => 'image/jpeg',
+		'png'          => 'image/png',
+		'webp'         => 'image/webp',
+		'gif'          => 'image/gif',
+	);
+
+	/**
 	 * Post meta key tagging every attachment this class creates, so
 	 * PhotoRetention can find them without guessing from file paths.
 	 */
@@ -34,7 +52,7 @@ class PhotoStorage {
 
 	/**
 	 * MIME type to expected file extension. Used to correct a filename whose
-	 * extension doesn't match its actual content before wp_handle_upload() —
+	 * extension doesn't match its actual content before wp_handle_sideload() —
 	 * WordPress's wp_check_filetype_and_ext() rejects that mismatch outright
 	 * (Step 5.14.2). The client already sends a corrected name (see
 	 * AUDIT-5.14.2-photo-preparation.md), but the server cannot trust that; this
@@ -94,7 +112,13 @@ class PhotoStorage {
 		);
 
 		\add_filter( 'upload_dir', array( $this, 'filter_upload_dir' ) );
-		$result = \wp_handle_upload( $file, array( 'test_form' => false ) );
+		$result = \wp_handle_sideload(
+			$file,
+			array(
+				'test_form' => false,
+				'mimes'     => self::ALLOWED_UPLOAD_MIMES,
+			)
+		);
 		\remove_filter( 'upload_dir', array( $this, 'filter_upload_dir' ) );
 
 		if ( isset( $result['error'] ) ) {
@@ -176,7 +200,7 @@ class PhotoStorage {
 	}
 
 	/**
-	 * Load the wp-admin includes that declare wp_handle_upload() and
+	 * Load the wp-admin includes that declare wp_handle_sideload() and
 	 * wp_generate_attachment_metadata() — not autoloaded outside wp-admin
 	 * (see AUDIT-5.13e-wp-media-integration.md). Extracted to its own
 	 * protected method so tests can override it with a no-op, the same
@@ -190,7 +214,7 @@ class PhotoStorage {
 
 	/**
 	 * Upload_dir filter callback — routes uploads into goqw/YEAR/MONTH/ (D1).
-	 * Added immediately before wp_handle_upload() and removed immediately after,
+	 * Added immediately before wp_handle_sideload() and removed immediately after,
 	 * so it never affects uploads outside this class.
 	 *
 	 * @param  array<string,mixed> $dirs  The array wp_upload_dir() normally returns.
@@ -240,7 +264,7 @@ class PhotoStorage {
 
 	/**
 	 * Delete a temp file if it still exists (failure paths only — on success
-	 * wp_handle_upload() moves the file, so nothing remains at $tmp_path).
+	 * wp_handle_sideload() moves the file, so nothing remains at $tmp_path).
 	 *
 	 * @param string $tmp_path  Path to the temp file.
 	 */

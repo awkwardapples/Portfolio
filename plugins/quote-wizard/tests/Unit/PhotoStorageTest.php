@@ -83,7 +83,7 @@ afterEach(
 it(
 	'stores a valid photo and returns url + attachmentId',
 	function (): void {
-		Functions\when( 'wp_handle_upload' )->justReturn(
+		Functions\when( 'wp_handle_sideload' )->justReturn(
 			[
 				'file' => '/var/www/uploads/goqw/2026/07/test.jpg',
 				'url'  => 'https://example.test/wp-content/uploads/goqw/2026/07/test.jpg',
@@ -105,7 +105,7 @@ it(
 it(
 	'strips a data URL prefix before decoding',
 	function (): void {
-		Functions\when( 'wp_handle_upload' )->justReturn(
+		Functions\when( 'wp_handle_sideload' )->justReturn(
 			[
 				'file' => '/var/www/uploads/goqw/2026/07/test.png',
 				'url'  => 'https://example.test/wp-content/uploads/goqw/2026/07/test.png',
@@ -127,7 +127,7 @@ it(
 it(
 	'tags the created attachment with the retention meta key',
 	function (): void {
-		Functions\when( 'wp_handle_upload' )->justReturn(
+		Functions\when( 'wp_handle_sideload' )->justReturn(
 			[ 'file' => '/tmp/x.jpg', 'url' => 'https://example.test/x.jpg', 'type' => 'image/jpeg' ]
 		);
 		Functions\when( 'wp_insert_attachment' )->justReturn( 789 );
@@ -151,7 +151,7 @@ it(
 it(
 	'handles a large (~10MB) photo without failure',
 	function (): void {
-		Functions\when( 'wp_handle_upload' )->justReturn(
+		Functions\when( 'wp_handle_sideload' )->justReturn(
 			[ 'file' => '/tmp/big.jpg', 'url' => 'https://example.test/big.jpg', 'type' => 'image/jpeg' ]
 		);
 		Functions\when( 'wp_insert_attachment' )->justReturn( 1 );
@@ -192,9 +192,9 @@ it(
 );
 
 it(
-	'returns the wp_handle_upload error string when the upload fails',
+	'returns the wp_handle_sideload error string when the upload fails',
 	function (): void {
-		Functions\when( 'wp_handle_upload' )->justReturn( [ 'error' => 'Unable to create directory.' ] );
+		Functions\when( 'wp_handle_sideload' )->justReturn( [ 'error' => 'Unable to create directory.' ] );
 
 		$storage = make_photo_storage();
 		$result  = $storage->store_photo( base64_encode( 'bytes' ), 'image/jpeg', 'test.jpg' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
@@ -207,7 +207,7 @@ it(
 it(
 	'returns attachment_insert_failed when wp_insert_attachment returns a WP_Error',
 	function (): void {
-		Functions\when( 'wp_handle_upload' )->justReturn(
+		Functions\when( 'wp_handle_sideload' )->justReturn(
 			[ 'file' => '/tmp/x.jpg', 'url' => 'https://example.test/x.jpg', 'type' => 'image/jpeg' ]
 		);
 		Functions\when( 'wp_insert_attachment' )->justReturn( new WP_Error( 'db_insert_error' ) );
@@ -281,7 +281,7 @@ it(
 				return $path;
 			}
 		);
-		Functions\when( 'wp_handle_upload' )->justReturn(
+		Functions\when( 'wp_handle_sideload' )->justReturn(
 			[ 'file' => '/tmp/x.jpg', 'url' => 'https://example.test/x.jpg', 'type' => 'image/jpeg' ]
 		);
 		Functions\when( 'wp_insert_attachment' )->justReturn( 1 );
@@ -310,9 +310,9 @@ it(
 	function (): void {
 		$storage = make_order_tracking_photo_storage();
 		stub_wp_tempnam();
-		Functions\when( 'wp_handle_upload' )->alias(
+		Functions\when( 'wp_handle_sideload' )->alias(
 			function () use ( $storage ): array {
-				$storage->log[] = 'wp_handle_upload_called';
+				$storage->log[] = 'wp_handle_sideload_called';
 				return [ 'file' => '/tmp/x.jpg', 'url' => 'https://example.test/x.jpg', 'type' => 'image/jpeg' ];
 			}
 		);
@@ -323,7 +323,7 @@ it(
 
 		expect( array_count_values( $storage->log )['admin_includes_loaded'] ?? 0 )->toBe( 1 );
 		expect( array_search( 'admin_includes_loaded', $storage->log, true ) )
-			->toBeLessThan( array_search( 'wp_handle_upload_called', $storage->log, true ) );
+			->toBeLessThan( array_search( 'wp_handle_sideload_called', $storage->log, true ) );
 	}
 );
 
@@ -353,7 +353,7 @@ it(
 			$source,
 			[
 				'wp_tempnam',
-				'wp_handle_upload',
+				'wp_handle_sideload',
 				'wp_insert_attachment',
 				'wp_generate_attachment_metadata',
 				'wp_update_attachment_metadata',
@@ -391,14 +391,14 @@ it(
 // ---------------------------------------------------------------------------
 
 /**
- * Runs store_photo() and returns the 'name' key the (mocked) wp_handle_upload()
+ * Runs store_photo() and returns the 'name' key the (mocked) wp_handle_sideload()
  * was actually called with — the observable result of correct_filename_extension(),
  * a private method, without widening its visibility for tests.
  */
 function store_photo_and_capture_upload_name( string $original_name, string $mime_type ): string {
 	stub_wp_tempnam();
 	$captured_name = null;
-	Functions\when( 'wp_handle_upload' )->alias(
+	Functions\when( 'wp_handle_sideload' )->alias(
 		static function ( array $file ) use ( &$captured_name ): array {
 			$captured_name = $file['name'];
 			return [ 'file' => '/tmp/x', 'url' => 'https://example.test/x', 'type' => $file['type'] ];
@@ -436,5 +436,60 @@ it(
 	'passes the filename through unchanged for an unrecognized MIME type',
 	function (): void {
 		expect( store_photo_and_capture_upload_name( 'photo.bmp', 'image/bmp' ) )->toBe( 'photo.bmp' );
+	}
+);
+
+// ---------------------------------------------------------------------------
+// wp_handle_sideload, not wp_handle_upload (Step 5.14.3)
+// ---------------------------------------------------------------------------
+
+it(
+	'calls wp_handle_sideload rather than wp_handle_upload',
+	function (): void {
+		stub_wp_tempnam();
+		Functions\when( 'wp_handle_sideload' )->justReturn(
+			[ 'file' => '/tmp/x.jpg', 'url' => 'https://example.test/x.jpg', 'type' => 'image/jpeg' ]
+		);
+		Functions\when( 'wp_insert_attachment' )->justReturn( 1 );
+		Functions\when( 'wp_get_attachment_url' )->justReturn( 'https://example.test/x.jpg' );
+		// wp_handle_upload is deliberately left unmocked: if store_photo() ever
+		// called it again, this test would fatal on an undefined function
+		// rather than silently passing.
+
+		$storage = make_photo_storage();
+		$result  = $storage->store_photo( base64_encode( 'bytes' ), 'image/jpeg', 'x.jpg' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+
+		expect( $result['success'] )->toBeTrue();
+	}
+);
+
+it(
+	'passes the explicit four-format mimes allowlist to wp_handle_sideload',
+	function (): void {
+		stub_wp_tempnam();
+		$captured_overrides = null;
+		Functions\when( 'wp_handle_sideload' )->alias(
+			static function ( array $file, array $overrides ) use ( &$captured_overrides ): array {
+				$captured_overrides = $overrides;
+				return [ 'file' => '/tmp/x.jpg', 'url' => 'https://example.test/x.jpg', 'type' => $file['type'] ];
+			}
+		);
+		Functions\when( 'wp_insert_attachment' )->justReturn( 1 );
+		Functions\when( 'wp_get_attachment_url' )->justReturn( 'https://example.test/x.jpg' );
+
+		$storage = make_photo_storage();
+		$storage->store_photo( base64_encode( 'bytes' ), 'image/jpeg', 'x.jpg' ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+
+		expect( $captured_overrides )->toBe(
+			[
+				'test_form' => false,
+				'mimes'     => [
+					'jpg|jpeg|jpe' => 'image/jpeg',
+					'png'          => 'image/png',
+					'webp'         => 'image/webp',
+					'gif'          => 'image/gif',
+				],
+			]
+		);
 	}
 );

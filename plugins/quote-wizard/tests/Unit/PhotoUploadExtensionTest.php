@@ -3,12 +3,12 @@
  * Regression test for the Step 5.14.2 photo-upload extension/MIME bug.
  *
  * See AUDIT-5.14.2-integration.md: this project has no WP_UnitTestCase / real
- * WordPress bootstrap, so wp_handle_upload() (and the wp_check_filetype_and_ext()
+ * WordPress bootstrap, so wp_handle_sideload() (and the wp_check_filetype_and_ext()
  * check inside it that rejected the original bug's mismatched files) cannot be
  * exercised for real. This test reproduces the exact reported scenario — a PNG
  * selected by the user, compressed client-side to JPEG bytes, submitted with a
  * mismatched-then-corrected filename — end-to-end through PhotoStorage::store_photo(),
- * asserting the upload succeeds and the (mocked) wp_handle_upload() only ever sees a
+ * asserting the upload succeeds and the (mocked) wp_handle_sideload() only ever sees a
  * filename whose extension matches the claimed MIME type.
  *
  * @package Agency\QuoteWizard
@@ -49,7 +49,7 @@ it(
 	'photo upload succeeds when the filename extension already matches the MIME type',
 	function (): void {
 		$received_name = null;
-		Functions\when( 'wp_handle_upload' )->alias(
+		Functions\when( 'wp_handle_sideload' )->alias(
 			static function ( array $file ) use ( &$received_name ): array {
 				$received_name = $file['name'];
 				return [ 'file' => '/tmp/test.jpg', 'url' => 'https://example.test/test.jpg', 'type' => 'image/jpeg' ];
@@ -67,13 +67,13 @@ it(
 );
 
 it(
-	'photo upload succeeds and the mismatched extension is corrected before wp_handle_upload runs (the reported bug)',
+	'photo upload succeeds and the mismatched extension is corrected before wp_handle_sideload runs (the reported bug)',
 	function (): void {
 		$received_name = null;
-		Functions\when( 'wp_handle_upload' )->alias(
+		Functions\when( 'wp_handle_sideload' )->alias(
 			static function ( array $file ) use ( &$received_name ): array {
 				$received_name = $file['name'];
-				// A real wp_handle_upload() would reject this call outright if
+				// A real wp_handle_sideload() would reject this call outright if
 				// $file['name']'s extension didn't match $file['type'] — asserting
 				// what it received is the regression guard for that rejection.
 				return [ 'file' => '/tmp/holiday.jpg', 'url' => 'https://example.test/holiday.jpg', 'type' => 'image/jpeg' ];
