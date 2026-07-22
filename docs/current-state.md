@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-07-22 (post Step 6.1)_
+_Last updated: 2026-07-22 (post Step 6.2)_
 
 ## What's working
 
@@ -33,8 +33,19 @@ _Last updated: 2026-07-22 (post Step 6.1)_
 - Photo upload extension/MIME consistency (Step 5.14.2): browser-side compression (`image-compression.ts`) always re-encodes to JPEG, but the wizard was submitting the pre-compression filename (e.g. `holiday.png`) alongside the correct `image/jpeg` MIME claim — WordPress's `wp_handle_upload()` rejects that mismatch via `wp_check_filetype_and_ext()`. Fixed client-side (`correctedJpegFileName()` in `image-compression.ts`, consumed via a new `buildPhotoMetadata()` helper in `domain/runtime/photos.ts`) and server-side (`Submissions\PhotoStorage::correct_filename_extension()`, a `MIME_TO_EXTENSION` map applied before `wp_handle_upload()` runs, independent of client behavior). ADR-0031.
 - Photo upload via wp_handle_sideload (Step 5.14.3): `wp_handle_upload()` requires `is_uploaded_file()` to return true, which is always false for a photo `PhotoStorage` decoded and wrote to a temp file itself — every photo submission on every deployment failed with "Specified file failed upload test." Swapped to `wp_handle_sideload()` (uses `is_readable()` instead) with an explicit `mimes` allowlist (jpg/jpeg/jpe, png, webp, gif) matching `MediaValidator`'s own. `docs/onboarding.md` gained `WP_TEMP_DIR` (LocalWP) and local-URL/Google-Sheets-IMAGE() guidance. ADR-0032.
 - Wizard UX improvements (Step 6.1): fencing's duplicate gate question (`gate_needed`/`gate_width` in `optional-details`, never wired to pricing) removed — `include_gate` in `extras` (wired to `fencingPricingConfig`) is now the single gate question. New `apps/wizard/src/utils/units.ts` (`metersToFeet`, `squareMetersToSquareFeet`, `formatMeasurementWithFeet`, `formatMeasurementRangeWithFeet`) converts metric measurements to feet/square-feet — dispatched on the `m`/`m²` unit string so area values get the correct ×10.7639 factor, not the linear ×3.28084 one. `SizeBracketSelectorStep.tsx` renders bracket ranges and the live exact-dimension value through these helpers, so fencing, decking, patio, driveway (and incidentally jetwash/garden-steps) all show feet equivalents from one shared fix; fencing's static fence-height labels were edited directly. `site_photos` field `help` text on the four in-scope wizards replaced with landscaping-quote photo guidance (full-length shots, obstacles, problem areas, boundary connection), replacing a redundant format-constraint restatement. ADR-0033.
+- Fencing mandatory post-estimate questions (Step 6.2): new classic field step `fencing-details` inserted between `extras` and `site_photos` (after `estimate-display`, before photos) — three required `radio` fields: `terrain` (soft/hard/concrete), `post_material` (concrete/timber), `gravel_boards` (yes/no). No new step kind (the spec's assumed `multi-field-form` type doesn't exist; the classic `Step`/`fields[]` type already covers this) and no schema change for per-option helper text (`FieldSchema` has no such field) — per-option nuance is folded into option labels, `gravel_boards`' explanation uses the existing field-level `help` string. Pure metadata, no pricing wiring; `WizardStore.buildRequest()` already spreads the full answers map unfiltered into the submission payload. Fencing-only change. ADR-0034.
 
 ## Gate state (last verified)
+
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: 0 errors (pre-existing, unrelated `tsconfig.test.json` type errors in `non-field-step-engine.test.ts` predate this step — last touched in the 5.13a/5.13b commits)
+- `pnpm test`: **803/803** (60 test files, +12 from 6.1)
+- `pnpm build`: clean (bundle 90.44 kB gzip, +0.32 kB vs. 6.1's 90.12 kB)
+- `composer test`: **249 passed, 4 skipped** (unchanged — no PHP changes this step)
+- `composer analyse`: clean (PHPStan level 8, no errors)
+- `composer lint`: 0/0 for all files touched this step (pre-existing, unrelated drift in `quote-wizard.php` predates 5.13e/5.13f/5.13g/5.14/5.14.1/5.14.2/5.14.3)
+
+## Gate state (6.1, 2026-07-22)
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors (pre-existing, unrelated `tsconfig.test.json` type errors in `non-field-step-engine.test.ts` predate this step — last touched in the 5.13a/5.13b commits)
@@ -200,6 +211,17 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 
 ## Completed Steps
 
+- **Step 6.2 — Fencing Mandatory Post-Estimate Questions** (July 2026).
+  ADR-0034 accepted. New `fencing-details` classic field step inserted
+  between `extras` and `site_photos` in `fencing.config.ts`: three
+  required `radio` fields (`terrain`, `post_material`, `gravel_boards`),
+  pure metadata with no pricing impact. No new step kind or schema
+  addition — per-option nuance folded into option labels, since
+  `FieldSchema` has no per-option helper-text field. 12 new Vitest tests
+  (791→803), plus 8 hardcoded step-index fixes in
+  `domain/__tests__/validation.test.ts` (contact-and-address shifted from
+  index 6 to 7). PHP unchanged (249/249). Fencing-only; no other wizard
+  touched.
 - **Step 6.1 — Wizard UX Improvements** (July 2026). ADR-0033 accepted.
   Removed fencing's duplicate, price-unwired gate question from
   `optional-details` (kept the price-wired `include_gate` in `extras`).

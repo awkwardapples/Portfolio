@@ -1211,6 +1211,27 @@ base: {
 - `schemaVersion`, `currency`, `rangeSpreadBasisPoints`
 - Any wizard step definitions, step sequences, or TypeScript type annotations
 
+**Fencing-specific: the `fencing-details` step (Step 6.2, ADR-0034).**
+`fencing.config.ts` has one step other configs don't — `fencing-details`
+(between `extras` and `site_photos`), collecting `terrain`,
+`post_material`, and `gravel_boards` as three required `radio` fields.
+It's pure metadata for the business owner's final quote prep; it has no
+`quantityFieldId`/`appliesToFieldId` wiring in `fencingPricingConfig`, so
+removing or editing it never touches pricing:
+
+- **If this client's fencing business doesn't need this info**, delete the
+  whole step object from `fencingWizardConfig.steps` — no other file
+  references it (no pricing modifier, no condition elsewhere points at
+  `terrain`/`post_material`/`gravel_boards`).
+- **If they need different or additional questions**, add/edit fields the
+  same way: `type: 'radio'` (or any type from `FIELD_TYPES` in
+  `domain/config/field-types.ts`), `required: true`/`false`, and an
+  `options` array of `{ value, label }`. There is no per-option
+  `helperText` field in this schema — fold any explanatory nuance directly
+  into each option's `label` (see the existing `terrain` field for the
+  pattern), or use the field-level `help` string for one explanation that
+  applies to the whole field (see `gravel_boards`).
+
 **Verification:**
 
 After editing pricing configs, run the Vitest suite to confirm validation passes:

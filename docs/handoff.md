@@ -1,9 +1,34 @@
 # Handoff
 
-_Last updated: 2026-07-22 (post Step 6.1)_
+_Last updated: 2026-07-22 (post Step 6.2)_
 
 ## Status
 
+- Step 6.2 complete (July 22, 2026): Fencing Mandatory Post-Estimate
+  Questions. New `fencing-details` classic field step inserted in
+  `fencing.config.ts` between `extras` and `site_photos` — after the user
+  has seen the estimate, before photos/contact. Three required `radio`
+  fields: `terrain` (soft/hard/concrete), `post_material`
+  (concrete/timber), `gravel_boards` (yes/no) — pure metadata for the
+  business owner's final quote prep, no pricing wiring. Phase 0 audits
+  found the spec's assumed `multi-field-form` step type doesn't exist
+  (the classic `Step`/`fields[]` type — the same one `extras` and
+  `contact-and-address` already use — covers this with no schema change),
+  that `FieldSchema` has no per-option helper-text field (per-option
+  nuance folded into option labels instead; `gravel_boards`' explanation
+  uses the existing field-level `help` string), and that there is no
+  "Continue disabled" button state anywhere in this codebase — required
+  fields are enforced by `validateStep()` blocking the `STEP_NEXT`
+  transition, tested directly against the real config instead of a
+  nonexistent disabled-button state. `WizardStore.buildRequest()` already
+  spreads the whole answers map unfiltered into the submission payload,
+  so no plumbing changes were needed for the new fields to reach it. 12
+  new Vitest tests (791→803), plus 8 hardcoded `steps[6]` index
+  references fixed in `domain/__tests__/validation.test.ts` (shifted to
+  index 7). No PHP changes. Fencing-only — no other wizard touched. ADR-
+  0034 accepted. Operational verification pending (fresh-clone check that
+  the step appears, blocks on incomplete answers, and the new fields
+  reach the database/Make.com payload).
 - Step 6.1 complete (July 22, 2026): Wizard UX Improvements. Three
   independent UX fixes, scoped to the four instant-quote hard-landscaping
   wizards (fencing, decking, patio, driveway). (1) **Duplicate gate

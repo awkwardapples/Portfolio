@@ -52,9 +52,10 @@ A single-page, structural view of project state. Update on every completed step.
 | 5.14.2                | Complete | Photo upload extension/MIME consistency: client + server filename correction for compressed JPEG output; ADR-0031                 |
 | 5.14.3                | Complete | wp_handle_upload → wp_handle_sideload: fixes real is_uploaded_file() rejection on every photo submission; ADR-0032                |
 | 6.1                   | Complete | Wizard UX improvements: duplicate gate question removed, feet equivalents on metric measurements, photo upload guidance; ADR-0033 |
+| 6.2                   | Complete | Fencing mandatory post-estimate questions: terrain, post material, gravel boards — pure metadata, no pricing impact; ADR-0034     |
 | 5.12                  | Planned  | SCB-specific deployment (first real client)                                                                                       |
 | 6.0                   | Planned  | Production IONOS deployment                                                                                                       |
-| 6.2+                  | Future   | Fencing mandatory post-estimate questions, new service categories, service customization docs, second client                      |
+| 6.3+                  | Future   | New service categories, service customization docs, second client                                                                 |
 
 ## Step rationale and dependencies
 
