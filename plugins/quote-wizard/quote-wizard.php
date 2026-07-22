@@ -12,6 +12,7 @@
  *
  * @package Agency\QuoteWizard
  */
+
 declare( strict_types=1 );
 
 namespace Agency\QuoteWizard;
@@ -36,8 +37,8 @@ spl_autoload_register(
 			return;
 		}
 		$relative_class = substr( $class_name, strlen( $prefix ) );
-		$relative_path = str_replace( '\\', DIRECTORY_SEPARATOR, $relative_class ) . '.php';
-		$file = GOQW_PLUGIN_DIR . 'src' . DIRECTORY_SEPARATOR . $relative_path;
+		$relative_path  = str_replace( '\\', DIRECTORY_SEPARATOR, $relative_class ) . '.php';
+		$file           = GOQW_PLUGIN_DIR . 'src' . DIRECTORY_SEPARATOR . $relative_path;
 		if ( is_readable( $file ) ) {
 			require_once $file;
 		}
