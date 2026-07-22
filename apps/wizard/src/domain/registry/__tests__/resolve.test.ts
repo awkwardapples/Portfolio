@@ -22,6 +22,7 @@ const ALL_VERTICAL_IDS = [
   'plumbing',
   'electrical',
   'carpentry',
+  'other',
 ];
 
 describe('resolveVertical', () => {
@@ -55,7 +56,7 @@ describe('resolveFallbackVertical', () => {
 });
 
 describe('listVerticalIds', () => {
-  it('returns all 11 services in registry insertion order', () => {
+  it('returns all 12 services in registry insertion order', () => {
     expect(listVerticalIds()).toEqual(ALL_VERTICAL_IDS);
   });
 });
@@ -88,6 +89,10 @@ describe('Vertical.categoryId', () => {
   it.each(['plumbing', 'electrical', 'carpentry'])('%s vertical has categoryId: handyman', (id) => {
     expect(VERTICALS[id]?.categoryId).toBe('handyman');
   });
+
+  it('other vertical has no categoryId — deliberately uncategorized (6.3)', () => {
+    expect(VERTICALS['other']?.categoryId).toBeUndefined();
+  });
 });
 
 describe('registry structural validity', () => {
@@ -107,7 +112,7 @@ describe('registry structural validity', () => {
     expect(Object.isFrozen(VERTICALS)).toBe(true);
   });
 
-  it('all 11 verticals resolve to non-null', () => {
+  it('all 12 verticals resolve to non-null', () => {
     for (const id of ALL_VERTICAL_IDS) {
       expect(resolveVertical(id)).not.toBeNull();
     }

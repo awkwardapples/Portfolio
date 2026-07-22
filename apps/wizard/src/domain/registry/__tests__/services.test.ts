@@ -14,19 +14,24 @@ const ALL_SERVICE_IDS = [
   'plumbing',
   'electrical',
   'carpentry',
+  'other',
 ];
 
 describe('listEnabledServiceIds', () => {
-  it('returns all 11 registered services when called with no argument', () => {
+  it('returns all 12 registered services when called with no argument', () => {
     expect(listEnabledServiceIds()).toEqual(ALL_SERVICE_IDS);
   });
 
-  it('returns all 11 registered services when called with undefined', () => {
+  it('returns all 12 registered services when called with undefined', () => {
     expect(listEnabledServiceIds(undefined)).toEqual(ALL_SERVICE_IDS);
   });
 
-  it('returns all 11 registered services when called with an empty array', () => {
+  it('returns all 12 registered services when called with an empty array', () => {
     expect(listEnabledServiceIds([])).toEqual(ALL_SERVICE_IDS);
+  });
+
+  it("returns ['other'] when override is ['other'] (Other appears last by default, but can be isolated)", () => {
+    expect(listEnabledServiceIds(['other'])).toEqual(['other']);
   });
 
   it("returns ['fencing'] when override is ['fencing']", () => {
@@ -78,7 +83,7 @@ describe('resolveService', () => {
     },
   );
 
-  it.each(['general-repairs', 'plumbing', 'electrical', 'carpentry'])(
+  it.each(['general-repairs', 'plumbing', 'electrical', 'carpentry', 'other'])(
     "resolves '%s' (manual-quote) to a non-null SessionConfig",
     (id) => {
       const result = resolveService(id);
@@ -106,7 +111,7 @@ describe('wizard config titles — copy audit', () => {
   });
 
   it('no manual-quote wizard title contains "quote" or "request"', () => {
-    for (const id of ['general-repairs', 'plumbing', 'electrical', 'carpentry']) {
+    for (const id of ['general-repairs', 'plumbing', 'electrical', 'carpentry', 'other']) {
       const service = resolveService(id);
       const title = service?.wizard.title.toLowerCase() ?? '';
       expect(title).not.toContain('quote');

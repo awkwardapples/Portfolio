@@ -12,9 +12,9 @@ import { listEnabledServiceIds } from '@/domain/registry/services';
  */
 
 describe('service selection helper logic', () => {
-  it('returns all services when override is absent (all 11 registered services)', () => {
+  it('returns all services when override is absent (all 12 registered services)', () => {
     const ids = listEnabledServiceIds();
-    expect(ids.length).toBe(11);
+    expect(ids.length).toBe(12);
     expect(ids[0]).toBe('fencing');
     expect(ids).toContain('decking');
     expect(ids).toContain('painting');

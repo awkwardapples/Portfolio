@@ -12,6 +12,7 @@ import { generalRepairsWizardConfig } from '@/domain/fixtures/general-repairs.co
 import { plumbingWizardConfig } from '@/domain/fixtures/plumbing.config';
 import { electricalWizardConfig } from '@/domain/fixtures/electrical.config';
 import { carpentryWizardConfig } from '@/domain/fixtures/carpentry.config';
+import { otherWizardConfig } from '@/domain/fixtures/other.config';
 
 /**
  * Consent must sit on the last *mandatory* step of every wizard config (Step
@@ -34,6 +35,7 @@ const MANUAL_CONFIGS = [
   { id: 'plumbing', config: plumbingWizardConfig, lastMandatoryStepId: 'address' },
   { id: 'electrical', config: electricalWizardConfig, lastMandatoryStepId: 'address' },
   { id: 'carpentry', config: carpentryWizardConfig, lastMandatoryStepId: 'address' },
+  { id: 'other', config: otherWizardConfig, lastMandatoryStepId: 'address' },
 ];
 
 const ALL_CONFIGS = [...INSTANT_CONFIGS, ...MANUAL_CONFIGS];

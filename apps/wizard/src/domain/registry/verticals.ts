@@ -9,6 +9,9 @@
  * Step 5.9: 9 new services added (painting, patio, driveway, steps, jetwash,
  * general-repairs, plumbing, electrical, carpentry). All 11 services carry
  * a categoryId assignment per ADR-0021 Decision 4.
+ *
+ * Step 6.3: 'other' added as a 12th, deliberately uncategorized (no
+ * categoryId) long-tail catch-all — see ADR-0035.
  */
 
 import { fencingWizardConfig, fencingPricingConfig } from '@/domain/fixtures/fencing.config';
@@ -28,6 +31,7 @@ import {
   electricalPricingConfig,
 } from '@/domain/fixtures/electrical.config';
 import { carpentryWizardConfig, carpentryPricingConfig } from '@/domain/fixtures/carpentry.config';
+import { otherWizardConfig, otherPricingConfig } from '@/domain/fixtures/other.config';
 import type { Vertical } from '@/domain/registry/types';
 
 // ---------------------------------------------------------------------------
@@ -145,8 +149,27 @@ const carpentry: Vertical = {
   pricing: carpentryPricingConfig,
 };
 
+// ---------------------------------------------------------------------------
+// Other (Step 6.3) — long-tail catch-all, deliberately uncategorized so it
+// isn't hidden by category-navigation filtering under any of the four
+// existing categories; see AUDIT-6.3-service-structure.md.
+// ---------------------------------------------------------------------------
+
+const other: Vertical = {
+  id: 'other',
+  label: 'Other services',
+  schemaVersion: 1,
+  wizard: otherWizardConfig,
+  pricing: otherPricingConfig,
+};
+
 /**
  * The closed registry. Object.freeze provides runtime defence against mutation.
+ *
+ * Key insertion order is the default display/selection order
+ * (domain/registry/services.ts's listEnabledServiceIds() derives it from
+ * Object.keys(VERTICALS)) — 'other' is deliberately the last key so it
+ * appears last in the service list by default (ADR-0035 D1).
  */
 export const VERTICALS: Readonly<Record<string, Vertical>> = Object.freeze({
   fencing,
@@ -160,6 +183,7 @@ export const VERTICALS: Readonly<Record<string, Vertical>> = Object.freeze({
   plumbing,
   electrical,
   carpentry,
+  other,
 });
 
 /**

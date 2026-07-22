@@ -6,12 +6,14 @@ import { generalRepairsWizardConfig } from '@/domain/fixtures/general-repairs.co
 import { plumbingWizardConfig } from '@/domain/fixtures/plumbing.config';
 import { electricalWizardConfig } from '@/domain/fixtures/electrical.config';
 import { carpentryWizardConfig } from '@/domain/fixtures/carpentry.config';
+import { otherWizardConfig } from '@/domain/fixtures/other.config';
 
 const MANUAL_CONFIGS = [
   { id: 'general-repairs', config: generalRepairsWizardConfig },
   { id: 'plumbing', config: plumbingWizardConfig },
   { id: 'electrical', config: electricalWizardConfig },
   { id: 'carpentry', config: carpentryWizardConfig },
+  { id: 'other', config: otherWizardConfig },
 ];
 
 const EXPECTED_STEP_IDS = [
@@ -77,5 +79,16 @@ describe('manual-quote services — service-specific description prompts', () =>
   it('carpentry description field label mentions carpentry', () => {
     const step = asFieldStep(carpentryWizardConfig.steps.find((s) => s.id === 'description'));
     expect(step.fields[0]!.label.toLowerCase()).toContain('carpentry');
+  });
+
+  it('other description field label is generic (service/project), not trade-specific (6.3)', () => {
+    const step = asFieldStep(otherWizardConfig.steps.find((s) => s.id === 'description'));
+    const label = step.fields[0]!.label.toLowerCase();
+    expect(label).toMatch(/service|project/);
+  });
+
+  it('other description field help text gives an example project (6.3)', () => {
+    const step = asFieldStep(otherWizardConfig.steps.find((s) => s.id === 'description'));
+    expect(step.fields[0]!.help?.toLowerCase()).toContain('for example');
   });
 });
