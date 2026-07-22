@@ -1,9 +1,37 @@
 # Handoff
 
-_Last updated: 2026-07-17 (post Step 5.14.3)_
+_Last updated: 2026-07-22 (post Step 6.1)_
 
 ## Status
 
+- Step 6.1 complete (July 22, 2026): Wizard UX Improvements. Three
+  independent UX fixes, scoped to the four instant-quote hard-landscaping
+  wizards (fencing, decking, patio, driveway). (1) **Duplicate gate
+  question:** fencing asked about a gate twice — `include_gate` in `extras`
+  (wired to `fencingPricingConfig`, adds £350) and `gate_needed`/
+  `gate_width` in `optional-details` (never wired to pricing, purely
+  informational). Removed the unwired duplicate. (2) **Feet equivalents:**
+  new `apps/wizard/src/utils/units.ts` converts metric measurements to
+  feet/square-feet, correctly distinguishing linear metres (`unit: 'm'`,
+  ×3.28084) from square metres (`unit: 'm²'`, ×3.28084² ≈ ×10.76) — the
+  spec's suggested single conversion factor would have misreported every
+  area-based wizard's brackets by ~3.3×. Wired into the shared
+  `SizeBracketSelectorStep.tsx` component (bracket ranges + live
+  exact-dimension value), so every wizard on that step kind benefits from
+  one fix rather than per-config edits; fencing's static fence-height
+  labels ("Up to 1.2m") were edited directly since they have no structured
+  numeric backing. (3) **Photo guidance:** the `site_photos` field's help
+  text — previously just restating file-format constraints already shown a
+  second time by `PhotoField.tsx`'s own hardcoded tip — now gives
+  landscaping-quote photo guidance (full-length shots, obstacles, problem
+  areas, boundary connection) on the four in-scope wizards. This project
+  has zero React Testing Library / `.test.tsx` files anywhere, so the
+  conversion math is unit-tested (`units.test.ts`, 13 tests) and the
+  component wiring relies on manual/build verification rather than adding a
+  new component-testing architecture for a UX-copy step. 20 new Vitest
+  tests (772→791 net +19), no PHP changes. ADR-0033 accepted. Operational
+  verification pending (fresh-clone manual check of all three changes in
+  the browser).
 - Step 5.14.3 complete (July 17, 2026): wp_handle_upload → wp_handle_sideload. The
   real production bug behind every SCB pilot photo-upload failure:
   `wp_handle_upload()` requires `is_uploaded_file()` to return true, which is always

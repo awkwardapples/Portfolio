@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-07-17 (post Step 5.14.3)_
+_Last updated: 2026-07-22 (post Step 6.1)_
 
 ## What's working
 
@@ -32,8 +32,19 @@ _Last updated: 2026-07-17 (post Step 5.14.3)_
 - Environmental robustness & namespace prefixes (Step 5.14.1): `Submissions\PhotoStorage` now loads its wp-admin includes (`ensure_upload_functions_loaded()`) as the first statement in `store_photo()`, before `wp_tempnam()` can be reached — fixes an SCB-pilot photo-upload failure caused by the require running too late. Every WordPress core function call in namespaced plugin PHP (33 files) is now backslash-prefixed (ADR-0030). The client's `httpSubmissionPort` handles HTTP 429 as a distinct `rate_limited` error code with a "Please try again in N minute(s)" message instead of falling through to a generic server error. `docs/onboarding.md` gained LocalWP DB_HOST and PHP OpCache guidance.
 - Photo upload extension/MIME consistency (Step 5.14.2): browser-side compression (`image-compression.ts`) always re-encodes to JPEG, but the wizard was submitting the pre-compression filename (e.g. `holiday.png`) alongside the correct `image/jpeg` MIME claim — WordPress's `wp_handle_upload()` rejects that mismatch via `wp_check_filetype_and_ext()`. Fixed client-side (`correctedJpegFileName()` in `image-compression.ts`, consumed via a new `buildPhotoMetadata()` helper in `domain/runtime/photos.ts`) and server-side (`Submissions\PhotoStorage::correct_filename_extension()`, a `MIME_TO_EXTENSION` map applied before `wp_handle_upload()` runs, independent of client behavior). ADR-0031.
 - Photo upload via wp_handle_sideload (Step 5.14.3): `wp_handle_upload()` requires `is_uploaded_file()` to return true, which is always false for a photo `PhotoStorage` decoded and wrote to a temp file itself — every photo submission on every deployment failed with "Specified file failed upload test." Swapped to `wp_handle_sideload()` (uses `is_readable()` instead) with an explicit `mimes` allowlist (jpg/jpeg/jpe, png, webp, gif) matching `MediaValidator`'s own. `docs/onboarding.md` gained `WP_TEMP_DIR` (LocalWP) and local-URL/Google-Sheets-IMAGE() guidance. ADR-0032.
+- Wizard UX improvements (Step 6.1): fencing's duplicate gate question (`gate_needed`/`gate_width` in `optional-details`, never wired to pricing) removed — `include_gate` in `extras` (wired to `fencingPricingConfig`) is now the single gate question. New `apps/wizard/src/utils/units.ts` (`metersToFeet`, `squareMetersToSquareFeet`, `formatMeasurementWithFeet`, `formatMeasurementRangeWithFeet`) converts metric measurements to feet/square-feet — dispatched on the `m`/`m²` unit string so area values get the correct ×10.7639 factor, not the linear ×3.28084 one. `SizeBracketSelectorStep.tsx` renders bracket ranges and the live exact-dimension value through these helpers, so fencing, decking, patio, driveway (and incidentally jetwash/garden-steps) all show feet equivalents from one shared fix; fencing's static fence-height labels were edited directly. `site_photos` field `help` text on the four in-scope wizards replaced with landscaping-quote photo guidance (full-length shots, obstacles, problem areas, boundary connection), replacing a redundant format-constraint restatement. ADR-0033.
 
 ## Gate state (last verified)
+
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: 0 errors (pre-existing, unrelated `tsconfig.test.json` type errors in `non-field-step-engine.test.ts` predate this step — last touched in the 5.13a/5.13b commits)
+- `pnpm test`: **791/791** (58 test files, +19 from 5.14.3)
+- `pnpm build`: clean (bundle 90.12 kB gzip, +0.33 kB vs. 5.14.1's last-measured 89.79 kB)
+- `composer test`: **249 passed, 4 skipped** (unchanged — no PHP changes this step)
+- `composer analyse`: clean (PHPStan level 8, no errors)
+- `composer lint`: 0/0 for all files touched this step (pre-existing, unrelated drift in `quote-wizard.php` predates 5.13e/5.13f/5.13g/5.14/5.14.1/5.14.2/5.14.3)
+
+## Gate state (5.14.3, 2026-07-17)
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors (pre-existing, unrelated `tsconfig.test.json` type errors in `non-field-step-engine.test.ts` predate this step — last touched in the 5.13a/5.13b commits)
@@ -189,6 +200,17 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 
 ## Completed Steps
 
+- **Step 6.1 — Wizard UX Improvements** (July 2026). ADR-0033 accepted.
+  Removed fencing's duplicate, price-unwired gate question from
+  `optional-details` (kept the price-wired `include_gate` in `extras`).
+  Added feet/square-feet equivalents to metric measurements — new
+  `apps/wizard/src/utils/units.ts` correctly distinguishes linear (`m`,
+  ×3.28084) from area (`m²`, ×3.28084²) conversions, wired into the shared
+  `SizeBracketSelectorStep.tsx` so fencing/decking/patio/driveway all
+  benefit from one fix. Replaced the `site_photos` field's redundant
+  format-restatement help text with landscaping-quote photo guidance on
+  those same four wizards. 20 new Vitest tests (772→791, +19 net). PHP
+  unchanged (249/249).
 - Step 4.0 — UX shell (design-system primitives: Button, Input, IconButton, Skeleton, Tooltip)
 - Step 4.1 — Config schema + validation architecture (Zod schemas, cross-reference validation, fencing fixture)
 - Step 4.2 — Wizard state machine (FSM, events, transition(), selectors, navigation helpers, replay, WizardStore, WizardProvider, useWizard/useWizardSelector, persistence, submission port)
