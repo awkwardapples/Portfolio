@@ -1,9 +1,42 @@
 # Handoff
 
-_Last updated: 2026-07-22 (post Step 6.3)_
+_Last updated: 2026-07-22 (post Step 6.4)_
 
 ## Status
 
+- Step 6.4 complete (July 22, 2026): Service Customization Guide.
+  Documentation-only. New `docs/service-customization-guide.md`
+  (~1100 lines): a comprehensive, LLM-followable reference covering
+  every service-level customization operation (adding, removing,
+  modifying questions, adjusting pricing, updating metadata, managing
+  categories, toggling quote modes), each with a worked example, the
+  reasoning behind it, an explicit sync-obligation checklist, and
+  per-operation testing guidance. Four Phase 0 audits
+  (`docs/AUDIT-6.4-sync-obligations.md` and three more under
+  `apps/wizard/src/`) verified every claim against the real source
+  rather than the planning spec's assumptions — several of which were
+  wrong: there is no per-service pricing function (`computePrice()` is
+  one shared engine evaluating declarative `PricingConfig` data, never
+  per-service code); there is no second "category enumeration" file
+  beyond `domain/registry/categories.ts`; `ServiceSchemaEmitter.php`'s
+  `category` field mirrors but never assigns a category (the real
+  assignment is `verticals.ts`'s `categoryId`); and instant-quote
+  services have no shared parametrized test suite the way manual-quote
+  services do via `MANUAL_CONFIGS`, so adding one always needs a
+  bespoke test file. A plausible-looking "6th sync-obligation file"
+  (`ICON_MAP`/`services-preview.test.ts`) was investigated and cleared
+  — it's a curated homepage-feature subset, not a full-registry mirror,
+  so it's correctly _not_ in sync with the 12-service count. Also
+  surfaced and resolved a real scope conflict: `llm-customization-
+handoff.md`'s Rule 1 explicitly forbids the per-client customization
+  LLM from touching `domain/`, PHP, or tests — exactly what the new
+  guide instructs an engineer to do — so the new guide's reference in
+  that document is framed as a separate, broader task, not something
+  Rule 1's narrower persona is now authorized to do. 0 new tests
+  (820/820 unchanged), PHP unchanged (250/250), bundle byte-identical
+  (90.76 kB gzip — this step also caught and corrected a stale bundle
+  figure from 6.3's own evidence doc, recorded mid-step rather than
+  after its final commit). ADR-0036 accepted.
 - Step 6.3 complete (July 22, 2026): "Other" Service Category. New 12th
   vertical, `other.config.ts`, registered as the last key in
   `domain/registry/verticals.ts`'s `VERTICALS` object literal — the only

@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-07-22 (post Step 6.3)_
+_Last updated: 2026-07-22 (post Step 6.4)_
 
 ## What's working
 
@@ -35,13 +35,24 @@ _Last updated: 2026-07-22 (post Step 6.3)_
 - Wizard UX improvements (Step 6.1): fencing's duplicate gate question (`gate_needed`/`gate_width` in `optional-details`, never wired to pricing) removed — `include_gate` in `extras` (wired to `fencingPricingConfig`) is now the single gate question. New `apps/wizard/src/utils/units.ts` (`metersToFeet`, `squareMetersToSquareFeet`, `formatMeasurementWithFeet`, `formatMeasurementRangeWithFeet`) converts metric measurements to feet/square-feet — dispatched on the `m`/`m²` unit string so area values get the correct ×10.7639 factor, not the linear ×3.28084 one. `SizeBracketSelectorStep.tsx` renders bracket ranges and the live exact-dimension value through these helpers, so fencing, decking, patio, driveway (and incidentally jetwash/garden-steps) all show feet equivalents from one shared fix; fencing's static fence-height labels were edited directly. `site_photos` field `help` text on the four in-scope wizards replaced with landscaping-quote photo guidance (full-length shots, obstacles, problem areas, boundary connection), replacing a redundant format-constraint restatement. ADR-0033.
 - Fencing mandatory post-estimate questions (Step 6.2): new classic field step `fencing-details` inserted between `extras` and `site_photos` (after `estimate-display`, before photos) — three required `radio` fields: `terrain` (soft/hard/concrete), `post_material` (concrete/timber), `gravel_boards` (yes/no). No new step kind (the spec's assumed `multi-field-form` type doesn't exist; the classic `Step`/`fields[]` type already covers this) and no schema change for per-option helper text (`FieldSchema` has no such field) — per-option nuance is folded into option labels, `gravel_boards`' explanation uses the existing field-level `help` string. Pure metadata, no pricing wiring; `WizardStore.buildRequest()` already spreads the full answers map unfiltered into the submission payload. Fencing-only change. ADR-0034.
 - "Other" service category (Step 6.3): 12th vertical, `other.config.ts`, registered last in `domain/registry/verticals.ts`'s `VERTICALS` object literal — the only ordering mechanism that exists (no explicit position field). Follows the exact uniform manual-quote structure the other four manual-quote services share (ADR-0021 Decision 3: `description → urgency → property → site_photos → contact_preference → contact → address`), not the illustrative postcode-first/optional-details flow initially assumed — postcode is actually injected engine-side by `QuotePage.tsx` ahead of every wizard, and no manual-quote service has an optional-details step. Deliberately kept the standard `description`/`work_description` field naming (not a new `project_description` id) so "other" plugs into the existing shared parametrized test suites (`manual-quote-configs.test.ts`, `consent-field.test.ts`) as a fifth manual-quote service with zero special-casing. Deliberately uncategorized (no `categoryId`) — none of the four existing categories fit a long-tail catch-all. Enabled by default automatically (no WordPress admin toggle needed) since `listEnabledServiceIds()`'s no-override case returns every registered vertical. ADR-0035.
+- Service customization guide (Step 6.4): new `docs/service-customization-guide.md` — comprehensive, LLM-followable reference for adding/removing/modifying services, adjusting pricing, updating metadata, managing categories, and toggling quote modes, with worked examples and explicit sync-obligation checklists. Corrects several assumptions that don't match the real codebase: there is no per-service pricing function (one shared `computePrice()` engine evaluates declarative `PricingConfig` data, never per-service code); `categories.ts` is the sole category source, with actual category assignment living in `verticals.ts`'s `categoryId` (not `ServiceSchemaEmitter.php`, which only mirrors it for SEO); manual-quote services get near-free test coverage via two shared parametrized suites, while instant-quote services need a bespoke test file each. Also resolved a real scope conflict discovered while cross-referencing `llm-customization-handoff.md`: that document's Rule 1 explicitly forbids the per-client customization LLM from touching `domain/`, PHP, or tests — exactly what the new guide covers — so the new guide is scoped as a separate, broader engineering task, not an extension of the narrower per-client customization pass. Documentation-only: 0 new tests (820/820 unchanged), PHP unchanged (250/250), bundle byte-identical. ADR-0036.
 
 ## Gate state (last verified)
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors (pre-existing, unrelated `tsconfig.test.json` type errors in `non-field-step-engine.test.ts` predate this step — last touched in the 5.13a/5.13b commits)
+- `pnpm test`: **820/820** (62 test files, unchanged from 6.3 — documentation-only step, no code changes)
+- `pnpm build`: clean (bundle 90.76 kB gzip, byte-identical to 6.3's corrected measurement — see phase-6-evidence.md)
+- `composer test`: **250 passed, 4 skipped** (unchanged — no PHP changes this step)
+- `composer analyse`: clean (PHPStan level 8, no errors)
+- `composer lint`: 0/0 for all files touched this step (pre-existing, unrelated drift in `quote-wizard.php` predates 5.13e/5.13f/5.13g/5.14/5.14.1/5.14.2/5.14.3)
+
+## Gate state (6.3, 2026-07-22)
+
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: 0 errors (pre-existing, unrelated `tsconfig.test.json` type errors in `non-field-step-engine.test.ts` predate this step — last touched in the 5.13a/5.13b commits)
 - `pnpm test`: **820/820** (62 test files, +17 from 6.2)
-- `pnpm build`: clean (bundle 90.66 kB gzip, +0.22 kB vs. 6.2's 90.44 kB)
+- `pnpm build`: clean (bundle 90.76 kB gzip, +0.32 kB vs. 6.2's 90.44 kB — corrected in 6.4; the 90.66 kB figure first recorded mid-step was measured before the final services-content.ts addition)
 - `composer test`: **250 passed, 4 skipped** (+1 from 6.2 — `ServiceSchemaEmitter` "other" category-omission test, per its documented sync-discipline contract with the JS registry)
 - `composer analyse`: clean (PHPStan level 8, no errors)
 - `composer lint`: 0/0 for all files touched this step (pre-existing, unrelated drift in `quote-wizard.php` predates 5.13e/5.13f/5.13g/5.14/5.14.1/5.14.2/5.14.3)
@@ -222,6 +233,25 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 
 ## Completed Steps
 
+- **Step 6.4 — Service Customization Guide** (July 2026). ADR-0036
+  accepted. New `docs/service-customization-guide.md` (~1100 lines): a
+  comprehensive, LLM-followable reference for adding/removing/modifying
+  services, adjusting pricing, updating metadata, managing categories,
+  and toggling quote modes, organized by operation with worked examples,
+  explicit sync-obligation checklists, and per-operation testing
+  guidance. Four Phase 0 audits (sync obligations, pricing patterns,
+  categories, shared test patterns) verified every factual claim against
+  the current source rather than trusting the planning spec's
+  assumptions — several of which didn't match reality (no per-service
+  pricing function; no second category-enumeration file; no
+  `multi-field-form` step type; `ServiceSchemaEmitter.php`'s `category`
+  field mirrors but doesn't assign categories). Also resolved a real
+  scope conflict with `llm-customization-handoff.md`'s Rule 1, which
+  forbids the per-client customization LLM from touching exactly the
+  files the new guide covers — clarified as two separate tasks rather
+  than silently contradicting the existing rule. Documentation-only: 0
+  new tests (820/820 unchanged), PHP unchanged (250/250), bundle
+  byte-identical (90.76 kB gzip).
 - **Step 6.3 — "Other" Service Category** (July 2026). ADR-0035 accepted.
   New `other.config.ts`, a 12th vertical registered last in
   `domain/registry/verticals.ts` (the only ordering mechanism — no

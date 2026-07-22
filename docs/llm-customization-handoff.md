@@ -7,8 +7,8 @@ wizard configuration. Visual customization is handled separately by the project 
 
 **Audience:** LLM agent.
 
-**Codebase state reference:** This document reflects template state at Step 5.14
-(2026-07-14). Always read actual file contents before editing — this document
+**Codebase state reference:** This document reflects template state at Step 6.4
+(2026-07-22). Always read actual file contents before editing — this document
 describes structure and intent, not exact verbatim content.
 
 **Cross-referenced documents:**
@@ -19,6 +19,32 @@ describes structure and intent, not exact verbatim content.
 - `docs/decisions/0023-seo-infrastructure.md` — SEO architecture decisions
 
 Consult these only when a task references them explicitly. Otherwise work from this document.
+
+## Service Customization (a different, broader task than this document covers)
+
+This document governs **per-client content/branding/SEO customization**
+only — Rule 1/Rule 2 below deliberately keep that task narrow: pick which
+of the _existing_ services a client offers (via the `goqw_enabled_services`
+WordPress option) and adapt copy, never add/remove a service, redesign its
+questions, or touch pricing.
+
+**Adding, removing, or restructuring a service — or adjusting its pricing,
+categories, or quote mode — is a separate, broader engineering task, not
+part of the per-client customization pass this document authorizes.** For
+that task, see:
+
+**`docs/service-customization-guide.md`** — Comprehensive guide with
+worked examples and sync-obligation checklists, covering exactly the
+files (`domain/fixtures/*.config.ts`, `domain/registry/verticals.ts`,
+`plugins/quote-wizard/src/SEO/ServiceSchemaEmitter.php`, and their test
+suites) that Rule 1 below places off-limits for the content-customization
+LLM persona. If a business profile requires a service that doesn't exist
+in the template yet, or pricing that needs restructuring beyond the
+numbers `goqw_*` options already expose, stop, flag it in the
+customization report (Section 6), and treat it as a prerequisite
+engineering task using that guide — don't attempt it under this
+document's Rule 1/Rule 2 boundaries, which exist precisely to keep this
+narrower task safe for an LLM to run with less supervision.
 
 ---
 

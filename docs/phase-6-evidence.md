@@ -1,8 +1,8 @@
 # Phase 6 Evidence Report
 
 _Compiled: 2026-07-22 — Covers Step 6.1 (Wizard UX Improvements), Step 6.2
-(Fencing Mandatory Post-Estimate Questions), and Step 6.3 ("Other" Service
-Category)_
+(Fencing Mandatory Post-Estimate Questions), Step 6.3 ("Other" Service
+Category), and Step 6.4 (Service Customization Guide)_
 
 ## Gate Results
 
@@ -168,7 +168,7 @@ grows minimally as required.
 | `pnpm lint`      | 0 errors, 0 warnings                                                                       |
 | `pnpm typecheck` | 0 errors (production); same pre-existing unrelated `tsconfig.test.json` error noted in 6.1 |
 | `pnpm test`      | **820 / 820 passing** (62 test files, +17 from 6.2's 803)                                  |
-| `pnpm build`     | Clean. 338.16 kB JS (90.66 kB gzip), 19.51 kB CSS (4.43 kB gzip)                           |
+| `pnpm build`     | Clean. 338.43 kB JS (90.76 kB gzip — see note below), 19.51 kB CSS (4.43 kB gzip)          |
 
 PHP: **250 passed, 4 skipped** (+1 from 6.2's 249) — `composer analyse` clean
 (PHPStan level 8), `composer lint` 0/0 for files touched this step
@@ -197,7 +197,7 @@ implementation."
 | 13  | LLM customization guide updated                 | ✅ `llm-customization-handoff.md` — new "Other" customization section                                                                                                                                                                                            |
 | 14  | All 803 prior Vitest tests pass                 | ✅ 820/820 (also required updating 5 files with hardcoded "11 services" counts/lists to 12)                                                                                                                                                                      |
 | 15  | ~21 new tests pass                              | ✅ 17 new tests (fewer than estimated since most structural coverage came from extending existing shared parametrized suites rather than new bespoke assertions)                                                                                                 |
-| 16  | Bundle within budget                            | ✅ 90.66 kB gzip (+0.22 kB vs. 6.2's 90.44 kB — config-only addition)                                                                                                                                                                                            |
+| 16  | Bundle within budget                            | ✅ 90.76 kB gzip (+0.32 kB vs. 6.2's 90.44 kB — config-only addition; see note below)                                                                                                                                                                            |
 | 17  | 4 commits in specified sequence                 | ✅ `git log`                                                                                                                                                                                                                                                     |
 | 18  | Tarball produced                                | N/A (Windows env, per prior steps' convention)                                                                                                                                                                                                                   |
 
@@ -240,8 +240,80 @@ Current total: **820 Vitest** (62 test files) + **250 PHP** (+1 —
 
 | Metric   | Before (Step 6.2) | After (Step 6.3) | Delta    |
 | -------- | ----------------- | ---------------- | -------- |
-| JS gzip  | 90.44 kB          | 90.66 kB         | +0.22 kB |
+| JS gzip  | 90.44 kB          | 90.76 kB         | +0.32 kB |
 | CSS gzip | 4.43 kB           | 4.43 kB          | 0 kB     |
 
 Config-only addition (one new service config, one registry entry, no new
 components) — grows minimally as required.
+
+**Note (corrected during Step 6.4):** this section originally recorded
+90.66 kB / 338.16 kB, measured after Commit 2 (`other.config.ts` +
+registry) but before Commit 4 added the `other` entry to
+`services-content.ts`. A clean rebuild against 6.3's actual final commit
+measures 90.76 kB / 338.43 kB — the figures now shown above. The
+mid-step measurement wasn't re-taken after the last commit; 6.4's own
+bundle-unchanged check (below) caught the discrepancy.
+
+---
+
+## Step 6.4 Evidence
+
+### Gate Results
+
+| Gate             | Result                                                                                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm lint`      | 0 errors, 0 warnings (unchanged — no code touched)                                                                                          |
+| `pnpm typecheck` | 0 errors (unchanged)                                                                                                                        |
+| `pnpm test`      | **820 / 820 passing** (62 test files — identical to 6.3's final count; 0 new tests, per D6.4 scope)                                         |
+| `pnpm build`     | Clean. 338.43 kB JS (90.76 kB gzip), 19.51 kB CSS (4.43 kB gzip) — **byte-identical to 6.3's corrected final measurement** (see note above) |
+
+PHP unchanged: 250 passed, 4 skipped (no PHP touched this step).
+
+### Acceptance Criteria
+
+| #   | Criterion                                | Status                                                                                                                                                                                                                      |
+| --- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Phase 0 audits produced (A, B, C, D)     | ✅ `AUDIT-6.4-sync-obligations.md`, `AUDIT-6.4-pricing-patterns.md`, `AUDIT-6.4-categories.md`, `AUDIT-6.4-shared-tests.md`                                                                                                 |
+| 2   | Service customization guide exists       | ✅ `docs/service-customization-guide.md`                                                                                                                                                                                    |
+| 3   | Guide covers all 8 operation types       | ✅ Sections 2–8 (add, remove, modify questions, pricing, metadata, categories, quote modes) — 7 operation sections plus Section 1 (understanding); the spec's "8 operation types" count includes the foundational Section 1 |
+| 4   | Each operation has a worked example      | ✅ Shed-building addition (§2.3), Bright Fencing repricing (§5.4), plus inline examples throughout §3–§8                                                                                                                    |
+| 5   | Sync obligation checklists per operation | ✅ Section 9 (4 checklists: add, remove, modify, categories)                                                                                                                                                                |
+| 6   | Anti-patterns as inline warnings         | ✅ Inline `**Warning**` callouts throughout (D7=C), plus consolidated in Section 11                                                                                                                                         |
+| 7   | Testing guidance per operation           | ✅ Section 10, plus operation-specific test notes inline in §2.2/§2.3/§4.3/§5.5/§9                                                                                                                                          |
+| 8   | LLM handoff document references guide    | ✅ New section in `llm-customization-handoff.md`, with an explicit scope-conflict resolution against Rule 1 (see ADR-0036's "Discovery during implementation")                                                              |
+| 9   | ADR-0036 documented                      | ✅ File present                                                                                                                                                                                                             |
+| 10  | All tests still pass (unchanged)         | ✅ 820/820, identical to 6.3                                                                                                                                                                                                |
+| 11  | Bundle unchanged                         | ✅ 90.76 kB gzip, byte-identical to 6.3's corrected measurement                                                                                                                                                             |
+| 12  | 3 commits in specified sequence          | ✅ `git log`                                                                                                                                                                                                                |
+| 13  | Tarball produced                         | N/A (Windows env, per prior steps' convention)                                                                                                                                                                              |
+
+### Operational verification (manual — pending review)
+
+| #   | Item                                                 | Status                   |
+| --- | ---------------------------------------------------- | ------------------------ |
+| 14  | Guide is discoverable from LLM handoff               | Pending                  |
+| 15  | Worked examples are clear and correct                | Pending                  |
+| 16  | Sync obligations are comprehensive (nothing missing) | Pending — see note below |
+
+Note on #16: this guide's own Phase 0 audit (Audit A) found and cleared
+one plausible-looking gap (`ICON_MAP`/`services-preview.test.ts`) that
+turned out not to be a real omission (Section 9's "conditional, not
+mandatory" distinction). No new _actual_ gap was found beyond the 5
+files + 1 PHP file already known from Step 6.3. A human reviewer with
+fresh eyes re-checking this claim is still worthwhile, since "we didn't
+find anything else" is weaker evidence than "we confirmed there's
+nothing else" for an open-ended completeness claim.
+
+### Test Delta
+
+Vitest: 820 → 820 (unchanged, as required — documentation-only step).
+PHP: 250 → 250 (unchanged).
+
+### Bundle Delta
+
+| Metric   | Before (Step 6.3) | After (Step 6.4) | Delta |
+| -------- | ----------------- | ---------------- | ----- |
+| JS gzip  | 90.76 kB          | 90.76 kB         | 0 kB  |
+| CSS gzip | 4.43 kB           | 4.43 kB          | 0 kB  |
+
+No code changed; bundle is byte-for-byte identical.

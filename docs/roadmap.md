@@ -54,9 +54,10 @@ A single-page, structural view of project state. Update on every completed step.
 | 6.1                   | Complete | Wizard UX improvements: duplicate gate question removed, feet equivalents on metric measurements, photo upload guidance; ADR-0033 |
 | 6.2                   | Complete | Fencing mandatory post-estimate questions: terrain, post material, gravel boards — pure metadata, no pricing impact; ADR-0034     |
 | 6.3                   | Complete | "Other" service category: 12th vertical, long-tail catch-all, uniform manual-quote flow, enabled by default; ADR-0035             |
+| 6.4                   | Complete | Service customization guide: docs/service-customization-guide.md, sync obligation checklists, worked examples; ADR-0036           |
 | 5.12                  | Planned  | SCB-specific deployment (first real client)                                                                                       |
 | 6.0                   | Planned  | Production IONOS deployment                                                                                                       |
-| 6.4+                  | Future   | Comprehensive service customization documentation, second client                                                                  |
+| 6.5+                  | Future   | Pre-existing cleanup, fresh SCB clone testing, second client                                                                      |
 
 ## Step rationale and dependencies
 
