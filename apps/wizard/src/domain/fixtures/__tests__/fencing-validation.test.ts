@@ -104,6 +104,14 @@ describe('fencing reference config', () => {
     expect(photo?.maxCount).toBe(5);
   });
 
+  it('site_photos help text gives photo-guidance instructions (6.1)', () => {
+    const step = fencingWizardConfig.steps[5];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 5');
+    const photo = step.fields.find((f) => f.type === 'photo');
+    expect(photo?.help).toContain('full length of the area');
+    expect(photo?.help).toContain('obstacles');
+  });
+
   it('contact-and-address step collects name, phone, email, full_address — all required', () => {
     const step = fencingWizardConfig.steps[6];
     if (!step || !isFieldStep(step)) throw new Error('expected field step at index 6');

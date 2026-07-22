@@ -98,7 +98,7 @@ export const patioWizardConfig: WizardConfig = {
             'Upload 2–5 photos so we can usually confirm the estimate without arranging a site visit',
           maxCount: 5,
           required: false,
-          help: 'Up to 5 photos. We accept JPEG, PNG, and WebP.',
+          help: 'For the most accurate quote, photograph the full length of the area from one end to the other, any obstacles such as trees, sheds, slopes, or existing structures, close-ups of specific problem areas, and where the area connects to your house or property boundary. 3–5 clear, well-lit photos are usually plenty — no need for professional photography.',
         },
       ],
     },

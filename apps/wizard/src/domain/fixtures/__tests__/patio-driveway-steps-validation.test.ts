@@ -70,6 +70,14 @@ describe('patio reference config', () => {
     expect(photo?.maxCount).toBe(5);
   });
 
+  it('site_photos help text gives photo-guidance instructions (6.1)', () => {
+    const step = patioWizardConfig.steps[4];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 4');
+    const photo = step.fields.find((f) => f.type === 'photo');
+    expect(photo?.help).toContain('full length of the area');
+    expect(photo?.help).toContain('obstacles');
+  });
+
   it('contact-and-address step collects name, phone, email, full_address — all required', () => {
     const step = patioWizardConfig.steps[5];
     if (!step || !isFieldStep(step)) throw new Error('expected field step at index 5');
@@ -173,6 +181,14 @@ describe('driveway reference config', () => {
     const photo = step.fields.find((f) => f.type === 'photo');
     expect(photo?.required).toBe(false);
     expect(photo?.maxCount).toBe(5);
+  });
+
+  it('site_photos help text gives photo-guidance instructions (6.1)', () => {
+    const step = drivewayWizardConfig.steps[4];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 4');
+    const photo = step.fields.find((f) => f.type === 'photo');
+    expect(photo?.help).toContain('full length of the area');
+    expect(photo?.help).toContain('obstacles');
   });
 
   it('contact-and-address step collects name, phone, email, full_address — all required', () => {
