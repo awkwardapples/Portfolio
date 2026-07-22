@@ -123,4 +123,15 @@ export const services: readonly ServiceEntry[] = [
       'Carpentry and joinery including shelving, furniture assembly, internal doors, and bespoke builds. ' +
       "Describe your job online and we'll provide a custom quote.",
   },
+  // ---------------------------------------------------------------------------
+  // Other (Step 6.3, long-tail catch-all)
+  // ---------------------------------------------------------------------------
+  {
+    id: 'other',
+    name: 'Other services',
+    summary: "Don't see what you need? Tell us about it.",
+    description:
+      'Work outside our usual services — sheds, garden storage, small repairs, or a custom project. ' +
+      "Describe what you need online and we'll get back to you with a custom quote.",
+  },
 ] as const;

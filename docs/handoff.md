@@ -1,9 +1,42 @@
 # Handoff
 
-_Last updated: 2026-07-22 (post Step 6.2)_
+_Last updated: 2026-07-22 (post Step 6.3)_
 
 ## Status
 
+- Step 6.3 complete (July 22, 2026): "Other" Service Category. New 12th
+  vertical, `other.config.ts`, registered as the last key in
+  `domain/registry/verticals.ts`'s `VERTICALS` object literal — the only
+  ordering mechanism that exists (no explicit position/displayOrder field
+  on `Vertical`), so it appears last in the default service list. Phase 0
+  audits found the spec's assumed shape didn't match reality on several
+  points: there is no `domain/fixtures/index.ts` aggregator (registration
+  is in `domain/registry/verticals.ts`); the manual-quote flow's real
+  order is `description → urgency → property → site_photos →
+contact_preference → contact → address` — description first, postcode
+  last (bundled with consent) — not the assumed postcode-first order, and
+  postcode is actually injected engine-side by `QuotePage.tsx` ahead of
+  _every_ wizard (instant or manual), unconditionally; and no
+  manual-quote service has an `optional-details` step at all. "Other"
+  follows the exact uniform structure the other four manual-quote
+  services already share (ADR-0021 Decision 3) and deliberately keeps the
+  standard `description`/`work_description` field naming rather than the
+  spec's `project_description`, so it plugs into the existing shared
+  parametrized test suites (`manual-quote-configs.test.ts`,
+  `consent-field.test.ts`) as a fifth manual-quote service with zero
+  special-casing. Deliberately left uncategorized (no `categoryId`) since
+  none of the four existing categories fit a long-tail catch-all; enabled
+  by default automatically, no WordPress admin toggle needed, since
+  `listEnabledServiceIds()`'s no-override case already returns every
+  registered vertical. 17 new Vitest tests (803→820), plus 5 files with
+  hardcoded "11 services" counts/lists updated to 12. `ServiceSchemaEmitter.php`
+  (PHP SEO Layer 3) also gained an "other" entry per its own documented
+  same-commit sync-discipline contract with the JS registry — `category`
+  made optional on that one array, omitted for services with none, 1 new
+  PHP test (249→250). No other wizard touched. ADR-0035 accepted. Operational verification
+  pending (fresh-clone check that "Other" appears last, the description
+  step is required, and the submission reaches the database/Google
+  Sheets/Make.com payload).
 - Step 6.2 complete (July 22, 2026): Fencing Mandatory Post-Estimate
   Questions. New `fencing-details` classic field step inserted in
   `fencing.config.ts` between `extras` and `site_photos` — after the user

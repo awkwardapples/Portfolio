@@ -29,7 +29,8 @@ defined( 'ABSPATH' ) || exit;
  *   - description (service description)
  *   - provider (LocalBusiness reference)
  *   - areaServed (from goqw_business_service_area when set)
- *   - category (human-readable category label)
+ *   - category (human-readable category label; omitted for services with
+ *     no category, e.g. 'other' — Step 6.3)
  *
  * Hooked into wp_head at priority 11 (after LocalBusinessSchemaEmitter at 10).
  * Scope-guarded to fire only on React routes.
@@ -37,6 +38,11 @@ defined( 'ABSPATH' ) || exit;
  * Service data mirrors apps/wizard/src/site/content/services-content.ts.
  * When services are added or renamed there, update SERVICES here in the
  * same commit. See SERVICE-REGISTRY-AUDIT.md for rationale.
+ *
+ * Step 6.3: 'category' is optional — 'other' has no categoryId in
+ * verticals.ts (deliberately uncategorized long-tail catch-all; see
+ * ADR-0035), so its schema omits the 'category' field entirely rather
+ * than forcing it into one of the four existing categories.
  */
 final class ServiceSchemaEmitter {
 
@@ -44,9 +50,10 @@ final class ServiceSchemaEmitter {
 	 * Static service map mirroring services-content.ts.
 	 *
 	 * Descriptions are drawn from the 'description' field in services-content.ts.
-	 * Category IDs match verticals.ts categoryId values.
+	 * Category IDs match verticals.ts categoryId values; absent when the
+	 * vertical has no categoryId (e.g. 'other').
 	 *
-	 * @var array<string, array{name: string, description: string, category: string}>
+	 * @var array<string, array{name: string, description: string, category?: string}>
 	 */
 	private const SERVICES = array(
 		'fencing'         => array(
@@ -104,6 +111,11 @@ final class ServiceSchemaEmitter {
 			'description' => 'Carpentry and joinery including shelving, furniture assembly, internal doors, and bespoke builds.',
 			'category'    => 'handyman',
 		),
+		'other'           => array(
+			'name'        => 'Other services',
+			'description' => "Work outside our usual services — sheds, garden storage, small repairs, or a custom project. Describe what you need online and we'll get back to you with a custom quote.",
+			// No 'category' key: deliberately uncategorized, matching verticals.ts (ADR-0035).
+		),
 	);
 
 	/**
@@ -155,11 +167,11 @@ final class ServiceSchemaEmitter {
 	/**
 	 * Get the services to include in schema, filtered by goqw_enabled_services.
 	 *
-	 * When goqw_enabled_services is empty, all 11 services are included.
+	 * When goqw_enabled_services is empty, all 12 services are included.
 	 * When set, only the listed IDs are included (same logic as listEnabledServiceIds
 	 * in the TypeScript side). Unrecognized IDs are silently ignored.
 	 *
-	 * @return array<string, array{name: string, description: string, category: string}>
+	 * @return array<string, array{name: string, description: string, category?: string}>
 	 */
 	public static function get_active_services(): array {
 		$enabled_option = \get_option( 'goqw_enabled_services', '' );
@@ -184,9 +196,9 @@ final class ServiceSchemaEmitter {
 	/**
 	 * Build a Service schema array for a single service.
 	 *
-	 * @param array{name: string, description: string, category: string} $service      Service metadata.
-	 * @param string                                                     $business_name Business name for provider reference.
-	 * @param string|null                                                $service_area  Area served (null = omit field).
+	 * @param array{name: string, description: string, category?: string} $service      Service metadata.
+	 * @param string                                                      $business_name Business name for provider reference.
+	 * @param string|null                                                 $service_area  Area served (null = omit field).
 	 * @return array<string, mixed>
 	 */
 	private static function build_service_schema(
@@ -203,8 +215,13 @@ final class ServiceSchemaEmitter {
 				'@type' => 'LocalBusiness',
 				'name'  => $business_name,
 			),
-			'category'    => self::CATEGORY_LABELS[ $service['category'] ] ?? $service['category'],
 		);
+
+		// 'category' is absent for deliberately uncategorized services (e.g. 'other') —
+		// omit the schema.org field rather than forcing a fabricated category label.
+		if ( isset( $service['category'] ) ) {
+			$schema['category'] = self::CATEGORY_LABELS[ $service['category'] ] ?? $service['category'];
+		}
 
 		if ( null !== $service_area ) {
 			$schema['areaServed'] = $service_area;

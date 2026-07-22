@@ -145,7 +145,7 @@ Required fields are marked `(required)`. Optional fields may be absent — see R
     "linkedin": "string URL (optional)"
   },
   "services": {
-    "offered": ["string — service IDs from the 11-service library (see Task 3 for full list)"]
+    "offered": ["string — service IDs from the 12-service library (see Task 3 for full list)"]
   },
   "branding": {
     "priceRange": "string (optional) — schema.org priceRange format, e.g. '££' or '£££'"
@@ -459,21 +459,22 @@ are hidden from both.
 
 **Service ID reference:**
 
-The valid service IDs are exactly these 11. Any other value is silently ignored by the plugin:
+The valid service IDs are exactly these 12. Any other value is silently ignored by the plugin:
 
-| Service ID        | Display Name          | Category          |
-| ----------------- | --------------------- | ----------------- |
-| `fencing`         | Fencing               | Landscaping       |
-| `decking`         | Decking               | Landscaping       |
-| `patio`           | Patio & Paving        | Landscaping       |
-| `driveway`        | Driveway              | Landscaping       |
-| `steps`           | Garden Steps          | Landscaping       |
-| `painting`        | Painting & Decorating | Decorating        |
-| `jetwash`         | Pressure Washing      | Exterior Cleaning |
-| `general-repairs` | General Repairs       | Handyman Services |
-| `plumbing`        | Plumbing              | Handyman Services |
-| `electrical`      | Electrical            | Handyman Services |
-| `carpentry`       | Carpentry             | Handyman Services |
+| Service ID        | Display Name          | Category             |
+| ----------------- | --------------------- | -------------------- |
+| `fencing`         | Fencing               | Landscaping          |
+| `decking`         | Decking               | Landscaping          |
+| `patio`           | Patio & Paving        | Landscaping          |
+| `driveway`        | Driveway              | Landscaping          |
+| `steps`           | Garden Steps          | Landscaping          |
+| `painting`        | Painting & Decorating | Decorating           |
+| `jetwash`         | Pressure Washing      | Exterior Cleaning    |
+| `general-repairs` | General Repairs       | Handyman Services    |
+| `plumbing`        | Plumbing              | Handyman Services    |
+| `electrical`      | Electrical            | Handyman Services    |
+| `carpentry`       | Carpentry             | Handyman Services    |
+| `other`           | Other services        | _(none — see below)_ |
 
 **Format:** `goqw_enabled_services` is a **comma-separated string**, not JSON.
 
@@ -487,8 +488,8 @@ The plugin splits on commas and trims whitespace. Order is preserved in the wiza
 **Handling missing data:**
 
 - `services.offered` absent or empty: do NOT set `goqw_enabled_services`. Leave it as `''`
-  (the seeded default). When empty, all 11 services are shown. Log this in report.
-- Any ID in `services.offered` that is not in the 11-service list: skip that ID silently.
+  (the seeded default). When empty, all 12 services are shown. Log this in report.
+- Any ID in `services.offered` that is not in the 12-service list: skip that ID silently.
   Log the invalid IDs in the report.
 
 **Expected outcome:**
@@ -497,6 +498,59 @@ The plugin splits on commas and trims whitespace. Order is preserved in the wiza
 shows only those services, and Service JSON-LD emits one block per active service.
 
 </task>
+
+---
+
+#### Customizing the "Other" Service (Step 6.3)
+
+The `other` service (label "Other services") catches leads for work outside the
+other 11 defined verticals. It's a manual-quote service — same 7-step flow as
+`general-repairs`/`plumbing`/`electrical`/`carpentry`
+(`description → urgency → property → site_photos → contact_preference → contact
+→ address`) — registered last in `apps/wizard/src/domain/registry/verticals.ts`.
+Two customization approaches:
+
+**Adjust the copy for this client's long tail.** Edit
+`apps/wizard/src/domain/fixtures/other.config.ts`:
+
+- `title` — what users see in the wizard.
+- The `description` step's field `label`/`help` — the prompt and example text
+  guiding what to include. There is no `placeholder` field in this schema
+  (`FieldSchema` has no such key) — any example text belongs in `help`, the
+  same way the shipped copy already includes one:
+  `'... — for example, "I need a garden shed built, approximately 2m x 3m" ...'`.
+  Replace the example with something matching this client's actual long-tail
+  requests (e.g. a landscaper might mention "retaining walls" or "artificial
+  turf"; a general handyman business might mention "furniture assembly" or
+  "picture hanging").
+- `apps/wizard/src/site/content/services-content.ts`'s `other` entry —
+  `summary`/`description` shown on the `/services` marketing page. Keep this in
+  sync with `other.config.ts`'s tone.
+- `plugins/quote-wizard/src/SEO/ServiceSchemaEmitter.php`'s `other` entry — the
+  `name`/`description` used for the Service JSON-LD SEO block. **Must be
+  updated in the same commit as `services-content.ts`** per this file's own
+  documented sync-discipline (see `SERVICE-REGISTRY-AUDIT.md`); it's the one
+  wizard file living outside `apps/wizard/`.
+
+**Disable "Other" for a client** who wants to accept requests only for their
+listed services:
+
+1. Add `goqw_enabled_services` (WordPress option, comma-separated, see Task 3
+   above) listing every service this client offers **except** `other`.
+2. No code change needed — `other` stays registered but simply isn't in the
+   enabled list, exactly like disabling any other service.
+3. To remove it from the template entirely (not just this deployment):
+   delete `other.config.ts`, its `other` entry in `verticals.ts`, and the
+   corresponding entries in `services-content.ts` and
+   `ServiceSchemaEmitter.php`.
+
+**Custom suggestions.** Since `other.config.ts`'s `help` text is the main
+place a user reads guidance before typing, tailoring it to hint at what this
+business actually handles beyond its listed services (rather than a generic
+example) meaningfully improves lead quality — e.g. "Other services — sheds,
+garden storage, small repairs, or custom outdoor projects. Tell us about your
+needs." is more useful to a landscaping-adjacent business than the shipped
+generic example.
 
 ---
 
@@ -946,7 +1000,7 @@ Fields:
 - `content.services` — array of 4-6 services from `services.offered[]`. If the business
   offers fewer than 4, show all of them.
   Each service entry: `{ serviceId, name, description, iconOrImage, link }`.
-  - `serviceId`: must be a valid service ID from the 11-service list.
+  - `serviceId`: must be a valid service ID from the 12-service list.
   - `name`: display name (can differ from the wizard service name if appropriate).
   - `description`: 1-2 sentences describing the service from the client's perspective.
   - `iconOrImage`: use the `serviceId` value (the icon component resolves it automatically).
@@ -2118,7 +2172,7 @@ template):
 
 ```typescript
 interface ServiceEntry {
-  readonly id: string; // must be a valid service ID from the 11-service list
+  readonly id: string; // must be a valid service ID from the 12-service list
   readonly name: string;
   readonly summary: string; // one sentence
   readonly description: string; // 2-4 sentences
@@ -2132,7 +2186,7 @@ interface WorkEntry {
   readonly id: string; // unique slug, e.g. 'consumer-unit-upgrade'
   readonly title: string; // project title
   readonly description: string; // 2-3 sentences describing the job
-  readonly serviceId: string; // must be a valid service ID from the 11-service list
+  readonly serviceId: string; // must be a valid service ID from the 12-service list
 }
 ```
 
@@ -2190,7 +2244,7 @@ wp option update goqw_enabled_services "electrical,general-repairs"
 ```
 
 The PHP plugin parses this as a comma-separated string, not JSON. A JSON value produces
-no matching service IDs and all 11 services are shown.
+no matching service IDs and all 12 services are shown.
 
 ---
 

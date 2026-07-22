@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-07-22 (post Step 6.2)_
+_Last updated: 2026-07-22 (post Step 6.3)_
 
 ## What's working
 
@@ -15,7 +15,7 @@ _Last updated: 2026-07-22 (post Step 6.2)_
 - WordPress page mapping (single root page + rewrite rules + non-invasive front-page policy).
 - SEO Layer 1: per-route titles, meta descriptions, canonical URLs, Open Graph tags, Twitter cards.
 - SEO Layer 2: LocalBusiness JSON-LD schema (name, address, phone, email, hours, sameAs).
-- SEO Layer 3: Service JSON-LD schema per active service (11 services, filterable by goqw_enabled_services).
+- SEO Layer 3: Service JSON-LD schema per active service (12 services, filterable by goqw_enabled_services; `other` omits the `category` field since it has none — Step 6.3).
 - SEO Layer 4: custom `/sitemap.xml` (5 React routes); `robots.txt` Sitemap directive.
 - LLM customization handoff document (`docs/llm-customization-handoff.md`): 12-task instruction set for per-client content, SEO, and wizard configuration.
 - REST endpoint output buffering: PHP warnings from WP_DEBUG_DISPLAY no longer corrupt JSON responses.
@@ -34,8 +34,19 @@ _Last updated: 2026-07-22 (post Step 6.2)_
 - Photo upload via wp_handle_sideload (Step 5.14.3): `wp_handle_upload()` requires `is_uploaded_file()` to return true, which is always false for a photo `PhotoStorage` decoded and wrote to a temp file itself — every photo submission on every deployment failed with "Specified file failed upload test." Swapped to `wp_handle_sideload()` (uses `is_readable()` instead) with an explicit `mimes` allowlist (jpg/jpeg/jpe, png, webp, gif) matching `MediaValidator`'s own. `docs/onboarding.md` gained `WP_TEMP_DIR` (LocalWP) and local-URL/Google-Sheets-IMAGE() guidance. ADR-0032.
 - Wizard UX improvements (Step 6.1): fencing's duplicate gate question (`gate_needed`/`gate_width` in `optional-details`, never wired to pricing) removed — `include_gate` in `extras` (wired to `fencingPricingConfig`) is now the single gate question. New `apps/wizard/src/utils/units.ts` (`metersToFeet`, `squareMetersToSquareFeet`, `formatMeasurementWithFeet`, `formatMeasurementRangeWithFeet`) converts metric measurements to feet/square-feet — dispatched on the `m`/`m²` unit string so area values get the correct ×10.7639 factor, not the linear ×3.28084 one. `SizeBracketSelectorStep.tsx` renders bracket ranges and the live exact-dimension value through these helpers, so fencing, decking, patio, driveway (and incidentally jetwash/garden-steps) all show feet equivalents from one shared fix; fencing's static fence-height labels were edited directly. `site_photos` field `help` text on the four in-scope wizards replaced with landscaping-quote photo guidance (full-length shots, obstacles, problem areas, boundary connection), replacing a redundant format-constraint restatement. ADR-0033.
 - Fencing mandatory post-estimate questions (Step 6.2): new classic field step `fencing-details` inserted between `extras` and `site_photos` (after `estimate-display`, before photos) — three required `radio` fields: `terrain` (soft/hard/concrete), `post_material` (concrete/timber), `gravel_boards` (yes/no). No new step kind (the spec's assumed `multi-field-form` type doesn't exist; the classic `Step`/`fields[]` type already covers this) and no schema change for per-option helper text (`FieldSchema` has no such field) — per-option nuance is folded into option labels, `gravel_boards`' explanation uses the existing field-level `help` string. Pure metadata, no pricing wiring; `WizardStore.buildRequest()` already spreads the full answers map unfiltered into the submission payload. Fencing-only change. ADR-0034.
+- "Other" service category (Step 6.3): 12th vertical, `other.config.ts`, registered last in `domain/registry/verticals.ts`'s `VERTICALS` object literal — the only ordering mechanism that exists (no explicit position field). Follows the exact uniform manual-quote structure the other four manual-quote services share (ADR-0021 Decision 3: `description → urgency → property → site_photos → contact_preference → contact → address`), not the illustrative postcode-first/optional-details flow initially assumed — postcode is actually injected engine-side by `QuotePage.tsx` ahead of every wizard, and no manual-quote service has an optional-details step. Deliberately kept the standard `description`/`work_description` field naming (not a new `project_description` id) so "other" plugs into the existing shared parametrized test suites (`manual-quote-configs.test.ts`, `consent-field.test.ts`) as a fifth manual-quote service with zero special-casing. Deliberately uncategorized (no `categoryId`) — none of the four existing categories fit a long-tail catch-all. Enabled by default automatically (no WordPress admin toggle needed) since `listEnabledServiceIds()`'s no-override case returns every registered vertical. ADR-0035.
 
 ## Gate state (last verified)
+
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: 0 errors (pre-existing, unrelated `tsconfig.test.json` type errors in `non-field-step-engine.test.ts` predate this step — last touched in the 5.13a/5.13b commits)
+- `pnpm test`: **820/820** (62 test files, +17 from 6.2)
+- `pnpm build`: clean (bundle 90.66 kB gzip, +0.22 kB vs. 6.2's 90.44 kB)
+- `composer test`: **250 passed, 4 skipped** (+1 from 6.2 — `ServiceSchemaEmitter` "other" category-omission test, per its documented sync-discipline contract with the JS registry)
+- `composer analyse`: clean (PHPStan level 8, no errors)
+- `composer lint`: 0/0 for all files touched this step (pre-existing, unrelated drift in `quote-wizard.php` predates 5.13e/5.13f/5.13g/5.14/5.14.1/5.14.2/5.14.3)
+
+## Gate state (6.2, 2026-07-22)
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors (pre-existing, unrelated `tsconfig.test.json` type errors in `non-field-step-engine.test.ts` predate this step — last touched in the 5.13a/5.13b commits)
@@ -211,6 +222,26 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 
 ## Completed Steps
 
+- **Step 6.3 — "Other" Service Category** (July 2026). ADR-0035 accepted.
+  New `other.config.ts`, a 12th vertical registered last in
+  `domain/registry/verticals.ts` (the only ordering mechanism — no
+  explicit position field exists). Follows the exact uniform
+  manual-quote structure the other four manual-quote services share
+  rather than the spec's assumed postcode-first/optional-details flow —
+  postcode is engine-injected ahead of every wizard by `QuotePage.tsx`,
+  and no manual-quote service has an optional-details step. Kept the
+  standard `description`/`work_description` naming (not a new
+  `project_description` id) so "other" plugs into the existing shared
+  parametrized test suites (`manual-quote-configs.test.ts`,
+  `consent-field.test.ts`) as a fifth manual-quote service with zero
+  special-casing. Deliberately uncategorized (no `categoryId`); enabled
+  by default with no WordPress admin toggle needed. 17 new Vitest tests
+  (803→820), plus 5 files with hardcoded "11 services" counts/lists
+  updated to 12. `ServiceSchemaEmitter.php` (PHP, SEO Layer 3) also
+  gained an "other" entry (`category` made optional, omitted for
+  services with none) per its own documented same-commit sync-discipline
+  contract with the JS registry — 1 new PHP test (249→250). No other
+  wizard touched.
 - **Step 6.2 — Fencing Mandatory Post-Estimate Questions** (July 2026).
   ADR-0034 accepted. New `fencing-details` classic field step inserted
   between `extras` and `site_photos` in `fencing.config.ts`: three
@@ -580,6 +611,6 @@ Strict ordering: validate → persist → forward → respond.
 
 - lint (`pnpm lint` → 0 errors, 0 warnings)
 - typecheck (`pnpm typecheck`)
-- vitest (`pnpm test` → 772/772)
+- vitest (`pnpm test` → 820/820)
 - build (`pnpm build`)
-- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 249 passed (4 skipped)
+- PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 250 passed (4 skipped)

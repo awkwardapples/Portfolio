@@ -36,7 +36,7 @@ it( 'does not emit on a non-React route', function (): void {
 	expect( trim( $output ) )->toBe( '' );
 } );
 
-it( 'returns all 11 services when goqw_enabled_services is empty', function (): void {
+it( 'returns all 12 services when goqw_enabled_services is empty', function (): void {
 	Functions\when( 'get_option' )->alias(
 		static function ( string $key, mixed $fallback = false ): mixed {
 			return 'goqw_enabled_services' === $key ? '' : ( false !== $fallback ? $fallback : '' );
@@ -45,10 +45,11 @@ it( 'returns all 11 services when goqw_enabled_services is empty', function (): 
 
 	$services = ServiceSchemaEmitter::get_active_services();
 
-	expect( $services )->toHaveCount( 11 );
+	expect( $services )->toHaveCount( 12 );
 	expect( $services )->toHaveKey( 'fencing' );
 	expect( $services )->toHaveKey( 'general-repairs' );
 	expect( $services )->toHaveKey( 'carpentry' );
+	expect( $services )->toHaveKey( 'other' );
 } );
 
 it( 'returns only enabled services when goqw_enabled_services is set', function (): void {
@@ -111,6 +112,28 @@ it( 'each service schema includes category label', function (): void {
 	$output = ob_get_clean();
 
 	expect( $output )->toContain( 'Landscaping' );
+} );
+
+it( 'omits the category field for the deliberately uncategorized "other" service (6.3)', function (): void {
+	Functions\when( 'is_admin' )->justReturn( false );
+	Functions\when( 'get_option' )->alias(
+		static function ( string $key, mixed $fallback = false ): mixed {
+			if ( 'goqw_enabled_services' === $key ) {
+				return 'other';
+			}
+			return false !== $fallback ? $fallback : '';
+		}
+	);
+	Functions\when( 'get_bloginfo' )->justReturn( 'Test Site' );
+
+	$_SERVER['REQUEST_URI'] = '/';
+
+	ob_start();
+	ServiceSchemaEmitter::emit();
+	$output = ob_get_clean();
+
+	expect( $output )->toContain( 'Other services' );
+	expect( $output )->not->toContain( '"category"' );
 } );
 
 it( 'includes areaServed in each schema when goqw_business_service_area is set', function (): void {
