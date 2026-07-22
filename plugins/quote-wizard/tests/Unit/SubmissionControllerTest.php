@@ -1198,3 +1198,112 @@ it(
 		expect( $consent->calls )->toBeEmpty();
 	}
 );
+
+// ---------------------------------------------------------------------------
+// InputSanitizer routing (Step 6.6, ADR-0036)
+// ---------------------------------------------------------------------------
+
+it(
+	'sanitizes a formula-injection attempt in the webhook payload but stores the raw value',
+	function (): void {
+		$repo    = spy_repository( 1 );
+		$fwd     = spy_forwarder( ForwardResult::success() );
+		$ctrl    = new SubmissionController( $repo, $fwd );
+		$payload = valid_payload( array( 'answers' => array( 'contact_name' => '=cmd|/c calc' ) ) );
+
+		$ctrl->handle( make_request( $payload ) );
+
+		$stored    = json_decode( $repo->inserts[0]['answers_json'], true );
+		$forwarded = json_decode( $fwd->calls[0]['payload']['answers_json'], true );
+
+		expect( $stored['contact_name'] )->toBe( '=cmd|/c calc' );
+		expect( $forwarded['contact_name'] )->toBe( "'=cmd|/c calc" );
+	}
+);
+
+it(
+	'sanitizes every formula-trigger character class in the webhook payload',
+	function (): void {
+		$repo    = spy_repository( 1 );
+		$fwd     = spy_forwarder( ForwardResult::success() );
+		// The payload below sets contact_email, which activates DuplicateDetector's
+		// real query path unless stubbed — this test is about sanitization, not
+		// duplicate detection, so a not-a-duplicate stub keeps it isolated.
+		$dup     = spy_duplicate_detector( array( 'isDuplicate' => false ) );
+		$ctrl    = new SubmissionController( $repo, $fwd, duplicate_detector: $dup );
+		$payload = valid_payload(
+			array(
+				'answers' => array(
+					'contact_name'      => '+1 234 5678',
+					'full_address'      => '-1 Evil Street',
+					'contact_email'     => '@attacker.example',
+					'additional_notes'  => 'perfectly ordinary notes',
+				),
+			)
+		);
+
+		$ctrl->handle( make_request( $payload ) );
+
+		$forwarded = json_decode( $fwd->calls[0]['payload']['answers_json'], true );
+
+		expect( $forwarded['contact_name'] )->toBe( "'+1 234 5678" );
+		expect( $forwarded['full_address'] )->toBe( "'-1 Evil Street" );
+		expect( $forwarded['contact_email'] )->toBe( "'@attacker.example" );
+		expect( $forwarded['additional_notes'] )->toBe( 'perfectly ordinary notes' );
+	}
+);
+
+it(
+	'sanitizes media_json for the webhook without mutating the stored copy',
+	function (): void {
+		$repo          = spy_repository( 1 );
+		$fwd           = spy_forwarder( ForwardResult::success() );
+		$photo_storage = spy_photo_storage(
+			array( 'success' => true, 'url' => 'https://example.test/x.jpg', 'attachmentId' => 7 )
+		);
+		$ctrl    = new SubmissionController( $repo, $fwd, stub_media_validator_ok(), $photo_storage );
+		$payload = valid_payload(
+			array(
+				'answers' => array(
+					'site_photos' => array(
+						'files' => array(
+							array(
+								'fileId'       => 'f1',
+								'originalName' => '=HYPERLINK("http://evil")',
+								'mimeType'     => 'image/jpeg',
+								'dataBase64'   => 'fakeb64',
+							),
+						),
+					),
+				),
+			)
+		);
+
+		$ctrl->handle( make_request( $payload ) );
+
+		$stored_media    = json_decode( $repo->inserts[0]['media_json'], true );
+		$forwarded_media = json_decode( $fwd->calls[0]['payload']['media_json'], true );
+
+		expect( $stored_media[0]['files'][0]['originalName'] )->toBe( '=HYPERLINK("http://evil")' );
+		expect( $forwarded_media[0]['files'][0]['originalName'] )->toBe( "'=HYPERLINK(\"http://evil\")" );
+	}
+);
+
+it(
+	'does not sanitize a duplicate submission\'s payload since Forwarder is never called',
+	function (): void {
+		$repo    = spy_repository( 1 );
+		$fwd     = spy_forwarder( ForwardResult::success() );
+		$dup     = spy_duplicate_detector( array( 'isDuplicate' => true, 'originalSubmissionId' => 12 ) );
+		$ctrl    = new SubmissionController( $repo, $fwd, duplicate_detector: $dup );
+		$payload = valid_payload( array( 'answers' => array( 'contact_name' => '=cmd|/c calc' ) ) );
+
+		$response = $ctrl->handle( make_request( $payload ) );
+
+		expect( $response->get_status() )->toBe( 200 );
+		expect( $response->get_data()['isDuplicate'] )->toBeTrue();
+		expect( $fwd->calls )->toBeEmpty();
+		$stored = json_decode( $repo->inserts[0]['answers_json'], true );
+		expect( $stored['contact_name'] )->toBe( '=cmd|/c calc' );
+	}
+);

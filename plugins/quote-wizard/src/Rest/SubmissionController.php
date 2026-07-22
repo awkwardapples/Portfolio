@@ -15,6 +15,7 @@ use Agency\QuoteWizard\Submissions\Forwarder;
 use Agency\QuoteWizard\Submissions\MediaValidator;
 use Agency\QuoteWizard\Submissions\PhotoStorage;
 use Agency\QuoteWizard\Submissions\SubmissionRepository;
+use Agency\QuoteWizard\Security\InputSanitizer;
 use Agency\QuoteWizard\Support\Logger;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -66,6 +67,7 @@ final class SubmissionController {
 	 * @param PhotoStorage           $photo_storage        Saves validated photos to the media library (Step 5.13e).
 	 * @param BotProtection          $bot_protection       Honeypot/rate-limit/Turnstile checks (Step 5.13f).
 	 * @param ConsentValidator       $consent_validator    Data-processing consent check (Step 5.14).
+	 * @param InputSanitizer         $input_sanitizer      Sanitizes the webhook payload (Step 6.6, ADR-0036).
 	 * @param DuplicateDetector|null $duplicate_detector   Defaults to a detector built from $repository (Step 5.13g).
 	 */
 	public function __construct(
@@ -75,6 +77,7 @@ final class SubmissionController {
 		private readonly PhotoStorage $photo_storage = new PhotoStorage(),
 		private readonly BotProtection $bot_protection = new BotProtection(),
 		private readonly ConsentValidator $consent_validator = new ConsentValidator(),
+		private readonly InputSanitizer $input_sanitizer = new InputSanitizer(),
 		?DuplicateDetector $duplicate_detector = null
 	) {
 		$this->duplicate_detector = $duplicate_detector ?? new DuplicateDetector( $repository );
@@ -207,8 +210,18 @@ final class SubmissionController {
 				);
 			}
 
-			// Step 3: forward synchronously (ADR-0005).
-			$forward_result = $this->forwarder->forward( $submission_id, $validated );
+			// Step 3: forward synchronously (ADR-0005). The webhook payload is
+			// sanitized separately from the stored row (Step 6.6, ADR-0036):
+			// $validated (already persisted above) keeps the original,
+			// unsanitized answers_json/media_json — only the copy built here,
+			// for Forwarder, is sanitized. See AUDIT-6.6-data-flow.md for why
+			// Forwarder itself needs no changes to support this.
+			$sanitized_answers               = $this->input_sanitizer->sanitize_submission_payload( $answers );
+			$forward_payload                 = $validated;
+			$forward_payload['answers_json'] = \wp_json_encode( $sanitized_answers );
+			$forward_payload['media_json']   = $this->extract_media_json( $sanitized_answers );
+
+			$forward_result = $this->forwarder->forward( $submission_id, $forward_payload );
 
 			// Step 4: respond.
 			if ( $forward_result->is_success() ) {
