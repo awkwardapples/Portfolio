@@ -56,9 +56,10 @@ A single-page, structural view of project state. Update on every completed step.
 | 6.3                   | Complete | "Other" service category: 12th vertical, long-tail catch-all, uniform manual-quote flow, enabled by default; ADR-0035                                                                  |
 | 6.4                   | Complete | Service customization guide: docs/service-customization-guide.md, sync obligation checklists, worked examples; ADR-0036                                                                |
 | 6.5                   | Complete | Pre-existing cleanup: quote-wizard.php PHPCS drift, non-field-step-engine.test.ts type errors, tsconfig.test.json — all resolved with root causes documented; no ADR (routine hygiene) |
+| 6.6                   | Complete | Security audit and hardening: InputSanitizer at the webhook boundary (formula injection, XSS), SQL/auth model verified safe by audit, docs/security-notes.md; ADR-0037                 |
 | 5.12                  | Planned  | SCB-specific deployment (first real client)                                                                                                                                            |
 | 6.0                   | Planned  | Production IONOS deployment                                                                                                                                                            |
-| 6.6+                  | Future   | Security review, fresh SCB clone testing, second client                                                                                                                                |
+| 6.7+                  | Future   | Fresh SCB clone testing, second client                                                                                                                                                 |
 
 ## Step rationale and dependencies
 

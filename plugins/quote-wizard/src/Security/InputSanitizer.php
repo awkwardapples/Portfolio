@@ -1,6 +1,6 @@
 <?php
 /**
- * Outbound-payload sanitizer (Step 6.6, ADR-0036).
+ * Outbound-payload sanitizer (Step 6.6, ADR-0037).
  *
  * @package Agency\QuoteWizard
  */

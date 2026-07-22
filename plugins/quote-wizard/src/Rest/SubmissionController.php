@@ -67,7 +67,7 @@ final class SubmissionController {
 	 * @param PhotoStorage           $photo_storage        Saves validated photos to the media library (Step 5.13e).
 	 * @param BotProtection          $bot_protection       Honeypot/rate-limit/Turnstile checks (Step 5.13f).
 	 * @param ConsentValidator       $consent_validator    Data-processing consent check (Step 5.14).
-	 * @param InputSanitizer         $input_sanitizer      Sanitizes the webhook payload (Step 6.6, ADR-0036).
+	 * @param InputSanitizer         $input_sanitizer      Sanitizes the webhook payload (Step 6.6, ADR-0037).
 	 * @param DuplicateDetector|null $duplicate_detector   Defaults to a detector built from $repository (Step 5.13g).
 	 */
 	public function __construct(
@@ -211,7 +211,7 @@ final class SubmissionController {
 			}
 
 			// Step 3: forward synchronously (ADR-0005). The webhook payload is
-			// sanitized separately from the stored row (Step 6.6, ADR-0036):
+			// sanitized separately from the stored row (Step 6.6, ADR-0037):
 			// $validated (already persisted above) keeps the original,
 			// unsanitized answers_json/media_json — only the copy built here,
 			// for Forwarder, is sanitized. See AUDIT-6.6-data-flow.md for why

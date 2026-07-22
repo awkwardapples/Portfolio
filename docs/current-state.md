@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-07-22 (post Step 6.5)_
+_Last updated: 2026-07-22 (post Step 6.6)_
 
 ## What's working
 
@@ -37,8 +37,19 @@ _Last updated: 2026-07-22 (post Step 6.5)_
 - "Other" service category (Step 6.3): 12th vertical, `other.config.ts`, registered last in `domain/registry/verticals.ts`'s `VERTICALS` object literal — the only ordering mechanism that exists (no explicit position field). Follows the exact uniform manual-quote structure the other four manual-quote services share (ADR-0021 Decision 3: `description → urgency → property → site_photos → contact_preference → contact → address`), not the illustrative postcode-first/optional-details flow initially assumed — postcode is actually injected engine-side by `QuotePage.tsx` ahead of every wizard, and no manual-quote service has an optional-details step. Deliberately kept the standard `description`/`work_description` field naming (not a new `project_description` id) so "other" plugs into the existing shared parametrized test suites (`manual-quote-configs.test.ts`, `consent-field.test.ts`) as a fifth manual-quote service with zero special-casing. Deliberately uncategorized (no `categoryId`) — none of the four existing categories fit a long-tail catch-all. Enabled by default automatically (no WordPress admin toggle needed) since `listEnabledServiceIds()`'s no-override case returns every registered vertical. ADR-0035.
 - Service customization guide (Step 6.4): new `docs/service-customization-guide.md` — comprehensive, LLM-followable reference for adding/removing/modifying services, adjusting pricing, updating metadata, managing categories, and toggling quote modes, with worked examples and explicit sync-obligation checklists. Corrects several assumptions that don't match the real codebase: there is no per-service pricing function (one shared `computePrice()` engine evaluates declarative `PricingConfig` data, never per-service code); `categories.ts` is the sole category source, with actual category assignment living in `verticals.ts`'s `categoryId` (not `ServiceSchemaEmitter.php`, which only mirrors it for SEO); manual-quote services get near-free test coverage via two shared parametrized suites, while instant-quote services need a bespoke test file each. Also resolved a real scope conflict discovered while cross-referencing `llm-customization-handoff.md`: that document's Rule 1 explicitly forbids the per-client customization LLM from touching `domain/`, PHP, or tests — exactly what the new guide covers — so the new guide is scoped as a separate, broader engineering task, not an extension of the narrower per-client customization pass. Documentation-only: 0 new tests (820/820 unchanged), PHP unchanged (250/250), bundle byte-identical. ADR-0036.
 - Pre-existing cleanup (Step 6.5): all three long-standing pre-existing issues resolved. `quote-wizard.php` PHPCS drift (4 unrelated whitespace findings — missing blank line after the file docblock, two misaligned assignment operators, a missing trailing newline) fixed; `composer lint` is 0/0 across all 46 plugin files for the first time. `non-field-step-engine.test.ts`'s two TS2322 errors fixed — the real root cause was a test fixture omitting two Zod-`.default()` fields (`multiple`, `showRangeAsRange`) that are required on `z.infer`'s output type even though optional on the schema's parse input, not the "missing types/wrong assertions/deprecated APIs" the spec guessed at. The "`tsconfig.test.json` error" turned out not to be a third, independent issue at all — the config has no defect; it's simply the only tsconfig that type-checks `.test.ts` files, so it correctly surfaced the same two errors already explained. `pnpm typecheck` is clean end to end (production and test) for the first time since Step 5.13a/5.13b. Zero functional changes; 0 new tests (820/820 unchanged), PHP unchanged (250/250), bundle byte-identical. No ADR (routine hygiene, per D4=C).
+- Security audit and hardening (Step 6.6): new `Security\InputSanitizer` sanitizes the answers map immediately before `SubmissionController` calls `Forwarder::forward()` — force-quotes any string whose post-`sanitize_text_field()` leading character is a spreadsheet formula trigger (`=`/`+`/`-`/`@`, neutralizing Google Sheets/CSV formula injection), and relies on `sanitize_text_field()` itself for HTML/script stripping. Applied uniformly to every string in the answers map regardless of nominal field type (no per-field allowlist), since the client-side schema is UX only. The database row inserted earlier in the same request keeps the original, unsanitized values — only the webhook-bound copy is sanitized. `Forwarder.php` required zero code changes (it already accepts an opaque payload array). Five Phase 0 audits found: two dead Step 3D stub classes (`Rest/Sanitiser.php`, `Rest/Validator.php`) never removed after being superseded; all SQL already parameterized; the REST nonce is a CSRF/origin check, not authentication, with no privilege-escalation path. New `docs/security-notes.md` (business-owner-facing) and ADR-0037 (0036 was already taken by Step 6.4). PHP-only: 22 new tests (250→272), Vitest unchanged (820/820), bundle byte-identical.
 
 ## Gate state (last verified)
+
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: 0 errors — production and test tsconfig both clean (unchanged from 6.5)
+- `pnpm test`: **820/820** (62 test files, unchanged from 6.5 — this step is PHP-only)
+- `pnpm build`: clean (bundle 90.76 kB gzip, byte-identical to 6.5)
+- `composer test`: **272 passed, 4 skipped** (+22 from 6.5's 250: `InputSanitizerTest` unit tests + `SubmissionControllerTest` integration tests, Step 6.6)
+- `composer analyse`: clean (PHPStan level 8, no errors)
+- `composer lint`: **0/0 across all 47 files** (46 + new `InputSanitizer.php`)
+
+## Gate state (6.5, 2026-07-22)
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: **0 errors — production and test tsconfig both clean.** The `non-field-step-engine.test.ts`/`tsconfig.test.json` caveat that appeared in every gate-state entry below since Step 5.13a/5.13b is resolved (Step 6.5).
@@ -244,6 +255,23 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 
 ## Completed Steps
 
+- **Step 6.6 — Security Audit and Hardening** (July 2026). ADR-0037
+  (0036 was already taken by Step 6.4). New `Security\InputSanitizer`
+  sanitizes the answers map immediately before `Forwarder::forward()` is
+  called — force-quotes leading formula-trigger characters (`=`/`+`/`-`/`@`)
+  to neutralize Google Sheets/CSV formula injection, and relies on
+  `sanitize_text_field()` for HTML/script stripping. Applied uniformly
+  to every string value, not a per-field-name allowlist, since the
+  client-side schema is UX only. The stored database row keeps the
+  original, unsanitized values — only the webhook-bound copy is
+  sanitized. Five Phase 0 audits found `Forwarder.php` needed zero code
+  changes (contrary to the spec's assumption — it already accepts an
+  opaque payload array), two dead Step 3D stub classes
+  (`Rest/Sanitiser.php`, `Rest/Validator.php`) never removed after being
+  superseded, all SQL already parameterized, and the REST nonce being a
+  CSRF/origin check rather than authentication (no privilege-escalation
+  path). New `docs/security-notes.md` for business owners. PHP-only: 22
+  new tests (250→272), Vitest/bundle unchanged.
 - **Step 6.5 — Pre-Existing Cleanup** (July 2026). No ADR (routine
   hygiene, per D4=C). Three long-standing pre-existing issues resolved,
   each with its own root cause documented before fixing (D3=C):

@@ -1,9 +1,39 @@
 # Handoff
 
-_Last updated: 2026-07-22 (post Step 6.5)_
+_Last updated: 2026-07-22 (post Step 6.6)_
 
 ## Status
 
+- Step 6.6 complete (July 22, 2026): Security Audit and Hardening.
+  New `Security\InputSanitizer` sanitizes the answers map immediately
+  before `SubmissionController` calls `Forwarder::forward()`: force-
+  quotes any string whose post-`sanitize_text_field()` leading character
+  is a spreadsheet formula trigger (`=`/`+`/`-`/`@`), neutralizing Google
+  Sheets/CSV formula injection, and leans on `sanitize_text_field()`
+  itself for HTML/script stripping. Applied uniformly to every string
+  value regardless of nominal field type — no per-field-name allowlist —
+  since the client-side schema is UX only and a crafted request can put
+  any string against any answer key. The database row inserted earlier
+  in the same request keeps the original, unsanitized values; only the
+  webhook-bound copy passed to `Forwarder` is sanitized. Five Phase 0
+  audits found: `Forwarder.php` needed zero code changes (it already
+  accepts an opaque payload array — contrary to the spec's Architecture
+  Overview assumption); two dead Step 3D stub classes
+  (`Rest/Sanitiser.php`, `Rest/Validator.php`) superseded by inline
+  `SubmissionController` logic and never removed (flagged, not deleted —
+  out of scope); all SQL already parameterized (`wpdb->prepare()`/
+  `insert()`/`update()` with explicit format arrays); the REST submit
+  endpoint's nonce is a CSRF/origin check, not authentication, with no
+  privilege-escalation path; `register_rest_route()`/
+  `permission_callback` live in `Plugin.php`, not
+  `SubmissionController.php` as the spec's audit command assumed. New
+  `docs/security-notes.md` (business-owner-facing, cross-referencing the
+  existing GDPR/data-handling guide rather than duplicating it) and
+  ADR-0037 (0036 was already taken by Step 6.4's service-customization-
+  guide ADR). PHP-only: 22 new tests (`InputSanitizerTest` +
+  `SubmissionControllerTest` integration tests, 250→272 passed, 4
+  skipped unchanged), Vitest unchanged (820/820), bundle byte-identical
+  (90.76 kB gzip).
 - Step 6.5 complete (July 22, 2026): Pre-Existing Cleanup. Three
   long-standing issues resolved, each root-caused before fixing (D3=C
   — no ADR, per D4=C, this is routine hygiene). (1) `quote-wizard.php`

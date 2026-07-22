@@ -2,8 +2,8 @@
 
 _Compiled: 2026-07-22 — Covers Step 6.1 (Wizard UX Improvements), Step 6.2
 (Fencing Mandatory Post-Estimate Questions), Step 6.3 ("Other" Service
-Category), Step 6.4 (Service Customization Guide), and Step 6.5
-(Pre-Existing Cleanup)_
+Category), Step 6.4 (Service Customization Guide), Step 6.5 (Pre-Existing
+Cleanup), and Step 6.6 (Security Audit and Hardening)_
 
 ## Gate Results
 
@@ -403,3 +403,94 @@ tests per D2=A/scope). PHP: 250 → 250 (unchanged).
 
 No functional code changed (one test fixture and one PHP formatting
 pass); bundle is byte-for-byte identical.
+
+## Step 6.6 Evidence (Security Audit and Hardening)
+
+### Gate Results
+
+| Gate               | Result                                                                                                                       |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm lint`        | 0 errors, 0 warnings (unchanged — no JS/TS files touched by this step)                                                       |
+| `pnpm typecheck`   | 0 errors — production and test tsconfig both clean (unchanged from 6.5)                                                      |
+| `pnpm test`        | **820 / 820 passing** (62 test files, unchanged from 6.5)                                                                    |
+| `pnpm build`       | Clean. 338.43 kB JS (90.76 kB gzip), 19.51 kB CSS (4.43 kB gzip) — byte-identical to 6.5                                     |
+| `composer lint`    | **0 errors, 0 warnings across all 47 files** (46 + new `InputSanitizer.php`)                                                 |
+| `composer analyse` | Clean (PHPStan level 8, no errors)                                                                                           |
+| `composer test`    | **272 passed, 4 skipped** (+22 from 6.5's 250: 18 `InputSanitizerTest` + 4 new `SubmissionControllerTest` integration tests) |
+
+### What was implemented
+
+A new `Security\InputSanitizer` class sanitizes the answers map
+immediately before `SubmissionController` calls `Forwarder::forward()`,
+neutralizing formula injection (Google Sheets) and stray HTML/script
+content before either reaches the outbound Make.com webhook. The database
+row inserted earlier in the same request keeps the original, unsanitized
+values. See ADR-0037 for the full design and rationale.
+
+### Corrected assumptions (Phase 0 audits)
+
+1. **Two dead Step 3D stub classes already exist** — `Rest/Sanitiser.php`
+   and `Rest/Validator.php` throw `LogicException` and were superseded by
+   inline logic in `SubmissionController` when Step 5.1 actually shipped,
+   never removed. Flagged (not deleted — out of scope) so a future reader
+   doesn't mistake `Rest/Sanitiser.php` for where sanitization happens.
+2. **`register_rest_route()`/`permission_callback` live in `Plugin.php`**,
+   not `SubmissionController.php` as the spec's Audit E command assumed.
+3. **`Forwarder.php` needed zero code changes**, contrary to the spec's
+   Architecture Overview (4.3) — it already takes an opaque payload array,
+   so `SubmissionController` builds a second, sanitized payload for the
+   forward call instead. `Forwarder.php` and its existing test suite are
+   completely untouched by this step.
+4. **Photo `originalName`/`mimeType` are user-supplied strings** that flow
+   into the outbound payload via `media_json`, a case the spec's
+   "text/textarea fields" framing didn't explicitly cover — added to
+   Audit A and covered by a dedicated test (`sanitizes media_json for the
+webhook without mutating the stored copy`).
+5. **ADR number 0036 was already taken** (Step 6.4's
+   `0036-service-customization-guide.md`) — this step's ADR is **0037**.
+6. **All SQL was already parameterized** (`wpdb->insert()`/`update()` with
+   explicit format arrays, or `wpdb->prepare()`) — Audit D is
+   verification-only, no code change, consistent with the spec's own risk
+   table (SQL injection: LOW).
+7. **The REST nonce is a CSRF/origin check, not authentication** — no
+   privilege-escalation path exists on the submit endpoint; unchanged by
+   this step (Audit E).
+
+### Acceptance Criteria
+
+| #   | Criterion                                                  | Status                                                                                                                                                       |
+| --- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Phase 0 audits produced (A, B, C, D, E)                    | ✅ Five `AUDIT-6.6-*.md` files under `plugins/quote-wizard/src/`                                                                                             |
+| 2   | `InputSanitizer` class exists with proper interface        | ✅ `src/Security/InputSanitizer.php`                                                                                                                         |
+| 3   | Formula characters prefix-escaped correctly                | ✅ Tests — `=`, `+`, `-`, `@`, plus a leading-whitespace-masking case                                                                                        |
+| 4   | HTML tags stripped correctly                               | ✅ Tests — including full `<script>` block removal                                                                                                           |
+| 5   | Numbers/booleans/nulls preserved unchanged                 | ✅ Tests                                                                                                                                                     |
+| 6   | Nested structures handled correctly                        | ✅ Tests — flat arrays, nested associative structures, photo `files[]`                                                                                       |
+| 7   | `SubmissionController` applies sanitization before webhook | ✅ Integration tests                                                                                                                                         |
+| 8   | Forwarder uses sanitized payload                           | ✅ Verified via `spy_forwarder` capturing the payload passed to it — no code change needed in `Forwarder.php` itself (see corrected assumptions)             |
+| 9   | Integration: formula prefixed in outbound payload          | ✅ `sanitizes a formula-injection attempt in the webhook payload but stores the raw value`                                                                   |
+| 10  | Integration: HTML stripped in outbound payload             | ✅ Covered at the unit level (`InputSanitizerTest`); the controller integration tests focus on the formula-injection/media_json cases per the audit findings |
+| 11  | SQL injection audit confirms `wpdb->prepare()` usage       | ✅ `AUDIT-6.6-sql-safety.md`                                                                                                                                 |
+| 12  | ADR-0037 documented                                        | ✅ `docs/decisions/0037-security-posture.md`                                                                                                                 |
+| 13  | Security notes for business owners created                 | ✅ `docs/security-notes.md`                                                                                                                                  |
+| 14  | All 250 prior PHP tests pass                               | ✅ 250 → 272 (all prior tests still pass, +22 new)                                                                                                           |
+| 15  | ~22 new tests pass                                         | ✅ 18 `InputSanitizerTest` + 4 `SubmissionControllerTest` integration = 22                                                                                   |
+| 16  | Bundle unchanged (PHP-only)                                | ✅ 90.76 kB gzip, byte-identical                                                                                                                             |
+| 17  | 6 commits in specified sequence                            | ✅ `git log`                                                                                                                                                 |
+| 18  | Tarball produced                                           | N/A (Windows env, per prior steps' convention)                                                                                                               |
+
+### Test Delta
+
+PHP: 250 → 272 (+22: 18 `InputSanitizerTest` unit tests, 4
+`SubmissionControllerTest` integration tests). Vitest: 820 → 820
+(unchanged — no JS/TS changes in this step).
+
+### Bundle Delta
+
+| Metric   | Before (Step 6.5) | After (Step 6.6) | Delta |
+| -------- | ----------------- | ---------------- | ----- |
+| JS gzip  | 90.76 kB          | 90.76 kB         | 0 kB  |
+| CSS gzip | 4.43 kB           | 4.43 kB          | 0 kB  |
+
+This step is PHP-only; no JS/TS files were touched, so the bundle is
+byte-for-byte identical.
