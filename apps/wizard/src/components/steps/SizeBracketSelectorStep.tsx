@@ -4,6 +4,7 @@ import type { SizeBracketSelectorStep as SizeBracketSelectorStepConfig } from '@
 import { useWizard } from '@/runtime/useWizard';
 import { StepCard } from '@/components/composites';
 import { NavigationControls } from '@/components/steps/NavigationControls';
+import { formatMeasurementRangeWithFeet, formatMeasurementWithFeet } from '@/utils/units';
 
 interface SizeBracketSelectorStepProps {
   step: SizeBracketSelectorStepConfig;
@@ -112,7 +113,7 @@ export function SizeBracketSelectorStep({
               >
                 <span className="font-medium">{bracket.label}</span>
                 <span className="text-sm text-text-muted">
-                  {bracket.minValue}–{bracket.maxValue} {bracket.unit}
+                  {formatMeasurementRangeWithFeet(bracket.minValue, bracket.maxValue, bracket.unit)}
                 </span>
               </button>
             );
@@ -154,6 +155,11 @@ export function SizeBracketSelectorStep({
                     onChange={(e) => handleExactFieldChange(exactField.id, e.target.value)}
                     className="w-full rounded border border-border bg-surface px-3 py-2 text-text focus:border-primary focus:outline-none"
                   />
+                  {typeof currentVal === 'number' && (
+                    <p className="mt-1 text-xs text-text-muted">
+                      {formatMeasurementWithFeet(currentVal, exactField.unit)}
+                    </p>
+                  )}
                 </div>
               );
             })}

@@ -64,6 +64,14 @@ describe('fencing reference config', () => {
     expect(step.options).toHaveLength(3);
   });
 
+  it('fence_height_step options include feet equivalents (6.1)', () => {
+    const step = fencingWizardConfig.steps[2];
+    if (!step || isFieldStep(step) || step.stepKind !== 'visual-card-selector')
+      throw new Error('expected visual-card-selector');
+    const labels = step.options.map((o) => o.label);
+    expect(labels).toEqual(['Up to 1.2m (4 ft)', '1.5m to 1.8m (5–6 ft)', 'Over 1.8m (6 ft)']);
+  });
+
   it('estimate step is an estimate-display with onAdjustGoTo fence_size', () => {
     const step = fencingWizardConfig.steps[3];
     if (!step || isFieldStep(step) || step.stepKind !== 'estimate-display')

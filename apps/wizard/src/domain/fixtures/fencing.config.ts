@@ -60,9 +60,9 @@ export const fencingWizardConfig: WizardConfig = {
       answerKey: 'height',
       multiple: false,
       options: [
-        { id: 'low', label: 'Up to 1.2m' },
-        { id: 'standard', label: '1.5m to 1.8m' },
-        { id: 'tall', label: 'Over 1.8m' },
+        { id: 'low', label: 'Up to 1.2m (4 ft)' },
+        { id: 'standard', label: '1.5m to 1.8m (5–6 ft)' },
+        { id: 'tall', label: 'Over 1.8m (6 ft)' },
       ],
     },
     {
