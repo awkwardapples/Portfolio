@@ -54,6 +54,7 @@ const allStepTypesConfig: WizardConfig = {
       id: 'material_step',
       title: 'Material',
       answerKey: 'material',
+      multiple: false,
       options: [{ id: 'brick', label: 'Brick' }],
     },
     {
@@ -61,6 +62,7 @@ const allStepTypesConfig: WizardConfig = {
       id: 'estimate',
       title: 'Estimate',
       disclaimer: 'Guide price only.',
+      showRangeAsRange: true,
       onAdjustGoTo: 'area_bracket',
     },
     {
