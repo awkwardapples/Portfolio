@@ -15,13 +15,14 @@ describe('fencing reference config', () => {
     expect(result.ok).toBe(true);
   });
 
-  it('contains exactly 8 steps in expected order', () => {
+  it('contains exactly 9 steps in expected order', () => {
     expect(fencingWizardConfig.steps.map((s) => s.id)).toEqual([
       'fence_size',
       'fence_type_step',
       'fence_height_step',
       'estimate',
       'extras',
+      'fencing-details',
       'site_photos',
       'contact-and-address',
       'optional-details',
@@ -96,8 +97,8 @@ describe('fencing reference config', () => {
   });
 
   it('site_photos step is optional photo field with maxCount 5', () => {
-    const step = fencingWizardConfig.steps[5];
-    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 5');
+    const step = fencingWizardConfig.steps[6];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 6');
     expect(step.id).toBe('site_photos');
     const photo = step.fields.find((f) => f.type === 'photo');
     expect(photo?.required).toBe(false);
@@ -105,16 +106,16 @@ describe('fencing reference config', () => {
   });
 
   it('site_photos help text gives photo-guidance instructions (6.1)', () => {
-    const step = fencingWizardConfig.steps[5];
-    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 5');
+    const step = fencingWizardConfig.steps[6];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 6');
     const photo = step.fields.find((f) => f.type === 'photo');
     expect(photo?.help).toContain('full length of the area');
     expect(photo?.help).toContain('obstacles');
   });
 
   it('contact-and-address step collects name, phone, email, full_address — all required', () => {
-    const step = fencingWizardConfig.steps[6];
-    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 6');
+    const step = fencingWizardConfig.steps[7];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 7');
     expect(step.id).toBe('contact-and-address');
     const keys = step.fields.map((f) => f.key);
     expect(keys).toEqual([
@@ -130,15 +131,15 @@ describe('fencing reference config', () => {
   });
 
   it('optional-details step is last and has allowSkip: true', () => {
-    const step = fencingWizardConfig.steps[7];
-    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 7');
+    const step = fencingWizardConfig.steps[8];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 8');
     expect(step.id).toBe('optional-details');
     expect(step.allowSkip).toBe(true);
   });
 
   it('optional-details universal fields are present and required: false', () => {
-    const step = fencingWizardConfig.steps[7];
-    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 7');
+    const step = fencingWizardConfig.steps[8];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 8');
     const keys = step.fields.map((f) => f.key);
     expect(keys).toContain('preferred_timeframe');
     expect(keys).toContain('additional_notes');
@@ -148,15 +149,15 @@ describe('fencing reference config', () => {
   });
 
   it('fencing optional-details preferred_timeframe has Urgent as first option', () => {
-    const step = fencingWizardConfig.steps[7];
-    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 7');
+    const step = fencingWizardConfig.steps[8];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 8');
     const timeframe = step.fields.find((f) => f.key === 'preferred_timeframe');
     expect(timeframe?.options?.[0]?.value).toBe('urgent');
   });
 
   it('gate question is not duplicated in optional-details (6.1)', () => {
-    const step = fencingWizardConfig.steps[7];
-    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 7');
+    const step = fencingWizardConfig.steps[8];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 8');
     const keys = step.fields.map((f) => f.key);
     expect(keys).not.toContain('gate_needed');
     expect(keys).not.toContain('gate_width');
@@ -169,5 +170,72 @@ describe('fencing reference config', () => {
     const gate = step.fields.find((f) => f.key === 'include_gate');
     expect(gate?.type).toBe('checkbox');
     expect(gate?.label).toBe('Include a gate');
+  });
+
+  // ---------------------------------------------------------------------------
+  // 6.2: fencing-details step (terrain / post_material / gravel_boards)
+  // ---------------------------------------------------------------------------
+
+  it('fencing-details step is positioned after estimate/extras and before site_photos (6.2)', () => {
+    const step = fencingWizardConfig.steps[5];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 5');
+    expect(step.id).toBe('fencing-details');
+
+    const ids = fencingWizardConfig.steps.map((s) => s.id);
+    expect(ids.indexOf('fencing-details')).toBeGreaterThan(ids.indexOf('estimate'));
+    expect(ids.indexOf('fencing-details')).toBeGreaterThan(ids.indexOf('extras'));
+    expect(ids.indexOf('fencing-details')).toBeLessThan(ids.indexOf('site_photos'));
+  });
+
+  it('fencing-details has exactly three fields: terrain, post_material, gravel_boards (6.2)', () => {
+    const step = fencingWizardConfig.steps[5];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 5');
+    expect(step.fields.map((f) => f.key)).toEqual(['terrain', 'post_material', 'gravel_boards']);
+  });
+
+  it('all three fencing-details fields are radio type and required (6.2)', () => {
+    const step = fencingWizardConfig.steps[5];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 5');
+    for (const field of step.fields) {
+      expect(field.type).toBe('radio');
+      expect(field.required).toBe(true);
+    }
+  });
+
+  it('terrain field has 3 options (soft/hard/concrete) with explanatory labels (6.2)', () => {
+    const step = fencingWizardConfig.steps[5];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 5');
+    const terrain = step.fields.find((f) => f.key === 'terrain');
+    expect(terrain?.options?.map((o) => o.value)).toEqual(['soft', 'hard', 'concrete']);
+    for (const option of terrain?.options ?? []) {
+      expect(option.label.length).toBeGreaterThan(option.value.length);
+    }
+  });
+
+  it('post_material field has 2 options (concrete/timber) with explanatory labels (6.2)', () => {
+    const step = fencingWizardConfig.steps[5];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 5');
+    const postMaterial = step.fields.find((f) => f.key === 'post_material');
+    expect(postMaterial?.options?.map((o) => o.value)).toEqual(['concrete', 'timber']);
+    expect(postMaterial?.options?.[0]?.label).toContain('durable');
+  });
+
+  it('gravel_boards field has 2 options (yes/no) and field-level help text (6.2)', () => {
+    const step = fencingWizardConfig.steps[5];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 5');
+    const gravelBoards = step.fields.find((f) => f.key === 'gravel_boards');
+    expect(gravelBoards?.options?.map((o) => o.value)).toEqual(['yes', 'no']);
+    expect(gravelBoards?.help).toContain('Gravel boards');
+  });
+
+  it('fencing-details field keys do not collide with any other field in the config (6.2)', () => {
+    const allKeys = fencingWizardConfig.steps
+      .filter(isFieldStep)
+      .flatMap((step) => step.fields.map((f) => f.key));
+    const counts = new Map<string, number>();
+    for (const key of allKeys) counts.set(key, (counts.get(key) ?? 0) + 1);
+    for (const key of ['terrain', 'post_material', 'gravel_boards']) {
+      expect(counts.get(key)).toBe(1);
+    }
   });
 });

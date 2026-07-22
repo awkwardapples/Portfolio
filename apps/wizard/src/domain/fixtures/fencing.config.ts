@@ -98,6 +98,51 @@ export const fencingWizardConfig: WizardConfig = {
       ],
     },
     {
+      id: 'fencing-details',
+      title: 'Fence construction details',
+      description: 'A few details to help us prepare your quote accurately.',
+      fields: [
+        {
+          id: 'terrain',
+          key: 'terrain',
+          type: 'radio',
+          label: 'How would you describe the terrain?',
+          required: true,
+          options: [
+            { value: 'soft', label: 'Soft — standard soil, easy to dig' },
+            { value: 'hard', label: 'Hard — rocky, compacted, or uneven ground' },
+            { value: 'concrete', label: 'Concrete — existing concrete or paving' },
+          ],
+        },
+        {
+          id: 'post_material',
+          key: 'post_material',
+          type: 'radio',
+          label: 'Concrete or timber posts?',
+          required: true,
+          options: [
+            {
+              value: 'concrete',
+              label: 'Concrete — more durable, longer lifespan (recommended for exposed areas)',
+            },
+            { value: 'timber', label: 'Timber — traditional look, lower cost' },
+          ],
+        },
+        {
+          id: 'gravel_boards',
+          key: 'gravel_boards',
+          type: 'radio',
+          label: 'Do you want to add gravel boards?',
+          required: true,
+          help: 'Gravel boards sit between the ground and fence panels, preventing rot from ground contact.',
+          options: [
+            { value: 'yes', label: 'Yes' },
+            { value: 'no', label: 'No' },
+          ],
+        },
+      ],
+    },
+    {
       id: 'site_photos',
       title: 'Photos',
       description: 'Add photos of the project area.',
