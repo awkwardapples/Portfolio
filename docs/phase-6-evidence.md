@@ -2,7 +2,8 @@
 
 _Compiled: 2026-07-22 — Covers Step 6.1 (Wizard UX Improvements), Step 6.2
 (Fencing Mandatory Post-Estimate Questions), Step 6.3 ("Other" Service
-Category), and Step 6.4 (Service Customization Guide)_
+Category), Step 6.4 (Service Customization Guide), and Step 6.5
+(Pre-Existing Cleanup)_
 
 ## Gate Results
 
@@ -317,3 +318,88 @@ PHP: 250 → 250 (unchanged).
 | CSS gzip | 4.43 kB           | 4.43 kB          | 0 kB  |
 
 No code changed; bundle is byte-for-byte identical.
+
+---
+
+## Step 6.5 Evidence
+
+### Gate Results
+
+| Gate               | Result                                                                                               |
+| ------------------ | ---------------------------------------------------------------------------------------------------- |
+| `pnpm lint`        | 0 errors, 0 warnings                                                                                 |
+| `pnpm typecheck`   | **0 errors — production AND test tsconfig both clean for the first time since Step 5.13a/5.13b**     |
+| `pnpm test`        | **820 / 820 passing** (62 test files, unchanged from 6.4)                                            |
+| `pnpm build`       | Clean. 338.43 kB JS (90.76 kB gzip), 19.51 kB CSS (4.43 kB gzip) — byte-identical to 6.4             |
+| `composer lint`    | **0 errors, 0 warnings across all 46 files — first fully-clean run since the drift was first noted** |
+| `composer analyse` | Clean (PHPStan level 8, no errors)                                                                   |
+| `composer test`    | **250 passed, 4 skipped** — unchanged                                                                |
+
+### Three items, three root causes (per D3=C)
+
+1. **`quote-wizard.php` PHPCS drift** — not one root cause but three
+   independent formatting-drift artifacts in the same file (missing
+   blank line after the file docblock; two misaligned assignment
+   operators from a variable-name-length change that was never
+   re-aligned; a missing trailing newline). All pure whitespace, zero
+   runtime effect. See `plugins/quote-wizard/AUDIT-6.5-quote-wizard-
+lint.md`.
+2. **`non-field-step-engine.test.ts` type errors** — a single root
+   cause: the `allStepTypesConfig` fixture omitted two Zod-`.default()`
+   fields (`multiple`, `showRangeAsRange`) that are optional on the
+   schema's parse input but required on `z.infer`'s output type
+   (`WizardConfig`). Not missing types, not wrong assertions, not
+   deprecated APIs — the three categories the spec's own Audit B
+   guessed at were all wrong; the real cause is a well-known Zod
+   input/output type asymmetry that every real service config already
+   handles correctly by setting both fields explicitly. See
+   `apps/wizard/src/AUDIT-6.5-nfs-engine-errors.md`.
+3. **"`tsconfig.test.json` error"** — **turned out not to be a third,
+   independent issue at all.** The config has no defect; it's simply
+   the only tsconfig that type-checks `.test.ts` files (production
+   `tsconfig.json` explicitly excludes them), so it correctly surfaced
+   the same two errors item 2 already explains. Fixing the fixture is
+   the entire fix for both spec items 2 and 3 — no edit to
+   `tsconfig.test.json` was needed or would have made sense. See
+   `AUDIT-6.5-tsconfig-test-error.md`.
+
+### Acceptance Criteria
+
+| #   | Criterion                                            | Status                                                                                                    |
+| --- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 1   | Phase 0 audits produced (A, B, C)                    | ✅ `AUDIT-6.5-quote-wizard-lint.md`, `AUDIT-6.5-nfs-engine-errors.md`, `AUDIT-6.5-tsconfig-test-error.md` |
+| 2   | `quote-wizard.php` PHPCS clean                       | ✅ `composer lint` — 0/0 across all 46 files                                                              |
+| 3   | `non-field-step-engine.test.ts` no TypeScript errors | ✅ `pnpm typecheck` — both production and test tsconfig clean                                             |
+| 4   | `tsconfig.test.json` root cause fixed                | ✅ Reframed: no config defect existed; fixing item 3 was the complete fix (see above)                     |
+| 5   | All 820 Vitest tests pass                            | ✅ 820/820, unchanged                                                                                     |
+| 6   | All 250 PHP tests pass                               | ✅ 250 passed, 4 skipped, unchanged                                                                       |
+| 7   | Bundle unchanged                                     | ✅ 90.76 kB gzip, byte-identical                                                                          |
+| 8   | 4 commits in specified sequence                      | ✅ `git log`                                                                                              |
+| 9   | Tarball produced                                     | N/A (Windows env, per prior steps' convention)                                                            |
+
+### Post-fix verification
+
+| #   | Item                                             | Status                                                                                           |
+| --- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| 10  | Root causes documented (not just symptoms fixed) | ✅ All three audits document _why_, not just _what_ — see "Three items, three root causes" above |
+| 11  | Documentation reflects cleanup complete          | ✅ This section, plus `current-state.md`/`handoff.md`/`roadmap.md` updated                       |
+
+**Zero known pre-existing issues remain** as of this step — the
+recurring "pre-existing, unrelated ... predates 5.13e/5.13f/..." caveat
+that has appeared in every gate-state entry in `docs/current-state.md`
+since Step 5.13e is retired starting with this step's gate state.
+
+### Test Delta
+
+Vitest: 820 → 820 (unchanged, as required — cleanup-only step, no new
+tests per D2=A/scope). PHP: 250 → 250 (unchanged).
+
+### Bundle Delta
+
+| Metric   | Before (Step 6.4) | After (Step 6.5) | Delta |
+| -------- | ----------------- | ---------------- | ----- |
+| JS gzip  | 90.76 kB          | 90.76 kB         | 0 kB  |
+| CSS gzip | 4.43 kB           | 4.43 kB          | 0 kB  |
+
+No functional code changed (one test fixture and one PHP formatting
+pass); bundle is byte-for-byte identical.

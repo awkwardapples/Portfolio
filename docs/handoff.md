@@ -1,9 +1,36 @@
 # Handoff
 
-_Last updated: 2026-07-22 (post Step 6.4)_
+_Last updated: 2026-07-22 (post Step 6.5)_
 
 ## Status
 
+- Step 6.5 complete (July 22, 2026): Pre-Existing Cleanup. Three
+  long-standing issues resolved, each root-caused before fixing (D3=C
+  — no ADR, per D4=C, this is routine hygiene). (1) `quote-wizard.php`
+  PHPCS drift: 4 unrelated whitespace findings (missing blank line
+  after the file docblock, two misaligned assignment operators in the
+  PSR-4 autoloader closure, a missing trailing newline) — 3 fixed via
+  `phpcbf`, 1 manual one-line insertion; `composer lint` is 0/0 across
+  all 46 plugin files for the first time. (2) `non-field-step-
+engine.test.ts`'s two TS2322 errors: the real cause was
+  `allStepTypesConfig`'s fixture omitting two Zod-`.default()` fields
+  (`multiple`, `showRangeAsRange`) — optional on the schema's parse
+  input, but required on `z.infer`'s output type (`WizardConfig`); not
+  the "missing types/wrong assertions/deprecated APIs" the spec's own
+  Audit B guessed at. Every real service config already sets both
+  fields explicitly; only this one test fixture (from 5.13a/5.13b)
+  missed them. (3) The "`tsconfig.test.json` error" — investigated and
+  found to be the _same_ issue as (2), not an independent third defect:
+  the config has no bug; it's simply the only tsconfig that
+  type-checks `.test.ts` files at all (production `tsconfig.json`
+  explicitly excludes them), so it correctly surfaced the same two
+  errors. Fixing (2) was the complete fix for both spec items 2 and 3.
+  `pnpm typecheck` is fully clean (production + test) for the first
+  time since Step 5.13a/5.13b — the recurring "pre-existing, unrelated
+  ..." caveat that's appeared in every gate-state entry since Step
+  5.13e is retired starting with this step. Zero functional changes: 0
+  new tests (820/820 unchanged), PHP unchanged (250/250), bundle
+  byte-identical.
 - Step 6.4 complete (July 22, 2026): Service Customization Guide.
   Documentation-only. New `docs/service-customization-guide.md`
   (~1100 lines): a comprehensive, LLM-followable reference covering

@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-07-22 (post Step 6.4)_
+_Last updated: 2026-07-22 (post Step 6.5)_
 
 ## What's working
 
@@ -36,8 +36,19 @@ _Last updated: 2026-07-22 (post Step 6.4)_
 - Fencing mandatory post-estimate questions (Step 6.2): new classic field step `fencing-details` inserted between `extras` and `site_photos` (after `estimate-display`, before photos) — three required `radio` fields: `terrain` (soft/hard/concrete), `post_material` (concrete/timber), `gravel_boards` (yes/no). No new step kind (the spec's assumed `multi-field-form` type doesn't exist; the classic `Step`/`fields[]` type already covers this) and no schema change for per-option helper text (`FieldSchema` has no such field) — per-option nuance is folded into option labels, `gravel_boards`' explanation uses the existing field-level `help` string. Pure metadata, no pricing wiring; `WizardStore.buildRequest()` already spreads the full answers map unfiltered into the submission payload. Fencing-only change. ADR-0034.
 - "Other" service category (Step 6.3): 12th vertical, `other.config.ts`, registered last in `domain/registry/verticals.ts`'s `VERTICALS` object literal — the only ordering mechanism that exists (no explicit position field). Follows the exact uniform manual-quote structure the other four manual-quote services share (ADR-0021 Decision 3: `description → urgency → property → site_photos → contact_preference → contact → address`), not the illustrative postcode-first/optional-details flow initially assumed — postcode is actually injected engine-side by `QuotePage.tsx` ahead of every wizard, and no manual-quote service has an optional-details step. Deliberately kept the standard `description`/`work_description` field naming (not a new `project_description` id) so "other" plugs into the existing shared parametrized test suites (`manual-quote-configs.test.ts`, `consent-field.test.ts`) as a fifth manual-quote service with zero special-casing. Deliberately uncategorized (no `categoryId`) — none of the four existing categories fit a long-tail catch-all. Enabled by default automatically (no WordPress admin toggle needed) since `listEnabledServiceIds()`'s no-override case returns every registered vertical. ADR-0035.
 - Service customization guide (Step 6.4): new `docs/service-customization-guide.md` — comprehensive, LLM-followable reference for adding/removing/modifying services, adjusting pricing, updating metadata, managing categories, and toggling quote modes, with worked examples and explicit sync-obligation checklists. Corrects several assumptions that don't match the real codebase: there is no per-service pricing function (one shared `computePrice()` engine evaluates declarative `PricingConfig` data, never per-service code); `categories.ts` is the sole category source, with actual category assignment living in `verticals.ts`'s `categoryId` (not `ServiceSchemaEmitter.php`, which only mirrors it for SEO); manual-quote services get near-free test coverage via two shared parametrized suites, while instant-quote services need a bespoke test file each. Also resolved a real scope conflict discovered while cross-referencing `llm-customization-handoff.md`: that document's Rule 1 explicitly forbids the per-client customization LLM from touching `domain/`, PHP, or tests — exactly what the new guide covers — so the new guide is scoped as a separate, broader engineering task, not an extension of the narrower per-client customization pass. Documentation-only: 0 new tests (820/820 unchanged), PHP unchanged (250/250), bundle byte-identical. ADR-0036.
+- Pre-existing cleanup (Step 6.5): all three long-standing pre-existing issues resolved. `quote-wizard.php` PHPCS drift (4 unrelated whitespace findings — missing blank line after the file docblock, two misaligned assignment operators, a missing trailing newline) fixed; `composer lint` is 0/0 across all 46 plugin files for the first time. `non-field-step-engine.test.ts`'s two TS2322 errors fixed — the real root cause was a test fixture omitting two Zod-`.default()` fields (`multiple`, `showRangeAsRange`) that are required on `z.infer`'s output type even though optional on the schema's parse input, not the "missing types/wrong assertions/deprecated APIs" the spec guessed at. The "`tsconfig.test.json` error" turned out not to be a third, independent issue at all — the config has no defect; it's simply the only tsconfig that type-checks `.test.ts` files, so it correctly surfaced the same two errors already explained. `pnpm typecheck` is clean end to end (production and test) for the first time since Step 5.13a/5.13b. Zero functional changes; 0 new tests (820/820 unchanged), PHP unchanged (250/250), bundle byte-identical. No ADR (routine hygiene, per D4=C).
 
 ## Gate state (last verified)
+
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: **0 errors — production and test tsconfig both clean.** The `non-field-step-engine.test.ts`/`tsconfig.test.json` caveat that appeared in every gate-state entry below since Step 5.13a/5.13b is resolved (Step 6.5).
+- `pnpm test`: **820/820** (62 test files, unchanged from 6.4)
+- `pnpm build`: clean (bundle 90.76 kB gzip, byte-identical to 6.4)
+- `composer test`: **250 passed, 4 skipped** (unchanged)
+- `composer analyse`: clean (PHPStan level 8, no errors)
+- `composer lint`: **0/0 across all 46 files — the `quote-wizard.php` drift noted in every entry below since Step 5.13e is resolved (Step 6.5).**
+
+## Gate state (6.4, 2026-07-22)
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors (pre-existing, unrelated `tsconfig.test.json` type errors in `non-field-step-engine.test.ts` predate this step — last touched in the 5.13a/5.13b commits)
@@ -233,6 +244,22 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 
 ## Completed Steps
 
+- **Step 6.5 — Pre-Existing Cleanup** (July 2026). No ADR (routine
+  hygiene, per D4=C). Three long-standing pre-existing issues resolved,
+  each with its own root cause documented before fixing (D3=C):
+  `quote-wizard.php`'s PHPCS drift (4 unrelated whitespace findings, 3
+  autofixable via `phpcbf`, 1 manual blank-line insertion) — 0/0 across
+  all 46 plugin files for the first time; `non-field-step-engine.test.ts`'s
+  two TS2322 errors — a test fixture omitting two Zod-`.default()` fields
+  required on `z.infer`'s output type, not the spec's guessed "missing
+  types/wrong assertions/deprecated APIs"; and the "`tsconfig.test.json`
+  error," which turned out to be the same issue as the test file's
+  errors viewed from a different angle, not an independent third defect
+  — the config itself has no bug, it's simply the only tsconfig that
+  type-checks `.test.ts` files at all. `pnpm typecheck` is fully clean
+  (production + test) for the first time since Step 5.13a/5.13b. Zero
+  functional changes: 0 new tests (820/820 unchanged), PHP unchanged
+  (250/250), bundle byte-identical.
 - **Step 6.4 — Service Customization Guide** (July 2026). ADR-0036
   accepted. New `docs/service-customization-guide.md` (~1100 lines): a
   comprehensive, LLM-followable reference for adding/removing/modifying
