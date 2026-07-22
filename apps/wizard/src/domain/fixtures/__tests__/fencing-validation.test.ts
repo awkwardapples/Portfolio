@@ -138,17 +138,20 @@ describe('fencing reference config', () => {
     expect(timeframe?.options?.[0]?.value).toBe('urgent');
   });
 
-  it('fencing optional-details gate_needed and conditional gate_width fields are present', () => {
+  it('gate question is not duplicated in optional-details (6.1)', () => {
     const step = fencingWizardConfig.steps[7];
     if (!step || !isFieldStep(step)) throw new Error('expected field step at index 7');
     const keys = step.fields.map((f) => f.key);
-    expect(keys).toContain('gate_needed');
-    expect(keys).toContain('gate_width');
-    const gateWidth = step.fields.find((f) => f.key === 'gate_width');
-    expect(gateWidth?.condition).toEqual({
-      operator: 'equals',
-      fieldId: 'gate_needed',
-      value: 'yes',
-    });
+    expect(keys).not.toContain('gate_needed');
+    expect(keys).not.toContain('gate_width');
+  });
+
+  it('gate question remains in the extras step as include_gate (6.1)', () => {
+    const step = fencingWizardConfig.steps[4];
+    if (!step || !isFieldStep(step)) throw new Error('expected field step at index 4');
+    expect(step.id).toBe('extras');
+    const gate = step.fields.find((f) => f.key === 'include_gate');
+    expect(gate?.type).toBe('checkbox');
+    expect(gate?.label).toBe('Include a gate');
   });
 });

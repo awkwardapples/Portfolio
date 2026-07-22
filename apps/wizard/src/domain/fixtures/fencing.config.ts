@@ -187,31 +187,6 @@ export const fencingWizardConfig: WizardConfig = {
           ],
         },
         {
-          id: 'gate_needed',
-          key: 'gate_needed',
-          type: 'select',
-          label: 'Do you need a gate?',
-          required: false,
-          options: [
-            { value: 'yes', label: 'Yes' },
-            { value: 'no', label: 'No' },
-          ],
-        },
-        {
-          id: 'gate_width',
-          key: 'gate_width',
-          type: 'select',
-          label: 'Approximate gate width',
-          required: false,
-          condition: { operator: 'equals', fieldId: 'gate_needed', value: 'yes' },
-          options: [
-            { value: 'small', label: 'Small (~1m)' },
-            { value: 'medium', label: 'Medium (~2m)' },
-            { value: 'large', label: 'Large (~3m+)' },
-            { value: 'not_sure', label: 'Not sure' },
-          ],
-        },
-        {
           id: 'additional_notes',
           key: 'additional_notes',
           type: 'textarea',
