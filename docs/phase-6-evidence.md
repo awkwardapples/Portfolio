@@ -408,15 +408,15 @@ pass); bundle is byte-for-byte identical.
 
 ### Gate Results
 
-| Gate               | Result                                                                                                                       |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm lint`        | 0 errors, 0 warnings (unchanged — no JS/TS files touched by this step)                                                       |
-| `pnpm typecheck`   | 0 errors — production and test tsconfig both clean (unchanged from 6.5)                                                      |
-| `pnpm test`        | **820 / 820 passing** (62 test files, unchanged from 6.5)                                                                    |
-| `pnpm build`       | Clean. 338.43 kB JS (90.76 kB gzip), 19.51 kB CSS (4.43 kB gzip) — byte-identical to 6.5                                     |
-| `composer lint`    | **0 errors, 0 warnings across all 47 files** (46 + new `InputSanitizer.php`)                                                 |
-| `composer analyse` | Clean (PHPStan level 8, no errors)                                                                                           |
-| `composer test`    | **272 passed, 4 skipped** (+22 from 6.5's 250: 18 `InputSanitizerTest` + 4 new `SubmissionControllerTest` integration tests) |
+| Gate               | Result                                                                                                                   |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| `pnpm lint`        | 0 errors, 0 warnings (unchanged — no JS/TS files touched by this step)                                                   |
+| `pnpm typecheck`   | 0 errors — production and test tsconfig both clean (unchanged from 6.5)                                                  |
+| `pnpm test`        | **820 / 820 passing** (62 test files, unchanged from 6.5)                                                                |
+| `pnpm build`       | Clean. 338.43 kB JS (90.76 kB gzip), 19.51 kB CSS (4.43 kB gzip) — byte-identical to 6.5                                 |
+| `composer lint`    | **0 errors, 0 warnings across all 47 files** (46 + new `InputSanitizer.php`)                                             |
+| `composer analyse` | Clean (PHPStan level 8, no errors)                                                                                       |
+| `composer test`    | **274 passed, 4 skipped** (+24 from 6.5's 250: 18 `InputSanitizerTest` + 6 `SubmissionControllerTest` integration tests) |
 
 ### What was implemented
 
@@ -458,31 +458,33 @@ webhook without mutating the stored copy`).
 
 ### Acceptance Criteria
 
-| #   | Criterion                                                  | Status                                                                                                                                                       |
-| --- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1   | Phase 0 audits produced (A, B, C, D, E)                    | ✅ Five `AUDIT-6.6-*.md` files under `plugins/quote-wizard/src/`                                                                                             |
-| 2   | `InputSanitizer` class exists with proper interface        | ✅ `src/Security/InputSanitizer.php`                                                                                                                         |
-| 3   | Formula characters prefix-escaped correctly                | ✅ Tests — `=`, `+`, `-`, `@`, plus a leading-whitespace-masking case                                                                                        |
-| 4   | HTML tags stripped correctly                               | ✅ Tests — including full `<script>` block removal                                                                                                           |
-| 5   | Numbers/booleans/nulls preserved unchanged                 | ✅ Tests                                                                                                                                                     |
-| 6   | Nested structures handled correctly                        | ✅ Tests — flat arrays, nested associative structures, photo `files[]`                                                                                       |
-| 7   | `SubmissionController` applies sanitization before webhook | ✅ Integration tests                                                                                                                                         |
-| 8   | Forwarder uses sanitized payload                           | ✅ Verified via `spy_forwarder` capturing the payload passed to it — no code change needed in `Forwarder.php` itself (see corrected assumptions)             |
-| 9   | Integration: formula prefixed in outbound payload          | ✅ `sanitizes a formula-injection attempt in the webhook payload but stores the raw value`                                                                   |
-| 10  | Integration: HTML stripped in outbound payload             | ✅ Covered at the unit level (`InputSanitizerTest`); the controller integration tests focus on the formula-injection/media_json cases per the audit findings |
-| 11  | SQL injection audit confirms `wpdb->prepare()` usage       | ✅ `AUDIT-6.6-sql-safety.md`                                                                                                                                 |
-| 12  | ADR-0037 documented                                        | ✅ `docs/decisions/0037-security-posture.md`                                                                                                                 |
-| 13  | Security notes for business owners created                 | ✅ `docs/security-notes.md`                                                                                                                                  |
-| 14  | All 250 prior PHP tests pass                               | ✅ 250 → 272 (all prior tests still pass, +22 new)                                                                                                           |
-| 15  | ~22 new tests pass                                         | ✅ 18 `InputSanitizerTest` + 4 `SubmissionControllerTest` integration = 22                                                                                   |
-| 16  | Bundle unchanged (PHP-only)                                | ✅ 90.76 kB gzip, byte-identical                                                                                                                             |
-| 17  | 6 commits in specified sequence                            | ✅ `git log`                                                                                                                                                 |
-| 18  | Tarball produced                                           | N/A (Windows env, per prior steps' convention)                                                                                                               |
+| #   | Criterion                                                  | Status                                                                                                                                                                                                |
+| --- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Phase 0 audits produced (A, B, C, D, E)                    | ✅ Five `AUDIT-6.6-*.md` files under `plugins/quote-wizard/src/`                                                                                                                                      |
+| 2   | `InputSanitizer` class exists with proper interface        | ✅ `src/Security/InputSanitizer.php`                                                                                                                                                                  |
+| 3   | Formula characters prefix-escaped correctly                | ✅ Tests — `=`, `+`, `-`, `@`, plus a leading-whitespace-masking case                                                                                                                                 |
+| 4   | HTML tags stripped correctly                               | ✅ Tests — including full `<script>` block removal                                                                                                                                                    |
+| 5   | Numbers/booleans/nulls preserved unchanged                 | ✅ Tests                                                                                                                                                                                              |
+| 6   | Nested structures handled correctly                        | ✅ Tests — flat arrays, nested associative structures, photo `files[]`                                                                                                                                |
+| 7   | `SubmissionController` applies sanitization before webhook | ✅ Integration tests                                                                                                                                                                                  |
+| 8   | Forwarder uses sanitized payload                           | ✅ Verified via `spy_forwarder` capturing the payload passed to it — no code change needed in `Forwarder.php` itself (see corrected assumptions)                                                      |
+| 9   | Integration: formula prefixed in outbound payload          | ✅ `sanitizes a formula-injection attempt in the webhook payload but stores the raw value`                                                                                                            |
+| 10  | Integration: HTML stripped in outbound payload             | ✅ `neutralizes a realistic stored-XSS payload end-to-end` + `neutralizes an img-onerror XSS payload in a photo originalName end-to-end` (commit 6), plus unit-level coverage in `InputSanitizerTest` |
+| 11  | SQL injection audit confirms `wpdb->prepare()` usage       | ✅ `AUDIT-6.6-sql-safety.md`                                                                                                                                                                          |
+| 12  | ADR-0037 documented                                        | ✅ `docs/decisions/0037-security-posture.md`                                                                                                                                                          |
+| 13  | Security notes for business owners created                 | ✅ `docs/security-notes.md`                                                                                                                                                                           |
+| 14  | All 250 prior PHP tests pass                               | ✅ 250 → 274 (all prior tests still pass, +24 new)                                                                                                                                                    |
+| 15  | ~22 new tests pass                                         | ✅ 18 `InputSanitizerTest` + 6 `SubmissionControllerTest` integration = 24                                                                                                                            |
+| 16  | Bundle unchanged (PHP-only)                                | ✅ 90.76 kB gzip, byte-identical                                                                                                                                                                      |
+| 17  | 6 commits in specified sequence                            | ✅ `git log`                                                                                                                                                                                          |
+| 18  | Tarball produced                                           | N/A (Windows env, per prior steps' convention)                                                                                                                                                        |
 
 ### Test Delta
 
-PHP: 250 → 272 (+22: 18 `InputSanitizerTest` unit tests, 4
-`SubmissionControllerTest` integration tests). Vitest: 820 → 820
+PHP: 250 → 274 (+24: 18 `InputSanitizerTest` unit tests, 6
+`SubmissionControllerTest` integration tests — 4 covering formula
+injection/media_json sanitization added in commit 3, 2 covering
+realistic end-to-end XSS payloads added in commit 6). Vitest: 820 → 820
 (unchanged — no JS/TS changes in this step).
 
 ### Bundle Delta

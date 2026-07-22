@@ -30,10 +30,11 @@ _Last updated: 2026-07-22 (post Step 6.6)_
   `docs/security-notes.md` (business-owner-facing, cross-referencing the
   existing GDPR/data-handling guide rather than duplicating it) and
   ADR-0037 (0036 was already taken by Step 6.4's service-customization-
-  guide ADR). PHP-only: 22 new tests (`InputSanitizerTest` +
-  `SubmissionControllerTest` integration tests, 250→272 passed, 4
-  skipped unchanged), Vitest unchanged (820/820), bundle byte-identical
-  (90.76 kB gzip).
+  guide ADR). PHP-only: 24 new tests (`InputSanitizerTest` +
+  `SubmissionControllerTest` integration tests including two end-to-end
+  realistic-XSS-payload cases added in a follow-up commit, 250→274
+  passed, 4 skipped unchanged), Vitest unchanged (820/820), bundle
+  byte-identical (90.76 kB gzip).
 - Step 6.5 complete (July 22, 2026): Pre-Existing Cleanup. Three
   long-standing issues resolved, each root-caused before fixing (D3=C
   — no ADR, per D4=C, this is routine hygiene). (1) `quote-wizard.php`
