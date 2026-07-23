@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-07-22 (post Step 6.6)_
+_Last updated: 2026-07-23 (post Step 6.7)_
 
 ## What's working
 
@@ -38,8 +38,19 @@ _Last updated: 2026-07-22 (post Step 6.6)_
 - Service customization guide (Step 6.4): new `docs/service-customization-guide.md` — comprehensive, LLM-followable reference for adding/removing/modifying services, adjusting pricing, updating metadata, managing categories, and toggling quote modes, with worked examples and explicit sync-obligation checklists. Corrects several assumptions that don't match the real codebase: there is no per-service pricing function (one shared `computePrice()` engine evaluates declarative `PricingConfig` data, never per-service code); `categories.ts` is the sole category source, with actual category assignment living in `verticals.ts`'s `categoryId` (not `ServiceSchemaEmitter.php`, which only mirrors it for SEO); manual-quote services get near-free test coverage via two shared parametrized suites, while instant-quote services need a bespoke test file each. Also resolved a real scope conflict discovered while cross-referencing `llm-customization-handoff.md`: that document's Rule 1 explicitly forbids the per-client customization LLM from touching `domain/`, PHP, or tests — exactly what the new guide covers — so the new guide is scoped as a separate, broader engineering task, not an extension of the narrower per-client customization pass. Documentation-only: 0 new tests (820/820 unchanged), PHP unchanged (250/250), bundle byte-identical. ADR-0036.
 - Pre-existing cleanup (Step 6.5): all three long-standing pre-existing issues resolved. `quote-wizard.php` PHPCS drift (4 unrelated whitespace findings — missing blank line after the file docblock, two misaligned assignment operators, a missing trailing newline) fixed; `composer lint` is 0/0 across all 46 plugin files for the first time. `non-field-step-engine.test.ts`'s two TS2322 errors fixed — the real root cause was a test fixture omitting two Zod-`.default()` fields (`multiple`, `showRangeAsRange`) that are required on `z.infer`'s output type even though optional on the schema's parse input, not the "missing types/wrong assertions/deprecated APIs" the spec guessed at. The "`tsconfig.test.json` error" turned out not to be a third, independent issue at all — the config has no defect; it's simply the only tsconfig that type-checks `.test.ts` files, so it correctly surfaced the same two errors already explained. `pnpm typecheck` is clean end to end (production and test) for the first time since Step 5.13a/5.13b. Zero functional changes; 0 new tests (820/820 unchanged), PHP unchanged (250/250), bundle byte-identical. No ADR (routine hygiene, per D4=C).
 - Security audit and hardening (Step 6.6): new `Security\InputSanitizer` sanitizes the answers map immediately before `SubmissionController` calls `Forwarder::forward()` — force-quotes any string whose post-`sanitize_text_field()` leading character is a spreadsheet formula trigger (`=`/`+`/`-`/`@`, neutralizing Google Sheets/CSV formula injection), and relies on `sanitize_text_field()` itself for HTML/script stripping. Applied uniformly to every string in the answers map regardless of nominal field type (no per-field allowlist), since the client-side schema is UX only. The database row inserted earlier in the same request keeps the original, unsanitized values — only the webhook-bound copy is sanitized. `Forwarder.php` required zero code changes (it already accepts an opaque payload array). Five Phase 0 audits found: two dead Step 3D stub classes (`Rest/Sanitiser.php`, `Rest/Validator.php`) never removed after being superseded; all SQL already parameterized; the REST nonce is a CSRF/origin check, not authentication, with no privilege-escalation path. New `docs/security-notes.md` (business-owner-facing) and ADR-0037 (0036 was already taken by Step 6.4). PHP-only: 24 new tests (250→274: 18 `InputSanitizerTest` + 6 `SubmissionControllerTest` integration tests), Vitest unchanged (820/820), bundle byte-identical.
+- Skip and Submit Turnstile gating (Step 6.7): closed a real security bypass — the "Skip and Submit" button (Optional Details step, Step 5.13d, all 7 instant-quote wizards) dispatched the submission action unconditionally, while the regular Submit button correctly waited for Cloudflare Turnstile (Step 5.13f); `NavigationControls` only wired its `disabled` prop to the primary button. New pure function `isSubmissionBlocked({ hasMissingPhotos, turnstileReady })` (`components/steps/submission-gate.ts`) replaces the previously inline-only condition; `NavigationControls` now disables both buttons identically, and `StepRenderer`'s `handleSkip` gains a defensive check calling the same function before dispatching. Three Phase 0 audits corrected the spec's assumptions: no dedicated button component exists (it's one of three inline `<Button>`s in the shared `NavigationControls`); no shared `turnstileToken` UI state exists (that name is `BotProtectionStore`'s payload field — the real UI gate is a local `turnstileReady` boolean in `StepRenderer`); no `isSubmitting` boolean exists to gate on (`WizardShell` unmounts both buttons entirely once submission starts); and component-level "rendered disabled attribute" tests aren't possible in this codebase (no DOM/render test infrastructure exists anywhere), so the gating logic was extracted to a plain function specifically so it could carry real automated coverage instead. ADR-0038. 4 new tests (820→824), PHP unchanged (274/274), bundle +0.05 kB gzip.
 
 ## Gate state (last verified)
+
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: 0 errors — production and test tsconfig both clean (unchanged from 6.6)
+- `pnpm test`: **824/824** (63 test files, +4 from 6.6's 820, Step 6.7)
+- `pnpm build`: clean (bundle 90.81 kB gzip, +0.05 kB from 6.6's 90.76 kB)
+- `composer test`: **274 passed, 4 skipped** (unchanged from 6.6 — this step is JS/TS-only)
+- `composer analyse`: clean (PHPStan level 8, no errors)
+- `composer lint`: **0/0 across all 47 files** (unchanged from 6.6)
+
+## Gate state (6.6, 2026-07-22)
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors — production and test tsconfig both clean (unchanged from 6.5)
@@ -255,6 +266,24 @@ across the project. Step 5.3 (Adaptation Runbook) is no longer gated.
 
 ## Completed Steps
 
+- **Step 6.7 — Skip and Submit Turnstile Gating** (July 2026). ADR-0038.
+  Closed a real security bypass: "Skip and Submit" (Optional Details
+  step, all 7 instant-quote wizards) dispatched submission
+  unconditionally while regular Submit correctly waited for Cloudflare
+  Turnstile — `NavigationControls` only wired `disabled` to the primary
+  button. New pure `isSubmissionBlocked({ hasMissingPhotos, turnstileReady })`
+  replaces the inline-only condition; both buttons now disable
+  identically, and `handleSkip` gains a defensive check. Three audits
+  found: no dedicated button component (one of three inline `<Button>`s
+  in `NavigationControls`); no shared `turnstileToken` UI state (that
+  name is `BotProtectionStore`'s payload field — the real gate is a
+  local `turnstileReady` boolean); no `isSubmitting` boolean exists
+  (`WizardShell` unmounts both buttons during submission); and
+  component-level disabled-attribute tests aren't possible in this
+  codebase (no DOM/render test infrastructure exists anywhere) — the
+  gating logic was extracted to a plain function specifically so it
+  could carry real automated coverage. 4 new tests (820→824), PHP
+  unchanged (274/274), bundle +0.05 kB gzip.
 - **Step 6.6 — Security Audit and Hardening** (July 2026). ADR-0037
   (0036 was already taken by Step 6.4). New `Security\InputSanitizer`
   sanitizes the answers map immediately before `Forwarder::forward()` is

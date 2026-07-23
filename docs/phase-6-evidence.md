@@ -1,9 +1,10 @@
 # Phase 6 Evidence Report
 
-_Compiled: 2026-07-22 — Covers Step 6.1 (Wizard UX Improvements), Step 6.2
+_Compiled: 2026-07-23 — Covers Step 6.1 (Wizard UX Improvements), Step 6.2
 (Fencing Mandatory Post-Estimate Questions), Step 6.3 ("Other" Service
 Category), Step 6.4 (Service Customization Guide), Step 6.5 (Pre-Existing
-Cleanup), and Step 6.6 (Security Audit and Hardening)_
+Cleanup), Step 6.6 (Security Audit and Hardening), and Step 6.7 (Skip and
+Submit Turnstile Gating)_
 
 ## Gate Results
 
@@ -496,3 +497,95 @@ realistic end-to-end XSS payloads added in commit 6). Vitest: 820 → 820
 
 This step is PHP-only; no JS/TS files were touched, so the bundle is
 byte-for-byte identical.
+
+## Step 6.7 Evidence (Skip and Submit Turnstile Gating)
+
+### Gate Results
+
+| Gate               | Result                                                                           |
+| ------------------ | -------------------------------------------------------------------------------- |
+| `pnpm lint`        | 0 errors, 0 warnings                                                             |
+| `pnpm typecheck`   | 0 errors — production and test tsconfig both clean (unchanged from 6.6)          |
+| `pnpm test`        | **824 / 824 passing** (63 test files, +4 from 6.6's 820)                         |
+| `pnpm build`       | Clean. 338.58 kB JS (90.81 kB gzip), 19.51 kB CSS (4.43 kB gzip) — +0.05 kB gzip |
+| `composer lint`    | Unchanged — no PHP files touched by this step                                    |
+| `composer analyse` | Unchanged — no PHP files touched by this step                                    |
+| `composer test`    | **274 passed, 4 skipped** (unchanged from 6.6 — PHP untouched)                   |
+
+### What was implemented
+
+Closed a real security bypass: the "Skip and Submit" button (Optional
+Details step, Step 5.13d) dispatched the submission action unconditionally
+while the regular Submit button correctly waited for Cloudflare Turnstile
+verification (Step 5.13f) — `NavigationControls` only wired its `disabled`
+prop to the primary button. A new pure function,
+`isSubmissionBlocked({ hasMissingPhotos, turnstileReady })`
+(`components/steps/submission-gate.ts`), replaces the previously
+inline-only condition; `NavigationControls` now applies `disabled` to both
+buttons, and `StepRenderer`'s `handleSkip` adds a defensive check calling
+the same function before dispatching. See ADR-0038.
+
+### Corrected assumptions (Phase 0 audits)
+
+1. **No dedicated "Skip and Submit button" component exists.** The button
+   is one of three inline `<Button>` elements in the shared
+   `NavigationControls` component; its handler (`handleSkip`) lives in the
+   separate `StepRenderer`.
+2. **No shared `turnstileToken` state exists for UI gating.** That name
+   belongs exclusively to `BotProtectionStore`'s field used to build the
+   outbound submission payload (a plain, non-reactive class). The UI gate
+   is a local `turnstileReady` boolean in `StepRenderer`, derived from
+   `TurnstileWidget`'s `onTokenChange` callback — `handleSkip` already had
+   closure access to it, so the bug was never a state-access problem.
+3. **No `isSubmitting` boolean gates either button.** `WizardShell` swaps
+   to a different view entirely once the FSM phase becomes `'submitting'`,
+   unmounting both buttons for the duration of an actual submission — no
+   such condition exists to add.
+4. **Component-level tests asserting a rendered `disabled` attribute
+   aren't possible in this codebase.** `vitest.config.ts` runs in the
+   `node` environment with no DOM, and no component under `src/components/`
+   has ever had a render-based test (an existing convention documented in
+   `TurnstileWidget.tsx`'s own docblock). The gating logic was extracted to
+   a plain, framework-free function specifically so it could carry real
+   automated coverage instead.
+
+### Acceptance Criteria
+
+| #   | Criterion                                              | Status                                                                                                                                        |
+| --- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Phase 0 audits produced (A, B, C)                      | ✅ `AUDIT-6.7-skip-and-submit.md`, `AUDIT-6.7-turnstile-state.md`, `AUDIT-6.7-submit-pattern.md`                                              |
+| 2   | Skip and Submit disabled when turnstileReady is false  | ✅ Test — `isSubmissionBlocked` truth table                                                                                                   |
+| 3   | Skip and Submit disabled when hasMissingPhotos is true | ✅ Test — reframed from the spec's assumed `isSubmitting`, which doesn't exist (see corrected assumptions)                                    |
+| 4   | Skip and Submit enabled when both conditions are met   | ✅ Test                                                                                                                                       |
+| 5   | Handler defensively checks the gate                    | ✅ `handleSkip` calls `isSubmissionBlocked` before dispatching; covered by the same function's tests since the guard has no independent logic |
+| 6   | ADR-0038 documented                                    | ✅ `docs/decisions/0038-skip-and-submit-turnstile-gating.md`                                                                                  |
+| 7   | All 820 prior Vitest tests pass                        | ✅ 820 → 824 (all prior tests still pass, +4 new)                                                                                             |
+| 8   | ~8 new tests pass                                      | ✅ 4 — full 2×2 truth table of the extracted pure function; see corrected assumption 4 for why this is 4, not ~8                              |
+| 9   | Bundle unchanged or minimal change                     | ✅ 90.76 → 90.81 kB gzip (+0.05 kB)                                                                                                           |
+| 10  | 3 commits in specified sequence                        | ✅ `git log`                                                                                                                                  |
+| 11  | Tarball produced                                       | N/A (Windows env, per prior steps' convention)                                                                                                |
+
+### Operational verification (manual — pending fresh-clone check)
+
+| #   | Item                                                         | Status  |
+| --- | ------------------------------------------------------------ | ------- |
+| 12  | Skip and Submit visually disabled before Turnstile completes | Pending |
+| 13  | Skip and Submit becomes enabled after Turnstile completes    | Pending |
+| 14  | Attempting to click disabled Skip and Submit does nothing    | Pending |
+| 15  | After Turnstile: Skip and Submit works as expected           | Pending |
+
+### Test Delta
+
+Vitest: 820 → 824 (+4: `submission-gate.test.ts`, the full 2×2 truth
+table of `isSubmissionBlocked`). PHP: 274 → 274 (unchanged — no PHP
+files touched by this step).
+
+### Bundle Delta
+
+| Metric   | Before (Step 6.6) | After (Step 6.7) | Delta    |
+| -------- | ----------------- | ---------------- | -------- |
+| JS gzip  | 90.76 kB          | 90.81 kB         | +0.05 kB |
+| CSS gzip | 4.43 kB           | 4.43 kB          | 0 kB     |
+
+One new file (`submission-gate.ts`, a handful of lines) plus its two call
+sites account for the entire delta.

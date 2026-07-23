@@ -1,9 +1,44 @@
 # Handoff
 
-_Last updated: 2026-07-22 (post Step 6.6)_
+_Last updated: 2026-07-23 (post Step 6.7)_
 
 ## Status
 
+- Step 6.7 complete (July 23, 2026): Skip and Submit Turnstile Gating.
+  Closed a real security bypass found during Phase 6 fresh-clone
+  verification: the "Skip and Submit" button on the Optional Details
+  step (Step 5.13d, present on all 7 instant-quote wizards) dispatched
+  the submission action unconditionally, while the regular Submit
+  button correctly waited for Cloudflare Turnstile verification (Step
+  5.13f) — `NavigationControls` only wired its `disabled` prop to the
+  primary button, never to Skip. New pure function
+  `isSubmissionBlocked({ hasMissingPhotos, turnstileReady })`
+  (`components/steps/submission-gate.ts`) replaces the previously
+  inline-only `hasMissingPhotos || !turnstileReady` condition with one
+  shared source: `NavigationControls` now applies `disabled` to both
+  submit-triggering buttons, and `StepRenderer`'s `handleSkip` gains a
+  defensive check calling the same function before dispatching (belt-
+  and-braces against a DOM-manipulated click). Three Phase 0 audits
+  corrected the spec's assumptions: there is no dedicated "Skip and
+  Submit button" component (it's one of three inline `<Button>`
+  elements in the shared `NavigationControls`, with its handler in the
+  separate `StepRenderer`); there is no shared `turnstileToken` UI
+  state (that name belongs exclusively to `BotProtectionStore`'s field
+  used for the outbound submission payload — the actual UI gate is a
+  local `turnstileReady` boolean in `StepRenderer`, which `handleSkip`
+  already had closure access to); there is no `isSubmitting` boolean to
+  gate on (`WizardShell` swaps to an entirely different view once the
+  FSM phase becomes `'submitting'`, unmounting both buttons for the
+  duration); and component-level tests asserting a rendered `disabled`
+  attribute aren't achievable in this codebase (`vitest.config.ts` runs
+  in the `node` environment with no DOM, and no component anywhere in
+  `src/components/` has ever had a render-based test — an existing,
+  documented convention) — the gating logic was extracted to a plain,
+  framework-free function specifically so it could carry real automated
+  coverage instead. The regular Submit button/`handleNext` are
+  deliberately unchanged, a documented scope boundary, not an
+  oversight. New ADR-0038. 4 new tests (820→824 Vitest), PHP unchanged
+  (274/274 — no PHP files touched), bundle +0.05 kB gzip (90.76→90.81 kB).
 - Step 6.6 complete (July 22, 2026): Security Audit and Hardening.
   New `Security\InputSanitizer` sanitizes the answers map immediately
   before `SubmissionController` calls `Forwarder::forward()`: force-
