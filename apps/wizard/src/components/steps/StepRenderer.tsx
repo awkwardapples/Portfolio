@@ -11,6 +11,7 @@ import { TurnstileWidget } from '@/components/TurnstileWidget';
 
 import { FieldRenderer } from './FieldRenderer';
 import { NavigationControls } from './NavigationControls';
+import { isSubmissionBlocked } from './submission-gate';
 
 interface StepRendererProps {
   step: Step;
@@ -103,6 +104,14 @@ export function StepRenderer({
   }
 
   function handleSkip(): void {
+    // Defense in depth (Step 6.7, ADR-0038): the disabled attribute on the
+    // Skip button (below) is the primary gate, but a defensive check here
+    // means a DOM-manipulated click can't bypass it — same protection the
+    // disabled attribute alone provides for the regular Submit path, made
+    // explicit for the newer, previously-ungated path.
+    if (isSubmissionBlocked({ hasMissingPhotos, turnstileReady })) {
+      return;
+    }
     dispatch({ type: 'SUBMIT_REQUESTED' });
   }
 
@@ -143,7 +152,7 @@ export function StepRenderer({
           onBack={handleBack}
           onNext={handleNext}
           isLast={isLast}
-          disabled={hasMissingPhotos || !turnstileReady}
+          disabled={isSubmissionBlocked({ hasMissingPhotos, turnstileReady })}
           onSkip={isLast && step.allowSkip ? handleSkip : undefined}
         />
       </form>
