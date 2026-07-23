@@ -11,8 +11,8 @@ use Agency\QuoteWizard\Routing\SiteRoutes;
 use Brain\Monkey;
 use Brain\Monkey\Functions;
 
-it( 'PATHS contains exactly 6 entries', function (): void {
-	expect( SiteRoutes::PATHS )->toHaveCount( 6 );
+it( 'PATHS contains exactly 11 entries (6 structural + 5 SEO service landing pages)', function (): void {
+	expect( SiteRoutes::PATHS )->toHaveCount( 11 );
 } );
 
 it( 'every PATHS entry begins with /', function (): void {
@@ -71,11 +71,28 @@ it( 'PATHS contains /', function (): void {
 	expect( SiteRoutes::PATHS )->toContain( '/' );
 } );
 
-it( 'PATHS contains all six expected paths', function (): void {
+it( 'PATHS contains all six structural paths', function (): void {
 	$expected = array( '/', '/services', '/our-work', '/contact', '/quote', '/privacy' );
 	foreach ( $expected as $path ) {
 		expect( SiteRoutes::PATHS )->toContain( $path );
 	}
+} );
+
+it( 'PATHS contains all 5 SEO service landing page paths', function (): void {
+	$expected = array(
+		'/services/fence-panel-repair-guildford',
+		'/services/block-paving-guildford',
+		'/services/high-ceiling-painter-decorator-guildford',
+		'/services/driveway-decking-pressure-washing-guildford',
+		'/services/emergency-plumbing-leak-repair-surrey',
+	);
+	foreach ( $expected as $path ) {
+		expect( SiteRoutes::PATHS )->toContain( $path );
+	}
+} );
+
+it( 'is_recognized returns true for a service landing page path', function (): void {
+	expect( SiteRoutes::is_recognized( '/services/fence-panel-repair-guildford' ) )->toBeTrue();
 } );
 
 it( 'current_request_path strips query string from REQUEST_URI', function (): void {

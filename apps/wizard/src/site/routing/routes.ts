@@ -14,6 +14,8 @@ import { OurWorkPage } from '@/site/pages/OurWorkPage';
 import { ContactPage } from '@/site/pages/ContactPage';
 import { QuotePage } from '@/site/pages/QuotePage';
 import { PrivacyPolicyPage } from '@/site/pages/PrivacyPolicyPage';
+import { ServiceLandingPage } from '@/site/pages/ServiceLandingPage';
+import { servicePages } from '@/site/content/service-pages-content';
 
 export interface RouteEntry {
   readonly path: string;
@@ -62,6 +64,19 @@ export const ROUTES: readonly RouteEntry[] = [
     element: () => createElement(PrivacyPolicyPage),
     showInNav: false,
   },
+  /**
+   * SEO service landing pages (Step 6.8). One entry per servicePages record —
+   * reached via links on /services, not the primary nav (showInNav: false).
+   */
+  ...servicePages.map(
+    (page): RouteEntry => ({
+      path: page.path,
+      title: page.seo.title,
+      navLabel: page.navLabel,
+      element: () => createElement(ServiceLandingPage, { page }),
+      showInNav: false,
+    }),
+  ),
 ] as const;
 
 /**

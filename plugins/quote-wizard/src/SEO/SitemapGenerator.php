@@ -40,29 +40,50 @@ final class SitemapGenerator {
 	 * @var array<string, array{priority: string, changefreq: string}>
 	 */
 	private const ROUTE_METADATA = array(
-		'/'         => array(
+		'/'                                               => array(
 			'priority'   => '1.0',
 			'changefreq' => 'monthly',
 		),
-		'/quote'    => array(
+		'/quote'                                          => array(
 			'priority'   => '0.9',
 			'changefreq' => 'monthly',
 		),
-		'/services' => array(
+		'/services'                                       => array(
 			'priority'   => '0.8',
 			'changefreq' => 'monthly',
 		),
-		'/our-work' => array(
+		'/our-work'                                       => array(
 			'priority'   => '0.7',
 			'changefreq' => 'monthly',
 		),
-		'/contact'  => array(
+		'/contact'                                        => array(
 			'priority'   => '0.7',
 			'changefreq' => 'monthly',
 		),
-		'/privacy'  => array(
+		'/privacy'                                        => array(
 			'priority'   => '0.3',
 			'changefreq' => 'yearly',
+		),
+		// SEO service landing pages (Step 6.8).
+		'/services/fence-panel-repair-guildford'          => array(
+			'priority'   => '0.6',
+			'changefreq' => 'monthly',
+		),
+		'/services/block-paving-guildford'                => array(
+			'priority'   => '0.6',
+			'changefreq' => 'monthly',
+		),
+		'/services/high-ceiling-painter-decorator-guildford' => array(
+			'priority'   => '0.6',
+			'changefreq' => 'monthly',
+		),
+		'/services/driveway-decking-pressure-washing-guildford' => array(
+			'priority'   => '0.6',
+			'changefreq' => 'monthly',
+		),
+		'/services/emergency-plumbing-leak-repair-surrey' => array(
+			'priority'   => '0.6',
+			'changefreq' => 'monthly',
 		),
 	);
 

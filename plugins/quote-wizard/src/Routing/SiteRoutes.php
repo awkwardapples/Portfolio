@@ -23,8 +23,24 @@ final class SiteRoutes {
 	/**
 	 * The ordered list of paths handled by the React app. Order matches the
 	 * nav order defined in routes.ts.
+	 *
+	 * The final 5 entries are SEO service landing pages (Step 6.8), appended
+	 * in routes.ts in the order they appear in service-pages-content.ts's
+	 * servicePages array — kept in that same order here.
 	 */
-	public const PATHS = array( '/', '/services', '/our-work', '/contact', '/quote', '/privacy' );
+	public const PATHS = array(
+		'/',
+		'/services',
+		'/our-work',
+		'/contact',
+		'/quote',
+		'/privacy',
+		'/services/fence-panel-repair-guildford',
+		'/services/block-paving-guildford',
+		'/services/high-ceiling-painter-decorator-guildford',
+		'/services/driveway-decking-pressure-washing-guildford',
+		'/services/emergency-plumbing-leak-repair-surrey',
+	);
 
 	/**
 	 * Normalize a request path the same way matchRoute() does in routes.ts:

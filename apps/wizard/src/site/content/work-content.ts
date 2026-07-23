@@ -15,27 +15,35 @@ export interface WorkEntry {
 
 export const works: readonly WorkEntry[] = [
   {
-    id: 'closeboard-garden',
-    title: 'Closeboard garden fence (20m)',
+    id: 'garden-fence-install',
+    title: 'Garden fence installation, Guildford',
     description:
-      '20 linear metres of 1.8m closeboard fencing replacing an old panel fence. ' +
-      'Concrete posts and gravel boards. Two-day install.',
+      'Closeboard fencing installed along a rear garden boundary, including concrete posts ' +
+      'and gravel boards. Old fence removed and disposed of as part of the job.',
     serviceId: 'fencing',
   },
   {
     id: 'composite-deck',
-    title: 'Composite deck with integrated steps',
+    title: 'Composite decking with steps',
     description:
-      '24 square metre composite deck with three-step access and balustrade. ' +
-      'Hardwood substructure, weatherproof finish.',
+      'Low-maintenance composite deck with integrated steps down to the garden, built on a ' +
+      'timber substructure with a weatherproof finish.',
     serviceId: 'decking',
   },
   {
-    id: 'panel-replacement',
-    title: 'Panel fence replacement (35m)',
+    id: 'patio-paving',
+    title: 'Patio and paving, Surrey',
     description:
-      'Full perimeter replacement on a corner plot. Concrete posts, ' +
-      'feather-edge panels, two access gates.',
-    serviceId: 'fencing',
+      'Indian sandstone patio laid with full sub-base preparation and edging, finished with ' +
+      'block-edged borders for a clean, low-maintenance garden space.',
+    serviceId: 'patio',
+  },
+  {
+    id: 'general-repairs',
+    title: 'General home repairs and maintenance',
+    description:
+      'A range of small jobs completed in a single visit — fixing a sticking gate, repairing ' +
+      'garden fencing, and general maintenance around the property.',
+    serviceId: 'general-repairs',
   },
 ] as const;

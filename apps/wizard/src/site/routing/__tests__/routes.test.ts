@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { ROUTES, DEFAULT_ROUTE, matchRoute } from '@/site/routing/routes';
 
 describe('route table', () => {
-  it('contains exactly six routes', () => {
-    expect(ROUTES).toHaveLength(6);
+  it('contains exactly eleven routes (6 structural + 5 SEO service landing pages)', () => {
+    expect(ROUTES).toHaveLength(11);
   });
 
   it('every route has a non-empty path, title, navLabel, and element factory', () => {
@@ -33,9 +33,17 @@ describe('route table', () => {
     expect(privacy?.showInNav).toBe(false);
   });
 
-  it('every other route defaults to visible in nav (showInNav is not false)', () => {
-    for (const r of ROUTES.filter((r) => r.path !== '/privacy')) {
+  it('every structural route (not privacy or a service landing page) defaults to visible in nav', () => {
+    for (const r of ROUTES.filter(
+      (r) => r.path !== '/privacy' && !r.path.startsWith('/services/'),
+    )) {
       expect(r.showInNav).not.toBe(false);
+    }
+  });
+
+  it('SEO service landing pages are excluded from primary nav (showInNav: false)', () => {
+    for (const r of ROUTES.filter((r) => r.path.startsWith('/services/'))) {
+      expect(r.showInNav).toBe(false);
     }
   });
 });
@@ -48,6 +56,20 @@ describe('matchRoute', () => {
     ['/contact', '/contact'],
     ['/quote', '/quote'],
     ['/privacy', '/privacy'],
+    ['/services/fence-panel-repair-guildford', '/services/fence-panel-repair-guildford'],
+    ['/services/block-paving-guildford', '/services/block-paving-guildford'],
+    [
+      '/services/high-ceiling-painter-decorator-guildford',
+      '/services/high-ceiling-painter-decorator-guildford',
+    ],
+    [
+      '/services/driveway-decking-pressure-washing-guildford',
+      '/services/driveway-decking-pressure-washing-guildford',
+    ],
+    [
+      '/services/emergency-plumbing-leak-repair-surrey',
+      '/services/emergency-plumbing-leak-repair-surrey',
+    ],
   ])('matches %s to %s', (input, expected) => {
     expect(matchRoute(input).path).toBe(expected);
   });

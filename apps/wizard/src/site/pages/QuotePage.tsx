@@ -23,6 +23,7 @@ import { useCategorySelection } from '@/runtime/hooks/useCategorySelection';
 import { addressPreStep } from '@/domain/wizards/address-prestep';
 import { ServiceSelector, CategorySelector } from '@/components/selection';
 import { WizardShell } from '@/components/WizardShell';
+import { resolvePreselectedServiceId } from './quote-preselect';
 
 const devSubmissionPort: SubmissionPort = {
   submit: () =>
@@ -52,12 +53,24 @@ const categories = listCategories();
  * Single-service bypass: when exactly one service is enabled, the wizard
  * mounts immediately without showing the selector.
  *
+ * Deep-link preselection (Step 6.8): a `?service=` query param — e.g. from a
+ * service landing page CTA linking to `/quote?service=fencing` — preselects
+ * that service and skips both the category and service selectors, provided
+ * it names a currently enabled service. Falls back to the normal selector
+ * flow when absent, invalid, or when the single-service bypass above already
+ * applies.
+ *
  * NOTE: wizard wiring moved from App.tsx during Step 5.0 without modification.
  */
 export function QuotePage(): ReactElement {
   const { selectedCategoryId, selectCategory, resetCategory } = useCategorySelection();
   const [selectedId, setSelectedId] = useState<string | null>(
-    services.length === 1 ? (services[0]?.id ?? null) : null,
+    services.length === 1
+      ? (services[0]?.id ?? null)
+      : resolvePreselectedServiceId(
+          typeof window === 'undefined' ? '' : window.location.search,
+          services.map((s) => s.id),
+        ),
   );
 
   const wizardResources = useMemo(() => {

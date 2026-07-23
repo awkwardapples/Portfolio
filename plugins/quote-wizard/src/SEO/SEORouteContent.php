@@ -35,34 +35,66 @@ final class SEORouteContent {
 	 * @var array<string, array{title: string, description: string, og_type: string}>
 	 */
 	private const DEFAULTS = array(
-		'/'         => array(
+		'/'                                               => array(
 			'title'       => 'Acme Fencing — Professional Fencing Services',
 			'description' => 'Professional fencing services across the south east. Get a free quote for fencing, decking, and outdoor structures.',
 			'og_type'     => 'website',
 		),
-		'/services' => array(
+		'/services'                                       => array(
 			'title'       => 'Our Services — Acme Fencing',
 			'description' => 'Fencing, decking, and outdoor construction services across the south east. Reliable, quality work.',
 			'og_type'     => 'website',
 		),
-		'/our-work' => array(
+		'/our-work'                                       => array(
 			'title'       => 'Our Recent Work — Acme Fencing',
 			'description' => 'See examples of fencing, decking, and outdoor construction projects we have completed.',
 			'og_type'     => 'website',
 		),
-		'/contact'  => array(
+		'/contact'                                        => array(
 			'title'       => 'Contact — Acme Fencing',
 			'description' => 'Get in touch with Acme Fencing for a quote or to discuss your project.',
 			'og_type'     => 'website',
 		),
-		'/quote'    => array(
+		'/quote'                                          => array(
 			'title'       => 'Get a Free Quote — Acme Fencing',
 			'description' => 'Use our online quote wizard to receive an instant estimate for your project.',
 			'og_type'     => 'website',
 		),
-		'/privacy'  => array(
+		'/privacy'                                        => array(
 			'title'       => 'Privacy Policy — Acme Fencing',
 			'description' => 'How Acme Fencing collects, uses, and protects your personal data.',
+			'og_type'     => 'website',
+		),
+		// ---------------------------------------------------------------
+		// SEO service landing pages (Step 6.8). Title/description mirrored
+		// from apps/wizard/src/site/content/service-pages-content.ts's
+		// `seo` field — update both in the same commit (same sync
+		// discipline already used between the JS service registry and
+		// ServiceSchemaEmitter.php's service entries).
+		// ---------------------------------------------------------------
+		'/services/fence-panel-repair-guildford'          => array(
+			'title'       => 'Fence Panel Repair & Replacement in Guildford — SCB Handyman',
+			'description' => 'Fast, reliable fence panel repair and replacement across Guildford and Surrey. Matching styles, secure posts, and honest quotes from SCB Handyman.',
+			'og_type'     => 'website',
+		),
+		'/services/block-paving-guildford'                => array(
+			'title'       => 'Block Paving Driveways in Guildford — SCB Handyman',
+			'description' => 'Instant online quotes for block paving driveways across Guildford and Surrey. Driveline 50, Tegula and permeable Marshall Drivesys installed by SCB Handyman.',
+			'og_type'     => 'website',
+		),
+		'/services/high-ceiling-painter-decorator-guildford' => array(
+			'title'       => 'Painter & Decorator for High Ceilings — Guildford',
+			'description' => 'Professional interior painting and decorating for high and vaulted ceilings across Guildford and Surrey. Instant online quote by room count from SCB Handyman.',
+			'og_type'     => 'website',
+		),
+		'/services/driveway-decking-pressure-washing-guildford' => array(
+			'title'       => 'Driveway & Decking Pressure Washing — Guildford',
+			'description' => 'Professional pressure washing for driveways, patios and timber decking across Guildford and Surrey. Instant online quote from SCB Handyman.',
+			'og_type'     => 'website',
+		),
+		'/services/emergency-plumbing-leak-repair-surrey' => array(
+			'title'       => 'Emergency Plumbing Leak Repairs — Surrey | SCB Handyman',
+			'description' => 'Fast response emergency plumbing leak repairs across Surrey and surrounding areas. Describe your problem online for a quick custom quote from SCB Handyman.',
 			'og_type'     => 'website',
 		),
 	);
@@ -111,6 +143,7 @@ final class SEORouteContent {
 	 * '/our-work' -> 'our_work'
 	 * '/contact'  -> 'contact'
 	 * '/quote'    -> 'quote'
+	 * '/services/fence-panel-repair-guildford' -> 'services_fence_panel_repair_guildford'
 	 *
 	 * @param string $route Route path to convert.
 	 */
@@ -118,7 +151,7 @@ final class SEORouteContent {
 		if ( '/' === $route ) {
 			return 'home';
 		}
-		return str_replace( '-', '_', trim( $route, '/' ) );
+		return str_replace( array( '/', '-' ), '_', trim( $route, '/' ) );
 	}
 
 	/**

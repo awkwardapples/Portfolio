@@ -23,7 +23,7 @@ afterEach(
 	}
 );
 
-it( 'generates XML containing all 6 React routes', function (): void {
+it( 'generates XML containing all 6 structural React routes', function (): void {
 	Functions\when( 'get_option' )->justReturn( '' );
 	Functions\when( 'home_url' )->alias(
 		static function ( string $path ): string {
@@ -41,6 +41,25 @@ it( 'generates XML containing all 6 React routes', function (): void {
 	expect( $xml )->toContain( 'http://example.test/our-work' );
 	expect( $xml )->toContain( 'http://example.test/contact' );
 	expect( $xml )->toContain( 'http://example.test/privacy' );
+} );
+
+it( 'generates XML containing all 5 SEO service landing page routes', function (): void {
+	Functions\when( 'get_option' )->justReturn( '' );
+	Functions\when( 'home_url' )->alias(
+		static function ( string $path ): string {
+			return 'http://example.test' . $path;
+		}
+	);
+	Functions\when( 'esc_url' )->returnArg();
+	Functions\when( 'esc_html' )->returnArg();
+
+	$xml = SitemapGenerator::generate_sitemap_xml();
+
+	expect( $xml )->toContain( 'http://example.test/services/fence-panel-repair-guildford' );
+	expect( $xml )->toContain( 'http://example.test/services/block-paving-guildford' );
+	expect( $xml )->toContain( 'http://example.test/services/high-ceiling-painter-decorator-guildford' );
+	expect( $xml )->toContain( 'http://example.test/services/driveway-decking-pressure-washing-guildford' );
+	expect( $xml )->toContain( 'http://example.test/services/emergency-plumbing-leak-repair-surrey' );
 } );
 
 it( 'generates valid XML sitemap structure', function (): void {
@@ -84,9 +103,9 @@ it( 'each URL entry includes changefreq and priority elements', function (): voi
 
 	$xml = SitemapGenerator::generate_sitemap_xml();
 
-	expect( substr_count( $xml, '<changefreq>' ) )->toBe( 6 );
-	expect( substr_count( $xml, '<priority>' ) )->toBe( 6 );
-	expect( substr_count( $xml, '<lastmod>' ) )->toBe( 6 );
+	expect( substr_count( $xml, '<changefreq>' ) )->toBe( 11 );
+	expect( substr_count( $xml, '<priority>' ) )->toBe( 11 );
+	expect( substr_count( $xml, '<lastmod>' ) )->toBe( 11 );
 } );
 
 it( 'uses goqw_sitemap_lastmod override when set', function (): void {

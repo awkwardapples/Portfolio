@@ -78,12 +78,39 @@ it( 'empty option value falls back to template default', function (): void {
 	expect( $content['title'] )->toContain( 'Acme Fencing' );
 } );
 
-it( 'all six routes return non-null content', function (): void {
+it( 'all eleven routes return non-null content', function (): void {
 	Functions\when( 'get_option' )->justReturn( '' );
 
-	foreach ( array( '/', '/services', '/our-work', '/contact', '/quote', '/privacy' ) as $route ) {
+	$routes = array(
+		'/',
+		'/services',
+		'/our-work',
+		'/contact',
+		'/quote',
+		'/privacy',
+		'/services/fence-panel-repair-guildford',
+		'/services/block-paving-guildford',
+		'/services/high-ceiling-painter-decorator-guildford',
+		'/services/driveway-decking-pressure-washing-guildford',
+		'/services/emergency-plumbing-leak-repair-surrey',
+	);
+	foreach ( $routes as $route ) {
 		expect( SEORouteContent::get_content( $route ) )->not->toBeNull();
 	}
+} );
+
+it( 'service landing page slug uses underscores for both slashes and hyphens', function (): void {
+	Functions\when( 'get_option' )->alias(
+		static function ( string $key ): string {
+			return 'goqw_seo_title_services_fence_panel_repair_guildford' === $key
+				? 'Custom Fence Page Title'
+				: '';
+		}
+	);
+
+	$content = SEORouteContent::get_content( '/services/fence-panel-repair-guildford' );
+
+	expect( $content['title'] )->toBe( 'Custom Fence Page Title' );
 } );
 
 it( 'get_og_image_url returns default plugin asset URL when no override', function (): void {

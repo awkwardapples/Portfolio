@@ -26,21 +26,25 @@ export interface SiteContent {
 }
 
 export const siteContent: SiteContent = {
-  businessName: 'Acme Fencing',
-  tagline: 'Fencing and landscaping across the South East.',
-  footerNote: 'Family-run since 2008. Fully insured. References available.',
+  businessName: 'SCB Handyman',
+  tagline: 'Based in Guildford, we offer our services across Surrey and surrounding areas.',
+  footerNote:
+    'Established 2006 by a Merrist Wood trained landscape gardener. Fully insured. References available.',
   contact: {
-    phone: '01234 567 890',
-    email: 'hello@example.com',
-    address: 'Unit 4, Trade Park\nExample Town\nKT12 1AB',
-    hours: 'Mon–Fri 8:00–18:00. Sat by appointment.',
+    phone: '07776 066965',
+    email: 'shane@scbhandyman.co.uk',
+    address: 'Guildford, Surrey, UK',
+    hours: 'Mon–Fri: 9:00–17:00',
   },
   home: {
-    heading: 'Honest quotes for fences and decks.',
-    subheading: 'Tell us what you need. Get a written estimate the same week.',
+    heading: 'Guildford & Surrey Handyman and Garden Specialists',
+    subheading:
+      'Home and garden maintenance across Surrey and surrounding areas — no job too small.',
     intro:
-      'We install fencing and decking for homes and small businesses across the area. ' +
-      'Use the quote tool to describe your project — we will follow up with a written estimate.',
+      'Established in 2006 by a Merrist Wood trained landscape gardener, SCB Handyman Services ' +
+      'provides all types of home and garden maintenance across Guildford, Surrey and the ' +
+      'surrounding areas. From fencing and decking to general repairs — if you have a job that ' +
+      'needs doing, get in touch.',
   },
   nav: {
     ctaLabel: 'Get a free quote',

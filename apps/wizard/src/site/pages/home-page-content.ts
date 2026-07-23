@@ -5,23 +5,23 @@ export const homePageContent: SectionConfig[] = [
     kind: 'hero',
     id: 'hero',
     content: {
-      heading: 'Acme Fencing',
-      subheading: 'Professional fencing services across the south east',
+      heading: 'SCB Handyman',
+      subheading: 'Based in Guildford, we offer our services across Surrey and surrounding areas',
       primaryCta: { label: 'Get a free quote', href: '/quote' },
-      secondaryCta: { label: 'Call us now', href: 'tel:01234567890' },
+      secondaryCta: { label: 'Call us now', href: 'tel:07776066965' },
     },
   },
   {
     kind: 'intro',
     id: 'intro',
     content: {
-      heading: 'Built by Specialists. Trusted Locally.',
-      body: 'Acme Fencing was founded to provide high-quality fencing solutions for homeowners and businesses across the south east. Our team brings years of experience delivering durable, attractive, and well-installed fencing.',
+      heading: 'Established 2006. Trusted Across Surrey.',
+      body: 'Established in 2006 by a Merrist Wood trained landscape gardener, SCB Handyman Services can provide all types of home and garden maintenance — and many more besides. If you have any jobs you need doing around the house or garden, get in touch. No job is too small.',
       bulletPoints: [
-        'Satisfaction guarantee',
-        'Fast turnaround',
-        'Fully insured & qualified',
-        'Local & reliable',
+        'Merrist Wood trained landscape gardener',
+        '20 years of experience',
+        'Fully insured',
+        'No job too small',
       ],
       cta: { label: 'Get a free quote', href: '/quote' },
     },
@@ -31,7 +31,7 @@ export const homePageContent: SectionConfig[] = [
     id: 'services-preview',
     content: {
       heading: 'Our Services',
-      subheading: 'Fast, reliable service for homes and businesses.',
+      subheading: 'Home and garden maintenance across Guildford, Surrey and surrounding areas.',
       services: [
         {
           serviceId: 'fencing',
@@ -109,7 +109,7 @@ export const homePageContent: SectionConfig[] = [
     id: 'projects',
     content: {
       heading: 'Our Recent Work',
-      subheading: 'See examples of recent installations.',
+      subheading: 'See examples of recent home and garden projects across Surrey.',
       projects: [
         {
           id: 'p1',
@@ -137,15 +137,15 @@ export const homePageContent: SectionConfig[] = [
     kind: 'why-choose-us',
     id: 'why-choose-us',
     content: {
-      heading: 'Why Choose Acme Fencing',
+      heading: 'Why Choose SCB Handyman',
       valueProps: [
-        { heading: 'Specialist expertise', description: 'Years of experience installing fencing.' },
-        { heading: 'Reliable & on time', description: 'We turn up when we say we will.' },
         {
-          heading: 'Domestic & commercial',
-          description: 'Trusted by homeowners, landlords, and businesses.',
+          heading: 'Merrist Wood trained',
+          description: 'Founded by a Merrist Wood trained landscape gardener.',
         },
-        { heading: 'Quality workmanship', description: 'Clean, precise, long-lasting results.' },
+        { heading: 'Established 2006', description: '20 years of experience across Surrey.' },
+        { heading: 'No job too small', description: 'From full installations to small odd jobs.' },
+        { heading: 'Reliable & on time', description: 'We turn up when we say we will.' },
         {
           heading: 'Transparent pricing',
           description: 'Clear, honest quotes with no hidden fees.',
@@ -164,7 +164,7 @@ export const homePageContent: SectionConfig[] = [
           id: 'q1',
           question: 'What areas do you cover?',
           answer:
-            "We cover the south east of England. If you're outside this region, get in touch — we can often still help.",
+            "We're based in Guildford and cover Surrey and surrounding areas. If you're outside this region, get in touch — we can often still help.",
         },
         {
           id: 'q2',
@@ -184,9 +184,9 @@ export const homePageContent: SectionConfig[] = [
         },
         {
           id: 'q5',
-          question: 'What types of fencing do you install?',
+          question: 'What services do you offer?',
           answer:
-            'Panel fencing, post-and-rail, picket, chain link, gates, and more. See our services page for the full list.',
+            'Fencing, decking, patios, driveways, garden steps, painting and decorating, pressure washing, and general handyman repairs including plumbing, electrical, and carpentry. No job is too small — see our services page for the full list.',
         },
       ],
       cta: { label: 'Get a free quote', href: '/quote' },
