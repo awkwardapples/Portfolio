@@ -19,38 +19,38 @@ const FooterLayout = ({ content }: FooterLayoutProps) => {
   const hasSocial = content.social != null && hasAnySocial(content.social);
 
   return (
-    <footer className="mt-12 border-t border-border bg-surface-sunken lg:mt-16">
+    <footer className="mt-12 border-t border-border-inverse bg-surface-dark lg:mt-16">
       <div className="mx-auto max-w-7xl px-6 py-12 lg:py-16">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           {/* Column 1 — Business identity */}
           <div>
-            <h3 className="mb-4 text-xl font-semibold text-text">{content.businessName}</h3>
+            <h3 className="mb-4 text-xl font-semibold text-text-inverse">{content.businessName}</h3>
             {content.address && (
-              <address className="whitespace-pre-line text-sm not-italic leading-relaxed text-text-muted">
+              <address className="whitespace-pre-line text-sm not-italic leading-relaxed text-text-inverse-muted">
                 {content.address}
               </address>
             )}
             {content.serviceArea && (
-              <p className="mt-3 text-sm text-text-muted">{content.serviceArea}</p>
+              <p className="mt-3 text-sm text-text-inverse-muted">{content.serviceArea}</p>
             )}
           </div>
 
           {/* Column 2 — Contact (phones + emails) */}
           {hasContact && (
             <div>
-              <h3 className="mb-4 text-base font-semibold text-text">Contact</h3>
+              <h3 className="mb-4 text-base font-semibold text-text-inverse">Contact</h3>
               {content.phones?.map((phone, idx) => (
-                <p key={`phone-${idx}`} className="mb-2 text-sm text-text-muted">
+                <p key={`phone-${idx}`} className="mb-2 text-sm text-text-inverse-muted">
                   {phone.label && <span>{phone.label}: </span>}
-                  <a href={formatPhoneHref(phone.number)} className="hover:text-text">
+                  <a href={formatPhoneHref(phone.number)} className="hover:text-text-inverse">
                     {phone.number}
                   </a>
                 </p>
               ))}
               {content.emails?.map((email, idx) => (
-                <p key={`email-${idx}`} className="mb-2 text-sm text-text-muted">
+                <p key={`email-${idx}`} className="mb-2 text-sm text-text-inverse-muted">
                   {email.label && <span>{email.label}: </span>}
-                  <a href={`mailto:${email.address}`} className="hover:text-text">
+                  <a href={`mailto:${email.address}`} className="hover:text-text-inverse">
                     {email.address}
                   </a>
                 </p>
@@ -61,15 +61,15 @@ const FooterLayout = ({ content }: FooterLayoutProps) => {
           {/* Column 3 — Hours */}
           {content.hours && (
             <div>
-              <h3 className="mb-4 text-base font-semibold text-text">Hours</h3>
-              <p className="whitespace-pre-line text-sm text-text-muted">{content.hours}</p>
+              <h3 className="mb-4 text-base font-semibold text-text-inverse">Hours</h3>
+              <p className="whitespace-pre-line text-sm text-text-inverse-muted">{content.hours}</p>
             </div>
           )}
 
           {/* Column 4 — Social */}
           {hasSocial && content.social && (
             <div>
-              <h3 className="mb-4 text-base font-semibold text-text">Follow Us</h3>
+              <h3 className="mb-4 text-base font-semibold text-text-inverse">Follow Us</h3>
               <div className="flex gap-4">
                 {content.social.facebook && (
                   <a
@@ -77,7 +77,7 @@ const FooterLayout = ({ content }: FooterLayoutProps) => {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="Facebook"
-                    className="text-text-muted hover:text-text"
+                    className="text-text-inverse-muted hover:text-text-inverse"
                   >
                     <FacebookIcon />
                   </a>
@@ -88,7 +88,7 @@ const FooterLayout = ({ content }: FooterLayoutProps) => {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="Instagram"
-                    className="text-text-muted hover:text-text"
+                    className="text-text-inverse-muted hover:text-text-inverse"
                   >
                     <InstagramIcon />
                   </a>
@@ -99,7 +99,7 @@ const FooterLayout = ({ content }: FooterLayoutProps) => {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="Twitter"
-                    className="text-text-muted hover:text-text"
+                    className="text-text-inverse-muted hover:text-text-inverse"
                   >
                     <TwitterIcon />
                   </a>
@@ -110,7 +110,7 @@ const FooterLayout = ({ content }: FooterLayoutProps) => {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="LinkedIn"
-                    className="text-text-muted hover:text-text"
+                    className="text-text-inverse-muted hover:text-text-inverse"
                   >
                     <LinkedInIcon />
                   </a>
@@ -121,15 +121,15 @@ const FooterLayout = ({ content }: FooterLayoutProps) => {
         </div>
 
         {/* Bottom row — Copyright and legal links */}
-        <div className="mt-12 flex flex-col gap-4 border-t border-border pt-8 md:flex-row md:items-center md:justify-between">
-          <p className="text-sm text-text-muted">
+        <div className="mt-12 flex flex-col gap-4 border-t border-border-inverse pt-8 md:flex-row md:items-center md:justify-between">
+          <p className="text-sm text-text-inverse-muted">
             © {content.copyrightYear} {content.copyrightText}
           </p>
           {content.legalLinks && content.legalLinks.length > 0 && (
-            <ul className="flex gap-6 text-sm text-text-muted">
+            <ul className="flex gap-6 text-sm text-text-inverse-muted">
               {content.legalLinks.map((link, idx) => (
                 <li key={idx}>
-                  <SectionLink href={link.href} className="hover:text-text">
+                  <SectionLink href={link.href} className="hover:text-text-inverse">
                     {link.label}
                   </SectionLink>
                 </li>

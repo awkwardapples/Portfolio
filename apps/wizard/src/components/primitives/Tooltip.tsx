@@ -26,6 +26,12 @@ interface TooltipProps {
  * Floating UI) would be justified — recorded as a deferred option, not a need.
  *
  * Flat surface, single functional elevation shadow, no gradient/blur.
+ *
+ * The tooltip span is always mounted (UI overhaul Phase 4B) — visibility is
+ * an opacity toggle (`duration-fast`), not conditional rendering, so the
+ * appearance can fade rather than pop. Same `open` boolean as before, no new
+ * state; `aria-describedby` is still only set when `open`, so assistive tech
+ * is never told about a hidden tooltip's content.
  */
 export function Tooltip({ label, children, side = 'top' }: TooltipProps): ReactElement {
   const id = useId();
@@ -50,19 +56,19 @@ export function Tooltip({ label, children, side = 'top' }: TooltipProps): ReactE
   return (
     <span className="relative inline-flex">
       {trigger}
-      {open && (
-        <span
-          id={id}
-          role="tooltip"
-          className={cn(
-            'pointer-events-none absolute left-1/2 z-10 -translate-x-1/2 whitespace-nowrap',
-            'rounded bg-neutral-800 px-2 py-1 text-xs text-text-inverse shadow-elevated',
-            side === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
-          )}
-        >
-          {label}
-        </span>
-      )}
+      <span
+        id={id}
+        role="tooltip"
+        className={cn(
+          'pointer-events-none absolute left-1/2 z-10 -translate-x-1/2 whitespace-nowrap',
+          'rounded bg-neutral-800 px-2 py-1 text-xs text-text-inverse shadow-elevated',
+          'transition-opacity duration-fast',
+          side === 'top' ? 'bottom-full mb-1' : 'top-full mt-1',
+          open ? 'opacity-100' : 'opacity-0',
+        )}
+      >
+        {label}
+      </span>
     </span>
   );
 }

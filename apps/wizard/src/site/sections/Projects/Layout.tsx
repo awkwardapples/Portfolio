@@ -1,4 +1,6 @@
-import { SectionLink } from '@/site/routing/SectionLink';
+import { cn } from '@/design/cn';
+import { useScrollReveal, scrollRevealClassName } from '@/design/useScrollReveal';
+import { UnderlineLink } from '@/components/primitives/UnderlineLink';
 import type { ProjectItem } from './types';
 
 export interface ProjectsLayoutProps {
@@ -12,6 +14,20 @@ export interface ProjectsLayoutProps {
   extraClassName?: string;
 }
 
+/**
+ * Projects (Phase 7). The work itself is the visual emphasis — images are
+ * no longer wrapped in a bordered "card" (`overflow-hidden rounded border
+ * border-border` in the original implementation directly contradicted
+ * design-bible.md §9: "no border, no shadow around images — let the image
+ * edge be the edge"). Rounded corners stay (the one radius token, applied
+ * to the image itself); the border and the extra wrapping div are gone.
+ *
+ * Deliberately not another Card-based grid — Services Preview already owns
+ * that "bordered tile" silhouette. Once the border is removed, a grid of
+ * borderless, consistently-cropped photographs reads as a different kind
+ * of content (evidence of real work) even though the underlying grid
+ * skeleton (3 columns, responsive) is structurally similar.
+ */
 const ProjectsLayout = ({
   heading,
   subheading,
@@ -22,16 +38,28 @@ const ProjectsLayout = ({
   sectionId,
   extraClassName = '',
 }: ProjectsLayoutProps) => {
+  const { ref: headingRef, isVisible: headingVisible } = useScrollReveal<HTMLDivElement>();
+  const { ref: gridRef, isVisible: gridVisible } = useScrollReveal<HTMLUListElement>();
+
   return (
-    <section id={sectionId} className={`bg-surface py-16 ${extraClassName}`}>
+    <section id={sectionId} className={cn('bg-surface-dark-raised py-20 lg:py-24', extraClassName)}>
       <div className="mx-auto max-w-5xl px-6">
-        <h2 className="text-xl font-semibold text-text">{heading}</h2>
-        {subheading && <p className="mt-4 text-base text-text-muted">{subheading}</p>}
-        <ul className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3" role="list">
-          {projects.map((project) => (
-            <li key={project.id} className="overflow-hidden rounded border border-border">
+        <div ref={headingRef} className={scrollRevealClassName(headingVisible)}>
+          <h2 className="text-xl font-semibold text-text-inverse">{heading}</h2>
+          {subheading && (
+            <p className="mt-4 max-w-prose text-base text-text-inverse-muted">{subheading}</p>
+          )}
+        </div>
+
+        <ul
+          ref={gridRef}
+          className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3"
+          role="list"
+        >
+          {projects.map((project, index) => (
+            <li key={project.id} className={scrollRevealClassName(gridVisible, index + 1)}>
               {imageErrors.has(project.id) ? (
-                <div className="flex h-12 items-center justify-center bg-surface text-sm text-text-muted">
+                <div className="flex aspect-video items-center justify-center rounded bg-surface-dark-elevated text-sm text-text-inverse-muted">
                   Image coming soon
                 </div>
               ) : (
@@ -39,27 +67,21 @@ const ProjectsLayout = ({
                   src={project.imageUrl}
                   alt={project.imageAlt}
                   onError={() => onImageError(project.id)}
-                  className="h-full w-full object-cover"
+                  className="aspect-video w-full rounded object-cover"
                   loading="lazy"
                 />
               )}
+              <p className="mt-3 text-sm font-medium text-text-inverse">{project.name}</p>
               {project.description && (
-                <div className="p-4">
-                  <p className="text-sm font-medium text-text">{project.name}</p>
-                  <p className="mt-1 text-sm text-text-muted">{project.description}</p>
-                </div>
+                <p className="mt-1 text-sm text-text-inverse-muted">{project.description}</p>
               )}
             </li>
           ))}
         </ul>
+
         {cta && (
           <div className="mt-12">
-            <SectionLink
-              href={cta.href}
-              className="inline-block rounded border border-primary bg-primary px-4 py-2 text-sm font-medium text-text-inverse"
-            >
-              {cta.label}
-            </SectionLink>
+            <UnderlineLink href={cta.href}>{cta.label}</UnderlineLink>
           </div>
         )}
       </div>

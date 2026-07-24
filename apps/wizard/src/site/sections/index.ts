@@ -1,4 +1,5 @@
 export { Hero } from './Hero';
+export { ServiceHero } from './ServiceHero';
 export { Intro } from './Intro';
 export { ServicesPreview } from './ServicesPreview';
 export { Process } from './Process';
@@ -8,6 +9,7 @@ export { FAQ } from './FAQ';
 
 export type { SectionConfig, SectionKind, BaseSectionConfig } from './types';
 export type { HeroContent } from './Hero/types';
+export type { ServiceHeroContent } from './ServiceHero/types';
 export type { IntroContent } from './Intro/types';
 export type { ServicesPreviewContent, ServicesPreviewItem } from './ServicesPreview/types';
 export type { ProcessContent, ProcessStep } from './Process/types';

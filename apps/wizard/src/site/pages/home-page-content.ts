@@ -1,14 +1,20 @@
 import type { SectionConfig } from '../sections/types';
+import homeHeroImage from '@/assets/images/service-hero-fencing.webp';
 
 export const homePageContent: SectionConfig[] = [
   {
     kind: 'hero',
     id: 'hero',
     content: {
-      heading: 'SCB Handyman',
+      heading:
+        'From a leaky tap to a complete garden redesign, we handle your entire home to-do ' +
+        'list with clear upfront pricing. Get your free, instant online estimate by ' +
+        'clicking below!',
       subheading: 'Based in Guildford, we offer our services across Surrey and surrounding areas',
-      primaryCta: { label: 'Get a free quote', href: '/quote' },
+      primaryCta: { label: 'Get a free instant price estimate', href: '/quote' },
       secondaryCta: { label: 'Call us now', href: 'tel:07776066965' },
+      backgroundImage: homeHeroImage,
+      backgroundImageAlt: 'Newly installed timber fence panels along a landscaped garden border',
     },
   },
   {
@@ -23,7 +29,8 @@ export const homePageContent: SectionConfig[] = [
         'Fully insured',
         'No job too small',
       ],
-      cta: { label: 'Get a free quote', href: '/quote' },
+      variant: 'credibility',
+      cta: { label: 'Get a free instant price estimate', href: '/quote' },
     },
   },
   {
@@ -152,6 +159,25 @@ export const homePageContent: SectionConfig[] = [
         },
         { heading: 'Fully insured', description: 'All work completed safely and professionally.' },
       ],
+      // Real, customer-supplied testimonials — verbatim except for trimming
+      // each one's closing pleasantry/signature line (e.g. "With Thanks"),
+      // which is correspondence formatting, not part of the testimonial
+      // itself. Nothing here is invented.
+      testimonials: [
+        {
+          quote:
+            'SCB Handyman Services have recently completed works in our property and we can ' +
+            'highly recommend them! From the initial contact, Shane has always been ' +
+            'professional and friendly. His quote was the best we had by far and turnaround ' +
+            'time was excellent, he also gave advice that saved us money! We have no ' +
+            'hesitation in recommending SCB Handyman Services!',
+          author: 'Graham Jones',
+        },
+        {
+          quote: 'Thank you and Craig for a job well done, will use you again.',
+          author: 'A Rickard',
+        },
+      ],
     },
   },
   {
@@ -189,7 +215,7 @@ export const homePageContent: SectionConfig[] = [
             'Fencing, decking, patios, driveways, garden steps, painting and decorating, pressure washing, and general handyman repairs including plumbing, electrical, and carpentry. No job is too small — see our services page for the full list.',
         },
       ],
-      cta: { label: 'Get a free quote', href: '/quote' },
+      cta: { label: 'Get a free instant price estimate', href: '/quote' },
     },
   },
 ];

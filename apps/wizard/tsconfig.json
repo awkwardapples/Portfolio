@@ -13,6 +13,15 @@
     "useDefineForClassFields": true,
 
     /* -----------------------------------------------------------
+       Vite's ambient types — needed so TS recognises `import x from
+       './foo.jpg'` (and similar asset imports) as a valid module
+       returning a string URL. First needed for the ServiceHero image
+       imports (Phase 10 asset integration); no new dependency, this
+       ships inside the already-installed `vite` package.
+       ----------------------------------------------------------- */
+    "types": ["vite/client"],
+
+    /* -----------------------------------------------------------
        JSX — react-jsx removes the need for `import React`
        in every file. Modern default for React 17+.
        ----------------------------------------------------------- */

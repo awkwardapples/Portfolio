@@ -14,6 +14,10 @@
  *   4. The CSS is emitted as a single file alongside the JS.
  *   5. Filenames are content-hashed for cache busting; the manifest resolves
  *      the current filenames so the WP plugin doesn't hard-code them.
+ *   6. `base: './'` — any asset referenced via a JS import (images, fonts)
+ *      resolves relative to the running script's own URL, not the site's
+ *      domain root, since the bundle is deployed inside a WordPress plugin
+ *      subdirectory (see the `base` option below for the full rationale).
  *
  * Anything that changes the above is a build-pipeline-breaking change and must
  * be accompanied by an update to the build script and the plugin's AssetLoader.
@@ -24,6 +28,21 @@ import { fileURLToPath, URL } from 'node:url';
 
 export default defineConfig({
   plugins: [react()],
+
+  // Relative base (Phase 11 finding): the JS/CSS bundle is deployed at
+  // wp-content/plugins/quote-wizard/assets/dist/, never at the site's domain
+  // root. With the default base ('/'), Vite bakes root-relative URLs
+  // (`/assets/foo.hash.ext`) into any asset referenced via a JS import —
+  // e.g. ServiceHero's photographs and the self-hosted Inter font — which
+  // 404 against the real WordPress site root instead of the plugin's actual
+  // path. A relative base makes Vite resolve those same asset references
+  // against the executing script's own URL at runtime (`import.meta.url`),
+  // which is correct regardless of which subdirectory WordPress serves the
+  // plugin from. This does NOT affect wizard.js/wizard.css themselves —
+  // those are already resolved dynamically and correctly by PHP via
+  // ManifestReader::asset_url() + GOQW_PLUGIN_URL, independent of Vite's
+  // base setting.
+  base: './',
 
   resolve: {
     alias: {

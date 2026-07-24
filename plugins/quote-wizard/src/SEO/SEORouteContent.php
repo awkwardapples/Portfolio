@@ -11,6 +11,8 @@ declare( strict_types=1 );
 
 namespace Agency\QuoteWizard\SEO;
 
+use Agency\QuoteWizard\Routing\SiteRoutes;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -107,6 +109,16 @@ final class SEORouteContent {
 	 *         Content array for known routes; null for unrecognized routes.
 	 */
 	public static function get_content( string $route ): ?array {
+		// Normalize defensively here (not just at the caller) so every
+		// consumer gets correct behaviour regardless of whether the request
+		// path still has a trailing slash. Bug found in Phase 11: WordPress's
+		// pretty-permalink URLs (e.g. '/services/fence-panel-repair-guildford/')
+		// never matched DEFAULTS' trailing-slash-free keys except for '/'
+		// itself (which has no trailing slash to strip), so every non-root
+		// route silently fell through to WordPress's default title/description
+		// instead of its configured SEO content.
+		$route = SiteRoutes::normalize( $route );
+
 		if ( ! isset( self::DEFAULTS[ $route ] ) ) {
 			return null;
 		}

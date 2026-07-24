@@ -13,6 +13,7 @@ export const WhyChooseUs = ({ content, id, extraClassName }: WhyChooseUsProps) =
       heading={content.heading}
       subheading={content.subheading}
       valueProps={content.valueProps}
+      testimonials={content.testimonials}
       cta={content.cta}
       sectionId={id}
       extraClassName={extraClassName}

@@ -34,8 +34,40 @@
   }
 
   #qw-root :focus-visible {
-    outline: 2px solid rgb(var(--goqw-primary, 15 76 129));
+    /*
+     * Fallback triplet kept in sync with tokens.ts's accentCssExpression
+     * (28 74 61 = Pine #1C4A3D) — found drifted to the old template demo
+     * blue (15 76 129 = #0F4C81) during Phase 12; both fallbacks only ever
+     * matter if --goqw-primary is somehow unset, but two different
+     * fallback values for the same variable was a real inconsistency.
+     */
+    outline: 2px solid rgb(var(--goqw-primary, 28 74 61));
     outline-offset: 2px;
+  }
+}
+
+/*
+ * Sticky header + WordPress admin bar (Phase 12 finding). When a logged-in
+ * administrator views the front end, WordPress adds `body.admin-bar` and
+ * pushes all content down by a fixed-position toolbar (32px desktop, 46px
+ * on narrow viewports) — but a `position: sticky; top: 0` element still
+ * sticks to the true viewport top, which sits *underneath* that toolbar
+ * (the toolbar's z-index is far higher than the header's). The header
+ * doesn't move on scroll so much as the admin bar occludes its top half
+ * once it reaches the sticky boundary. Anonymous visitors never see this
+ * (no admin bar), but any logged-in admin testing the live site does.
+ * Root-caused, not patched with a z-index workaround: the header's `top`
+ * offset needs to account for the admin bar's own height, exactly like
+ * WordPress's own admin-bar stylesheet already does for fixed-position
+ * elements.
+ */
+body.admin-bar #site-header {
+  top: 32px;
+}
+
+@media screen and (max-width: 782px) {
+  body.admin-bar #site-header {
+    top: 46px;
   }
 }
 
@@ -46,5 +78,14 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    /*
+     * Phase 5 (Services Preview stagger): duration alone isn't enough once
+     * a delay is involved — without this, staggered items would still
+     * appear sequentially over time (just snapping instead of animating),
+     * which is itself a motion pattern reduced-motion users are opting out
+     * of. Zeroing transition-delay too means every staggered group appears
+     * together, instantly.
+     */
+    transition-delay: 0.01ms !important;
   }
 }

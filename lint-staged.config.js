@@ -25,8 +25,26 @@ function relativeToWizard(absPath) {
   return path.relative(path.join(repoRoot, wizardDir), absPath);
 }
 
-/** Files that should be skipped by ESLint (config files that are intentionally ignored) */
-const eslintIgnoredFiles = ['tailwind.config.ts', 'vitest.config.ts', 'eslint.config.js'];
+/**
+ * A file is skipped here if `apps/wizard/eslint.config.js`'s own `ignores`
+ * array would ignore it anyway (`*.config.ts` / `*.config.js`, plus the one
+ * exact non-`*.config.*` entry, `tailwind.config.ts` — already covered by
+ * the `*.config.ts` glob, kept here too only for clarity). This used to be
+ * a hand-maintained exact-filename list (`['tailwind.config.ts',
+ * 'vitest.config.ts', 'eslint.config.js']`) that had to be kept in sync
+ * with eslint.config.js's `ignores` by hand — and wasn't: `vite.config.ts`
+ * was never added, so when it was staged, ESLint received it as an
+ * explicit CLI argument, emitted "File ignored because of a matching
+ * ignore pattern" as a WARNING (not an error), and `--max-warnings=0`
+ * failed the entire commit over a file ESLint was correctly never meant to
+ * lint. Matching the same glob pattern here instead of a filename list
+ * means any current or future `*.config.ts`/`*.config.js` file is excluded
+ * automatically — this can't drift out of sync with eslint.config.js again
+ * the way the hand-written list did.
+ */
+function isEslintIgnoredConfigFile(filename) {
+  return /\.config\.(ts|js)$/.test(filename);
+}
 
 /** @type {import('lint-staged').Configuration} */
 export default {
@@ -39,7 +57,7 @@ export default {
     // Filter out files that ESLint should ignore
     const filesToLint = files.filter((file) => {
       const filename = path.basename(file);
-      return !eslintIgnoredFiles.includes(filename);
+      return !isEslintIgnoredConfigFile(filename);
     });
 
     if (filesToLint.length === 0) {

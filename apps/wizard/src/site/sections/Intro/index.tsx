@@ -13,6 +13,7 @@ export const Intro = ({ content, id, extraClassName }: IntroProps) => {
       heading={content.heading}
       body={content.body}
       bulletPoints={content.bulletPoints}
+      variant={content.variant}
       cta={content.cta}
       sectionId={id}
       extraClassName={extraClassName}

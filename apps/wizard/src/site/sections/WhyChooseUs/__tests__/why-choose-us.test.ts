@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { WhyChooseUsContent, ValueProp } from '../types';
+import type { WhyChooseUsContent, ValueProp, Testimonial } from '../types';
 
 describe('WhyChooseUsContent', () => {
   it('requires heading and a valueProps array', () => {
@@ -30,5 +30,34 @@ describe('WhyChooseUsContent', () => {
       ],
     };
     expect(content.valueProps).toHaveLength(3);
+  });
+
+  it('testimonials are optional and absent by default', () => {
+    const content: WhyChooseUsContent = {
+      heading: 'Why Choose Us',
+      valueProps: [],
+    };
+    expect(content.testimonials).toBeUndefined();
+  });
+
+  it('each testimonial requires a quote and an author', () => {
+    const testimonial: Testimonial = {
+      quote: 'Great service, highly recommend.',
+      author: 'A Customer',
+    };
+    expect(testimonial.quote.length).toBeGreaterThan(0);
+    expect(testimonial.author.length).toBeGreaterThan(0);
+  });
+
+  it('accepts multiple testimonials', () => {
+    const content: WhyChooseUsContent = {
+      heading: 'Why Choose Us',
+      valueProps: [],
+      testimonials: [
+        { quote: 'Excellent work.', author: 'Customer One' },
+        { quote: 'Would use again.', author: 'Customer Two' },
+      ],
+    };
+    expect(content.testimonials).toHaveLength(2);
   });
 });

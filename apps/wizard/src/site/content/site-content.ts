@@ -47,6 +47,6 @@ export const siteContent: SiteContent = {
       'needs doing, get in touch.',
   },
   nav: {
-    ctaLabel: 'Get a free quote',
+    ctaLabel: 'Get a free instant price estimate',
   },
 };

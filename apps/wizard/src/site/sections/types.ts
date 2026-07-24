@@ -1,4 +1,5 @@
 import type { HeroContent } from './Hero/types';
+import type { ServiceHeroContent } from './ServiceHero/types';
 import type { IntroContent } from './Intro/types';
 import type { ServicesPreviewContent } from './ServicesPreview/types';
 import type { ProcessContent } from './Process/types';
@@ -13,6 +14,7 @@ export interface BaseSectionConfig {
 
 export type SectionConfig =
   | (BaseSectionConfig & { kind: 'hero'; content: HeroContent })
+  | (BaseSectionConfig & { kind: 'service-hero'; content: ServiceHeroContent })
   | (BaseSectionConfig & { kind: 'intro'; content: IntroContent })
   | (BaseSectionConfig & { kind: 'services-preview'; content: ServicesPreviewContent })
   | (BaseSectionConfig & { kind: 'process'; content: ProcessContent })

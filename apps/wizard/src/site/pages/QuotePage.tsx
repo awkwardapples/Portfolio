@@ -96,7 +96,7 @@ export function QuotePage(): ReactElement {
         '[quote-wizard] No vertical could be resolved (configured ids and fallback both unknown). Wizard will not mount.',
       );
       return (
-        <div role="alert" className="mx-auto max-w-3xl px-6 py-12 text-sm text-text">
+        <div role="alert" className="mx-auto max-w-3xl px-6 py-12 text-sm text-text-inverse">
           This wizard could not be configured. Please contact the site administrator.
         </div>
       );

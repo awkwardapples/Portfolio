@@ -18,9 +18,18 @@ import local from './eslint-local/index.js';
 // Banned patterns (regex sources) for ADR-0012 constraints.
 // ---------------------------------------------------------------------------
 
-// Tailwind gradient utilities + CSS gradient functions.
-const GRADIENT_PATTERN =
-  'bg-gradient-|from-|via-|to-|linear-gradient|radial-gradient|conic-gradient';
+// Tailwind gradient utilities + CSS gradient functions. Deliberately does NOT
+// include bare `from-`/`via-`/`to-` fragments (Tailwind's gradient colour-stop
+// modifiers) — found (Phase 14) to false-positive on ordinary prose content
+// literals containing those substrings (e.g. "to-do list" in Hero copy),
+// since this selector matches every string literal in `.ts`/`.tsx` files, not
+// just JSX className attributes. Not a meaningful coverage gap: this config's
+// `backgroundImage` theme key is never defined (see tailwind.config.ts), so
+// `bg-gradient-*` utilities don't exist to generate CSS from at all — a bare
+// `from-blue-500`/`to-emerald-400` with no accompanying `bg-gradient-{dir}`
+// base utility is inert either way. `bg-gradient-` itself and the raw CSS
+// function names below remain unambiguous, high-signal matches.
+const GRADIENT_PATTERN = 'bg-gradient-|linear-gradient|radial-gradient|conic-gradient';
 
 // Glassmorphism / decorative blur.
 const BLUR_PATTERN = 'backdrop-blur|\\bblur-';

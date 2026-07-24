@@ -34,7 +34,7 @@ export function TextareaField({
         onBlur={onBlur}
         className={cn(
           'w-full rounded border bg-surface p-3 text-base text-text',
-          'placeholder:text-text-subtle transition-colors resize-y',
+          'placeholder:text-text-subtle transition-colors duration-fast resize-y',
           error ? 'border-danger' : 'border-border-strong',
         )}
       />

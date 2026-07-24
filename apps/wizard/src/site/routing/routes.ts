@@ -54,7 +54,7 @@ export const ROUTES: readonly RouteEntry[] = [
   {
     path: '/quote',
     title: 'Get a quote',
-    navLabel: 'Get a free quote',
+    navLabel: 'Get a free instant price estimate',
     element: () => createElement(QuotePage),
   },
   {

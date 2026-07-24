@@ -36,10 +36,36 @@ describe('servicePages', () => {
     }
   });
 
-  it('every page starts with a hero section and ends with an faq section', () => {
+  it('every page starts with a service-hero section and ends with an faq section', () => {
     for (const page of servicePages) {
-      expect(page.sections[0]?.kind).toBe('hero');
+      expect(page.sections[0]?.kind).toBe('service-hero');
       expect(page.sections[page.sections.length - 1]?.kind).toBe('faq');
+    }
+  });
+
+  it('every intro-kind block has an explicit variant', () => {
+    for (const page of servicePages) {
+      const introBlocks = page.sections.filter((s) => s.kind === 'intro');
+      expect(introBlocks.length).toBe(4);
+      for (const block of introBlocks) {
+        if (block.kind === 'intro') {
+          expect(['credibility', 'checklist']).toContain(block.content.variant);
+        }
+      }
+    }
+  });
+
+  it('the "what we help with" and "who we help" blocks use the checklist variant with a full bullet list', () => {
+    for (const page of servicePages) {
+      const whatWeHelpWith = page.sections.find((s) => s.id === 'what-we-help-with');
+      const whoWeHelp = page.sections.find((s) => s.id === 'who-we-help');
+      for (const block of [whatWeHelpWith, whoWeHelp]) {
+        expect(block?.kind).toBe('intro');
+        if (block?.kind === 'intro') {
+          expect(block.content.variant).toBe('checklist');
+          expect(block.content.bulletPoints?.length).toBeGreaterThan(0);
+        }
+      }
     }
   });
 
@@ -59,12 +85,31 @@ describe('servicePages', () => {
 
   it('every hero primaryCta deep-links to /quote with the page serviceId', () => {
     for (const page of servicePages) {
-      const hero = page.sections.find((s) => s.kind === 'hero');
-      expect(hero?.kind).toBe('hero');
-      if (hero?.kind === 'hero') {
+      const hero = page.sections.find((s) => s.kind === 'service-hero');
+      expect(hero?.kind).toBe('service-hero');
+      if (hero?.kind === 'service-hero') {
         expect(hero.content.primaryCta.href).toBe(`/quote?service=${page.serviceId}`);
       }
     }
+  });
+
+  it('every service-hero has a non-empty heroImage and heroImageAlt', () => {
+    for (const page of servicePages) {
+      const hero = page.sections.find((s) => s.kind === 'service-hero');
+      expect(hero?.kind).toBe('service-hero');
+      if (hero?.kind === 'service-hero') {
+        expect(hero.content.heroImage.length).toBeGreaterThan(0);
+        expect(hero.content.heroImageAlt.length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('every service-hero image path is unique across the 5 pages', () => {
+    const images = servicePages.map((page) => {
+      const hero = page.sections.find((s) => s.kind === 'service-hero');
+      return hero?.kind === 'service-hero' ? hero.content.heroImage : undefined;
+    });
+    expect(new Set(images).size).toBe(servicePages.length);
   });
 
   it('every faq cta deep-links to /quote with the page serviceId', () => {

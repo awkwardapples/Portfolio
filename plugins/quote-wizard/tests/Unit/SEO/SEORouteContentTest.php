@@ -113,6 +113,23 @@ it( 'service landing page slug uses underscores for both slashes and hyphens', f
 	expect( $content['title'] )->toBe( 'Custom Fence Page Title' );
 } );
 
+it( 'a trailing slash on the request path still resolves to the correct route (Phase 11 regression)', function (): void {
+	// WordPress's pretty-permalink URLs always carry a trailing slash
+	// (e.g. '/services/fence-panel-repair-guildford/'), but SiteRoutes
+	// current_request_path() returns the raw, unnormalized path. Before this
+	// fix, get_content() compared that raw path directly against DEFAULTS'
+	// trailing-slash-free keys, so every non-root route silently returned
+	// null here — and SEOMetaEmitter fell back to WordPress's default title
+	// instead of the configured SEO content. Only '/' itself was immune,
+	// since root has no trailing slash to strip either way.
+	Functions\when( 'get_option' )->justReturn( '' );
+
+	$content = SEORouteContent::get_content( '/services/fence-panel-repair-guildford/' );
+
+	expect( $content )->not->toBeNull();
+	expect( $content['title'] )->toContain( 'SCB Handyman' );
+} );
+
 it( 'get_og_image_url returns default plugin asset URL when no override', function (): void {
 	Functions\when( 'get_option' )->justReturn( '' );
 

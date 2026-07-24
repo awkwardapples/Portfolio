@@ -12,6 +12,22 @@
 
 import type { SectionConfig } from '../sections/types';
 
+/**
+ * ServiceHero photography — imported as ES modules (not string literal
+ * paths) so Vite's asset pipeline fingerprints and emits them alongside the
+ * JS bundle (`assets/[name].[hash][extname]`, already configured in
+ * vite.config.ts for exactly this purpose). This resolves correctly no
+ * matter where the WordPress plugin's compiled assets are deployed, unlike
+ * a hardcoded absolute path such as `/images/foo.jpg` (the convention
+ * `Projects`' placeholder images still use, and the reason those have never
+ * actually resolved to a real file in this project).
+ */
+import fencingHero from '@/assets/images/service-hero-fencing.webp';
+import drivewayHero from '@/assets/images/service-hero-driveway.jpg';
+import paintingHero from '@/assets/images/service-hero-painting.jpeg';
+import jetwashHero from '@/assets/images/service-hero-jetwash.jpg';
+import plumbingHero from '@/assets/images/service-hero-plumbing.webp';
+
 export interface ServicePageEntry {
   /** URL slug, e.g. 'fence-panel-repair-guildford'. */
   readonly slug: string;
@@ -74,15 +90,20 @@ export const servicePages: readonly ServicePageEntry[] = [
     },
     sections: [
       {
-        kind: 'hero',
+        kind: 'service-hero',
         id: 'hero',
         content: {
           heading: 'Fence Panel Repair & Replacement in Guildford',
           subheading:
             'Broken, leaning, or storm-damaged fence panels replaced quickly by SCB Handyman — ' +
             'covering Guildford, Surrey and surrounding areas.',
-          primaryCta: { label: 'Get Your Free Quote', href: '/quote?service=fencing' },
+          primaryCta: {
+            label: 'Get a free instant price estimate',
+            href: '/quote?service=fencing',
+          },
           secondaryCta: { label: 'Call Now', href: 'tel:07776066965' },
+          heroImage: fencingHero,
+          heroImageAlt: 'Newly installed timber fence panels along a landscaped garden border',
         },
       },
       {
@@ -96,6 +117,7 @@ export const servicePages: readonly ServicePageEntry[] = [
             'Sourcing a matching panel, digging out a rotten post, and getting it upright and ' +
             'secure is fiddly work that eats a weekend fast. SCB Handyman sorts it in a single ' +
             'visit, so you’re not left with a gap in your boundary any longer than necessary.',
+          variant: 'checklist',
         },
       },
       {
@@ -109,6 +131,7 @@ export const servicePages: readonly ServicePageEntry[] = [
             'Guildford, Surrey and the surrounding areas. Whether it’s a single storm-damaged ' +
             'panel or a full run that needs replacing, we match your existing fence style where ' +
             'possible and make sure posts and gravel boards are sound before the new panel goes in.',
+          variant: 'checklist',
         },
       },
       {
@@ -126,6 +149,7 @@ export const servicePages: readonly ServicePageEntry[] = [
             'Gravel board replacement',
             'Gate repair and realignment',
           ],
+          variant: 'checklist',
         },
       },
       {
@@ -141,6 +165,7 @@ export const servicePages: readonly ServicePageEntry[] = [
             'Letting and property managers',
             'Businesses with boundary fencing',
           ],
+          variant: 'checklist',
         },
       },
       sharedProcessSection,
@@ -229,7 +254,7 @@ export const servicePages: readonly ServicePageEntry[] = [
                 'touch if you’re just outside this region.',
             },
           ],
-          cta: { label: 'Get a free quote', href: '/quote?service=fencing' },
+          cta: { label: 'Get a free instant price estimate', href: '/quote?service=fencing' },
         },
       },
     ],
@@ -251,15 +276,20 @@ export const servicePages: readonly ServicePageEntry[] = [
     },
     sections: [
       {
-        kind: 'hero',
+        kind: 'service-hero',
         id: 'hero',
         content: {
           heading: 'Block Paving Driveways in Guildford',
           subheading:
             'Get an instant online quote for a new block paving driveway — Driveline 50, ' +
             'Tegula, or permeable Marshall Drivesys, installed across Guildford and Surrey.',
-          primaryCta: { label: 'Get Your Free Quote', href: '/quote?service=driveway' },
+          primaryCta: {
+            label: 'Get a free instant price estimate',
+            href: '/quote?service=driveway',
+          },
           secondaryCta: { label: 'Call Now', href: 'tel:07776066965' },
+          heroImage: drivewayHero,
+          heroImageAlt: 'Newly installed grey block paving driveway outside a house',
         },
       },
       {
@@ -274,6 +304,7 @@ export const servicePages: readonly ServicePageEntry[] = [
             'wait for written quotes. Our online wizard gives you an instant estimate for block ' +
             'paving based on your driveway’s size and material, so you know roughly what to ' +
             'expect before you even pick up the phone.',
+          variant: 'checklist',
         },
       },
       {
@@ -286,6 +317,7 @@ export const servicePages: readonly ServicePageEntry[] = [
             'property managers across Guildford, Surrey and the surrounding areas. Every job ' +
             'includes full excavation, sub-base preparation, kerb edging and drainage, finished ' +
             'with your choice of block paving style.',
+          variant: 'checklist',
         },
       },
       {
@@ -303,6 +335,7 @@ export const servicePages: readonly ServicePageEntry[] = [
             'Driveway steps',
             'Full sub-base preparation and drainage',
           ],
+          variant: 'checklist',
         },
       },
       {
@@ -318,6 +351,7 @@ export const servicePages: readonly ServicePageEntry[] = [
             'Businesses needing customer parking',
             'New-build and renovation projects',
           ],
+          variant: 'checklist',
         },
       },
       sharedProcessSection,
@@ -389,7 +423,7 @@ export const servicePages: readonly ServicePageEntry[] = [
                 'and ground conditions.',
             },
           ],
-          cta: { label: 'Get a free quote', href: '/quote?service=driveway' },
+          cta: { label: 'Get a free instant price estimate', href: '/quote?service=driveway' },
         },
       },
     ],
@@ -411,15 +445,21 @@ export const servicePages: readonly ServicePageEntry[] = [
     },
     sections: [
       {
-        kind: 'hero',
+        kind: 'service-hero',
         id: 'hero',
         content: {
           heading: 'Painter & Decorator for High Ceilings in Guildford',
           subheading:
             'Professional interior painting and decorating for homes and businesses across ' +
             'Guildford and Surrey — including rooms with high or vaulted ceilings.',
-          primaryCta: { label: 'Get Your Free Quote', href: '/quote?service=painting' },
+          primaryCta: {
+            label: 'Get a free instant price estimate',
+            href: '/quote?service=painting',
+          },
           secondaryCta: { label: 'Call Now', href: 'tel:07776066965' },
+          heroImage: paintingHero,
+          heroImageAlt:
+            'A freshly painted room prepared with dust sheets, a paint tray and a step ladder',
         },
       },
       {
@@ -433,6 +473,7 @@ export const servicePages: readonly ServicePageEntry[] = [
             'unbroken wall runs, and getting an even finish overhead all take the right ' +
             'equipment and experience. SCB Handyman brings the right access equipment and a ' +
             'steady hand, so you get a clean, even finish without the risk of doing it yourself.',
+          variant: 'checklist',
         },
       },
       {
@@ -444,6 +485,7 @@ export const servicePages: readonly ServicePageEntry[] = [
             'We provide interior painting and decorating for homes, landlords and offices ' +
             'across Guildford, Surrey and the surrounding areas — from single rooms to full ' +
             'properties, including walls, ceilings, skirting boards, doors and window frames.',
+          variant: 'checklist',
         },
       },
       {
@@ -460,6 +502,7 @@ export const servicePages: readonly ServicePageEntry[] = [
             'Water-based and oil-based finishes',
             'Surface repairs and patching before painting',
           ],
+          variant: 'checklist',
         },
       },
       {
@@ -475,6 +518,7 @@ export const servicePages: readonly ServicePageEntry[] = [
             'Offices and small businesses',
             'Property managers',
           ],
+          variant: 'checklist',
         },
       },
       sharedProcessSection,
@@ -544,7 +588,7 @@ export const servicePages: readonly ServicePageEntry[] = [
                 'you get your quote.',
             },
           ],
-          cta: { label: 'Get a free quote', href: '/quote?service=painting' },
+          cta: { label: 'Get a free instant price estimate', href: '/quote?service=painting' },
         },
       },
     ],
@@ -566,15 +610,21 @@ export const servicePages: readonly ServicePageEntry[] = [
     },
     sections: [
       {
-        kind: 'hero',
+        kind: 'service-hero',
         id: 'hero',
         content: {
           heading: 'Driveway & Decking Pressure Washing in Guildford',
           subheading:
             'Professional pressure washing for driveways, patios, and timber decking across ' +
             'Guildford and Surrey — most jobs completed in a single visit.',
-          primaryCta: { label: 'Get Your Free Quote', href: '/quote?service=jetwash' },
+          primaryCta: {
+            label: 'Get a free instant price estimate',
+            href: '/quote?service=jetwash',
+          },
           secondaryCta: { label: 'Call Now', href: 'tel:07776066965' },
+          heroImage: jetwashHero,
+          heroImageAlt:
+            'A pressure washer cleaning a patio, showing the clean surface against the dirty stone',
         },
       },
       {
@@ -589,6 +639,7 @@ export const servicePages: readonly ServicePageEntry[] = [
             'damaging block paving joints or timber decking, is expensive and easy to get ' +
             'wrong. SCB Handyman has the right equipment and settings for each surface type, ' +
             'so you get a thorough clean without the damage risk.',
+          variant: 'checklist',
         },
       },
       {
@@ -601,6 +652,7 @@ export const servicePages: readonly ServicePageEntry[] = [
             'timber decking for homes and businesses across Guildford, Surrey and the ' +
             'surrounding areas. Get an instant online quote based on the size and surface type ' +
             'of the area to be cleaned.',
+          variant: 'checklist',
         },
       },
       {
@@ -617,6 +669,7 @@ export const servicePages: readonly ServicePageEntry[] = [
             'Moss and algae removal',
             'Instant online quote by square metre',
           ],
+          variant: 'checklist',
         },
       },
       {
@@ -632,6 +685,7 @@ export const servicePages: readonly ServicePageEntry[] = [
             'Businesses with customer-facing outdoor areas',
             'Anyone preparing a property for sale or let',
           ],
+          variant: 'checklist',
         },
       },
       sharedProcessSection,
@@ -699,7 +753,7 @@ export const servicePages: readonly ServicePageEntry[] = [
               answer: 'Yes, moss and algae removal is included as standard as part of the clean.',
             },
           ],
-          cta: { label: 'Get a free quote', href: '/quote?service=jetwash' },
+          cta: { label: 'Get a free instant price estimate', href: '/quote?service=jetwash' },
         },
       },
     ],
@@ -721,15 +775,20 @@ export const servicePages: readonly ServicePageEntry[] = [
     },
     sections: [
       {
-        kind: 'hero',
+        kind: 'service-hero',
         id: 'hero',
         content: {
           heading: 'Emergency Plumbing Leak Repairs in Surrey',
           subheading:
             'Fast response for leaking pipes, taps and fittings across Surrey and surrounding ' +
             'areas — describe the problem online and we will be in touch with a quote shortly.',
-          primaryCta: { label: 'Get Your Free Quote', href: '/quote?service=plumbing' },
+          primaryCta: {
+            label: 'Get a free instant price estimate',
+            href: '/quote?service=plumbing',
+          },
           secondaryCta: { label: 'Call Now', href: 'tel:07776066965' },
+          heroImage: plumbingHero,
+          heroImageAlt: 'A plumber using a wrench on copper pipework and a boiler',
         },
       },
       {
@@ -742,6 +801,7 @@ export const servicePages: readonly ServicePageEntry[] = [
             'bill, or a bathroom out of action — and finding a reliable plumber at short notice ' +
             'is stressful. SCB Handyman responds quickly to leak call-outs across Surrey, ' +
             'diagnosing the fault and getting it fixed with minimal disruption.',
+          variant: 'checklist',
         },
       },
       {
@@ -754,6 +814,7 @@ export const servicePages: readonly ServicePageEntry[] = [
             'and surrounding areas, including leak repairs, blocked drains, fitting ' +
             'replacements and boiler servicing. Describe your problem online and we will be ' +
             'in touch with a custom quote.',
+          variant: 'checklist',
         },
       },
       {
@@ -770,6 +831,7 @@ export const servicePages: readonly ServicePageEntry[] = [
             'Boiler servicing',
             'General plumbing repairs and maintenance',
           ],
+          variant: 'checklist',
         },
       },
       {
@@ -785,6 +847,7 @@ export const servicePages: readonly ServicePageEntry[] = [
             'Letting and property managers',
             'Businesses with plumbing faults',
           ],
+          variant: 'checklist',
         },
       },
       sharedProcessSection,
@@ -854,7 +917,7 @@ export const servicePages: readonly ServicePageEntry[] = [
                 'drains, new fittings and general plumbing maintenance.',
             },
           ],
-          cta: { label: 'Get a free quote', href: '/quote?service=plumbing' },
+          cta: { label: 'Get a free instant price estimate', href: '/quote?service=plumbing' },
         },
       },
     ],

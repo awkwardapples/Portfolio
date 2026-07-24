@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
 import { Hero } from '@/site/sections/Hero';
+import { ServiceHero } from '@/site/sections/ServiceHero';
 import { Intro } from '@/site/sections/Intro';
 import { ServicesPreview } from '@/site/sections/ServicesPreview';
 import { Process } from '@/site/sections/Process';
@@ -19,6 +20,10 @@ export function renderSection(section: SectionConfig): ReactElement | null {
   switch (section.kind) {
     case 'hero':
       return <Hero key={id} content={section.content} id={id} extraClassName={extraClassName} />;
+    case 'service-hero':
+      return (
+        <ServiceHero key={id} content={section.content} id={id} extraClassName={extraClassName} />
+      );
     case 'intro':
       return <Intro key={id} content={section.content} id={id} extraClassName={extraClassName} />;
     case 'services-preview':

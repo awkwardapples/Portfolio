@@ -1,45 +1,46 @@
 import type { ReactElement } from 'react';
+import { cn } from '@/design/cn';
 import { Link } from '@/site/routing/Link';
 import { siteContent } from '@/site/content/site-content';
+import { PageContainer } from '@/components/primitives/PageContainer';
+import { buttonClassName } from '@/components/primitives/Button';
+import { Card } from '@/components/primitives/Card';
 
 export function ContactPage(): ReactElement {
   return (
-    <div className="mx-auto max-w-3xl px-6 py-12">
-      <h1 className="text-2xl font-semibold text-text">Contact</h1>
-      <div className="mt-8 space-y-6 text-base text-text">
+    <PageContainer>
+      <h1 className="text-2xl font-semibold text-text-inverse">Contact</h1>
+      <div className="mt-8 space-y-6 text-base text-text-inverse">
         <div>
-          <h2 className="text-sm font-medium uppercase tracking-wide text-text-muted">Phone</h2>
+          <h2 className="text-xl font-semibold text-text-inverse">Phone</h2>
           <p className="mt-1">{siteContent.contact.phone}</p>
         </div>
         <div>
-          <h2 className="text-sm font-medium uppercase tracking-wide text-text-muted">Email</h2>
+          <h2 className="text-xl font-semibold text-text-inverse">Email</h2>
           <p className="mt-1">
-            <a href={`mailto:${siteContent.contact.email}`} className="text-primary">
+            <a href={`mailto:${siteContent.contact.email}`} className="text-primary-inverse">
               {siteContent.contact.email}
             </a>
           </p>
         </div>
         <div>
-          <h2 className="text-sm font-medium uppercase tracking-wide text-text-muted">Address</h2>
+          <h2 className="text-xl font-semibold text-text-inverse">Address</h2>
           <p className="mt-1 whitespace-pre-line">{siteContent.contact.address}</p>
         </div>
         <div>
-          <h2 className="text-sm font-medium uppercase tracking-wide text-text-muted">Hours</h2>
+          <h2 className="text-xl font-semibold text-text-inverse">Hours</h2>
           <p className="mt-1">{siteContent.contact.hours}</p>
         </div>
       </div>
 
-      <div className="mt-12 rounded border border-border bg-surface-sunken p-6">
-        <p className="text-base text-text">
+      <Card surface="dark" className="mt-12">
+        <p className="text-base text-text-inverse">
           Need an estimate? The quickest way to get a written quote is the quote tool.
         </p>
-        <Link
-          to="/quote"
-          className="mt-4 inline-block rounded border border-primary bg-primary px-4 py-2 text-text-inverse"
-        >
+        <Link to="/quote" className={cn('mt-4', buttonClassName('primary', 'lg'))}>
           {siteContent.nav.ctaLabel}
         </Link>
-      </div>
-    </div>
+      </Card>
+    </PageContainer>
   );
 }
