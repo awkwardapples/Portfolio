@@ -33,9 +33,15 @@ yarn-error.log*
 # =============================================================================
 # Environment files (NEVER commit secrets)
 # =============================================================================
-.env
-.env.local
-.env.*.local
+# Found during the production security audit: `.env.*.local` only matches
+# files ending in `.local` (e.g. `.env.production.local`) — a bare
+# `.env.production` (no `.local` suffix) was NOT covered by any of these
+# three patterns and would have been committed if one were ever created.
+# `.env*` below is the closed, correct pattern: it covers `.env`, `.env.local`,
+# `.env.production`, `.env.development`, `.env.*.local`, and any future
+# variant, without needing a new line added each time one is introduced.
+.env*
+!.env.example
 
 # =============================================================================
 # Editor / IDE

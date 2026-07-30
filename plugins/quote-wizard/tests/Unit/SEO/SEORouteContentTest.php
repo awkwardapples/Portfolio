@@ -38,12 +38,12 @@ it( 'returns null for an unknown route', function (): void {
 	expect( $content )->toBeNull();
 } );
 
-it( 'default home title contains Acme Fencing', function (): void {
+it( 'default home title contains SCB Handyman', function (): void {
 	Functions\when( 'get_option' )->justReturn( '' );
 
 	$content = SEORouteContent::get_content( '/' );
 
-	expect( $content['title'] )->toContain( 'Acme Fencing' );
+	expect( $content['title'] )->toContain( 'SCB Handyman' );
 } );
 
 it( 'per-client goqw option overrides default home title', function (): void {
@@ -75,7 +75,7 @@ it( 'empty option value falls back to template default', function (): void {
 
 	$content = SEORouteContent::get_content( '/' );
 
-	expect( $content['title'] )->toContain( 'Acme Fencing' );
+	expect( $content['title'] )->toContain( 'SCB Handyman' );
 } );
 
 it( 'all eleven routes return non-null content', function (): void {

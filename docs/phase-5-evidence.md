@@ -873,7 +873,7 @@ Kadence attributes; after deployment it has only `lang="en-GB"` (from
 
 Plugin deployment completed June 9, 2026. Files verified in place:
 `RenderingArchitecture.php` confirmed present in
-`C:\Users\Josh\Local Sites\scb-handyman\app\public\wp-content\plugins\
+`C:\Users\<you>\Local Sites\scb-handyman\app\public\wp-content\plugins\
 quote-wizard\src\Routing\` after deployment.
 
 Web-level verification blocked by pre-existing LocalWP router 502 on the SCB

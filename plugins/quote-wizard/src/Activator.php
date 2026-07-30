@@ -74,7 +74,7 @@ final class Activator {
 		\add_option( 'goqw_business_name', \get_option( 'blogname', '' ) );
 		\add_option( 'goqw_business_phone', '' );
 		\add_option( 'goqw_business_email', \get_option( 'admin_email', '' ) );
-		\add_option( 'goqw_primary_color', '#0F4C81' );
+		\add_option( 'goqw_primary_color', '#1C4A3D' );
 		\add_option( 'goqw_calendly_url', '' );
 		\add_option( 'goqw_plugin_version', GOQW_VERSION );
 		\add_option( 'goqw_wizard_id', 'fencing' );

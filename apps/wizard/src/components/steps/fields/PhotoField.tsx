@@ -35,6 +35,27 @@ function formatBytes(bytes: number): string {
  *   - Shows a "re-attach required" indicator for metadata entries missing from
  *     the PhotoStore (user reloaded the page; StepRenderer disables Submit).
  *   - Client-side caps: maxCount photos, 5 MB per file, 9 MB total.
+ *
+ * Thumbnail row layout (fixed during the Cloudflare Tunnel live-test pass):
+ * the row used to be a single flex line with the filename (truncate) sharing
+ * space with up to three shrink-0 siblings (warning icon, size, "Re-attach
+ * required", Remove button) — on a 375-414px viewport a long filename plus
+ * the re-attach warning left almost no room for the name itself. Now the
+ * filename gets its own line at (near) full row width, with size/re-attach
+ * status stacked below it on a second, smaller line; only the Remove button
+ * stays shrink-0 on the primary line. Also fixed `text-warning`, used here
+ * previously — not a token in the closed palette (only `danger`/`success`
+ * exist, see tokens.ts), so it silently rendered unstyled; replaced with
+ * `text-danger`, matching the Remove button's existing semantics.
+ *
+ * Second overflow source (found on re-verification — the thumbnail-row fix
+ * above did not fully resolve mobile overflow on its own): the file <input>
+ * itself had no width constraint. A native file input's browser-rendered
+ * "Choose Files" button + "No file chosen" label doesn't wrap and isn't
+ * width-constrained by default, so on a ~320-375px viewport it can render
+ * wider than its container — nothing upstream (StepCard's section, this
+ * fieldset) clips overflow, so this pushed the whole page into horizontal
+ * scroll, not just the thumbnail row. Added `block w-full max-w-full`.
  */
 export function PhotoField({
   field,
@@ -190,22 +211,24 @@ export function PhotoField({
             return (
               <li
                 key={meta.fileId}
-                className="flex items-center gap-3 rounded border border-border p-2"
+                className="flex items-start gap-3 rounded border border-border p-2"
               >
-                {!hasData && (
-                  <span className="shrink-0 text-xs font-bold text-warning" aria-hidden="true">
-                    !
-                  </span>
-                )}
-                <span className="min-w-0 flex-1 truncate text-sm text-text">
-                  {meta.originalName}
-                </span>
-                <span className="shrink-0 text-xs text-text-muted">
-                  {formatBytes(meta.sizeBytes)}
-                </span>
-                {!hasData && (
-                  <span className="shrink-0 text-xs text-warning">Re-attach required</span>
-                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    {!hasData && (
+                      <span className="shrink-0 text-xs font-bold text-danger" aria-hidden="true">
+                        !
+                      </span>
+                    )}
+                    <span className="min-w-0 flex-1 truncate text-sm text-text">
+                      {meta.originalName}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-text-muted">
+                    {formatBytes(meta.sizeBytes)}
+                    {!hasData && <span className="text-danger"> · Re-attach required</span>}
+                  </p>
+                </div>
                 <button
                   type="button"
                   className="shrink-0 text-sm text-danger hover:underline"
@@ -242,7 +265,7 @@ export function PhotoField({
               void handleFiles(e.target.files);
               onBlur();
             }}
-            className="text-sm text-text file:mr-3 file:rounded file:border-0 file:bg-surface-sunken file:px-3 file:py-2 file:text-sm file:font-medium file:text-text"
+            className="block w-full max-w-full text-sm text-text file:mr-3 file:rounded file:border-0 file:bg-surface-sunken file:px-3 file:py-2 file:text-sm file:font-medium file:text-text"
           />
           <p className="mt-1 text-xs text-text-muted">
             JPEG, PNG, or WebP — up to {maxCount} photo{maxCount === 1 ? '' : 's'}, 5 MB each

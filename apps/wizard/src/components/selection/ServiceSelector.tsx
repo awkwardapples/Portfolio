@@ -31,6 +31,17 @@ interface ServiceSelectorProps {
  * Accessible by construction: each service is a <button> (keyboard activatable),
  * the heading is a semantic <h1>, the list is a real <ul>. No marketing copy;
  * the heading is operational (ADR-0012). Uses only closed Tailwind palette.
+ *
+ * Card background (found during the Cloudflare Tunnel live-test pass): this
+ * was the one screen in the wizard's phase-switcher (`WizardShell`) without
+ * its own `bg-surface` card — every sibling screen (`StepCard`, both
+ * terminal screens, both loading skeletons) already wraps its heading in
+ * `rounded border border-border bg-surface p-6`. Once the marketing site's
+ * `SiteShell` wrapper became `bg-surface-dark` (Phase 12), this screen's
+ * `text-text` heading (near-black) ended up sitting directly on that same
+ * near-black page background — effectively unreadable, not just low-
+ * contrast. Matching the existing, already WCAG-verified card pattern
+ * (tokens.ts) fixes it without inventing a new colour pairing.
  */
 export function ServiceSelector({
   services,
@@ -44,7 +55,7 @@ export function ServiceSelector({
       : services;
 
   return (
-    <section className="mx-auto max-w-2xl p-6">
+    <section className="mx-auto max-w-2xl rounded border border-border bg-surface p-6">
       {filterByCategoryId !== undefined && onReturnToCategorySelection !== undefined && (
         <button
           type="button"

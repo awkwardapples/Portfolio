@@ -88,10 +88,20 @@ final class Settings {
 	/**
 	 * Get the primary brand colour (public).
 	 *
-	 * Default keeps the dev-time placeholder used in apps/wizard/index.html.
+	 * Default is SCB Handyman's approved Pine accent (design-bible.md §2, §15),
+	 * matching the fallback baked into tokens.ts's accentCssExpression. Found
+	 * during the Cloudflare Tunnel live-test pass still set to the old
+	 * dev-time "Acme Fencing" placeholder blue (#0F4C81) — both here and in
+	 * Activator::set_default_options(), which seeds the wp_options row this
+	 * function falls back to. `add_option()` never overwrites an existing
+	 * row, so a site activated before this fix keeps the stale blue in its
+	 * database until `goqw_primary_color` is explicitly updated (WP-CLI:
+	 * `wp option update goqw_primary_color '#1C4A3D'`, or wp-admin) — fixing
+	 * the code default alone does not retroactively repaint an already-live
+	 * site.
 	 */
 	public static function primary_color(): string {
-		return (string) \get_option( 'goqw_primary_color', '#0F4C81' );
+		return (string) \get_option( 'goqw_primary_color', '#1C4A3D' );
 	}
 
 	/**

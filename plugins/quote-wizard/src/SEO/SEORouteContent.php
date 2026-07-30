@@ -18,12 +18,22 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Route-to-SEO-content map for React-hosted routes.
  *
- * Default values are Acme Fencing demo content. Per-client clones override
- * via goqw_seo_* options (e.g., goqw_seo_title_home, goqw_seo_description_quote).
+ * DEFAULTS below is real SCB Handyman content for the 6 core routes (fixed
+ * during the Cloudflare Tunnel live-test pass — the "Acme Fencing" template
+ * demo values had never been updated here, even though the 5 SEO service
+ * landing pages further down already had real content; nobody had set the
+ * corresponding goqw_seo_title_* and goqw_seo_description_* options either, so
+ * every core route's OG title/description was silently serving the demo
+ * copy). Per-client clones of this template still override via goqw_seo_*
+ * options (e.g., goqw_seo_title_home, goqw_seo_description_quote) if a
+ * deployment prefers to edit copy from wp-admin/WP-CLI without a code
+ * change; for this specific, already-finalised client site, editing
+ * DEFAULTS directly is the correct source of truth, matching how the 5
+ * service pages already work.
  *
  * Three-tier resolution at emit time (ADR-0023):
  *   1. Per-client goqw option (takes precedence when set and non-empty).
- *   2. Template default defined in DEFAULTS (Acme Fencing demo values).
+ *   2. Template default defined in DEFAULTS (now real content, not demo).
  *   3. get_bloginfo('name') fallback is NOT used here; the option falls through
  *      to the DEFAULTS string if no override is set.
  */
@@ -38,33 +48,33 @@ final class SEORouteContent {
 	 */
 	private const DEFAULTS = array(
 		'/'                                               => array(
-			'title'       => 'Acme Fencing — Professional Fencing Services',
-			'description' => 'Professional fencing services across the south east. Get a free quote for fencing, decking, and outdoor structures.',
+			'title'       => 'SCB Handyman — Guildford & Surrey Handyman and Garden Specialists',
+			'description' => 'Home and garden maintenance across Guildford, Surrey and surrounding areas — no job too small. Established 2006 by a Merrist Wood trained landscape gardener. Get a free instant price estimate.',
 			'og_type'     => 'website',
 		),
 		'/services'                                       => array(
-			'title'       => 'Our Services — Acme Fencing',
-			'description' => 'Fencing, decking, and outdoor construction services across the south east. Reliable, quality work.',
+			'title'       => 'Our Services — SCB Handyman',
+			'description' => 'Fencing, decking, painting, driveways, pressure washing and general repairs across Guildford, Surrey and surrounding areas, from SCB Handyman.',
 			'og_type'     => 'website',
 		),
 		'/our-work'                                       => array(
-			'title'       => 'Our Recent Work — Acme Fencing',
-			'description' => 'See examples of fencing, decking, and outdoor construction projects we have completed.',
+			'title'       => 'Our Recent Work — SCB Handyman',
+			'description' => 'See examples of recent home and garden projects across Guildford, Surrey and surrounding areas, completed by SCB Handyman.',
 			'og_type'     => 'website',
 		),
 		'/contact'                                        => array(
-			'title'       => 'Contact — Acme Fencing',
-			'description' => 'Get in touch with Acme Fencing for a quote or to discuss your project.',
+			'title'       => 'Contact — SCB Handyman',
+			'description' => 'Get in touch with SCB Handyman for a free instant price estimate or to discuss your home or garden project in Guildford and Surrey.',
 			'og_type'     => 'website',
 		),
 		'/quote'                                          => array(
-			'title'       => 'Get a Free Quote — Acme Fencing',
-			'description' => 'Use our online quote wizard to receive an instant estimate for your project.',
+			'title'       => 'Get a Free Instant Price Estimate — SCB Handyman',
+			'description' => 'Use our online quote wizard to receive an instant estimate for your home or garden project, anywhere across Guildford, Surrey and surrounding areas.',
 			'og_type'     => 'website',
 		),
 		'/privacy'                                        => array(
-			'title'       => 'Privacy Policy — Acme Fencing',
-			'description' => 'How Acme Fencing collects, uses, and protects your personal data.',
+			'title'       => 'Privacy Policy — SCB Handyman',
+			'description' => 'How SCB Handyman collects, uses, and protects your personal data.',
 			'og_type'     => 'website',
 		),
 		// ---------------------------------------------------------------

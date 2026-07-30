@@ -134,7 +134,7 @@ it( 'maybe_override_title returns route-specific title on a React route', functi
 
 	$result = SEOMetaEmitter::maybe_override_title( 'WordPress Default' );
 
-	expect( $result )->toContain( 'Acme Fencing' );
+	expect( $result )->toContain( 'SCB Handyman' );
 } );
 
 it( 'maybe_override_title returns the original title for a non-React route', function (): void {

@@ -20,11 +20,13 @@ interface CategorySelectorProps {
  * component renders nothing meaningful until a client fork populates CATEGORIES.
  *
  * Follows the same accessibility and style conventions as ServiceSelector:
- * semantic heading, real <ul>, full-width <button> elements.
+ * semantic heading, real <ul>, full-width <button> elements. Also follows
+ * ServiceSelector's card-background fix (see that file for the full
+ * finding) — this screen had the identical missing-`bg-surface` issue.
  */
 export function CategorySelector({ categories, onSelect }: CategorySelectorProps): ReactElement {
   return (
-    <section className="mx-auto max-w-2xl p-6">
+    <section className="mx-auto max-w-2xl rounded border border-border bg-surface p-6">
       <h1 className="text-xl font-semibold text-text">What type of work do you need?</h1>
       <p className="mt-2 text-base text-text-muted">Choose a category to see relevant services.</p>
       <ul className="mt-6 space-y-3" role="list">
