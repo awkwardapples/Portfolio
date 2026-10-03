@@ -66,7 +66,3 @@ Before opening a pull request, read [`CONTRIBUTING.md`](CONTRIBUTING.md).
 ## Licence
 
 This codebase is proprietary and not licensed for redistribution. See [`LICENSE`](LICENSE).
-
-## How to use:
-
-- [`docs\Agency Docs\Technical Onboarding.IPYNB`](docs\Agency Docs\Technical Onboarding.IPYNB) — Exactly how to clone this repo for a custom client site delivery.
