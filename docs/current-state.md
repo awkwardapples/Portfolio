@@ -1,6 +1,30 @@
 # Current State
 
-_Last updated: 2026-07-23 (post Step 6.7)_
+_Last updated: 2026-10-03 (Portfolio Pass 0)_
+
+## Portfolio transformation
+
+This repository is being turned into Josh Lennon's portfolio. The governing document is [`docs/portfolio-spec.md`](portfolio-spec.md) (v1.1); work happens in the passes of its section V on the `portfolio-transformation` branch. "What's working" and every gate-state entry from 6.7 down describe the GrowTrades platform as it stood before the transformation.
+
+### Pass 0: Security and repository hygiene (2026-10-03)
+
+Done:
+
+- Webhook: Josh confirmed that the old SCB webhook from the onboarding notebook has been deleted or regenerated in Make.com and that the linked Google Sheet is restricted to named people (spec Q.1 items 1 and 2).
+- `docs/Agency Docs/` scrubbed from every commit on `main` and `deploy/test-live` with `git filter-repo --sensitive-data-removal --invert-paths --path "docs/Agency Docs"`, run on a fresh mirror clone after a verified dry run, and force-pushed with Josh's approval (with a lease on the exact commits scanned). The repository was private for the push and made public again once a fresh clone from GitHub scanned clean. Both branch tips are otherwise identical to before. The four commits that touched only those files were dropped (289 commits to 285). Every commit hash changed, because the root commit carried a GitHub web-UI signature that filter-repo strips, so commit hashes quoted in older documents no longer resolve. The README's link to the onboarding notebook is removed.
+- `Media/`: the six byte-identical duplicates of images in `apps/wizard/src/assets/images/` deleted; the three unique SCB brand files moved, byte for byte, to `apps/site/src/content/work/growtrades/brand/` as `scb-logo.png`, `scb-logo-opaque.png` and `scb-og.jpg` (spec B.1). No image in `apps/wizard/src/assets/images/` changed.
+- Root clutter deleted: `goqw-diag.php`, `PROBE-1-instructions.txt`, `AUDIT-6.5-tsconfig-test-error.md`, `step-4.1-config-schema.tar.gz`.
+- `.gitattributes` (`* text=auto eol=lf`) added. Without it, a Windows clone with `core.autocrlf=true` checks files out as CRLF and `pnpm format:check` reports 431 files; the stored content was already LF.
+- `docs/AUDIT-5.14.1-onboarding.md`: the one real Prettier violation on `main`, fixed by code-formatting `DB_HOST` (Prettier's own rewrite garbled the paragraph).
+- `docs/portfolio-spec.md` committed and excluded from Prettier, so each version Josh supplies stays byte-for-byte as supplied.
+- History scans of every blob on every ref (including inside `.docx`, `.tar.gz` and PDF streams) and every commit message, with values never printed. Before the rewrite, the only live Make.com webhook token and the only Google Sheet link were in `docs/Agency Docs/Technical Onboarding.IPYNB`. After it, a fresh clone from GitHub has neither, and no agency document, in any of its 285 commits. No Turnstile secret key existed anywhere: the `0x4A…` values in tests and the plugin are the public SCB site key, and the `1x/2x/3x000…` values are Cloudflare's documented test keys. Other `hook.eu1.make.com/…` strings are placeholders (`abc123def456`, `<real-id>`), and `.env.example` on `deploy/test-live` has empty values.
+
+Open items:
+
+- `awkwardapples/scb-handyman` and `awkwardapples/Handy-Man` are public and still hold the old webhook token, the Sheet link and all four agency documents on `main`. The token no longer works now that it has been rotated, but the documents (SCB's ranking and enquiry figures, the agreement template, the sales PDF) are still public there. Josh is handling these repositories.
+- GitHub can keep serving the pre-rewrite commits to anyone who already has their hashes until it garbage-collects them. GitHub Support can purge them on request; the first changed commit is `fa585a21686cd0bb88e015af7870ae735d3e40cb`.
+- Any clone made before the rewrite (other machines, other folders) must be re-cloned rather than pushed from, or it would bring the old history back. This machine's clone still holds the old objects in its reflog until `git reflog expire --expire=now --all && git gc --prune=now` is run.
+- `deploy/test-live` has a fourth unique SCB brand file, `Media/scb-site-icon-512.png`, which is not on `main` and not listed in spec B.1. Keep it if that branch is ever deleted.
 
 ## What's working
 
@@ -40,7 +64,17 @@ _Last updated: 2026-07-23 (post Step 6.7)_
 - Security audit and hardening (Step 6.6): new `Security\InputSanitizer` sanitizes the answers map immediately before `SubmissionController` calls `Forwarder::forward()` — force-quotes any string whose post-`sanitize_text_field()` leading character is a spreadsheet formula trigger (`=`/`+`/`-`/`@`, neutralizing Google Sheets/CSV formula injection), and relies on `sanitize_text_field()` itself for HTML/script stripping. Applied uniformly to every string in the answers map regardless of nominal field type (no per-field allowlist), since the client-side schema is UX only. The database row inserted earlier in the same request keeps the original, unsanitized values — only the webhook-bound copy is sanitized. `Forwarder.php` required zero code changes (it already accepts an opaque payload array). Five Phase 0 audits found: two dead Step 3D stub classes (`Rest/Sanitiser.php`, `Rest/Validator.php`) never removed after being superseded; all SQL already parameterized; the REST nonce is a CSRF/origin check, not authentication, with no privilege-escalation path. New `docs/security-notes.md` (business-owner-facing) and ADR-0037 (0036 was already taken by Step 6.4). PHP-only: 24 new tests (250→274: 18 `InputSanitizerTest` + 6 `SubmissionControllerTest` integration tests), Vitest unchanged (820/820), bundle byte-identical.
 - Skip and Submit Turnstile gating (Step 6.7): closed a real security bypass — the "Skip and Submit" button (Optional Details step, Step 5.13d, all 7 instant-quote wizards) dispatched the submission action unconditionally, while the regular Submit button correctly waited for Cloudflare Turnstile (Step 5.13f); `NavigationControls` only wired its `disabled` prop to the primary button. New pure function `isSubmissionBlocked({ hasMissingPhotos, turnstileReady })` (`components/steps/submission-gate.ts`) replaces the previously inline-only condition; `NavigationControls` now disables both buttons identically, and `StepRenderer`'s `handleSkip` gains a defensive check calling the same function before dispatching. Three Phase 0 audits corrected the spec's assumptions: no dedicated button component exists (it's one of three inline `<Button>`s in the shared `NavigationControls`); no shared `turnstileToken` UI state exists (that name is `BotProtectionStore`'s payload field — the real UI gate is a local `turnstileReady` boolean in `StepRenderer`); no `isSubmitting` boolean exists to gate on (`WizardShell` unmounts both buttons entirely once submission starts); and component-level "rendered disabled attribute" tests aren't possible in this codebase (no DOM/render test infrastructure exists anywhere), so the gating logic was extracted to a plain function specifically so it could carry real automated coverage instead. ADR-0038. 4 new tests (820→824), PHP unchanged (274/274), bundle +0.05 kB gzip.
 
-## Gate state (last verified)
+## Gate state (last verified: Portfolio Pass 0, 2026-10-03)
+
+- `pnpm format:check`: clean. On `main` it failed on this Windows machine (CRLF checkouts plus one real violation); both fixed in Pass 0.
+- `pnpm lint`: 0/0
+- `pnpm typecheck`: 0 errors, production and test tsconfig
+- `pnpm test`: **856/856** (66 test files). The 6.7 entry below says 824; the two commits after Step 6.7 (SEO service pages, visual UI overhaul) added 32 tests without updating this file.
+- `pnpm build`: clean (JS 99.50 kB gzip, CSS 5.47 kB gzip). The rebuilt `plugins/quote-wizard/assets/dist/` is byte-identical to the committed copy.
+- `pnpm --filter @jl/site check`, `pnpm --filter @jl/edge test`: not applicable until Pass 1 creates those packages.
+- PHP (`composer test`, `analyse`, `lint`): not run, because there is no PHP toolchain in this environment; Pass 0 changed no PHP. Last recorded: 274 passed, 4 skipped (Step 6.7).
+
+## Gate state (6.7, 2026-07-23)
 
 - `pnpm lint`: 0/0
 - `pnpm typecheck`: 0 errors — production and test tsconfig both clean (unchanged from 6.6)
@@ -723,8 +757,9 @@ Strict ordering: validate → persist → forward → respond.
 
 ## Required Gates
 
+- format (`pnpm format:check`)
 - lint (`pnpm lint` → 0 errors, 0 warnings)
 - typecheck (`pnpm typecheck`)
-- vitest (`pnpm test` → 820/820)
+- vitest (`pnpm test` → 856/856)
 - build (`pnpm build`)
 - PHP: `composer lint` → 0/0, `composer analyse` → no errors, `composer test` → 250 passed (4 skipped)
