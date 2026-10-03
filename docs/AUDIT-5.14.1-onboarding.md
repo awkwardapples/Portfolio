@@ -35,7 +35,7 @@ activate → verify.
 
 ## Secondary gap found: OpCache
 
-Not in the original DB_HOST scope, but found during the same pass: nothing in
+Not in the original `DB_HOST` scope, but found during the same pass: nothing in
 `docs/onboarding.md` explains that PHP OpCache can serve a stale compiled
 version of a plugin PHP file after a source edit, independent of the
 `pnpm build-plugin` step (which only rebuilds the _React bundle_, not the PHP
