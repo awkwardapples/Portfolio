@@ -1,9 +1,17 @@
 # Josh Lennon Portfolio: Implementation Specification
 
-Version 1.1, 3 October 2026, for Claude Code running inside `awkwardapples/Portfolio`.
-Place this file at `docs/portfolio-spec.md` (replacing 1.0) and treat it as the governing document for the transformation.
+Version 1.2, 3 October 2026, for Claude Code running inside `awkwardapples/Portfolio`.
+Place this file at `docs/portfolio-spec.md` (replacing earlier versions) and treat it as the governing document for the transformation.
 
-### Changes in 1.1 (read these first if you started from 1.0)
+### Changes in 1.2
+
+1. **Facts confirmed by Josh:** the degree is "BSc Artificial Intelligence"; the dissertation title, from its title page, is "Extracting magnetic information from Kerr Microscopy images". The related placeholders are removed (G.0, H.8, Y.2).
+2. **Bio corrected.** The clause about consulting experience is removed from `bioShort` and from the optional first-person bio (Y.2, Y.7). The site names only the organisations listed in Y.3 as employers or contract clients (new rule in Y.1).
+3. **Pass 0 follow-ups:** keep `Media/scb-site-icon-512.png` from `deploy/test-live` (B.1); branch workflow for the remaining passes (V.0).
+4. **GitHub token name:** GitHub Actions does not allow secret names starting with `GITHUB_`, so the build reads `GH_PROFILE_TOKEN` (M.1, U.3, U.5).
+5. Open items (W) and the remaining questions (Y.6) updated.
+
+### Changes in 1.1
 
 1. **Pass 0 change:** `Media/` is not simply deleted. Six of its files are byte-identical duplicates of images already in `apps/wizard/src/assets/images/`; three are unique SCB brand files that must be kept (section Q.1, item 5). If Pass 0 already deleted `Media/`, restore those three from the last commit before Pass 0.
 2. **SCB images are licensed.** Josh has permission for all SCB images; their filenames are arbitrary. Do not remove, rename or replace them. Re-encoding for size is allowed if the filename and dimensions stay the same (B.6, J.3).
@@ -73,7 +81,7 @@ Everything in this section was verified by reading the code and running the gate
 | `scripts/build-plugin.mjs`, `scripts/package-plugin.mjs` | Copy the Vite build into the plugin and zip it. | Remove. |
 | `docs/` | Numbered architecture docs, 38 ADRs, very detailed evidence and audit files, LLM handoff guides, SCB design bible. | Archive most; rewrite the living docs (section C). |
 | `docs/Agency Docs/` | Sales strategy (with real SCB ranking and enquiry metrics), a retainer agreement template, a technical onboarding notebook, and a 2 MB PDF. | Delete and scrub from history (section Q.1). |
-| `Media/` | Nine files: six byte-identical duplicates of images in `apps/wizard/src/assets/images/` (fencing, plumbing, jetwash, driveway, painting heroes and the white SCB logo), plus three unique SCB brand files: the full-colour logo on transparent background (`backgroundless logo.png`, 1730 by 909), the same logo on an opaque background (`84f8df2b-...png`, 1730 by 909) and SCB's Open Graph image (`scb-og-image-1200x630.jpg`). | Move the three unique files to `apps/site/src/content/work/growtrades/brand/` (filenames may be cleaned there because they are new copies: `scb-logo.png`, `scb-logo-opaque.png`, `scb-og.jpg`), then delete `Media/`. |
+| `Media/` | Nine files: six byte-identical duplicates of images in `apps/wizard/src/assets/images/` (fencing, plumbing, jetwash, driveway, painting heroes and the white SCB logo), plus three unique SCB brand files: the full-colour logo on transparent background (`backgroundless logo.png`, 1730 by 909), the same logo on an opaque background (`84f8df2b-...png`, 1730 by 909) and SCB's Open Graph image (`scb-og-image-1200x630.jpg`). | Move the three unique files to `apps/site/src/content/work/growtrades/brand/` (filenames may be cleaned there because they are new copies: `scb-logo.png`, `scb-logo-opaque.png`, `scb-og.jpg`), then delete `Media/`. The `deploy/test-live` branch holds a fourth unique file, `Media/scb-site-icon-512.png`; copy it unchanged into the same `brand/` folder before that branch is ever deleted. |
 | Root clutter | `goqw-diag.php`, `PROBE-1-instructions.txt`, `AUDIT-6.5-tsconfig-test-error.md`, `step-4.1-config-schema.tar.gz`. | Delete. |
 | `.github/workflows/ci.yml` | JS/TS job (format, lint, typecheck, test, build) and PHP job. | Adapt: drop PHP job, add site and edge jobs, add deploy. |
 | `.husky`, `lint-staged.config.js`, `.prettierrc`, `.editorconfig`, `.nvmrc` (Node 20), pnpm 9.15 workspace | Developer workflow. | Keep. |
@@ -357,7 +365,7 @@ The homepage answers "Who is Josh Lennon?" in the first screen and lets each aud
 ### G.0 Threshold (first visit only)
 
 - **Surface:** stage, full viewport height (`100svh`), not a modal. It is the first section of the homepage's HTML.
-- **Content:** `h1` "Josh Lennon" in STIX at display size; one factual sentence: "I studied Artificial Intelligence at the University of Manchester, I'm studying for an MSc in Artificial Intelligence at the University of Surrey, I founded GrowTrades, and I make music." The degree wording depends on discrepancy Y.6 item 1; until Josh confirms, keep it in `profile.yaml` behind the `TODO(josh)` guard. Then the question "What brings you here?" and five options set as large text rows (not cards), each with a short description:
+- **Content:** `h1` "Josh Lennon" in STIX at display size; one factual sentence: "I studied Artificial Intelligence at the University of Manchester, I'm studying for an MSc in Artificial Intelligence at the University of Surrey, I founded GrowTrades, and I make music." The degree title is confirmed. Then the question "What brings you here?" and five options set as large text rows (not cards), each with a short description:
   - I'm hiring: selected work, experience and my CV
   - Research: papers, my dissertation and experiments
   - A website for my business: GrowTrades and a live client site
@@ -546,7 +554,7 @@ The Mercor entry is `confidential: true`, `employmentType: 'contract'`, organisa
 Create these entries from Josh's previous posts. Text in quotes below is what his old site said and may be reused; everything else marked TODO needs his input.
 
 1. `work/understanding-deep-learning` (kind research, threads ai and research, date 2025-09-17, documents: the paper, `peerReviewed: false`, `docType: 'paper'`). Summary based on the old post. The title shares its name with Simon J. D. Prince's 2023 MIT Press textbook, so set `subtitle` to a distinguishing subtitle supplied by Josh (`TODO(josh)`) and make sure the page states it is an independent expository paper. Include the paper's reference list if it has one (`TODO(josh)`).
-2. `work/kerr-microscopy-dissertation` with title "Extracting magnetic information from image data" (kind research, threads ai, research, university; date 2025-08-11 unless Josh gives the submission date; context: University of Manchester, BSc dissertation, result "Awarded 76% (first class)" (the mark applies to the dissertation only, see Y.1); title per Y.6 item 2; authorship sole with supervisor `TODO(josh)`). Body draws on the old summary: an automated image-processing pipeline for Kerr microscopy with a web application interface. If Josh can share before/after images that he is allowed to publish, add a comparison figure (section N.8). Link the code repository if one exists (`TODO(josh)`).
+2. `work/kerr-microscopy-dissertation` with title "Extracting magnetic information from Kerr Microscopy images" (confirmed from the PDF's title page; kind research, threads ai, research, university; date 2025-08-11 unless Josh gives the submission date; context: University of Manchester, BSc dissertation, result "Awarded 76% (first class)" (the mark applies to the dissertation, see Y.1); authorship sole with supervisor `TODO(josh)`). Body draws on the old summary: an automated image-processing pipeline for Kerr microscopy with a web application interface. If Josh can share before/after images that he is allowed to publish, add a comparison figure (section N.8). Link the code repository if one exists (`TODO(josh)`).
 3. `work/neural-network-from-scratch` merging both October 2023 posts (kind software, threads ai and software, date 2023-10-08): a neural network tool built in Visual Basic without libraries, structured as its own object-oriented framework, demonstrated on the Iris dataset; documents: the Iris report PDF (renamed); media: the YouTube testing playlist (`TODO(josh)` for the playlist id).
 4. `work/growtrades` (kind venture, layout `case-study`; section J).
 5. Music entries (`kind: music`), one per release or video Josh wants featured (`TODO(josh)`).
@@ -707,7 +715,7 @@ Custom components, not third-party libraries:
 ### M.1 GitHub (real data, fetched at build)
 
 - Build-time module `apps/site/src/lib/github.ts` fetches, for the username `awkwardapples` (confirmed by Josh): profile (avatar, name, public repo count), pinned repositories (GraphQL `pinnedItems`: name, description, primary language, stars, last pushed), and the contribution calendar for the last 12 months (GraphQL `contributionsCollection`).
-- Token: `GITHUB_TOKEN` in the build environment, a fine-grained personal access token with read-only access to public data. Never exposed to the browser.
+- Token: `GH_PROFILE_TOKEN` in the build environment (GitHub Actions reserves the `GITHUB_` prefix for secret names), a fine-grained personal access token with read-only access to public data. Never exposed to the browser.
 - Caching: write the result to `apps/site/src/data/github.snapshot.json` on success. If the API fails or no token is set, use the last snapshot and log a warning; the build never fails because GitHub is unavailable. A scheduled daily build (section U.5) refreshes it.
 - Rendering: the calendar as a grid of discrete squares in five steps from `rule` to `ink` on paper (no gradient), with an accessible summary ("{n} contributions in the last year") and a visually hidden table alternative; repos as rows linking to GitHub; an "Updated {date}" note.
 - Avatar is downloaded and optimised at build time; no runtime requests to GitHub.
@@ -1049,7 +1057,7 @@ Package names: rename `@growth-ops/wizard` to `@jl/wizard` only if it costs noth
 - **Tailwind:** stay on Tailwind 3.4 across the monorepo (ADR-0003). The site uses PostCSS directly (no Astro Tailwind integration needed). Its config replaces the default theme exactly as the wizard's does and implements every key in `theme-contract.ts` with the portfolio's values, which re-themes the reused wizard components without touching their class names. `content` globs include `apps/site/src/**/*` and `apps/wizard/src/components/**/*`, never `apps/wizard/src/site/**`.
 - **React:** keep React 18 unless the installed `@astrojs/react` requires 19. If it does, upgrade both apps together and keep all 856 wizard tests green.
 - **Wrangler (`apps/edge/wrangler.jsonc`):** `main: "src/index.ts"`, `assets: { directory: "../site/dist", binding: "ASSETS", run_worker_first: ["/api/*"], not_found_handling: "404-page", html_handling: "drop-trailing-slash" }`, a D1 binding `DB`, cron triggers `*/15 * * * *` and a daily one, vars and secrets per Q.3. Verify each key against current Wrangler documentation when writing it; Cloudflare's configuration keys evolve.
-- **Environment variables:** `SITE_URL`, `PUBLIC_TURNSTILE_SITE_KEY`, `GITHUB_TOKEN` (build only), `GITHUB_USERNAME`.
+- **Environment variables:** `SITE_URL`, `PUBLIC_TURNSTILE_SITE_KEY`, `GH_PROFILE_TOKEN` (build only), `GITHUB_USERNAME`.
 
 ### U.4 Theming the reused wizard
 
@@ -1060,7 +1068,7 @@ Package names: rename `@growth-ops/wizard` to `@jl/wizard` only if it costs noth
 - Root `pnpm build`: build the wizard demo (`pnpm --filter @growth-ops/wizard build:demo`), then the site, then a Wrangler dry run of the Worker.
 - GitHub Actions:
   - `ci.yml` on pull requests and pushes: format check, lint, typecheck, wizard tests, site checks (`astro check`), edge tests, site build, Playwright smoke and axe tests against `wrangler dev`, bundle-budget check, "no source maps in output" guard (kept from the old workflow), "no spinner" grep, "no TODO(josh) in production content" check.
-  - `deploy.yml` on push to `main` and on a daily schedule (refreshes GitHub data): build and `wrangler deploy` with `cloudflare/wrangler-action`, using `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets and `GITHUB_TOKEN` for the GitHub snapshot. D1 migrations applied with `wrangler d1 migrations apply --remote` before deploy.
+  - `deploy.yml` on push to `main` and on a daily schedule (refreshes GitHub data): build and `wrangler deploy` with `cloudflare/wrangler-action`, using `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets and `GH_PROFILE_TOKEN` for the GitHub snapshot. D1 migrations applied with `wrangler d1 migrations apply --remote` before deploy.
 - Costs: Cloudflare Workers free plan, D1 free tier, Turnstile free, Web Analytics free, Email Routing free (forward `hello@<domain>` to Josh's inbox), GitHub Actions free minutes, Make.com free plan (portfolio volume is tiny; check the current allowance). The only cost is the domain, ideally registered through Cloudflare Registrar at cost.
 
 ### U.6 Approved new dependencies
@@ -1099,7 +1107,9 @@ The headshot's cool grey and black shirt sit naturally on the paper and stage su
 
 ### V.0 Gates after every pass
 
-`pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test` (wizard 856 plus new), `pnpm --filter @jl/site check`, `pnpm --filter @jl/edge test`, `pnpm build`, and from Pass 4 onwards the Playwright smoke and axe suite. Record results in `docs/current-state.md` with the date.
+Branch workflow: work on `portfolio-transformation`, keep a draft pull request open against `main` so CI runs on every push, and merge to `main` at the end of each pass once its gates are green. The first merge after Pass 1 makes the deploy pipeline live on the `workers.dev` URL; the custom domain is attached in Pass 10. Never push from a clone made before the Pass 0 history rewrite.
+
+Gates: `pnpm format:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test` (wizard 856 plus new), `pnpm --filter @jl/site check`, `pnpm --filter @jl/edge test`, `pnpm build`, and from Pass 4 onwards the Playwright smoke and axe suite. Record results in `docs/current-state.md` with the date.
 
 ### Pass 0: Security and repository hygiene
 
@@ -1176,7 +1186,7 @@ The headshot's cool grey and black shirt sit naturally on the paper and stage su
 - **Objective:** the creative and social sides are complete.
 - **Affects:** `pages/music.astro`, `islands/FootageLoop.tsx`, facades, `lib/oembed.ts`, `lib/github.ts`, the snapshot, LinkedIn card, link previews, ADR-0046.
 - **Requirements:** sections K and M; footage loop behaviour and fallbacks; oEmbed fetch with fallbacks; GitHub snapshot logic with token and failure fallback.
-- **Depends on:** Josh's encoded footage (or the script run on his machine), Spotify URL, video ids, GitHub username and token.
+- **Depends on:** Josh's encoded footage (or the script run on his machine), Spotify URL, video ids, and the `GH_PROFILE_TOKEN` secret.
 - **Acceptance:** no third-party requests before interaction (verified in Playwright by recording requests); footage pauses off-screen and respects reduced motion and Save-Data; GitHub build succeeds with the API blocked (snapshot used).
 
 ### Pass 9: Responsive, performance and accessibility hardening
@@ -1204,27 +1214,26 @@ Received on 3 October 2026: domain, GitHub username, portfolio webhook, short bi
 Still blocking launch:
 
 1. Cloudflare account set-up for `joshlennon.com` (DNS on Cloudflare, Workers, D1, Turnstile, Email Routing) and an API token for GitHub Actions.
-2. Confirmation that the old SCB webhook from the onboarding notebook has been deleted or regenerated in Make.com.
-3. The answers to the discrepancies in Y.6 (degree title, dissertation title, Reply details).
-4. Mercor: the month and year you started, and confirmation that "AI Expert [Contract]" matches how the role is described in your Mercor contract or on LinkedIn.
-5. GrowTrades: start date and, optionally, a few sentences in your words on what you built and why.
-6. Your LinkedIn profile URL.
-7. Your CV as a PDF for `/cv.pdf` (consider a version that uses `hello@joshlennon.com` instead of your personal address).
+2. Make the `Handy-Man` and `scb-handyman` repositories private (they still contain the agency documents and SCB's figures), and confirm the old Google Sheet is shared only with named people.
+3. Mercor: the month and year you started, and confirmation that "AI Expert [Contract]" matches how the role is described in your Mercor contract or on LinkedIn.
+4. GrowTrades: start date and, optionally, a few sentences in your words on what you built and why.
+5. Your LinkedIn profile URL.
+6. Your CV as a PDF for `/cv.pdf` (consider a version that uses `hello@joshlennon.com` instead of your personal address).
 
 Needed for full content (placeholders until then):
 
-8. A distinguishing subtitle for "Understanding Deep Learning", whether it has a reference list, and whether it is the output of the year-long deep learning study on your CV.
-9. Dissertation: the PDF (its title page settles the title), supervisor name if you want it shown, submission date, any code repository, and any before/after images you are allowed to publish.
-10. The Iris neural network YouTube playlist link.
-11. Agentic risk-assessment prototype: date, whether it was done with Reply or independently, any confidentiality, and evidence you can share (repo, video, slides or screenshots without client data).
-12. Beat e-commerce platform: its name, URL, repository if public, status, and screenshots.
-13. NLP news classifier: date, whether it was coursework, and whether the university allows the code to be published.
-14. London Heathrow programme: its name and dates.
-15. Music: Spotify artist URL, which releases and videos to feature, and any credits.
-16. Lumix footage: the clip, the profile it was shot in (for example V-Log), resolution and frame rate, and which 8 to 15 seconds to loop.
-17. Photos: performing, badminton (which university league and team), university and studio, with captions, and confirmation that people pictured are happy to appear.
-18. SCB case-study screenshots with test data only: a WhatsApp notification and a Sheet row.
-19. Optional: screenshots of your GitHub and LinkedIn profiles for desktop link previews.
+7. A distinguishing subtitle for "Understanding Deep Learning", whether it has a reference list, and whether it is the output of the year-long deep learning study on your CV.
+8. Dissertation: the PDF, supervisor name if you want it shown, submission date, any code repository, and any before/after images you are allowed to publish.
+9. The Iris neural network YouTube playlist link.
+10. Agentic risk-assessment prototype: date, where and why it was built, any confidentiality, and evidence you can share (repo, video, slides or screenshots).
+11. Beat e-commerce platform: its name, URL, repository if public, status, and screenshots.
+12. NLP news classifier: date, whether it was coursework, and whether the university allows the code to be published.
+13. London Heathrow programme: its name and dates.
+14. Music: Spotify artist URL, which releases and videos to feature, and any credits.
+15. Lumix footage: the clip, the profile it was shot in (for example V-Log), resolution and frame rate, and which 8 to 15 seconds to loop.
+16. Photos: performing, badminton (which university league and team), university and studio, with captions, and confirmation that people pictured are happy to appear.
+17. SCB case-study screenshots with test data only: a WhatsApp notification and a Sheet row.
+18. Optional: screenshots of your GitHub and LinkedIn profiles for desktop link previews.
 
 ---
 
@@ -1251,7 +1260,8 @@ Needed for full content (placeholders until then):
 
 - Quoted text is Josh's own wording; use it verbatim unless he approves a change.
 - Do not embellish, extend or combine facts into new claims. If a sentence on the site is not supported by this section, earlier sections, or content Josh adds later, it does not go on the site.
-- **The dissertation was awarded 76%, a first-class mark. Never describe the degree itself as first class** unless Josh confirms his overall classification.
+- The 76% (first-class) mark belongs to the dissertation. Describe it as the dissertation mark; the degree is described by its title, BSc Artificial Intelligence.
+- Only the organisations listed in Y.3 appear as employers or contract clients, and only with the role types listed there. Universities appear as places of study. No other company is named as an employer, client or partner anywhere on the site.
 - Coursework (the NLP classifier, the Java team project) is presented as coursework. Do not publish coursework code unless Josh confirms the university allows it. Team work is credited as team work (`authorship.type: 'contributor'`), never as sole work.
 - Items marked `TODO(josh)` trip the production guard in T.4 on purpose.
 
@@ -1268,10 +1278,9 @@ headline:
 availability: Open to AI engineering, LLM evaluation, AI automation and agentic AI roles.
 bioShort: >-
   Artificial Intelligence graduate with a First-Class dissertation (76%) and MSc Artificial
-  Intelligence student. Experience across machine learning, NLP, computer vision, software
-  engineering and cloud consulting through Reply. Built production-oriented SaaS software and
-  conducted independent AI research including deep learning, neural networks from first
-  principles and visual computing.
+  Intelligence student. Experience across machine learning, NLP, computer vision and software
+  engineering. Built production-oriented SaaS software and conducted independent AI research
+  including deep learning, neural networks from first principles and visual computing.
 bioLong: "TODO(josh): optional longer bio for the about page; until supplied, the about page uses bioShort"
 portrait:
   src: ./portrait.jpg
@@ -1291,7 +1300,7 @@ cv:
   file: /cv.pdf   # TODO(josh): supply the PDF
 education:
   - institution: University of Manchester
-    qualification: "TODO(josh): exact award title from your certificate (see Y.6 item 1)"
+    qualification: BSc Artificial Intelligence
     start: 2021
     end: 2025
     highlights:
@@ -1340,13 +1349,6 @@ experience:
       # - Developed training data for large language models by formulating problems that models could not resolve, and documenting the correct solutions.
       # - Maintained high accuracy and throughput in large-scale annotation workflows, contributing to reliable training data for AI model fine-tuning.
 
-  - title: "TODO(josh): role title at Reply"
-    organisation: "TODO(josh): which Reply company"
-    employmentType: "TODO(josh): placement, internship, contract or other"
-    start: "TODO(josh)"
-    description:
-      - "TODO(josh): what the cloud consulting work involved, at a level you are allowed to share"
-
   - title: "TODO(josh): programme name"
     organisation: London Heathrow
     employmentType: programme
@@ -1356,7 +1358,7 @@ experience:
       - Worked with large groups and presented to large corporate audiences, including a chief commercial officer.
 ```
 
-The Mercor entry renders as title, "Mercor", "Contract", and dates. The schema in H.5 guarantees the "[Contract]" suffix and forbids images and links. Never name or hint at Mercor's clients, never describe it as employment, and never add detail beyond the confirmed lines. Until Josh supplies the Reply details, the Reply entry stays out of production (its TODOs keep it from building), while his bio sentence mentioning Reply stays as he wrote it.
+The Mercor entry renders as title, "Mercor", "Contract", and dates. The schema in H.5 guarantees the "[Contract]" suffix and forbids images and links. Never name or hint at Mercor's clients, never describe it as employment, and never add detail beyond the confirmed lines.
 
 ### Y.4 Work entries from the CV (new, in addition to H.8)
 
@@ -1374,7 +1376,7 @@ date: "TODO(josh)"
 status: complete
 role: "TODO(josh)"
 authorship: { type: "TODO(josh): sole, lead or contributor" }
-context: { programme: "TODO(josh): independent, or part of the Reply work?" }
+context: { programme: "TODO(josh): where and why it was built, and whether any brief or materials are confidential" }
 tech: [Node.js, React, REST APIs, OpenAI API, RAG]
 links: []        # TODO(josh): repo, video or slides if shareable
 featured: false  # becomes featured (order 3) once evidence exists
@@ -1422,15 +1424,20 @@ Proposed featured order (H.3): 1, the Kerr microscopy dissertation; 2, GrowTrade
 
 The hiring result step (I.3) opens with the availability sentence from `profile.yaml`, then the featured work, then "Download CV (PDF)" and "Send Josh a message". It does not add any claim beyond the profile and work entries.
 
-### Y.6 Discrepancies Claude Code must not resolve on its own
+### Y.6 Confirmed facts and remaining questions
 
-1. **Degree title.** The CV says "BSc Artificial Intelligence"; Josh's original brief says "Computer Science & Artificial Intelligence BSc". The site uses exactly the title on his degree certificate.
-2. **Dissertation title.** The CV says "Extracting Magnetic Image Data"; the old portfolio says "Extracting Magnetic information from image data". When the PDF is added, use the title on its title page, and flag it if it matches neither.
-3. **Reply.** The bio mentions cloud consulting through Reply, but the CV lists no Reply role. Needed: company, role title, dates, type of engagement, and any confidentiality.
-4. **Agentic prototype context.** Whether it was part of the Reply work. If it involved a client, describe it at a high level only and show no client data.
-5. **Overall degree classification.** Only the dissertation mark is confirmed. The degree classification appears only if Josh supplies it.
-6. **Deep learning research.** Whether the CV's year-long deep learning study and the "Understanding Deep Learning" paper are the same work. Until confirmed, they are not merged and no link between them is stated.
+Confirmed by Josh on 3 October 2026:
+
+- Degree: BSc Artificial Intelligence, University of Manchester, 2021 to 2025.
+- Dissertation title: "Extracting magnetic information from Kerr Microscopy images", awarded 76% (first class).
+- The organisations that may be named as employers or contract clients are exactly those in Y.3.
+
+Still open (Claude Code must not decide these):
+
+1. **Agentic prototype context:** where and why it was built, and whether its brief or materials are confidential. If anything is confidential, describe the prototype at a high level and show only Josh's own code and screens.
+2. **Overall degree classification:** shown only if Josh supplies it.
+3. **Deep learning research:** whether the CV's year-long deep learning study and the "Understanding Deep Learning" paper are the same work. Until confirmed, they are not linked.
 
 ### Y.7 Optional first-person bio (use only if Josh approves; otherwise keep Y.2 verbatim)
 
-> I'm an Artificial Intelligence graduate, with a dissertation awarded 76% (first class), and I'm now studying for an MSc in Artificial Intelligence at the University of Surrey. I've worked across machine learning, NLP, computer vision, software engineering and cloud consulting through Reply. I've built production-oriented SaaS software and carried out independent AI research, including deep learning, neural networks from first principles and visual computing.
+> I'm an Artificial Intelligence graduate, with a dissertation awarded 76% (first class), and I'm now studying for an MSc in Artificial Intelligence at the University of Surrey. I've worked across machine learning, NLP, computer vision and software engineering. I've built production-oriented SaaS software and carried out independent AI research, including deep learning, neural networks from first principles and visual computing.
