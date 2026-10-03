@@ -4,7 +4,7 @@ _Last updated: 2026-10-03 (Portfolio Pass 0)_
 
 ## Portfolio transformation
 
-This repository is being turned into Josh Lennon's portfolio. The governing document is [`docs/portfolio-spec.md`](portfolio-spec.md) (v1.1); work happens in the passes of its section V on the `portfolio-transformation` branch. "What's working" and every gate-state entry from 6.7 down describe the GrowTrades platform as it stood before the transformation.
+This repository is being turned into Josh Lennon's portfolio. The governing document is [`docs/portfolio-spec.md`](portfolio-spec.md) (v1.2); work happens in the passes of its section V on the `portfolio-transformation` branch, with a draft pull request open against `main` and a merge to `main` at the end of each pass once its gates are green. "What's working" and every gate-state entry from 6.7 down describe the GrowTrades platform as it stood before the transformation.
 
 ### Pass 0: Security and repository hygiene (2026-10-03)
 
@@ -12,7 +12,7 @@ Done:
 
 - Webhook: Josh confirmed that the old SCB webhook from the onboarding notebook has been deleted or regenerated in Make.com and that the linked Google Sheet is restricted to named people (spec Q.1 items 1 and 2).
 - `docs/Agency Docs/` scrubbed from every commit on `main` and `deploy/test-live` with `git filter-repo --sensitive-data-removal --invert-paths --path "docs/Agency Docs"`, run on a fresh mirror clone after a verified dry run, and force-pushed with Josh's approval (with a lease on the exact commits scanned). The repository was private for the push and made public again once a fresh clone from GitHub scanned clean. Both branch tips are otherwise identical to before. The four commits that touched only those files were dropped (289 commits to 285). Every commit hash changed, because the root commit carried a GitHub web-UI signature that filter-repo strips, so commit hashes quoted in older documents no longer resolve. The README's link to the onboarding notebook is removed.
-- `Media/`: the six byte-identical duplicates of images in `apps/wizard/src/assets/images/` deleted; the three unique SCB brand files moved, byte for byte, to `apps/site/src/content/work/growtrades/brand/` as `scb-logo.png`, `scb-logo-opaque.png` and `scb-og.jpg` (spec B.1). No image in `apps/wizard/src/assets/images/` changed.
+- `Media/`: the six byte-identical duplicates of images in `apps/wizard/src/assets/images/` deleted; the three unique SCB brand files moved, byte for byte, to `apps/site/src/content/work/growtrades/brand/` as `scb-logo.png`, `scb-logo-opaque.png` and `scb-og.jpg` (spec B.1). A fourth unique file that only existed on `deploy/test-live`, `Media/scb-site-icon-512.png`, was copied there unchanged as `scb-site-icon-512.png` (spec 1.2, B.1). No image in `apps/wizard/src/assets/images/` changed.
 - Root clutter deleted: `goqw-diag.php`, `PROBE-1-instructions.txt`, `AUDIT-6.5-tsconfig-test-error.md`, `step-4.1-config-schema.tar.gz`.
 - `.gitattributes` (`* text=auto eol=lf`) added. Without it, a Windows clone with `core.autocrlf=true` checks files out as CRLF and `pnpm format:check` reports 431 files; the stored content was already LF.
 - `docs/AUDIT-5.14.1-onboarding.md`: the one real Prettier violation on `main`, fixed by code-formatting `DB_HOST` (Prettier's own rewrite garbled the paragraph).
@@ -24,7 +24,6 @@ Open items:
 - `awkwardapples/scb-handyman` and `awkwardapples/Handy-Man` are public and still hold the old webhook token, the Sheet link and all four agency documents on `main`. The token no longer works now that it has been rotated, but the documents (SCB's ranking and enquiry figures, the agreement template, the sales PDF) are still public there. Josh is handling these repositories.
 - GitHub can keep serving the pre-rewrite commits to anyone who already has their hashes until it garbage-collects them. GitHub Support can purge them on request; the first changed commit is `fa585a21686cd0bb88e015af7870ae735d3e40cb`.
 - Any clone made before the rewrite (other machines, other folders) must be re-cloned rather than pushed from, or it would bring the old history back. This machine's clone still holds the old objects in its reflog until `git reflog expire --expire=now --all && git gc --prune=now` is run.
-- `deploy/test-live` has a fourth unique SCB brand file, `Media/scb-site-icon-512.png`, which is not on `main` and not listed in spec B.1. Keep it if that branch is ever deleted.
 
 ## What's working
 
