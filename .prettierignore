@@ -18,3 +18,7 @@ composer.lock
 # Generated files
 *.min.js
 *.min.css
+
+# The portfolio spec is supplied by Josh and replaced wholesale by each new
+# version; keep it byte-for-byte as supplied so versions can be diffed.
+docs/portfolio-spec.md
