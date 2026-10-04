@@ -47,15 +47,16 @@ pnpm --filter @jl/edge dev   # http://localhost:8787, try /api/health
 
 Every change passes the gates in spec V.0. `pnpm gates` runs them all in order:
 
-| Command                        | Checks                                                              |
-| ------------------------------ | ------------------------------------------------------------------- |
-| `pnpm format:check`            | Prettier                                                            |
-| `pnpm lint`                    | ESLint in every package, then the design check for `.astro` and CSS |
-| `pnpm typecheck`               | TypeScript in the wizard and the Worker                             |
-| `pnpm test`                    | Vitest in every package (the wizard's 856 tests and the new ones)   |
-| `pnpm --filter @jl/site check` | `astro check` for the site                                          |
-| `pnpm --filter @jl/edge test`  | The Worker's tests                                                  |
-| `pnpm build`                   | Wizard build, site build, Worker dry run                            |
+| Command                        | Checks                                                                                                                                               |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm format:check`            | Prettier                                                                                                                                             |
+| `pnpm lint`                    | ESLint in every package, then the design check for `.astro` and CSS                                                                                  |
+| `pnpm typecheck`               | TypeScript in the wizard and the Worker                                                                                                              |
+| `pnpm test`                    | Vitest in every package (the wizard's 856 tests and the new ones)                                                                                    |
+| `pnpm --filter @jl/site check` | `astro check` for the site                                                                                                                           |
+| `pnpm --filter @jl/edge test`  | The Worker's tests                                                                                                                                   |
+| `pnpm build`                   | Wizard build, site build, Worker dry run                                                                                                             |
+| `pnpm test:e2e`                | Playwright and axe against the built site in `wrangler dev`; install the browser once with `pnpm --filter @jl/site exec playwright install chromium` |
 
 CI runs the same gates on every pull request (`.github/workflows/ci.yml`). Pushes to `main` deploy (`.github/workflows/deploy.yml`, [`docs/deployment.md`](docs/deployment.md)).
 

@@ -21,5 +21,6 @@ Superseded or adapted for this repository:
 | [0039](0039-portfolio-architecture.md)        | Portfolio architecture: Astro static site plus Worker; WordPress leaves this repo |
 | [0040](0040-cloudflare-hosting-and-deploy.md) | Hosting on Cloudflare Workers static assets, D1 and Turnstile; deploy via Actions |
 | [0041](0041-content-model-and-authoring.md)   | Content model, placeholders as drafts, documents, `pnpm new`, Sveltia CMS         |
+| [0045](0045-visual-identity-and-theming.md)   | Visual identity and theming through a token contract shared with the wizard       |
 
-Planned (spec U.7): 0042 the "What brings you here?" wizard, 0043 the submission pipeline port, 0044 the SCB demo build, 0045 visual identity and theming, 0046 media pipeline and third-party facades.
+Planned (spec U.7): 0042 the "What brings you here?" wizard, 0043 the submission pipeline port, 0044 the SCB demo build, 0046 media pipeline and third-party facades.
