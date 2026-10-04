@@ -76,6 +76,39 @@
   html.scroll-locked {
     overflow: hidden;
   }
+
+  /*
+   * The threshold's two states (spec G.0). html[data-intent] is set before the
+   * first paint by the inline script in BaseLayout, so returning visitors
+   * never see the threshold flash; without JavaScript there is no intent and
+   * the threshold always shows.
+   */
+  html[data-intent] .first-visit-only {
+    display: none !important;
+  }
+
+  html:not([data-intent]) .returning-only {
+    display: none !important;
+  }
+
+  /* The intro's calls to action for each answer (spec G.1), chosen by CSS alone. */
+  [data-cta-for] {
+    display: none;
+  }
+
+  html:not([data-intent]) [data-cta-for='looking'],
+  html[data-intent='looking'] [data-cta-for='looking'],
+  html[data-intent='hiring'] [data-cta-for='hiring'],
+  html[data-intent='research'] [data-cta-for='research'],
+  html[data-intent='website'] [data-cta-for='website'],
+  html[data-intent='music'] [data-cta-for='music'] {
+    display: flex;
+  }
+
+  /* Sections land below the sticky bar. */
+  section[id] {
+    scroll-margin-top: theme('spacing.16');
+  }
 }
 
 @layer components {
