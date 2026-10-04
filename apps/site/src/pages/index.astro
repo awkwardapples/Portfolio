@@ -1,0 +1,18 @@
+---
+/**
+ * Pass 1 placeholder homepage: a real, indexable page with the confirmed
+ * one-sentence introduction (spec G.0). Pass 4 replaces it with the threshold
+ * and the homepage sections.
+ */
+import BaseLayout from '~/layouts/BaseLayout.astro';
+
+const intro =
+  "I studied Artificial Intelligence at the University of Manchester, I'm studying for an MSc in Artificial Intelligence at the University of Surrey, I founded GrowTrades, and I make music.";
+---
+
+<BaseLayout title="Josh Lennon" description={intro}>
+  <div class="mx-auto max-w-3xl px-4 py-16">
+    <h1 class="text-5xl font-semibold">Josh Lennon</h1>
+    <p class="mt-6 text-xl leading-relaxed">{intro}</p>
+  </div>
+</BaseLayout>

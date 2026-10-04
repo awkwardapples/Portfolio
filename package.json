@@ -1,29 +1,28 @@
 {
-  "name": "growth-ops-platform",
+  "name": "josh-lennon-portfolio",
   "version": "0.1.0",
   "private": true,
-  "description": "Growth Operations Platform for Local Trades Businesses — monorepo root",
+  "type": "module",
+  "description": "Josh Lennon's portfolio: Astro site, Cloudflare Worker and the wizard engine (monorepo root)",
   "license": "UNLICENSED",
   "packageManager": "pnpm@9.15.0",
   "engines": {
-    "node": ">=20.0.0",
+    "node": ">=22.12.0",
     "pnpm": ">=9.0.0"
   },
   "scripts": {
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,mjs,yml,yaml,css}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,mjs,yml,yaml,css}\"",
-    "lint": "pnpm -r --if-present lint",
+    "dev": "pnpm --filter @jl/site dev",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,mjs,cjs,yml,yaml,css}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,mjs,cjs,yml,yaml,css}\"",
+    "lint": "pnpm -r --if-present lint && node scripts/check-design.mjs",
     "lint:fix": "pnpm -r --if-present lint:fix",
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck",
-    "build": "pnpm -r build && pnpm build-plugin",
-    "build-plugin": "node ./scripts/build-plugin.mjs",
-    "package-plugin": "node ./scripts/package-plugin.mjs",
+    "build": "pnpm --filter @growth-ops/wizard build && pnpm --filter @jl/site build && pnpm --filter @jl/edge build",
+    "gates": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm --filter @jl/site check && pnpm --filter @jl/edge test && pnpm build",
     "prepare": "husky"
   },
   "devDependencies": {
-    "archiver": "^7.0.1",
     "husky": "^9.1.7",
     "lint-staged": "^15.2.10",
     "prettier": "^3.4.2"

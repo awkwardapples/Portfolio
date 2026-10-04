@@ -14,6 +14,12 @@ dist/
 *.zip
 !plugins/quote-wizard/assets/dist/
 
+# Astro's generated types and content cache, Wrangler's local state (including
+# the local D1 database), and the SCB demo build copied into the site (Pass 7).
+.astro/
+.wrangler/
+apps/site/public/demo/
+
 # =============================================================================
 # Test & coverage outputs
 # =============================================================================
@@ -36,6 +42,9 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
+# Wrangler's local secrets file (`wrangler dev` reads it)
+.dev.vars
+.dev.vars.*
 
 # =============================================================================
 # Editor / IDE

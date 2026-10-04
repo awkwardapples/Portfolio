@@ -1,0 +1,36 @@
+// Cloudflare Worker for Josh Lennon's portfolio (spec U.1, U.3, ADR-0040).
+//
+// Static pages, images and documents are served by the asset handler without
+// running Worker code (free and unmetered); only /api/* runs the Worker first.
+// Keys verified against wrangler 4.147's config schema.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "joshlennon-site",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-15",
+  "assets": {
+    "directory": "../site/dist",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"],
+    "not_found_handling": "404-page",
+    "html_handling": "drop-trailing-slash"
+  },
+  // No database_id: the deploy workflow creates the database by name on the
+  // first deploy and Wrangler looks it up by name after that.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "joshlennon-site",
+      "migrations_dir": "migrations"
+    }
+  ],
+  // Plain configuration (spec Q.3, U.8). Secrets are set with
+  // `wrangler secret put` and never appear in this file.
+  "vars": {
+    "SITE_ORIGIN": "https://joshlennon.com",
+    "RATE_LIMIT_PER_HOUR": "5",
+    "RETENTION_DAYS": "90",
+    "TURNSTILE_EXPECTED_HOSTNAME": "joshlennon.com"
+  },
+  "workers_dev": true
+}

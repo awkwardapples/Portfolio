@@ -1,0 +1,6 @@
+# The repository stores text files with LF line endings, and Prettier
+# (`endOfLine: "lf"`) and .editorconfig both expect LF. Without this file,
+# Windows clones with core.autocrlf=true check files out as CRLF and
+# `pnpm format:check` reports every file. Check text out as LF everywhere;
+# git detects binary files (images, fonts, PDFs, archives) automatically.
+* text=auto eol=lf

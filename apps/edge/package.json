@@ -1,0 +1,26 @@
+{
+  "name": "@jl/edge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Josh Lennon's portfolio: the Cloudflare Worker that serves the site and its API.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --max-warnings=0",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261003.1",
+    "@eslint/js": "^9.17.0",
+    "eslint": "^9.17.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.18.0",
+    "vitest": "^2.1.8",
+    "wrangler": "^4.147.0"
+  }
+}
