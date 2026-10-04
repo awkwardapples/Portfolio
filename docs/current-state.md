@@ -91,7 +91,7 @@ Node 24.21.0, pnpm 9.15.0, Windows.
 - `pnpm --filter @jl/edge test`: 6/6.
 - `pnpm build`: clean, no placeholders in the built site. Wizard JS 99.50 kB gzip (unchanged). Homepage JavaScript before interaction: about 2 kB gzip (navigation, prefetch, the threshold and the stored answer); React loads only when a copy button comes into view.
 - `pnpm test:e2e`: 40 passed on desktop and an emulated phone (4 phone-only tests skipped on desktop), zero serious or critical axe violations.
-- Pass 4 acceptance: the six required threshold tests pass, axe is clean in both states, and Lighthouse CI checks LCP and CLS on every push (LIGHTHOUSE_RESULT). Spec X reviewed below.
+- Pass 4 acceptance: the six required threshold tests pass, axe is clean in both states, and Lighthouse CI checks LCP and CLS on every push (first CI run: median LCP 1.59 s, CLS 0, performance score 99 on the mobile preset; the LCP element is the threshold sentence). Spec X reviewed below.
 - PHP: not run; the plugin is unchanged.
 
 ## Anti-slop review (spec X), Pass 4
