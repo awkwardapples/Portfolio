@@ -1,32 +1,89 @@
 import type { Config } from 'tailwindcss';
 
+import type { ThemeContract } from '../wizard/src/design/theme-contract';
+
+import {
+  borderRadius,
+  boxShadow,
+  fontFamily,
+  fontSize,
+  fontWeight,
+  maxWidth,
+  motion,
+  palette,
+  spacing,
+  wizardColors,
+} from './src/design/tokens';
+
 /**
- * Tailwind configuration for the portfolio site.
+ * Tailwind configuration for the portfolio (spec E, U.3, U.4; ADR-0045).
  *
  * Like the wizard's config (ADR-0003, ADR-0012), this replaces Tailwind's
- * default colour palette instead of extending it, so a class such as
- * `bg-neutral-800` or `bg-gradient-to-r` produces no CSS at all.
+ * default theme instead of extending it: only the tokens in
+ * src/design/tokens.ts exist, so `bg-neutral-800`, `bg-gradient-to-r`,
+ * `backdrop-blur` or `animate-spin` produce no CSS at all.
  *
- * Pass 1 carries only the palette from spec E.2. Pass 3 replaces this file
- * with the full token set (type scale, spacing rhythm, radii, motion) and
- * types it against the wizard's theme contract (spec U.4).
+ * It implements the wizard's theme contract, so the reused wizard components
+ * (whose classes are scanned below) render in the portfolio's identity
+ * without a class name changing. theme-contract.test.ts proves every class
+ * those components use still produces CSS here.
  */
-export default {
-  content: ['./src/**/*.{astro,html,md,mdx,ts,tsx}'],
-  theme: {
-    colors: {
-      transparent: 'transparent',
-      current: 'currentColor',
-      paper: '#F3F4F2',
-      ink: '#000000',
-      graphite: '#565B61',
-      rule: '#CDD0CB',
-      'line-strong': '#7C8187',
-      stage: '#000000',
-      fog: '#A3A8AE',
-      tungsten: '#FFB000',
-      'tungsten-deep': '#8A5A00',
+const theme = {
+  colors: {
+    transparent: 'transparent',
+    current: 'currentColor',
+    ...palette,
+    ...wizardColors,
+  },
+  // Tailwind's breakpoints with one more step: 360 px, where the compact
+  // "Start a conversation" button fits beside the name (spec O).
+  screens: {
+    xs: '360px',
+    sm: '640px',
+    md: '768px',
+    lg: '1024px',
+    xl: '1280px',
+    '2xl': '1536px',
+  },
+  spacing,
+  fontFamily,
+  fontSize,
+  fontWeight,
+  borderRadius,
+  boxShadow,
+  transitionDuration: {
+    DEFAULT: motion.durationBase,
+    fast: motion.durationFast,
+    slow: motion.durationSlow,
+    'house-lights': motion.durationHouseLights,
+  },
+  transitionTimingFunction: {
+    DEFAULT: motion.easing,
+  },
+  // Replaces Tailwind's animations: the Skeleton's opacity pulse is the only one.
+  keyframes: {
+    'goqw-pulse': {
+      '0%, 100%': { opacity: '1' },
+      '50%': { opacity: '0.55' },
     },
   },
+  animation: {
+    'goqw-pulse': `goqw-pulse 1.6s ${motion.easing} infinite`,
+  },
+  extend: {
+    maxWidth,
+  },
+} satisfies ThemeContract & Record<string, unknown>;
+
+export default {
+  content: {
+    relative: true,
+    files: [
+      './src/**/*.{astro,html,md,mdx,ts,tsx}',
+      // The wizard's reusable components; never its SCB site layer (src/site).
+      '../wizard/src/components/**/*.{ts,tsx}',
+    ],
+  },
+  theme: theme as unknown as Config['theme'],
   plugins: [],
 } satisfies Config;
