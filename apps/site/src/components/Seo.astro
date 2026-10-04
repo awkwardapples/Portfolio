@@ -1,0 +1,32 @@
+---
+/**
+ * Head tags every page uses (spec S). Title, description, canonical URL in
+ * its served form, robots, theme colour and the basic Open Graph and Twitter
+ * tags. Pass 10 adds structured data and Open Graph images.
+ */
+import { palette } from '~/design/tokens';
+import { publicPath } from '~/lib/urls';
+
+interface Props {
+  /** The full title: "{page} | Josh Lennon", or "Josh Lennon" for the homepage. */
+  title: string;
+  description: string;
+  /** Keeps the page out of search results (404, development pages). */
+  noindex?: boolean;
+}
+
+const { title, description, noindex = false } = Astro.props;
+const canonical = new URL(publicPath(Astro.url.pathname), Astro.site).href;
+---
+
+<title>{title}</title>
+<meta name="description" content={description} />
+{noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+<meta name="theme-color" content={palette.paper} />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Josh Lennon" />
+<meta property="og:locale" content="en_GB" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta name="twitter:card" content="summary" />

@@ -1,25 +1,25 @@
 ---
 /**
- * The document shell every page uses: language, viewport, title, description,
- * canonical URL, a skip link and the single `main` landmark.
- *
- * Pass 10 replaces the head tags here with the full `Seo.astro` component
- * (spec S); Pass 3 adds the navigation, footer and fonts.
+ * The document shell every page uses: head tags (Seo.astro), fonts, the skip
+ * link, navigation, the single `main` landmark and the footer (spec F.2, R).
  */
 import '~/styles/global.css';
 
-import { publicPath } from '~/lib/urls';
+import stixRoman from '@fontsource-variable/stix-two-text/files/stix-two-text-latin-wght-normal.woff2?url';
+
+import Footer from '~/components/Footer.astro';
+import Nav from '~/components/Nav.astro';
+import Seo from '~/components/Seo.astro';
 
 interface Props {
   /** The full document title, e.g. "Work | Josh Lennon" or "Josh Lennon". */
   title: string;
   description: string;
-  /** Keeps a page out of search results (404, previews). */
+  /** Keeps a page out of search results (404, development pages). */
   noindex?: boolean;
 }
 
 const { title, description, noindex = false } = Astro.props;
-const canonical = new URL(publicPath(Astro.url.pathname), Astro.site);
 ---
 
 <!doctype html>
@@ -27,19 +27,23 @@ const canonical = new URL(publicPath(Astro.url.pathname), Astro.site);
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
-    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+    <Seo title={title} description={description} noindex={noindex} />
+    <!-- Only the STIX roman file is preloaded: page titles and the threshold use it (spec E.3). -->
+    <link rel="preload" href={stixRoman} as="font" type="font/woff2" crossorigin />
+    <slot name="head" />
   </head>
-  <body class="bg-paper text-ink antialiased">
+  <body>
+    <!-- The skip link from the wizard's SCB site (SkipLink.tsx), on the portfolio's tokens. -->
     <a
       href="#main"
-      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-ink focus:px-4 focus:py-2 focus:text-paper"
-      >Skip to content</a
+      class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded focus:bg-paper focus:p-3 focus:text-ink focus:shadow-elevated"
+      >Skip to main content</a
     >
+    <Nav />
     <main id="main" tabindex="-1">
       <slot />
     </main>
+    <Footer />
     {
       import.meta.env.DEV && (
         <script is:inline>

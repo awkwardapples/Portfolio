@@ -66,6 +66,22 @@ jobs:
       - name: PDF cover rendering on Linux (spec Pass 2 acceptance)
         run: pnpm media:pdf apps/site/public/documents/kerr-microscopy-dissertation.pdf --dry-run
 
+      - name: Install Playwright Chromium
+        run: pnpm --filter @jl/site exec playwright install --with-deps chromium
+
+      # Smoke, keyboard and axe tests against the built site served by
+      # `wrangler dev` (spec R, U.5).
+      - name: Browser tests (Playwright and axe)
+        run: pnpm test:e2e
+
+      - name: Upload the Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: apps/site/playwright-report
+          retention-days: 7
+
       - name: Guard - no source maps in the site output
         run: |
           if find apps/site/dist -name '*.map' -print -quit | grep -q .; then

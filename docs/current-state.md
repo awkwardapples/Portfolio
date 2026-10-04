@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-10-04 (Portfolio Pass 2)_
+_Last updated: 2026-10-04 (Portfolio Pass 3)_
 
 This repository is being turned into Josh Lennon's portfolio. The governing document is [`docs/portfolio-spec.md`](portfolio-spec.md) (v1.2). Work happens in the passes of its section V on the `portfolio-transformation` branch, with a draft pull request open against `main` and a merge to `main` at the end of each pass once its gates are green. The GrowTrades platform's own state, as last recorded, is archived in [`archive/growtrades-platform/current-state.md`](archive/growtrades-platform/current-state.md).
 
@@ -11,8 +11,8 @@ This repository is being turned into Josh Lennon's portfolio. The governing docu
 | 0    | Security and repository hygiene            | Done 2026-10-03 |
 | 1    | Architecture scaffold                      | Done 2026-10-04 |
 | 2    | Content model, migration and media tooling | Done 2026-10-04 |
-| 3    | Visual system and global layout            | Next            |
-| 4    | Homepage, threshold and navigation flow    |                 |
+| 3    | Visual system and global layout            | Done 2026-10-04 |
+| 4    | Homepage, threshold and navigation flow    | Next            |
 | 5    | Work, research, log and about pages        |                 |
 | 6    | Contact wizard and submission pipeline     |                 |
 | 7    | GrowTrades case study and SCB demo         |                 |
@@ -21,6 +21,17 @@ This repository is being turned into Josh Lennon's portfolio. The governing docu
 | 10   | SEO foundations, documentation and launch  |                 |
 
 ## What exists
+
+### Pass 3: Visual system and global layout (2026-10-04)
+
+- Tokens in `apps/site/src/design/tokens.ts` (ADR-0045): the palette of spec E.2 plus one derived tint (`paper-sunken`), the 1.25 type scale from 17 px with a display size for the threshold, the 4 px spacing scale with section rhythm tokens (64, 80 and 128 px; 48 px under a heading), radii by role, two functional shadows, the wizard's motion timings.
+- The theme contract: `apps/wizard/src/design/theme-contract.ts` lists every token the wizard's components use; the site's theme implements it (`primary` is ink, so wizard buttons are ink with paper text). Tests: the wizard's config defines every name, and every class the wizard components use still produces CSS under the site's theme.
+- Contrast test: every text and control pair (spec R), and each ratio spec E.2 states, checked against the real hex values (35 tests).
+- STIX Two Text and IBM Plex Sans self-hosted, Latin and Latin Extended only, STIX roman preloaded, with metric-matched fallbacks measured by `scripts/font-fallbacks.mjs`.
+- Components: `Seo`, `Section`, `Figure`, `Button`, `BrandIcon`, `Nav`, `Footer` and the `CopyEmail` island (spec N.13). Focus rings are ink on paper and tungsten on stage.
+- Navigation (spec F.2, N.2): condenses after 8 px, follows the surface beneath it, and opens a native modal drawer on phones. It works without JavaScript (the menu button links to the footer navigation) and ships no React. Pages that do not exist yet are not linked in production (`src/lib/routes.ts`).
+- `/dev/styleguide`: development only, every token, type size and component state, including the wizard's components in the portfolio theme.
+- Browser tests with Playwright and axe against `wrangler dev` (`pnpm test:e2e`, also in CI): skip link, landmarks, the real 404, no horizontal scroll at 320 px, the bar condensing and following the surface, the drawer by keyboard (focus inside, Escape and focus return, scroll lock), the no-JavaScript menu, and zero serious or critical axe violations.
 
 ### Pass 2: Content model, migration and media tooling (2026-10-04)
 
@@ -55,19 +66,35 @@ This repository is being turned into Josh Lennon's portfolio. The governing docu
 - `docs/portfolio-spec.md` committed and excluded from Prettier, so each version Josh supplies stays byte-for-byte as supplied.
 - History scans of every blob on every ref (including inside `.docx`, `.tar.gz` and PDF streams) and every commit message, with values never printed. Before the rewrite, the only live Make.com webhook token and the only Google Sheet link were in `docs/Agency Docs/Technical Onboarding.IPYNB`. After it, a fresh clone from GitHub has neither, and no agency document, in any of its 285 commits. No Turnstile secret key existed anywhere: the `0x4A…` values in tests and the plugin are the public SCB site key, and the `1x/2x/3x000…` values are Cloudflare's documented test keys. Other `hook.eu1.make.com/…` strings are placeholders (`abc123def456`, `<real-id>`), and `.env.example` on `deploy/test-live` has empty values.
 
-## Gate state (last verified: Pass 2, 2026-10-04)
+## Gate state (last verified: Pass 3, 2026-10-04)
 
 Node 24.21.0, pnpm 9.15.0, Windows.
 
 - `pnpm format:check`: clean.
 - `pnpm lint`: ESLint 0 errors and 0 warnings in the wizard, the site and the Worker; `scripts/check-design.mjs` clean.
 - `pnpm typecheck`: 0 errors (wizard production and test tsconfig, Worker).
-- `pnpm test`: **889 passed**: wizard 856/856 (66 files), site 27 (2 files), Worker 6 (1 file).
+- `pnpm test`: **936 passed**: wizard 867 (the original 856 plus 11 theme-contract checks, 67 files), site 63 (4 files: URLs, content checks, contrast, theme contract), Worker 6.
 - `pnpm --filter @jl/site check`: 0 errors, 0 warnings (one hint: `tseslint.config()` is deprecated).
 - `pnpm --filter @jl/edge test`: 6/6.
-- `pnpm build`: clean, no placeholders in the built site. Wizard JS 99.50 kB gzip (unchanged); site 2 pages (content pages arrive in Passes 4 and 5) and 2 documents; Worker dry run reads 15 asset files.
-- Pass 2 acceptance: a placeholder planted in a published entry fails the production build, naming the file and field (`tags[1]`; in the body, `body, line 7`), and the build passes once it is removed; a schema mistake names the entry, the file and each field; a post made with `pnpm new` and one made by hand both appear at `/dev/content`, including one added while the dev server was running; PDF covers render on Windows (all three of Josh's PDFs) and in CI on Linux; `media:images` output carries no EXIF.
+- `pnpm build`: clean, no placeholders in the built site. Wizard JS 99.50 kB gzip (unchanged). Homepage JavaScript before interaction: about 2 kB gzip (the navigation script and Astro's prefetch); React loads only when the footer's copy button comes into view.
+- `pnpm test:e2e`: 16 passed on desktop and an emulated phone (4 phone-only tests skipped on desktop), zero serious or critical axe violations.
+- Pass 3 acceptance: contrast test passes; theme-contract test passes (and fails, naming the classes, when a contract token is removed); navbar and drawer pass the keyboard and axe checks; spec X reviewed below.
 - PHP: not run; the plugin is unchanged.
+
+## Anti-slop review (spec X), Pass 3
+
+- No gradients, blur, glass, glow or decorative shadows: none exist in the theme; shadows only on the tooltip and the drawer. Enforced by ESLint and `scripts/check-design.mjs`.
+- No purple: the palette has none.
+- One accent, used sparingly, never as text on paper: tungsten is the stage's primary button, the current-page underline on stage, the text-selection highlight, and nothing else.
+- No rows of identical cards: none yet; Pass 4 and 5 show artefacts instead.
+- Icons: Lucide and Simple Icons only; both icon-only controls (menu, close) have a label and a tooltip.
+- No spinners: none can exist (`animate-spin` is not in the theme); the skeleton pulses opacity only.
+- No all-caps labels, single coloured or italic headline words, middle dots or arrows in link text: none.
+- No fade-up on scroll: no scroll animation at all yet.
+- Body line-height 1.5 to 1.6, reading measure 68 characters, rhythm from tokens: yes.
+- Copy plain and first person, no invented facts: the only copy is navigation labels and the confirmed introduction.
+- Aceternity or 21st.dev components: none used in this pass.
+- Works without JavaScript: yes, including the menu.
 
 ## Open items
 

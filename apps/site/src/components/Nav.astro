@@ -1,0 +1,266 @@
+---
+/**
+ * Site navigation (spec F.2, N.2, O).
+ *
+ * Desktop and tablet: the name, the main links and "Start a conversation".
+ * Phones: the name, the compact "Start a conversation" button (from 360 px,
+ * where it fits) and a menu button. Without JavaScript the menu button is a
+ * link to the footer navigation; with it, it opens a native modal dialog
+ * (src/scripts/nav.ts). The bar condenses after 8 px of scroll and takes the
+ * colours of the surface beneath it, so it never disappears against stage.
+ */
+import { Menu, X } from 'lucide-react';
+
+import { ROUTES, MAIN_NAV, isCurrent, isLinkable } from '~/lib/routes';
+import { publicPath } from '~/lib/urls';
+
+const current = publicPath(Astro.url.pathname);
+const links = MAIN_NAV.filter(isLinkable);
+const contact = isLinkable(ROUTES.contact) ? ROUTES.contact : undefined;
+---
+
+<header class="site-header" data-site-header data-under="paper">
+  <div class="header-row mx-auto flex max-w-content items-center gap-2 px-4 sm:gap-3 sm:px-6 lg:px-8">
+    <a
+      href="/"
+      class="site-name mr-auto whitespace-nowrap font-serif text-base font-semibold no-underline sm:text-lg"
+      aria-current={current === '/' ? 'page' : undefined}>Josh Lennon</a
+    >
+    {
+      links.length > 0 && (
+        <nav aria-label="Main" class="hidden md:block">
+          <ul class="flex items-center gap-6" role="list">
+            {links.map((route) => (
+              <li>
+                <a
+                  href={route.path}
+                  class="nav-link"
+                  aria-current={isCurrent(route.path, current) ? 'page' : undefined}
+                >
+                  {route.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )
+    }
+    {
+      contact && (
+        <a
+          href={contact.path}
+          class="nav-cta hidden min-h-11 items-center whitespace-nowrap rounded px-2 text-xs font-medium no-underline xs:inline-flex sm:px-3 md:ml-4 md:px-4"
+        >
+          {contact.label}
+        </a>
+      )
+    }
+    <a
+      href="#site-footer-nav"
+      class="icon-button md:hidden"
+      data-menu-trigger
+      data-tooltip="Menu"
+      aria-label="Menu"
+    >
+      <Menu aria-hidden="true" size={22} strokeWidth={1.75} />
+    </a>
+  </div>
+</header>
+
+<dialog id="site-menu" class="site-menu" aria-label="Site navigation">
+  <div class="menu-panel flex h-full flex-col p-6" data-surface="stage">
+    <div class="flex items-center justify-between">
+      <span class="text-sm text-fog">Menu</span>
+      <button
+        type="button"
+        class="icon-button"
+        data-menu-close
+        data-tooltip="Close menu"
+        aria-label="Close menu"
+        autofocus
+      >
+        <X aria-hidden="true" size={22} strokeWidth={1.75} />
+      </button>
+    </div>
+    <ul class="mt-8 flex flex-col gap-1" role="list">
+      <li>
+        <a
+          href="/"
+          class="menu-link"
+          aria-current={current === '/' ? 'page' : undefined}>Home</a
+        >
+      </li>
+      {
+        links.map((route) => (
+          <li>
+            <a
+              href={route.path}
+              class="menu-link"
+              aria-current={isCurrent(route.path, current) ? 'page' : undefined}
+            >
+              {route.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    {
+      contact && (
+        <a
+          href={contact.path}
+          class="mt-8 inline-flex min-h-11 items-center justify-center rounded bg-tungsten px-5 font-medium text-ink no-underline"
+        >
+          {contact.label}
+        </a>
+      )
+    }
+  </div>
+</dialog>
+
+<script>
+  import '~/scripts/nav';
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background-color: theme('colors.paper');
+    color: theme('colors.ink');
+    border-bottom: 1px solid transparent;
+    --focus-ring: theme('colors.ink');
+    transition-property: background-color, color, border-color;
+    transition-duration: theme('transitionDuration.DEFAULT');
+    transition-timing-function: theme('transitionTimingFunction.DEFAULT');
+  }
+
+  .site-header[data-under='stage'] {
+    background-color: theme('colors.stage');
+    color: theme('colors.fog');
+    --focus-ring: theme('colors.tungsten');
+  }
+
+  .site-header[data-condensed] {
+    border-bottom-color: theme('colors.rule');
+  }
+
+  .site-header[data-condensed][data-under='stage'] {
+    border-bottom-color: theme('colors.graphite');
+  }
+
+  /* Compact from the start on phones; full height on wider screens until scrolled. */
+  .header-row {
+    min-height: theme('spacing.16');
+    transition: min-height theme('transitionDuration.DEFAULT') theme('transitionTimingFunction.DEFAULT');
+  }
+
+  @media (min-width: 768px) {
+    .header-row {
+      min-height: theme('spacing.20');
+    }
+
+    .site-header[data-condensed] .header-row {
+      min-height: theme('spacing.16');
+    }
+  }
+
+  .site-name {
+    color: inherit;
+  }
+
+  .site-header[data-under='stage'] .site-name {
+    color: theme('colors.paper');
+  }
+
+  .nav-link {
+    display: inline-flex;
+    min-height: theme('spacing.11');
+    align-items: center;
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+  }
+
+  .nav-link:hover {
+    border-bottom-color: currentColor;
+  }
+
+  /* The current page: an underline in the surface's strong colour, plus aria-current. */
+  .nav-link[aria-current='page'] {
+    color: theme('colors.ink');
+    border-bottom-color: theme('colors.ink');
+  }
+
+  .site-header[data-under='stage'] .nav-link[aria-current='page'] {
+    color: theme('colors.paper');
+    border-bottom-color: theme('colors.tungsten');
+  }
+
+  .nav-cta {
+    background-color: theme('colors.ink');
+    color: theme('colors.paper');
+  }
+
+  .site-header[data-under='stage'] .nav-cta {
+    background-color: theme('colors.tungsten');
+    color: theme('colors.ink');
+  }
+
+  .site-menu {
+    margin: 0 0 0 auto;
+    padding: 0;
+    border: 0;
+    width: min(20rem, 100vw);
+    height: 100dvh;
+    max-height: 100dvh;
+    box-shadow: theme('boxShadow.overlay');
+    /* A hairline edge: a shadow alone is invisible on a black page. */
+    border-left: 1px solid theme('colors.graphite');
+    background-color: theme('colors.stage');
+    transform: translateX(100%);
+    transition:
+      transform theme('transitionDuration.DEFAULT') theme('transitionTimingFunction.DEFAULT'),
+      overlay theme('transitionDuration.DEFAULT') allow-discrete,
+      display theme('transitionDuration.DEFAULT') allow-discrete;
+  }
+
+  .site-menu[open] {
+    transform: translateX(0);
+  }
+
+  @starting-style {
+    .site-menu[open] {
+      transform: translateX(100%);
+    }
+  }
+
+  /* A flat scrim, never blurred (spec E.2). */
+  .site-menu::backdrop {
+    background-color: rgb(0 0 0 / 0.5);
+  }
+
+  .menu-link {
+    display: flex;
+    min-height: theme('spacing.12');
+    align-items: center;
+    border-radius: theme('borderRadius.DEFAULT');
+    padding: 0 theme('spacing.3');
+    color: theme('colors.fog');
+    text-decoration: none;
+    font-size: theme('fontSize.lg[0]');
+  }
+
+  .menu-link:hover {
+    background-color: theme('colors.graphite');
+    color: theme('colors.paper');
+  }
+
+  .menu-link[aria-current='page'] {
+    color: theme('colors.paper');
+    text-decoration: underline;
+    text-decoration-color: theme('colors.tungsten');
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.3em;
+  }
+</style>

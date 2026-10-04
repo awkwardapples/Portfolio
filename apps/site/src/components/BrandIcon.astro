@@ -1,0 +1,28 @@
+---
+/**
+ * A brand mark from Simple Icons (spec E.6), in the surrounding text colour.
+ * Always decorative: the link or button it sits in carries a text label.
+ * LinkedIn has no mark here, because Simple Icons removed it at LinkedIn's
+ * request; LinkedIn links use their text label alone.
+ */
+import { siGithub, siSpotify, siYoutube } from 'simple-icons';
+
+const ICONS = { github: siGithub, youtube: siYoutube, spotify: siSpotify } as const;
+
+interface Props {
+  name: keyof typeof ICONS;
+  class?: string;
+}
+
+const { name, class: className = 'h-4 w-4' } = Astro.props;
+const icon = ICONS[name];
+---
+
+<svg
+  role="presentation"
+  aria-hidden="true"
+  focusable="false"
+  viewBox="0 0 24 24"
+  fill="currentColor"
+  class={className}><path d={icon.path} /></svg
+>

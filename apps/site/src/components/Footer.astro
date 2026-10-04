@@ -1,0 +1,100 @@
+---
+/**
+ * The footer (spec F.2), on stage. Every navigation link, the profiles, the
+ * email address with a copy button, and the year. It is also where the menu
+ * button leads when JavaScript is off (#site-footer-nav).
+ *
+ * Links appear once their pages exist (src/lib/routes.ts) and profiles once
+ * their URLs are in the profile, so nothing here points nowhere. "Change
+ * what brought you here" arrives with the threshold in Pass 4.
+ */
+import BrandIcon from '~/components/BrandIcon.astro';
+import { CopyEmail } from '~/islands/CopyEmail';
+import { getProfile } from '~/lib/content';
+import { FOOTER_NAV, MAIN_NAV, isLinkable } from '~/lib/routes';
+
+const profile = await getProfile();
+const siteLinks = [{ path: '/', label: 'Home' }, ...MAIN_NAV.filter(isLinkable), ...FOOTER_NAV.filter(isLinkable)];
+
+interface ProfileLink {
+  href: string;
+  label: string;
+  icon?: 'github' | 'youtube' | 'spotify';
+}
+
+// Each profile appears once its URL is in the profile (spec T.4).
+const profiles: ProfileLink[] = [];
+const { github, linkedin, youtube, spotify } = profile.links;
+if (github) profiles.push({ href: github, label: 'GitHub', icon: 'github' });
+if (linkedin) profiles.push({ href: linkedin, label: 'LinkedIn' });
+if (youtube) profiles.push({ href: youtube, label: 'YouTube', icon: 'youtube' });
+if (spotify) profiles.push({ href: spotify, label: 'Spotify', icon: 'spotify' });
+
+const year = new Date().getFullYear();
+---
+
+<footer id="site-footer" data-surface="stage">
+  <div class="mx-auto max-w-content px-4 py-section-sm sm:px-6 lg:px-8">
+    <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+      <nav id="site-footer-nav" aria-labelledby="footer-site-heading" tabindex="-1">
+        <h2 id="footer-site-heading" class="font-sans text-sm font-medium text-fog">Site</h2>
+        <ul class="mt-4 flex flex-col gap-1" role="list">
+          {
+            siteLinks.map((link) => (
+              <li>
+                <a href={link.path} class="footer-link">
+                  {link.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      {
+        profiles.length > 0 && (
+          <div>
+            <h2 class="font-sans text-sm font-medium text-fog">Elsewhere</h2>
+            <ul class="mt-4 flex flex-col gap-1" role="list">
+              {profiles.map((link) => (
+                <li>
+                  <a href={link.href} class="footer-link gap-2">
+                    {link.icon && <BrandIcon name={link.icon} />}
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+
+      {
+        profile.links.email && (
+          <div class="sm:col-span-2">
+            <h2 class="font-sans text-sm font-medium text-fog">Email</h2>
+            <p class="mt-4">
+              <CopyEmail client:visible email={profile.links.email} surface="stage" />
+            </p>
+          </div>
+        )
+      }
+    </div>
+
+    <p class="mt-section-sm text-xs text-fog">&copy; {year} Josh Lennon</p>
+  </div>
+</footer>
+
+<style>
+  .footer-link {
+    display: inline-flex;
+    min-height: theme('spacing.11');
+    align-items: center;
+    color: theme('colors.paper');
+    text-decoration: none;
+  }
+
+  .footer-link:hover {
+    text-decoration: underline;
+  }
+</style>

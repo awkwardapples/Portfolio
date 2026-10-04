@@ -1,0 +1,278 @@
+---
+/**
+ * /dev/styleguide: development only (integrations/dev-routes.mjs, spec
+ * Pass 3). Every token, type size and component state, including the
+ * reused wizard components in the portfolio theme, for review.
+ */
+import { Check, Copy, Download, ExternalLink, Menu, Pause, Play, X } from 'lucide-react';
+
+import { Button as WizardButton } from '@/components/primitives/Button';
+import { Card } from '@/components/primitives/Card';
+import { IconButton } from '@/components/primitives/IconButton';
+import { Input } from '@/components/primitives/Input';
+import { Skeleton } from '@/components/primitives/Skeleton';
+import { ProgressBar } from '@/components/composites/ProgressBar';
+import { ValidationMessage } from '@/components/composites/ValidationMessage';
+
+import BrandIcon from '~/components/BrandIcon.astro';
+import Button from '~/components/Button.astro';
+import Figure from '~/components/Figure.astro';
+import Section from '~/components/Section.astro';
+import { contrastRatio } from '~/design/contrast';
+import { borderRadius, boxShadow, contrastPairs, fontSize, palette, spacing } from '~/design/tokens';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { documentInfo } from '~/lib/documents';
+
+const swatches = Object.entries(palette) as [keyof typeof palette, string][];
+const ratio = (fg: string, bg: string) => contrastRatio(fg, bg).toFixed(1);
+// Literal class names, so Tailwind sees and generates them.
+const TYPE_CLASSES: Record<keyof typeof fontSize, string> = {
+  xs: 'text-xs',
+  sm: 'text-sm',
+  base: 'text-base',
+  reading: 'text-reading',
+  lg: 'text-lg',
+  xl: 'text-xl',
+  '2xl': 'text-2xl',
+  '3xl': 'text-3xl',
+  '4xl': 'text-4xl',
+  '5xl': 'text-5xl',
+  display: 'text-display',
+};
+const RADIUS_CLASSES: Record<keyof typeof borderRadius, string> = {
+  none: 'rounded-none',
+  media: 'rounded-media',
+  DEFAULT: 'rounded',
+  full: 'rounded-full',
+};
+const SHADOW_CLASSES: Record<keyof typeof boxShadow, string> = {
+  none: 'shadow-none',
+  elevated: 'shadow-elevated',
+  overlay: 'shadow-overlay',
+};
+const sizes = Object.keys(TYPE_CLASSES) as (keyof typeof fontSize)[];
+const sampleCover = documentInfo('kerr-microscopy-dissertation.pdf')?.cover;
+---
+
+<BaseLayout title="Style guide (dev) | Josh Lennon" description="Development style guide." noindex>
+  <Section labelledby="sg-heading">
+    <h1 id="sg-heading" class="text-4xl">Style guide</h1>
+    <p class="mt-6 max-w-reading text-reading">
+      Development only. Every token and component state of the visual system (spec E,
+      ADR-0045). Tab through the page to see focus rings on each surface.
+    </p>
+  </Section>
+
+  <Section labelledby="sg-palette">
+    <h2 id="sg-palette" class="text-2xl">Palette</h2>
+    <ul class="mt-heading-gap grid gap-6 sm:grid-cols-2 lg:grid-cols-4" role="list">
+      {
+        swatches.map(([name, hex]) => (
+          <li class="flex flex-col gap-2">
+            <span class={`swatch-${name} block h-16 rounded-media border border-rule`} />
+            <span class="font-medium">{name}</span>
+            <span class="text-xs text-graphite">
+              {hex}, on paper {ratio(hex, palette.paper)}:1, on stage {ratio(hex, palette.stage)}:1
+            </span>
+          </li>
+        ))
+      }
+    </ul>
+
+    <h3 class="mt-16 text-xl">Contrast pairs in use</h3>
+    <table class="mt-6 w-full text-left text-sm">
+      <thead>
+        <tr class="border-b border-rule">
+          <th class="py-2 pr-4 font-medium">Use</th>
+          <th class="py-2 pr-4 font-medium">Pair</th>
+          <th class="py-2 pr-4 font-medium">Ratio</th>
+          <th class="py-2 font-medium">Minimum</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          contrastPairs.map((pair) => (
+            <tr class="border-b border-rule">
+              <td class="py-2 pr-4">{pair.use}</td>
+              <td class="py-2 pr-4">
+                {pair.foreground} on {pair.background}
+              </td>
+              <td class="py-2 pr-4">{ratio(palette[pair.foreground], palette[pair.background])}:1</td>
+              <td class="py-2">{pair.minimum}:1</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </Section>
+
+  <Section labelledby="sg-type">
+    <h2 id="sg-type" class="text-2xl">Type</h2>
+    <div class="mt-heading-gap flex flex-col gap-6">
+      {
+        sizes.map((size) => (
+          <div class="flex flex-col gap-1 border-b border-rule pb-6">
+            <span class="text-xs text-graphite">
+              {size}, {fontSize[size][0]}
+            </span>
+            <p class={`${TYPE_CLASSES[size]} font-serif`}>Extracting magnetic information</p>
+            <p class={`${TYPE_CLASSES[size]} font-sans`}>Start a conversation</p>
+          </div>
+        ))
+      }
+    </div>
+    <p class="mt-10 max-w-reading font-serif text-reading">
+      Long-form reading: STIX Two Text at 19 pixels with a line height of 1.6, in a measure of at
+      most 68 characters. <em>Italic is available for emphasis in running text.</em>
+    </p>
+  </Section>
+
+  <Section labelledby="sg-space">
+    <h2 id="sg-space" class="text-2xl">Spacing, radii and shadows</h2>
+    <ul class="mt-heading-gap flex flex-col gap-2" role="list">
+      {
+        Object.entries(spacing).map(([key, value]) => (
+          <li class="flex items-center gap-4 text-xs">
+            <span class="w-24 shrink-0">{key}</span>
+            <span class="w-20 shrink-0 text-graphite">{value}</span>
+            <span class="block h-2 bg-ink" style={`width: ${value}`} />
+          </li>
+        ))
+      }
+    </ul>
+    <div class="mt-12 flex flex-wrap gap-6">
+      {
+        Object.entries(borderRadius).map(([key, value]) => (
+          <div class:list={[RADIUS_CLASSES[key as keyof typeof borderRadius], 'flex h-24 w-32 items-end border border-line-strong p-2 text-xs']}>
+            radius {key}, {value}
+          </div>
+        ))
+      }
+    </div>
+    <div class="mt-12 flex flex-wrap gap-6">
+      {
+        Object.keys(boxShadow).map((key) => (
+          <div class:list={[SHADOW_CLASSES[key as keyof typeof boxShadow], 'flex h-24 w-40 items-end bg-paper p-2 text-xs']}>
+            shadow {key}
+          </div>
+        ))
+      }
+    </div>
+  </Section>
+
+  <Section labelledby="sg-buttons">
+    <h2 id="sg-buttons" class="text-2xl">Buttons on paper</h2>
+    <div class="mt-heading-gap flex flex-wrap items-center gap-4">
+      <Button>Start a conversation</Button>
+      <Button variant="secondary">Read the paper</Button>
+      <Button variant="quiet" href="#sg-buttons">All work</Button>
+      <Button size="compact">Start a conversation</Button>
+      <Button variant="secondary" disabled>Disabled</Button>
+    </div>
+  </Section>
+
+  <Section surface="stage" labelledby="sg-stage">
+    <h2 id="sg-stage" class="text-2xl">Stage</h2>
+    <p class="mt-6 max-w-reading text-lg text-fog">
+      Secondary text on stage is fog. Tungsten lights things directly here.
+    </p>
+    <div class="mt-heading-gap flex flex-wrap items-center gap-4">
+      <Button surface="stage">Listen</Button>
+      <Button surface="stage" variant="secondary">Watch the video</Button>
+      <Button surface="stage" variant="quiet" href="#sg-stage">Music</Button>
+      <button type="button" class="icon-button" data-tooltip="Pause the footage" aria-label="Pause the footage">
+        <Pause aria-hidden="true" size={22} strokeWidth={1.75} />
+      </button>
+      <button type="button" class="icon-button" data-tooltip="Play the footage" aria-label="Play the footage">
+        <Play aria-hidden="true" size={22} strokeWidth={1.75} />
+      </button>
+    </div>
+  </Section>
+
+  <Section labelledby="sg-icons">
+    <h2 id="sg-icons" class="text-2xl">Icons</h2>
+    <p class="mt-6 text-sm text-graphite">
+      Interface icons from Lucide; brand marks from Simple Icons, always beside a label.
+    </p>
+    <div class="mt-8 flex flex-wrap items-center gap-6">
+      <Menu aria-hidden="true" />
+      <X aria-hidden="true" />
+      <Play aria-hidden="true" />
+      <Pause aria-hidden="true" />
+      <ExternalLink aria-hidden="true" />
+      <Download aria-hidden="true" />
+      <Copy aria-hidden="true" />
+      <Check aria-hidden="true" />
+      <span class="inline-flex items-center gap-2"><BrandIcon name="github" />GitHub</span>
+      <span class="inline-flex items-center gap-2"><BrandIcon name="youtube" />YouTube</span>
+      <span class="inline-flex items-center gap-2"><BrandIcon name="spotify" />Spotify</span>
+    </div>
+  </Section>
+
+  <Section labelledby="sg-wizard">
+    <h2 id="sg-wizard" class="text-2xl">Wizard components in the portfolio theme</h2>
+    <p class="mt-6 max-w-reading text-sm text-graphite">
+      The wizard's own components, unchanged, re-themed through the theme contract (spec U.4).
+    </p>
+    <div class="mt-heading-gap flex flex-wrap items-center gap-4">
+      <WizardButton variant="primary">Send message</WizardButton>
+      <WizardButton variant="secondary">Back</WizardButton>
+      <WizardButton variant="ghost">Skip and send</WizardButton>
+      <WizardButton variant="destructive">Remove</WizardButton>
+      <WizardButton variant="primary" disabled>Disabled</WizardButton>
+      <IconButton client:load label="Copy the email address">
+        <Copy aria-hidden="true" size={18} />
+      </IconButton>
+    </div>
+    <div class="mt-10 grid max-w-reading gap-6">
+      <label class="flex flex-col gap-2">
+        <span class="text-sm font-medium">Your email address</span>
+        <Input type="email" placeholder="name@example.com" />
+      </label>
+      <label class="flex flex-col gap-2">
+        <span class="text-sm font-medium">An invalid field</span>
+        <Input invalid aria-describedby="sg-invalid" />
+        <ValidationMessage id="sg-invalid" message="Enter an email address, like name@example.com." />
+      </label>
+      <ProgressBar current={2} total={5} />
+      <Card>
+        <p>A card on paper holds a step of the wizard.</p>
+      </Card>
+      <div class="flex flex-col gap-2">
+        <Skeleton className="h-6 w-2/3" />
+        <Skeleton className="h-4 w-full" />
+      </div>
+    </div>
+  </Section>
+
+  {
+    sampleCover && (
+      <Section labelledby="sg-figure" width="reading">
+        <h2 id="sg-figure" class="text-2xl">Figure</h2>
+        <Figure
+          class="mt-heading-gap"
+          src={sampleCover}
+          alt="Title page of the dissertation: Extracting magnetic information from Kerr Microscopy images, by Joshua Lennon, University of Manchester, 2025."
+          caption="The dissertation's title page, rendered from the PDF."
+          number={1}
+          sizes="(min-width: 768px) 68ch, 100vw"
+        />
+      </Section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .swatch-paper { background-color: theme('colors.paper'); }
+  .swatch-paper-sunken { background-color: theme('colors.paper-sunken'); }
+  .swatch-ink { background-color: theme('colors.ink'); }
+  .swatch-graphite { background-color: theme('colors.graphite'); }
+  .swatch-rule { background-color: theme('colors.rule'); }
+  .swatch-line-strong { background-color: theme('colors.line-strong'); }
+  .swatch-stage { background-color: theme('colors.stage'); }
+  .swatch-fog { background-color: theme('colors.fog'); }
+  .swatch-tungsten { background-color: theme('colors.tungsten'); }
+  .swatch-tungsten-deep { background-color: theme('colors.tungsten-deep'); }
+  .swatch-danger { background-color: theme('colors.danger'); }
+  .swatch-success { background-color: theme('colors.success'); }
+</style>

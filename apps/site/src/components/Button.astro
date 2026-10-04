@@ -1,0 +1,40 @@
+---
+/**
+ * A button or a link that looks like one (spec E.5): a link when it goes
+ * somewhere, a button when it does something. Labels say exactly what
+ * happens ("Read the paper", "Download CV (PDF, 140 kB)").
+ */
+import type { HTMLAttributes } from 'astro/types';
+
+import { buttonClass, type ButtonSize, type ButtonSurface, type ButtonVariant } from '~/design/button';
+
+type Props = (HTMLAttributes<'a'> | HTMLAttributes<'button'>) & {
+  href?: string;
+  variant?: ButtonVariant;
+  surface?: ButtonSurface;
+  size?: ButtonSize;
+};
+
+const {
+  href,
+  variant = 'primary',
+  surface = 'paper',
+  size = 'regular',
+  class: className,
+  ...rest
+} = Astro.props;
+
+const classes = [buttonClass({ variant, surface, size }), className].filter(Boolean).join(' ');
+---
+
+{
+  href ? (
+    <a href={href} class={classes} {...(rest as HTMLAttributes<'a'>)}>
+      <slot />
+    </a>
+  ) : (
+    <button type="button" class={classes} {...(rest as HTMLAttributes<'button'>)}>
+      <slot />
+    </button>
+  )
+}

@@ -1,9 +1,10 @@
 ---
 /**
- * Pass 1 placeholder homepage: a real, indexable page with the confirmed
- * one-sentence introduction (spec G.0). Pass 4 replaces it with the threshold
- * and the homepage sections.
+ * Placeholder homepage until Pass 4 builds the threshold and the homepage
+ * sections (spec G): the name and the confirmed one-sentence introduction
+ * (spec G.0) on stage.
  */
+import Section from '~/components/Section.astro';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 
 const intro =
@@ -11,8 +12,8 @@ const intro =
 ---
 
 <BaseLayout title="Josh Lennon" description={intro}>
-  <div class="mx-auto max-w-3xl px-4 py-16">
-    <h1 class="text-5xl font-semibold">Josh Lennon</h1>
-    <p class="mt-6 text-xl leading-relaxed">{intro}</p>
-  </div>
+  <Section surface="stage" labelledby="intro-heading">
+    <h1 id="intro-heading" class="text-display">Josh Lennon</h1>
+    <p class="mt-8 max-w-reading text-lg text-fog">{intro}</p>
+  </Section>
 </BaseLayout>

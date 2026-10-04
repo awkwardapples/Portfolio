@@ -1,10 +1,165 @@
+@import './fonts.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Global layer (spec E, R; ADR-0045). Surfaces are set with data-surface:
+ * paper (the default reading surface) or stage (pure black). Each surface
+ * sets its own text colour and focus ring: ink on paper, tungsten on stage,
+ * 2 px with a 2 px offset.
+ */
+@layer base {
+  :root {
+    --focus-ring: theme('colors.ink');
+    color-scheme: light;
+  }
+
+  html {
+    font-family: theme('fontFamily.sans');
+    background-color: theme('colors.paper');
+    color: theme('colors.ink');
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    font-size: theme('fontSize.base[0]');
+    line-height: 1.5;
+    font-kerning: normal;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: theme('fontFamily.serif');
+    font-weight: theme('fontWeight.semibold');
+    text-wrap: balance;
+  }
+
+  p,
+  li,
+  figcaption {
+    text-wrap: pretty;
+  }
+
+  [data-surface='paper'] {
+    --focus-ring: theme('colors.ink');
+    background-color: theme('colors.paper');
+    color: theme('colors.ink');
+  }
+
+  [data-surface='stage'] {
+    --focus-ring: theme('colors.tungsten');
+    background-color: theme('colors.stage');
+    color: theme('colors.paper');
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: theme('colors.tungsten');
+    color: theme('colors.ink');
+  }
+
+  a {
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+  }
+
+  /* Locks the page behind the open navigation dialog (spec F.2). */
+  html.scroll-locked {
+    overflow: hidden;
+  }
+}
+
+@layer components {
+  /* An icon-only control: 44 px target, label in aria-label, tooltip from data-tooltip. */
+  .icon-button {
+    display: inline-flex;
+    width: theme('spacing.11');
+    height: theme('spacing.11');
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: theme('borderRadius.DEFAULT');
+    color: inherit;
+    transition: background-color theme('transitionDuration.fast')
+      theme('transitionTimingFunction.DEFAULT');
+  }
+
+  .icon-button:hover {
+    background-color: theme('colors.paper-sunken');
+  }
+
+  [data-surface='stage'] .icon-button:hover,
+  [data-under='stage'] .icon-button:hover {
+    background-color: theme('colors.graphite');
+    color: theme('colors.paper');
+  }
+
+  /*
+   * Tooltips for icon-only controls (spec E.6, R): shown on hover and on
+   * keyboard focus, dismissed with Escape (src/scripts/nav.ts). The control's
+   * accessible name comes from aria-label; the tooltip repeats it visually.
+   */
+  [data-tooltip] {
+    position: relative;
+  }
+
+  [data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + theme('spacing.1'));
+    left: 50%;
+    z-index: 40;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    pointer-events: none;
+    border-radius: theme('borderRadius.DEFAULT');
+    background-color: theme('colors.ink');
+    color: theme('colors.paper');
+    padding: theme('spacing.1') theme('spacing.2');
+    font-size: theme('fontSize.xs[0]');
+    line-height: 1.5;
+    box-shadow: theme('boxShadow.elevated');
+    opacity: 0;
+    transition: opacity theme('transitionDuration.fast') theme('transitionTimingFunction.DEFAULT');
+  }
+
+  [data-surface='stage'] [data-tooltip]::after,
+  [data-under='stage'] [data-tooltip]::after {
+    box-shadow: 0 0 0 1px theme('colors.graphite');
+  }
+
+  [data-tooltip]:hover::after,
+  [data-tooltip]:focus-visible::after {
+    opacity: 1;
+  }
+
+  [data-tooltip][data-tooltip-dismissed]::after {
+    opacity: 0;
+  }
+}
+
 /* Development only: placeholders highlighted by BaseLayout's dev script (spec T.4). */
 mark.todo {
   @apply bg-tungsten px-1 text-ink outline outline-2 outline-ink;
+}
+
+/*
+ * Page changes cross-fade in browsers that support cross-document view
+ * transitions (spec P.2), and never for people who ask for less motion.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
 }
 
 /*

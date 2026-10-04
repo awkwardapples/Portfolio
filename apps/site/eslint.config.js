@@ -58,4 +58,12 @@ export default tseslint.config(
       'local/no-emoji': 'off',
     },
   },
+
+  // The token file is the one place raw hex colours are defined.
+  {
+    files: ['src/design/tokens.ts'],
+    rules: {
+      'no-restricted-syntax': 'off',
+    },
+  },
 );
