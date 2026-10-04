@@ -1,0 +1,40 @@
+---
+/**
+ * A page section on paper or stage (spec E.1, E.4). Vertical rhythm comes
+ * from the section tokens: 64 px on phones, 80 on tablets, 128 on desktop.
+ * Stage sections are full-bleed; their content still sits on the grid.
+ */
+interface Props {
+  id?: string;
+  surface?: 'paper' | 'stage';
+  /** The id of the section's heading, for aria-labelledby. */
+  labelledby?: string;
+  /** `content` (1200 px), `reading` (68 characters) or `full` (no container). */
+  width?: 'content' | 'reading' | 'full';
+  class?: string;
+}
+
+const { id, surface = 'paper', labelledby, width = 'content', class: className } = Astro.props;
+---
+
+<section
+  id={id}
+  data-surface={surface}
+  aria-labelledby={labelledby}
+  class:list={['py-section-sm sm:py-section-md lg:py-section-lg', className]}
+>
+  {
+    width === 'full' ? (
+      <slot />
+    ) : (
+      <div
+        class:list={[
+          'mx-auto px-4 sm:px-6 lg:px-8',
+          width === 'reading' ? 'max-w-reading' : 'max-w-content',
+        ]}
+      >
+        <slot />
+      </div>
+    )
+  }
+</section>
