@@ -3,6 +3,7 @@ import type { Config } from 'tailwindcss';
 import type { ThemeContract } from '../wizard/src/design/theme-contract';
 
 import {
+  aspectRatio,
   borderRadius,
   boxShadow,
   fontFamily,
@@ -72,6 +73,7 @@ const theme = {
   },
   extend: {
     maxWidth,
+    aspectRatio,
   },
 } satisfies ThemeContract & Record<string, unknown>;
 

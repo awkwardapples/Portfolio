@@ -1,0 +1,61 @@
+---
+/**
+ * Get in touch (spec G.9), a stage band: one sentence, "Start a conversation"
+ * once /contact exists, the email address with a copy button, and the
+ * profiles that are in profile.yaml.
+ */
+import Section from '~/components/Section.astro';
+import { buttonClass } from '~/design/button';
+import { CopyEmail } from '~/islands/CopyEmail';
+import type { Profile } from '~/lib/content';
+import { ROUTES, isLinkable } from '~/lib/routes';
+
+interface Props {
+  profile: Profile;
+}
+
+const { profile } = Astro.props;
+const { email, linkedin, github } = profile.links;
+const profiles = [
+  ...(linkedin ? [{ href: linkedin, label: 'LinkedIn' }] : []),
+  ...(github ? [{ href: github, label: 'GitHub' }] : []),
+];
+---
+
+<Section id="get-in-touch" surface="stage" labelledby="get-in-touch-heading">
+  <h2 id="get-in-touch-heading" class="text-3xl" tabindex="-1" data-landing>Get in touch</h2>
+  <p class="mt-6 max-w-reading text-lg text-fog">
+    If you'd like to talk about a role, research or a website for your business, email me.
+  </p>
+  <div class="mt-10 flex flex-col gap-6">
+    {
+      isLinkable(ROUTES.contact) && (
+        <p>
+          <a href={ROUTES.contact.path} class={buttonClass({ surface: 'stage' })}>
+            {ROUTES.contact.label}
+          </a>
+        </p>
+      )
+    }
+    {
+      email && (
+        <p>
+          <CopyEmail client:visible email={email} surface="stage" />
+        </p>
+      )
+    }
+    {
+      profiles.length > 0 && (
+        <ul class="flex flex-wrap gap-x-6" role="list">
+          {profiles.map((link) => (
+            <li>
+              <a href={link.href} class={buttonClass({ variant: 'quiet', surface: 'stage' })}>
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+</Section>

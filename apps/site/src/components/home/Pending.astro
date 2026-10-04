@@ -1,0 +1,31 @@
+---
+/**
+ * A homepage section that is waiting on content or a later pass (spec T.4),
+ * shown in development only: its heading and what it needs. Production
+ * leaves the section out, and the threshold drops any answer that led to it.
+ */
+import Placeholder from '~/components/Placeholder.astro';
+import Section from '~/components/Section.astro';
+
+interface Props {
+  id?: string;
+  title: string;
+  surface?: 'paper' | 'stage';
+  /** What the section needs before it can appear. */
+  needs: string;
+}
+
+const { id, title, surface = 'paper', needs } = Astro.props;
+const headingId = `${id ?? title.toLowerCase().replaceAll(' ', '-')}-heading`;
+---
+
+{
+  import.meta.env.DEV && (
+    <Section id={id} surface={surface} labelledby={headingId} divided={surface === 'paper'}>
+      <h2 id={headingId} class="text-3xl" tabindex="-1" data-landing>
+        {title}
+      </h2>
+      <Placeholder label={needs} class="mt-heading-gap min-h-32" />
+    </Section>
+  )
+}

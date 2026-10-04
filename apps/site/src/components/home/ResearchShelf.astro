@@ -1,0 +1,36 @@
+---
+/** Research (spec G.3): a shelf of up to three documents, then "All research" once it exists. */
+import DocumentCard from '~/components/DocumentCard.astro';
+import Section from '~/components/Section.astro';
+import { buttonClass } from '~/design/button';
+import type { DocType } from '~/lib/format';
+import { ROUTES, isLinkable } from '~/lib/routes';
+
+export interface ShelfItem {
+  document: { file: string; title: string; docType: DocType; peerReviewed: boolean };
+  summary: string;
+  date?: Date | undefined;
+}
+
+interface Props {
+  items: readonly ShelfItem[];
+}
+
+const { items } = Astro.props;
+---
+
+<Section id="research" labelledby="research-heading" divided>
+  <h2 id="research-heading" class="text-3xl" tabindex="-1" data-landing>Research</h2>
+  <ul class="mt-heading-gap grid gap-12 sm:grid-cols-2 lg:grid-cols-3" role="list">
+    {items.map((item) => <DocumentCard {...item} />)}
+  </ul>
+  {
+    isLinkable(ROUTES.research) && (
+      <p class="mt-8">
+        <a href={ROUTES.research.path} class={buttonClass({ variant: 'quiet' })}>
+          All research
+        </a>
+      </p>
+    )
+  }
+</Section>

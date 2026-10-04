@@ -1,0 +1,104 @@
+---
+/**
+ * The intro (spec G.1), on paper: the portrait, the short bio in Josh's
+ * words, the "Now" list, and two calls to action that depend on the answer to
+ * "What brings you here?". Every set is in the HTML and CSS picks one
+ * (global.css, [data-cta-for]), so nothing renders on the client and nothing
+ * shifts. index.astro decides which calls to action exist.
+ *
+ * Returning visitors do not see the threshold, so the intro carries the
+ * page's h1 for them; first-time visitors see "About me" here instead. Only
+ * one of the two is ever displayed, so the page always shows one h1.
+ */
+import { Picture } from 'astro:assets';
+
+import Placeholder from '~/components/Placeholder.astro';
+import Section from '~/components/Section.astro';
+import { buttonClass } from '~/design/button';
+import type { Profile } from '~/lib/content';
+import type { CallToAction } from '~/lib/home';
+import type { IntentValue } from '~/lib/intents';
+
+interface Props {
+  profile: Profile;
+  /** The calls to action for each answer, primary first. */
+  ctas: Record<IntentValue, readonly CallToAction[]>;
+}
+
+const { profile, ctas } = Astro.props;
+const portrait = profile.portrait;
+// Without a portrait, production gives the text the full width; dev shows what is missing.
+const portraitColumn = Boolean(portrait) || import.meta.env.DEV;
+---
+
+<Section id="intro" labelledby="intro-heading">
+  <div class:list={['grid gap-10', portraitColumn && 'md:grid-cols-12 md:gap-12']}>
+    {
+      portraitColumn && (
+        <div class="md:col-span-4">
+          {portrait ? (
+            <Picture
+              src={portrait.src}
+              alt={portrait.alt}
+              formats={['avif', 'webp']}
+              widths={[320, 480, 720, 960].filter((width) => width <= portrait.src.width)}
+              sizes="(min-width: 768px) 30vw, (min-width: 480px) 60vw, 100vw"
+              loading="eager"
+              fetchpriority="high"
+              class="aspect-portrait h-auto w-full max-w-sm rounded-media object-cover"
+            />
+          ) : (
+            <Placeholder label="Photo needed: portrait" class="aspect-portrait max-w-sm" />
+          )}
+        </div>
+      )
+    }
+
+    <div class:list={[portraitColumn && 'md:col-span-8']}>
+      <h1 id="intro-heading" class="returning-only text-4xl" tabindex="-1" data-landing>
+        Josh Lennon
+      </h1>
+      <h2 class="first-visit-only text-3xl" tabindex="-1" data-landing>About me</h2>
+      <p class="mt-6 max-w-reading font-serif text-reading">{profile.bioShort}</p>
+
+      {
+        profile.now.length > 0 && (
+          <>
+            <h3 class="mt-10 font-sans text-sm font-medium text-graphite">Now</h3>
+            <ul class="mt-3 flex max-w-reading flex-col gap-2" role="list">
+              {profile.now.map((line) => (
+                <li>{line}</li>
+              ))}
+            </ul>
+          </>
+        )
+      }
+
+      {
+        (Object.entries(ctas) as [IntentValue, readonly CallToAction[]][]).map(([intent, set]) => (
+          <div class="mt-10 flex-wrap gap-3" data-cta-for={intent}>
+            {set.map((cta, index) => (
+              <a
+                href={cta.href}
+                download={cta.download || undefined}
+                class={buttonClass({ variant: index === 0 ? 'primary' : 'secondary' })}
+              >
+                {cta.label}
+              </a>
+            ))}
+          </div>
+        ))
+      }
+
+      <p class="returning-only mt-8">
+        <a
+          href="#threshold"
+          class="inline-flex min-h-11 items-center text-sm text-graphite underline underline-offset-4 hover:text-ink"
+          data-choose-again
+        >
+          Not what you're after? Choose again
+        </a>
+      </p>
+    </div>
+  </div>
+</Section>

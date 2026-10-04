@@ -19,7 +19,8 @@ test.describe('every page', () => {
 
   test('has one h1, a main landmark and a labelled navigation', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('h1')).toHaveCount(1);
+    // The intro's h1 is hidden until the visitor has answered the threshold.
+    await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
     await expect(page.locator('main')).toHaveCount(1);
     await expect(page.locator('header')).toHaveCount(1);
   });

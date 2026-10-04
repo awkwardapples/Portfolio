@@ -27,6 +27,19 @@ const { title, description, noindex = false } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--
+      Before the first paint: if this browser has answered "What brings you here?",
+      set html[data-intent] so the threshold stays hidden and the intro shows the
+      right calls to action (spec G.0). The answer never leaves the browser.
+    -->
+    <script is:inline>
+      try {
+        var stored = JSON.parse(localStorage.getItem('jl:intent') || 'null');
+        if (stored && /^(hiring|research|website|music|looking)$/.test(stored.value)) {
+          document.documentElement.dataset.intent = stored.value;
+        }
+      } catch (error) {}
+    </script>
     <Seo title={title} description={description} noindex={noindex} />
     <!-- Only the STIX roman file is preloaded: page titles and the threshold use it (spec E.3). -->
     <link rel="preload" href={stixRoman} as="font" type="font/woff2" crossorigin />
@@ -44,6 +57,9 @@ const { title, description, noindex = false } = Astro.props;
       <slot />
     </main>
     <Footer />
+    <script>
+      import '~/scripts/intent';
+    </script>
     {
       import.meta.env.DEV && (
         <script is:inline>

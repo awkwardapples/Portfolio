@@ -6,7 +6,8 @@
  *
  * Links appear once their pages exist (src/lib/routes.ts) and profiles once
  * their URLs are in the profile, so nothing here points nowhere. "Change
- * what brought you here" arrives with the threshold in Pass 4.
+ * what brought you here" shows once a visitor has answered the threshold's
+ * question; it forgets the answer and goes back to it (src/scripts/intent.ts).
  */
 import BrandIcon from '~/components/BrandIcon.astro';
 import { CopyEmail } from '~/islands/CopyEmail';
@@ -48,6 +49,11 @@ const year = new Date().getFullYear();
               </li>
             ))
           }
+          <li class="returning-only">
+            <a href="/#threshold" class="footer-link" data-choose-again>
+              Change what brought you here
+            </a>
+          </li>
         </ul>
       </nav>
 

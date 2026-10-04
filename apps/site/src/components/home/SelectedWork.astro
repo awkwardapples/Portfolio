@@ -1,0 +1,30 @@
+---
+/** Selected work (spec G.2): up to four rows, then "All work" once /work exists. */
+import Section from '~/components/Section.astro';
+import WorkRow from '~/components/WorkRow.astro';
+import { buttonClass } from '~/design/button';
+import type { Work } from '~/lib/content';
+import { ROUTES, isLinkable } from '~/lib/routes';
+
+interface Props {
+  entries: readonly Work[];
+}
+
+const { entries } = Astro.props;
+---
+
+<Section id="selected-work" labelledby="selected-work-heading" divided>
+  <h2 id="selected-work-heading" class="text-3xl" tabindex="-1" data-landing>Selected work</h2>
+  <ul class="mt-heading-gap" role="list">
+    {entries.map((entry) => <WorkRow entry={entry} />)}
+  </ul>
+  {
+    isLinkable(ROUTES.work) && (
+      <p class="mt-8">
+        <a href={ROUTES.work.path} class={buttonClass({ variant: 'quiet' })}>
+          All work
+        </a>
+      </p>
+    )
+  }
+</Section>

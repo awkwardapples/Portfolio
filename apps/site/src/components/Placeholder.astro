@@ -1,0 +1,26 @@
+---
+/**
+ * A flat, labelled block standing in for missing media, in development only
+ * (spec T.4): "Photo needed: badminton". Production renders nothing, and the
+ * section around it is left out when its content is missing.
+ */
+interface Props {
+  label: string;
+  class?: string;
+}
+
+const { label, class: className } = Astro.props;
+---
+
+{
+  import.meta.env.DEV && (
+    <div
+      class:list={[
+        'flex items-center justify-center rounded-media border border-dashed border-line-strong bg-paper-sunken p-6 text-center text-sm text-graphite',
+        className,
+      ]}
+    >
+      {label}
+    </div>
+  )
+}

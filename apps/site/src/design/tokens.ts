@@ -218,3 +218,9 @@ export const maxWidth = {
   content: '75rem', // 1200px
   reading: '68ch',
 } as const;
+
+/** Media proportions (spec E.4), added to Tailwind's square and video: the portrait and A4 pages. */
+export const aspectRatio = {
+  portrait: '4 / 5',
+  page: '1 / 1.4142',
+} as const;

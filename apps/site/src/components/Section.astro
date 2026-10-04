@@ -11,17 +11,31 @@ interface Props {
   labelledby?: string;
   /** `content` (1200 px), `reading` (68 characters) or `full` (no container). */
   width?: 'content' | 'reading' | 'full';
+  /** A hairline rule above the content, between consecutive paper sections. */
+  divided?: boolean;
   class?: string;
 }
 
-const { id, surface = 'paper', labelledby, width = 'content', class: className } = Astro.props;
+const {
+  id,
+  surface = 'paper',
+  labelledby,
+  width = 'content',
+  divided = false,
+  class: className,
+} = Astro.props;
 ---
 
 <section
   id={id}
   data-surface={surface}
   aria-labelledby={labelledby}
-  class:list={['py-section-sm sm:py-section-md lg:py-section-lg', className]}
+  class:list={[
+    divided
+      ? 'pb-section-sm sm:pb-section-md lg:pb-section-lg'
+      : 'py-section-sm sm:py-section-md lg:py-section-lg',
+    className,
+  ]}
 >
   {
     width === 'full' ? (
@@ -31,6 +45,7 @@ const { id, surface = 'paper', labelledby, width = 'content', class: className }
         class:list={[
           'mx-auto px-4 sm:px-6 lg:px-8',
           width === 'reading' ? 'max-w-reading' : 'max-w-content',
+          divided && 'border-t border-rule pt-section-sm sm:pt-section-md lg:pt-section-lg',
         ]}
       >
         <slot />

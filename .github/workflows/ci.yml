@@ -82,6 +82,17 @@ jobs:
           path: apps/site/playwright-report
           retention-days: 7
 
+      # Performance budgets on the homepage (spec P.1, Pass 4 acceptance): the
+      # median of three mobile runs against the built site. ADR-0047 records why
+      # Lighthouse CI runs as an action rather than a dependency; Pass 9 adds
+      # the other pages and budgets.
+      - name: Lighthouse budgets (LCP and CLS on the homepage)
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          configPath: ./lighthouserc.json
+          uploadArtifacts: true
+          temporaryPublicStorage: false
+
       - name: Guard - no source maps in the site output
         run: |
           if find apps/site/dist -name '*.map' -print -quit | grep -q .; then

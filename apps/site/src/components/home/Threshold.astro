@@ -1,0 +1,141 @@
+---
+/**
+ * The first-visit threshold (spec G.0, N.1): stage, full viewport height, the
+ * name, one factual sentence and "What brings you here?". Each answer is a
+ * real link to its homepage section, so it works without JavaScript. With
+ * JavaScript (src/scripts/threshold.ts) the choice is remembered in this
+ * browser only, the house lights come up, and focus lands on the section's
+ * heading. Returning visitors never see it: an inline script in <head> sets
+ * html[data-intent] before the first paint and CSS hides it.
+ *
+ * Answers whose section has nothing to show yet are left out, along with the
+ * section itself (spec T.4).
+ */
+import type { Intent } from '~/lib/intents';
+
+interface Props {
+  sentence: string;
+  options: readonly Intent[];
+}
+
+const { sentence, options } = Astro.props;
+---
+
+<section
+  id="threshold"
+  class="threshold first-visit-only"
+  data-surface="stage"
+  data-threshold
+  aria-labelledby="threshold-name"
+>
+  <div
+    class="mx-auto flex min-h-svh max-w-content flex-col justify-center px-4 py-16 sm:px-6 lg:px-8"
+  >
+    <h1 id="threshold-name" class="text-display">Josh Lennon</h1>
+    <p class="threshold-sentence mt-8 max-w-reading text-lg">{sentence}</p>
+
+    <h2 id="threshold-question" class="mt-16 text-2xl" tabindex="-1">What brings you here?</h2>
+    <ul class="mt-6 max-w-reading" role="list">
+      {
+        options.map((option) => (
+          <li class="threshold-row">
+            <a
+              href={`#${option.target}`}
+              class="threshold-option"
+              data-intent-option={option.value}
+            >
+              <span class="option-label font-serif text-2xl md:text-3xl">{option.label}</span>
+              {option.description && (
+                <span class="option-description text-base">{option.description}</span>
+              )}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<script>
+  import '~/scripts/threshold';
+</script>
+
+<style>
+  .threshold {
+    transition-property: background-color, color;
+    transition-duration: theme('transitionDuration.slow');
+    transition-timing-function: theme('transitionTimingFunction.DEFAULT');
+  }
+
+  .threshold-sentence,
+  .option-description {
+    color: theme('colors.fog');
+    transition: color theme('transitionDuration.slow') theme('transitionTimingFunction.DEFAULT');
+  }
+
+  .threshold-row {
+    border-top: 1px solid theme('colors.graphite');
+  }
+
+  .threshold-row:last-child {
+    border-bottom: 1px solid theme('colors.graphite');
+  }
+
+  .threshold-option {
+    display: flex;
+    min-height: theme('spacing.12');
+    flex-direction: column;
+    justify-content: center;
+    gap: theme('spacing.1');
+    padding: theme('spacing.4') 0;
+    color: theme('colors.paper');
+    text-decoration: none;
+    transition: opacity theme('transitionDuration.fast') theme('transitionTimingFunction.DEFAULT');
+  }
+
+  .option-label {
+    line-height: 1.15;
+    transition: color theme('transitionDuration.fast') theme('transitionTimingFunction.DEFAULT');
+  }
+
+  .threshold-option:hover .option-label,
+  .threshold-option:focus-visible .option-label {
+    color: theme('colors.tungsten');
+  }
+
+  /* N.1: the chosen row holds while the others fade... */
+  .threshold[data-choosing] .threshold-option:not([data-chosen]) {
+    opacity: 0;
+  }
+
+  .threshold[data-choosing] [data-chosen] .option-label {
+    color: theme('colors.tungsten');
+  }
+
+  /* ...then the house lights come up: stage yields to paper. */
+  .threshold[data-lights-up] {
+    background-color: theme('colors.paper');
+    color: theme('colors.ink');
+  }
+
+  .threshold[data-lights-up] .threshold-sentence,
+  .threshold[data-lights-up] .option-description {
+    color: theme('colors.graphite');
+  }
+
+  .threshold[data-lights-up] [data-chosen] .option-label {
+    color: theme('colors.ink');
+  }
+
+  .threshold[data-lights-up] .threshold-row {
+    border-color: theme('colors.rule');
+  }
+
+  @media (max-width: 639px) {
+    .threshold,
+    .threshold-sentence,
+    .option-description {
+      transition-duration: theme('transitionDuration.DEFAULT');
+    }
+  }
+</style>
