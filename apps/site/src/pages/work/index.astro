@@ -1,0 +1,64 @@
+---
+/**
+ * All work (spec F.1, H.6): rows as on the homepage, newest first, grouped
+ * by kind under headings. Without JavaScript every group shows; with it the
+ * filter control (All, Research, Software, Venture, Music, Writing) filters
+ * instantly and mirrors the choice in `?kind=`. Only kinds with work appear.
+ */
+import FilterControl from '~/components/FilterControl.astro';
+import Section from '~/components/Section.astro';
+import WorkRow from '~/components/WorkRow.astro';
+import { KINDS } from '~/content/schemas/work';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { getWork } from '~/lib/content';
+import { KIND_LABELS } from '~/lib/format';
+
+const work = await getWork();
+const groups = KINDS.map((kind) => ({
+  kind,
+  label: KIND_LABELS[kind],
+  entries: work.filter((entry) => entry.data.kind === kind),
+})).filter((group) => group.entries.length > 0);
+
+// "Research and software, newest first." from the kinds that have work.
+const labels = groups.map((group) => group.label.toLowerCase());
+const kinds =
+  labels.length > 1 ? `${labels.slice(0, -1).join(', ')} and ${labels.at(-1)}` : (labels[0] ?? 'work');
+const intro = `${kinds.charAt(0).toUpperCase()}${kinds.slice(1)}, newest first.`;
+---
+
+<BaseLayout
+  title="Work | Josh Lennon"
+  description={`Work by Josh Lennon: ${kinds}, newest first.`}
+>
+  <Section labelledby="work-heading">
+    <h1 id="work-heading" class="text-4xl">Work</h1>
+    <p class="mt-6 max-w-reading text-lg">{intro}</p>
+    {
+      groups.length > 1 && (
+        <div class="mt-10">
+          <FilterControl
+            param="kind"
+            label="Show work of one kind"
+            options={groups.map((group) => ({ value: group.kind, label: group.label }))}
+          />
+        </div>
+      )
+    }
+
+    {
+      groups.map((group) => (
+        <section class="mt-16" aria-labelledby={`kind-${group.kind}`} data-filter-group>
+          <h2 id={`kind-${group.kind}`} class="text-2xl">
+            {group.label}
+          </h2>
+          <ul class="mt-6" role="list">
+            {group.entries.map((entry) => (
+              <WorkRow entry={entry} filterTags={group.kind} />
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </Section>
+</BaseLayout>

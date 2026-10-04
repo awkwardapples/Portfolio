@@ -1,0 +1,17 @@
+---
+/**
+ * A note set apart from the narrative (spec T.2), for hand-written MDX:
+ *
+ *   <Aside title="A note">Text set apart from the narrative.</Aside>
+ */
+interface Props {
+  title?: string;
+}
+
+const { title } = Astro.props;
+---
+
+<aside class="my-8 max-w-reading border-l-2 border-line-strong pl-5">
+  {title && <p class="font-sans text-sm font-medium">{title}</p>}
+  <div class="text-base"><slot /></div>
+</aside>

@@ -1,0 +1,54 @@
+---
+/**
+ * Every paragraph in an MDX body passes through here (spec T.2), so Josh
+ * can embed media without knowing component names:
+ *
+ * - a YouTube or Spotify link alone on a line becomes its facade;
+ * - a link to a document alone on a line becomes its document card;
+ * - an image alone on a line becomes a figure, with the image's title (the
+ *   quoted text after the path) as its caption.
+ *
+ * Anything else is an ordinary paragraph.
+ */
+import { getCollection } from 'astro:content';
+
+import DocumentCard from '~/components/DocumentCard.astro';
+import Spotify from '~/components/media/Spotify.astro';
+import YouTube from '~/components/media/YouTube.astro';
+import { embedFor, loneImage, loneLink } from '~/lib/embeds';
+
+const html = (await Astro.slots.render('default')).trim();
+const link = loneLink(html);
+const embed = link ? embedFor(link.href, link.text) : undefined;
+const image = embed ? undefined : loneImage(html);
+
+// A document card needs the document's metadata, which lives on its work entry.
+let document;
+if (embed?.type === 'document') {
+  const entries = await getCollection('work');
+  document = entries
+    .flatMap((entry) => entry.data.documents)
+    .find((candidate) => candidate.file === embed.file);
+}
+---
+
+{
+  embed?.type === 'youtube' ? (
+    <YouTube id={embed.id} title={embed.title} start={embed.start} class="my-8" />
+  ) : embed?.type === 'spotify' ? (
+    <Spotify url={embed.url} title={embed.title} class="my-8" />
+  ) : document ? (
+    <ul class="my-8" role="list">
+      <DocumentCard document={document} layout="row" />
+    </ul>
+  ) : image ? (
+    <figure class="my-8 flex flex-col gap-3">
+      <Fragment set:html={image.img} />
+      {image.caption && (
+        <figcaption class="max-w-reading text-xs text-graphite">{image.caption}</figcaption>
+      )}
+    </figure>
+  ) : (
+    <p set:html={html} />
+  )
+}

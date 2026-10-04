@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-10-04 (Portfolio Pass 4)_
+_Last updated: 2026-10-04 (Portfolio Pass 5)_
 
 This repository is being turned into Josh Lennon's portfolio. The governing document is [`docs/portfolio-spec.md`](portfolio-spec.md) (v1.2). Work happens in the passes of its section V on the `portfolio-transformation` branch, with a draft pull request open against `main` and a merge to `main` at the end of each pass once its gates are green. The GrowTrades platform's own state, as last recorded, is archived in [`archive/growtrades-platform/current-state.md`](archive/growtrades-platform/current-state.md).
 
@@ -13,14 +13,28 @@ This repository is being turned into Josh Lennon's portfolio. The governing docu
 | 2    | Content model, migration and media tooling | Done 2026-10-04 |
 | 3    | Visual system and global layout            | Done 2026-10-04 |
 | 4    | Homepage, threshold and navigation flow    | Done 2026-10-04 |
-| 5    | Work, research, log and about pages        | Next            |
-| 6    | Contact wizard and submission pipeline     |                 |
+| 5    | Work, research, log and about pages        | Done 2026-10-04 |
+| 6    | Contact wizard and submission pipeline     | Next            |
 | 7    | GrowTrades case study and SCB demo         |                 |
 | 8    | Music, media, GitHub and LinkedIn          |                 |
 | 9    | Responsive, performance and accessibility  |                 |
 | 10   | SEO foundations, documentation and launch  |                 |
 
 ## What exists
+
+### Pass 5: Work, research, log and about pages (2026-10-04)
+
+- `/work/<slug>` (spec H.6): the header with kind, date, status, an attribution line generated from the data ("Sole author. BSc dissertation, University of Manchester. Awarded 76% (first class).") and evidence actions; the lead artefact (the first video, else the first document, else the cover); the summary and the MDX body; documents, media, numbered references, a statement of authorship from `authorship`, updates from the log, and related work. Every generated phrase comes from a field (`src/lib/work.ts`, unit-tested). The `case-study` template arrives with GrowTrades in Pass 7.
+- `/work`: rows newest first, grouped by kind. The filter (All and each kind that has work) is instant, mirrored in `?kind=`, applied on arrival and announced; without JavaScript every group shows and the control is hidden.
+- `/research`: the documents of every research entry, each with its cover, metadata, summary, a link to its work, and "Cite". A sentence states the peer-review position of what is on the shelf.
+- Documents (spec H.7): "Read here" (wider screens only; the browser's own PDF viewer in an inline frame, created on click), "Open in a new tab" and "Download (PDF, size)". `/documents/*` may now be framed by this site only (`frame-ancestors 'self'` instead of `X-Frame-Options: DENY`).
+- Citations (`src/lib/citation.ts`): plain text in APA style and BibTeX, `@thesis` with the programme as `type` for the dissertation and `@misc` otherwise, with `note = {Not peer-reviewed}` where true. Every BibTeX output is parsed in the unit tests by a strict parser in `src/lib/testing/bibtex-parser.ts`, written here because no BibTeX parser is an approved dependency (spec U.6); it also rejects unescaped special characters. Copy buttons for both formats.
+- `/about` (spec L): the bio verbatim, the availability line, one timeline of education, work and posts (experience joins once its start dates are confirmed), newest first, whose line fills with tungsten as it scrolls (a CSS scroll-driven animation, full and static where unsupported or with reduced motion), and the skills as three plain lists, each linking to work that lists it in `tech`. The CV button appears once `cv.pdf` exists.
+- `/log` and `/log/<slug>` (month headings, thread filter on the same control) and `/rss.xml`. With no posts yet, `/log` is not built and the footer links neither it nor the feed.
+- Media (spec N.7, N.15, N.16): YouTube and Spotify facades (a link to the provider without JavaScript; the player is created only on Play, privacy-enhanced for YouTube, and takes focus), self-hosted video and native audio with transcripts, and a lightbox for zoomable figures (native dialog, arrows, Escape, focus return; verified in the style guide, since no published entry has photos yet).
+- MDX conveniences (spec T.2; ADR-0041 addendum): a YouTube or Spotify link, a document link, or an image alone on its line becomes a facade, a document card or a captioned figure; `<Figure>`, `<Video>`, `<Audio>`, `<YouTube>`, `<Spotify>` and `<Aside>` work without imports. Verified with a temporary body edit (reverted) and unit tests; documented in [`authoring-guide.md`](authoring-guide.md).
+- Navigation: Work, Research and About are live in production; the homepage's work titles link to their pages, the research call to action goes to `/research`, and the shelf gained "Cite".
+- Browser tests (`e2e/content.spec.ts`, 13 per device): axe on every route, one h1 and no horizontal scroll at 320 px on every route, the current section marked, every listed entry renders, the filter with and without JavaScript and from the URL, Open, Download and the PDF's headers, "Read here" on desktop and its absence on phones, "Cite", no request to YouTube before Play, the timeline order, the sitemap and the feed. The threshold test now covers a deep link to a work page.
 
 ### Pass 4: Homepage, threshold and navigation flow (2026-10-04)
 
@@ -79,20 +93,36 @@ This repository is being turned into Josh Lennon's portfolio. The governing docu
 - `docs/portfolio-spec.md` committed and excluded from Prettier, so each version Josh supplies stays byte-for-byte as supplied.
 - History scans of every blob on every ref (including inside `.docx`, `.tar.gz` and PDF streams) and every commit message, with values never printed. Before the rewrite, the only live Make.com webhook token and the only Google Sheet link were in `docs/Agency Docs/Technical Onboarding.IPYNB`. After it, a fresh clone from GitHub has neither, and no agency document, in any of its 285 commits. No Turnstile secret key existed anywhere: the `0x4A…` values in tests and the plugin are the public SCB site key, and the `1x/2x/3x000…` values are Cloudflare's documented test keys. Other `hook.eu1.make.com/…` strings are placeholders (`abc123def456`, `<real-id>`), and `.env.example` on `deploy/test-live` has empty values.
 
-## Gate state (last verified: Pass 4, 2026-10-04)
+## Gate state (last verified: Pass 5, 2026-10-04)
 
 Node 24.21.0, pnpm 9.15.0, Windows.
 
 - `pnpm format:check`: clean.
 - `pnpm lint`: ESLint 0 errors and 0 warnings in the wizard, the site and the Worker; `scripts/check-design.mjs` clean.
 - `pnpm typecheck`: 0 errors (wizard production and test tsconfig, Worker).
-- `pnpm test`: **945 passed**: wizard 867 (the original 856 plus 11 theme-contract checks, 67 files), site 72 (6 files: URLs, content checks, contrast, theme contract, labels, homepage decisions), Worker 6.
+- `pnpm test`: **968 passed**: wizard 867 (the original 856 plus 11 theme-contract checks, 67 files), site 95 (10 files: URLs, content checks, contrast, theme contract, labels, homepage decisions, citations, work text, embeds, timeline), Worker 6.
 - `pnpm --filter @jl/site check`: 0 errors, 0 warnings (one hint: `tseslint.config()` is deprecated).
 - `pnpm --filter @jl/edge test`: 6/6.
 - `pnpm build`: clean, no placeholders in the built site. Wizard JS 99.50 kB gzip (unchanged). Homepage JavaScript before interaction: about 2 kB gzip (navigation, prefetch, the threshold and the stored answer); React loads only when a copy button comes into view.
-- `pnpm test:e2e`: 40 passed on desktop and an emulated phone (4 phone-only tests skipped on desktop), zero serious or critical axe violations.
-- Pass 4 acceptance: the six required threshold tests pass, axe is clean in both states, and Lighthouse CI checks LCP and CLS on every push (first CI run: median LCP 1.59 s, CLS 0, performance score 99 on the mobile preset; the LCP element is the threshold sentence). Spec X reviewed below.
+- `pnpm test:e2e`: 67 passed on desktop and an emulated phone (7 skipped where a test applies to one device only), zero serious or critical axe violations on every route.
+- Pass 5 acceptance: every published entry renders; filters work with and without JavaScript; documents open and download; citations parse in a unit test; axe is clean on every route. Spec X reviewed below.
+- Lighthouse CI (homepage): first run in Pass 4 gave a median LCP of 1.59 s, CLS 0 and a performance score of 99 on the mobile preset.
 - PHP: not run; the plugin is unchanged.
+
+## Anti-slop review (spec X), Pass 5
+
+- No gradients, blur, glass, glow or decorative shadows: none. The lightbox is flat stage; the facades are flat stage panels.
+- No purple: none.
+- One accent: tungsten is the timeline's fill line, the stage's Play button and the threshold; never text on paper.
+- No rows of identical cards: work rows show their artefacts; documents show their own first pages; the about page has no cards at all.
+- Icons: none added; the lightbox and viewer controls are text buttons.
+- No spinners: none.
+- No all-caps labels, coloured or italic headline words, middle dots or arrows in link text: none; metadata sits in separate elements.
+- Motion: the timeline fill (N.9) only, CSS-driven, with a static fallback.
+- Rhythm and measure from tokens; long-form bodies at 68 characters and 1.6 line height.
+- Copy: the only new sentences are generated from fields (attribution, authorship, peer-review status) or are functional ("Playing loads the video from YouTube."). No claim about Josh beyond the content.
+- Aceternity or 21st.dev components: none; the timeline is the N.9 idea built in CSS.
+- Without JavaScript: every page reads in full; filters show everything; documents open and download; facades are links.
 
 ## Anti-slop review (spec X), Pass 4
 
@@ -134,6 +164,8 @@ Needs Josh, for content (each one keeps an entry or item a draft until it is ans
 - None of the three PDFs has an embedded title. Optional: re-export with File, Properties, Title set.
 - **Selected work.** Only the dissertation is featured and published, so the homepage fills the other rows with the newest published work (today the neural network). The proposed order in spec Y.4 is GrowTrades second, the agentic risk-assessment prototype third once there is evidence, and the deep-learning paper fourth; each needs its draft finished first.
 - **Bio.** The intro uses `bioShort` from spec Y.2 verbatim. The optional first-person bio (spec Y.7) is used only if Josh approves it.
+- **The first log post.** `/log` and the feed's footer links appear with it (`pnpm new post`).
+- **Citations name "Josh Lennon"**, from the profile, while the dissertation's title page says "Joshua Lennon". Either is easy to switch; say which you want in citations.
 
 Needs Josh, for set-up:
 

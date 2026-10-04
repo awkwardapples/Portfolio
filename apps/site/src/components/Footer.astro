@@ -11,11 +11,19 @@
  */
 import BrandIcon from '~/components/BrandIcon.astro';
 import { CopyEmail } from '~/islands/CopyEmail';
-import { getProfile } from '~/lib/content';
-import { FOOTER_NAV, MAIN_NAV, isLinkable } from '~/lib/routes';
+import { getPosts, getProfile } from '~/lib/content';
+import { FOOTER_NAV, MAIN_NAV, ROUTES, isLinkable } from '~/lib/routes';
 
 const profile = await getProfile();
-const siteLinks = [{ path: '/', label: 'Home' }, ...MAIN_NAV.filter(isLinkable), ...FOOTER_NAV.filter(isLinkable)];
+// The log and its feed are linked once there is a post to read.
+const hasPosts = (await getPosts()).length > 0;
+const siteLinks = [
+  { path: '/', label: 'Home' },
+  ...MAIN_NAV.filter(isLinkable),
+  ...FOOTER_NAV.filter(isLinkable).filter(
+    (route) => hasPosts || (route !== ROUTES.log && route !== ROUTES.rss),
+  ),
+];
 
 interface ProfileLink {
   href: string;

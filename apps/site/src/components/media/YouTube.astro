@@ -1,0 +1,49 @@
+---
+/**
+ * A YouTube video as a facade (spec N.7, P.2): nothing loads from YouTube
+ * until the visitor asks. The poster is a plain stage panel with the title;
+ * "Play the video" is a link to the video on YouTube, so it works without
+ * JavaScript, and with JavaScript (src/scripts/embeds.ts) it swaps in the
+ * privacy-enhanced player and moves focus to it.
+ */
+import { buttonClass } from '~/design/button';
+
+interface Props {
+  id: string;
+  title: string;
+  start?: number | undefined;
+  playlist?: string | undefined;
+  class?: string;
+}
+
+const { id, title, start, playlist, class: className } = Astro.props;
+const watch = new URL('https://www.youtube.com/watch');
+watch.searchParams.set('v', id);
+if (playlist) watch.searchParams.set('list', playlist);
+if (start) watch.searchParams.set('t', `${start}s`);
+
+const embed = new URL(`https://www.youtube-nocookie.com/embed/${id}`);
+embed.searchParams.set('autoplay', '1');
+if (playlist) embed.searchParams.set('list', playlist);
+if (start) embed.searchParams.set('start', String(start));
+---
+
+<figure class:list={['flex flex-col gap-3', className]}>
+  <div
+    class="flex aspect-video w-full flex-col items-start justify-end gap-4 rounded-media p-6"
+    data-surface="stage"
+    data-embed={embed.href}
+    data-embed-title={`${title} (YouTube video)`}
+    data-embed-allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+  >
+    <p class="max-w-reading font-serif text-xl">{title}</p>
+    <a href={watch.href} class={buttonClass({ surface: 'stage' })} data-embed-play>
+      Play the video<span class="sr-only">: {title}</span>
+    </a>
+  </div>
+  <figcaption class="text-xs text-graphite">Playing loads the video from YouTube.</figcaption>
+</figure>
+
+<script>
+  import '~/scripts/embeds';
+</script>

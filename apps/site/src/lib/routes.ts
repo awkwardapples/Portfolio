@@ -14,14 +14,15 @@ export interface SiteRoute {
 }
 
 export const ROUTES = {
-  work: { path: '/work', label: 'Work', ready: false }, // Pass 5
-  research: { path: '/research', label: 'Research', ready: false }, // Pass 5
+  work: { path: '/work', label: 'Work', ready: true },
+  research: { path: '/research', label: 'Research', ready: true },
   music: { path: '/music', label: 'Music', ready: false }, // Pass 8
-  about: { path: '/about', label: 'About', ready: false }, // Pass 5
-  log: { path: '/log', label: 'Log', ready: false }, // Pass 5
+  about: { path: '/about', label: 'About', ready: true },
+  // Built once the first post exists; the footer checks (Footer.astro).
+  log: { path: '/log', label: 'Log', ready: true },
   contact: { path: '/contact', label: 'Start a conversation', ready: false }, // Pass 6
   privacy: { path: '/privacy', label: 'Privacy', ready: false }, // Pass 6
-  rss: { path: '/rss.xml', label: 'RSS', ready: false }, // Pass 5
+  rss: { path: '/rss.xml', label: 'RSS', ready: true },
 } as const satisfies Record<string, SiteRoute>;
 
 /** Main navigation, in order (spec F.2). */

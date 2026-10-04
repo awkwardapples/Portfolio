@@ -256,7 +256,11 @@ const sampleCover = documentInfo('kerr-microscopy-dissertation.pdf')?.cover;
           caption="The dissertation's title page, rendered from the PDF."
           number={1}
           sizes="(min-width: 768px) 68ch, 100vw"
+          zoom
         />
+        <p class="mt-4 text-sm text-graphite">
+          With <code>zoom</code>, the image opens in the lightbox (spec N.15).
+        </p>
       </Section>
     )
   }

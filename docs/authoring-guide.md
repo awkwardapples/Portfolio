@@ -72,6 +72,40 @@ Every image needs alt text that says what it shows. Photos of other people need 
 
 Photos: run `pnpm media:images <files> --to <entry folder>` first. It resizes them, fixes their rotation and removes location data. PDFs: run `pnpm media:pdf <file> --to <entry folder>`, then list the document under `documents:`. Both commands print the lines to paste. The details are in [`media-pipeline.md`](media-pipeline.md).
 
+## In the body
+
+Some things in the body of an entry or post turn into richer blocks on their own. Each one has to be **alone on its line**, with a blank line before and after:
+
+| Write                                                      | You get                                                   |
+| ---------------------------------------------------------- | --------------------------------------------------------- |
+| `https://youtu.be/wWAGaOdlyMw`                             | the video, which loads from YouTube only when played      |
+| `[Testing on the Iris data](https://youtu.be/wWAGaOdlyMw)` | the same, with the link text as its title                 |
+| `https://open.spotify.com/track/...`                       | the track, which loads Spotify's player only when played  |
+| `[The report](/documents/neural-network-iris-report.pdf)`  | the document's card: cover, page count, Open and Download |
+| `![What the image shows](./photo.jpg "Where and when")`    | the image as a figure, with the quoted text as caption    |
+
+A link inside a sentence stays an ordinary link. A document card needs the PDF listed under some entry's `documents:`, which is where its details come from.
+
+For more control, these components work in any `.mdx` body without an import:
+
+```mdx
+import photo from './photo.jpg';
+
+<Figure src={photo} alt="What the image shows" caption="Where and when" zoom />
+
+<Aside title="A note">Text set apart from the narrative.</Aside>
+
+<YouTube id="wWAGaOdlyMw" title="Testing on the Iris data" start={65} />
+
+<Spotify url="https://open.spotify.com/track/..." title="Track title" />
+
+<Video name="studio-loop" title="What the footage shows" />
+
+<Audio src="/media/audio/demo.mp3" title="Demo" transcript="..." />
+```
+
+`zoom` on a `<Figure>` opens the image full size in a viewer. The before-and-after comparison (`<Compare>`) arrives once there are Kerr images that can be published.
+
 ## The profile
 
 `content/profile/profile.yaml` holds your name, headline, bios, the "Now" list, links, education, experience and skills. Things still missing are noted in comments starting `# TODO(josh)`. To add one, write the field and delete the comment; for example, once you have the LinkedIn URL:

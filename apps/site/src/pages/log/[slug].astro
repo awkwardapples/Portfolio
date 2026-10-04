@@ -1,0 +1,73 @@
+---
+/**
+ * A log post (spec H.4): the date, threads and title, the project it
+ * belongs to, the summary, the body, and its media.
+ */
+import { getEntry, render } from 'astro:content';
+
+import MediaItem from '~/components/media/MediaItem.astro';
+import { mdxComponents } from '~/components/mdx';
+import Section from '~/components/Section.astro';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { SHOW_DRAFTS, dateOf, getPosts, type Post } from '~/lib/content';
+import { isoDate } from '~/lib/format';
+import { THREAD_LABELS } from '~/lib/threads';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+const { data } = post;
+const { Content } = await render(post);
+const date = dateOf(data.date);
+const day = date?.toLocaleDateString('en-GB', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+const project = data.project ? await getEntry(data.project) : undefined;
+const projectLink = project && (SHOW_DRAFTS || !project.data.draft) ? project : undefined;
+---
+
+<BaseLayout title={`${data.title} | Josh Lennon`} description={data.summary}>
+  <Section labelledby="post-title" width="reading">
+    <nav aria-label="Breadcrumb" class="text-sm">
+      <a href="/log" class="text-graphite underline underline-offset-4 hover:text-ink">Log</a>
+    </nav>
+    <p class="mt-4 flex flex-wrap gap-x-4 text-sm text-graphite">
+      {date && <time datetime={isoDate(date)}>{day}</time>}
+      <span>{data.threads.map((thread) => THREAD_LABELS[thread]).join(', ')}</span>
+    </p>
+    <h1 id="post-title" class="mt-2 text-2xl sm:text-3xl lg:text-4xl">
+      {data.title}
+      {data.draft && <span class="font-sans text-sm text-graphite">(draft)</span>}
+    </h1>
+    {
+      projectLink && (
+        <p class="mt-4 text-sm">
+          Part of <a href={`/work/${projectLink.id}`}>{projectLink.data.title}</a>
+        </p>
+      )
+    }
+    <p class="mt-8 font-serif text-lg">{data.summary}</p>
+    <div class="prose-body mt-8">
+      <Content components={mdxComponents} />
+    </div>
+    {
+      data.media.length > 0 && (
+        <div class="mt-12 flex flex-col gap-12">
+          {data.media.map((item) => (
+            <MediaItem item={item} />
+          ))}
+        </div>
+      )
+    }
+  </Section>
+</BaseLayout>

@@ -1,0 +1,249 @@
+---
+/**
+ * A piece of work (spec H.6, `standard` template): the header with the
+ * attribution line and evidence actions, the lead artefact, the summary and
+ * Josh's narrative, then documents, media, references, the statement of
+ * authorship, updates from the log and related work. Every line of
+ * generated text comes from the entry's data (src/lib/work.ts).
+ *
+ * The `case-study` template (GrowTrades) arrives in Pass 7; until then such
+ * entries render with this one.
+ */
+import { getEntry, render } from 'astro:content';
+
+import DocumentCard from '~/components/DocumentCard.astro';
+import Figure from '~/components/Figure.astro';
+import MediaItem from '~/components/media/MediaItem.astro';
+import { mdxComponents } from '~/components/mdx';
+import PostItem from '~/components/PostItem.astro';
+import Section from '~/components/Section.astro';
+import WorkRow from '~/components/WorkRow.astro';
+import { buttonClass } from '~/design/button';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { bibtexCitation, plainCitation } from '~/lib/citation';
+import { SHOW_DRAFTS, dateOf, getPosts, getProfile, getWork, type Work } from '~/lib/content';
+import { documentInfo } from '~/lib/documents';
+import { KIND_LABELS, isoDate, monthYear, readDocumentLabel } from '~/lib/format';
+import { ROUTES } from '~/lib/routes';
+import { STATUS_LABELS, attributionLine, authorshipStatement, citationInput } from '~/lib/work';
+
+export async function getStaticPaths() {
+  const work = await getWork();
+  return work.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+interface Props {
+  entry: Work;
+}
+
+const { entry } = Astro.props;
+const { data } = entry;
+const { Content } = await render(entry);
+const profile = await getProfile();
+const date = dateOf(data.date);
+const site = Astro.site ?? new URL('https://joshlennon.com');
+
+// The lead artefact (spec H.6 item 2): the first video, else the first
+// document, else the cover image. (A demo frame, the first choice, arrives
+// with the SCB demo in Pass 7.)
+const leadMedia = data.media.find((item) => item.type === 'youtube' || item.type === 'video');
+const [leadDocument, ...otherDocuments] = leadMedia ? [] : data.documents;
+const documents = leadMedia ? data.documents : otherDocuments;
+const otherMedia = data.media.filter((item) => item !== leadMedia);
+
+const citationFor = (document: (typeof data.documents)[number]) =>
+  date
+    ? (() => {
+        const input = citationInput(data, document, { name: profile.name, site, date });
+        return { plain: plainCitation(input), bibtex: bibtexCitation(input) };
+      })()
+    : undefined;
+
+const actions = [
+  ...data.documents.map((document) => {
+    const info = documentInfo(document.file);
+    return {
+      label: readDocumentLabel(document.docType, info),
+      href: info?.url ?? `/documents/${document.file}`,
+    };
+  }),
+  ...data.links.map((link) => ({ label: link.label, href: link.url })),
+];
+
+const hasExternalMedia =
+  data.media.some((item) => 'credit' in item && item.credit.owner === 'external') ||
+  data.documents.some((document) => document.credit.owner === 'external');
+const authorship = authorshipStatement(data, hasExternalMedia);
+
+const updates = (await getPosts()).filter((post) => post.data.project?.id === entry.id);
+
+const related = (await Promise.all(data.related.map((reference) => getEntry(reference)))).filter(
+  (candidate): candidate is Work =>
+    candidate !== undefined && (SHOW_DRAFTS || !candidate.data.draft),
+);
+
+const title = data.seo?.title ?? data.title;
+---
+
+<BaseLayout title={`${title} | Josh Lennon`} description={data.seo?.description ?? data.summary}>
+  <Section labelledby="work-title">
+    <nav aria-label="Breadcrumb" class="text-sm">
+      <a href={ROUTES.work.path} class="text-graphite underline underline-offset-4 hover:text-ink">
+        Work
+      </a>
+    </nav>
+    <h1 id="work-title" class="mt-4 max-w-reading text-2xl sm:text-3xl lg:text-4xl">
+      {data.title}
+      {data.draft && <span class="font-sans text-sm text-graphite">(draft)</span>}
+    </h1>
+    {data.subtitle && <p class="mt-3 max-w-reading font-serif text-xl text-graphite">{data.subtitle}</p>}
+    <p class="mt-6 flex flex-wrap gap-x-4 text-sm text-graphite">
+      <span>{KIND_LABELS[data.kind]}</span>
+      {date && <time datetime={isoDate(date)}>{monthYear(date)}</time>}
+      <span>{STATUS_LABELS[data.status]}</span>
+    </p>
+    <p class="mt-2 max-w-reading">{attributionLine(data)}</p>
+    {
+      actions.length > 0 && (
+        <ul class="mt-4 flex flex-wrap gap-x-6" role="list">
+          {actions.map((action) => (
+            <li>
+              <a href={action.href} class={buttonClass({ variant: 'quiet' })}>
+                {action.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+
+    <div class="mt-heading-gap">
+      {
+        leadMedia ? (
+          <div class="max-w-4xl">
+            <MediaItem item={leadMedia} />
+          </div>
+        ) : leadDocument ? (
+          <ul role="list">
+            <DocumentCard
+              document={leadDocument}
+              date={date}
+              citation={citationFor(leadDocument)}
+              layout="row"
+              headingLevel="h2"
+            />
+          </ul>
+        ) : data.cover ? (
+          <Figure
+            src={data.cover}
+            alt={data.coverAlt ?? ''}
+            priority
+            sizes="(min-width: 1280px) 1200px, 100vw"
+          />
+        ) : null
+      }
+    </div>
+
+    <p class="mt-heading-gap max-w-reading font-serif text-lg">{data.summary}</p>
+    <div class="prose-body mt-8">
+      <Content components={mdxComponents} />
+    </div>
+  </Section>
+
+  {
+    documents.length > 0 && (
+      <Section labelledby="documents-heading" divided>
+        <h2 id="documents-heading" class="text-2xl">
+          Documents
+        </h2>
+        <ul class="mt-8 flex flex-col gap-12" role="list">
+          {documents.map((document) => (
+            <DocumentCard
+              document={document}
+              date={date}
+              citation={citationFor(document)}
+              layout="row"
+            />
+          ))}
+        </ul>
+      </Section>
+    )
+  }
+
+  {
+    otherMedia.length > 0 && (
+      <Section labelledby="media-heading" divided>
+        <h2 id="media-heading" class="text-2xl">
+          Media
+        </h2>
+        <div class="mt-8 flex max-w-4xl flex-col gap-12">
+          {otherMedia.map((item) => (
+            <MediaItem item={item} />
+          ))}
+        </div>
+      </Section>
+    )
+  }
+
+  {
+    data.references.length > 0 && (
+      <Section labelledby="references-heading" divided>
+        <h2 id="references-heading" class="text-2xl">
+          References
+        </h2>
+        <ol class="mt-8 flex max-w-reading list-decimal flex-col gap-3 pl-6 text-base">
+          {data.references.map((reference) => (
+            <li>
+              {reference.text}
+              {reference.url && (
+                <>
+                  {' '}
+                  <a href={reference.url} class="break-words underline">
+                    {reference.url}
+                  </a>
+                </>
+              )}
+            </li>
+          ))}
+        </ol>
+      </Section>
+    )
+  }
+
+  <Section labelledby="authorship-heading" divided>
+    <h2 id="authorship-heading" class="text-2xl">Authorship</h2>
+    <div class="mt-6 flex max-w-reading flex-col gap-2">
+      {authorship.map((line) => <p>{line}</p>)}
+    </div>
+  </Section>
+
+  {
+    updates.length > 0 && (
+      <Section labelledby="updates-heading" divided>
+        <h2 id="updates-heading" class="text-2xl">
+          Updates
+        </h2>
+        <ul class="mt-6" role="list">
+          {updates.map((post) => (
+            <PostItem post={post} />
+          ))}
+        </ul>
+      </Section>
+    )
+  }
+
+  {
+    related.length > 0 && (
+      <Section labelledby="related-heading" divided>
+        <h2 id="related-heading" class="text-2xl">
+          Related work
+        </h2>
+        <ul class="mt-6" role="list">
+          {related.map((other) => (
+            <WorkRow entry={other} />
+          ))}
+        </ul>
+      </Section>
+    )
+  }
+</BaseLayout>
