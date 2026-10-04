@@ -102,8 +102,7 @@ test.describe('the threshold', () => {
   });
 
   test('never appears on any other route', async ({ page }) => {
-    // Work pages join this list in Pass 5 (/work/kerr-microscopy-dissertation).
-    for (const path of ['/a-page-that-does-not-exist']) {
+    for (const path of ['/work/kerr-microscopy-dissertation', '/a-page-that-does-not-exist']) {
       await page.goto(path);
       await expect(threshold(page), path).toHaveCount(0);
       await expect(page.getByRole('heading', { name: 'What brings you here?' })).toHaveCount(0);
