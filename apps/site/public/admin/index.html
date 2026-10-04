@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Content editor | Josh Lennon</title>
+    <!--
+      Sveltia CMS (spec T.1, ADR-0041): a browser editor for the files in
+      apps/site/src/content. Pinned to one version with a Subresource Integrity
+      hash, loaded on this page only. The config path is absolute because
+      /admin is served without a trailing slash.
+    -->
+    <link href="/admin/config.yml" type="application/yaml" rel="cms-config-url" />
+    <script
+      src="https://unpkg.com/@sveltia/cms@0.227.4/dist/sveltia-cms.js"
+      integrity="sha384-mBcoOD7DR0BbWeYAFwFdECzSv0wajVTPEnBQu5ZOpA2CbqM4ymwUdUq0yXOxOYKE"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body></body>
+</html>

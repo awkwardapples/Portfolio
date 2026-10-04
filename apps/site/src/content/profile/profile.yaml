@@ -1,0 +1,120 @@
+# Site-wide facts about Josh (spec H.5, Y.2, Y.3).
+#
+# Items still waiting on a fact are marked `draft: true`: dev shows them with the gap highlighted,
+# production leaves them out. Optional facts that have not arrived are simply absent and noted in a
+# TODO(josh) comment; `pnpm content:todo` lists every one of them.
+
+name: Josh Lennon
+alternateNames: [Joshua Lennon, Joshua Michael Lennon]
+artistName: Josh Lennon
+location: Surrey, UK
+headline:
+  role: AI Engineer
+  focus: [Machine learning, Agentic AI, NLP, Computer vision]
+availability: Open to AI engineering, LLM evaluation, AI automation and agentic AI roles.
+bioShort: >-
+  Artificial Intelligence graduate with a First-Class dissertation (76%) and MSc Artificial
+  Intelligence student. Experience across machine learning, NLP, computer vision and software
+  engineering. Built production-oriented SaaS software and conducted independent AI research
+  including deep learning, neural networks from first principles and visual computing.
+# TODO(josh): bioLong, an optional longer bio for the about page; until it exists the page uses bioShort.
+# TODO(josh): the portrait. Run
+#   pnpm media:images Headshot.png --to apps/site/src/content/profile --name portrait
+# then add:
+#   portrait: { src: ./portrait.jpg, alt: Josh Lennon }
+
+now:
+  - Studying for an MSc in Artificial Intelligence at the University of Surrey.
+  - Building GrowTrades, lead-generation websites for local trades businesses.
+  - Building a music e-commerce platform for selling and delivering beats.
+  - Working with Mercor as an AI expert on contract.
+
+links:
+  github: https://github.com/awkwardapples
+  youtube: https://www.youtube.com/channel/UCVxgoXrh7CqenJR0jPe7ZFQ
+  email: hello@joshlennon.com
+  # TODO(josh): linkedin, your LinkedIn profile URL.
+  # TODO(josh): spotify, your Spotify artist URL.
+
+# TODO(josh): the public CV. Save it as apps/site/public/cv.pdf (no home address or personal phone
+# number, spec Q.5), then add:
+#   cv: { file: /cv.pdf }
+
+education:
+  - institution: University of Manchester
+    qualification: BSc Artificial Intelligence
+    start: 2021
+    end: 2025
+    highlights:
+      - Dissertation awarded 76% (first class).
+      - 'Key modules: Machine Learning, Data Science, Visual Computing, Database Systems.'
+      - Year-long Java team project using Git and GitHub, maintaining a large codebase.
+  - institution: University of Surrey
+    qualification: MSc Artificial Intelligence
+    start: 2026
+    end: 2027
+    status: in-progress
+
+skills:
+  - group: Languages and web
+    items: [Python, Java, C++, JavaScript, SQL, HTML/CSS, React]
+  - group: Machine learning and data
+    items:
+      [
+        Machine learning,
+        Deep learning,
+        NLP,
+        Computer vision,
+        Data science,
+        PyTorch,
+        OpenCV,
+        Pandas,
+        NumPy,
+        Matplotlib,
+      ]
+  - group: Engineering and infrastructure
+    items:
+      [
+        Git and GitHub,
+        PostgreSQL,
+        Remix,
+        Stripe Connect,
+        Cloudflare R2,
+        Software engineering,
+        Object-oriented programming,
+      ]
+
+experience:
+  - title: Founder
+    organisation: GrowTrades
+    employmentType: founder
+    start: 'TODO(josh): YYYY-MM'
+    description:
+      - Founded GrowTrades to build lead-generation websites with instant quote calculators for local trades businesses.
+      - Built the platform's React and TypeScript quote wizard, a WordPress plugin with a secured submission pipeline, and Make.com automation.
+      - First client is SCB Handyman Services in Guildford, Surrey.
+    links: [{ url: /work/growtrades, label: Case study }]
+    draft: true
+
+  # Josh describes the role as "AI expert contractor for Mercor". Never name or hint at Mercor's
+  # clients, never describe it as employment, never add detail beyond confirmed lines (spec Y.3).
+  - title: AI Expert [Contract]
+    organisation: Mercor
+    employmentType: contract
+    start: 'TODO(josh): YYYY-MM, and confirm the title matches your Mercor contract or LinkedIn'
+    confidential: true
+    description:
+      - Contract work as an AI expert with Mercor.
+    draft: true
+
+  - title: 'TODO(josh): programme name'
+    organisation: London Heathrow
+    employmentType: programme
+    start: 'TODO(josh): YYYY-MM'
+    description:
+      - Competitive workplace course with high-responsibility access to privileged areas, including runways, air traffic control and security operations.
+      - Worked with large groups and presented to large corporate audiences, including a chief commercial officer.
+    draft: true
+
+# TODO(josh): photos for the outside-work section (performing, badminton, university, studio), each with
+# alt text, a caption and confirmation that people pictured are happy to appear (spec G.6, Q.5).

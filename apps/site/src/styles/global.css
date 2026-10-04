@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Development only: placeholders highlighted by BaseLayout's dev script (spec T.4). */
+mark.todo {
+  @apply bg-tungsten px-1 text-ink outline outline-2 outline-ink;
+}
+
 /*
  * Reduced motion, carried over from the wizard (apps/wizard/src/styles/index.css)
  * and applied to the whole document. Durations are 0.01ms rather than 0 so

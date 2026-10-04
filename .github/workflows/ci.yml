@@ -58,8 +58,13 @@ jobs:
       - name: Astro check (site)
         run: pnpm --filter @jl/site check
 
+      # Fails on any TODO(josh) placeholder in published content or in the built
+      # site (spec T.4): the content checks run during the site build.
       - name: Build (wizard, site, Worker dry run)
         run: pnpm build
+
+      - name: PDF cover rendering on Linux (spec Pass 2 acceptance)
+        run: pnpm media:pdf apps/site/public/documents/kerr-microscopy-dissertation.pdf --dry-run
 
       - name: Guard - no source maps in the site output
         run: |

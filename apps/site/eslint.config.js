@@ -24,9 +24,9 @@ export default tseslint.config(
 
   // Configuration files at the package root run in Node.
   {
-    files: ['*.{js,mjs,ts}'],
+    files: ['*.{js,mjs,ts}', 'integrations/**/*.mjs'],
     languageOptions: {
-      globals: { process: 'readonly', URL: 'readonly' },
+      globals: { process: 'readonly', URL: 'readonly', console: 'readonly' },
     },
   },
 

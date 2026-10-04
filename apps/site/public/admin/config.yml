@@ -1,0 +1,362 @@
+# Sveltia CMS configuration (spec T.1, ADR-0041).
+#
+# The CMS edits the same files as editing by hand, in apps/site/src/content/, and every save is a
+# commit to main, which deploys. It is a convenience: the content schemas are the rules, and the
+# build reports any mistake with the file and field named.
+#
+# Sign in with "Sign In with Token", using a fine-grained GitHub personal access token limited to
+# this repository with Contents: read and write. Saving the profile through the CMS rewrites
+# profile.yaml without its comments; `pnpm content:todo` is the list of what is still missing.
+
+backend:
+  name: github
+  repo: awkwardapples/Portfolio
+  branch: main
+  commit_messages:
+    create: 'docs(content): add {{collection}} "{{slug}}"'
+    update: 'docs(content): update {{collection}} "{{slug}}"'
+    delete: 'docs(content): delete {{collection}} "{{slug}}"'
+    uploadMedia: 'docs(content): upload {{path}}'
+    deleteMedia: 'docs(content): delete {{path}}'
+
+site_url: https://joshlennon.com
+display_url: https://joshlennon.com
+
+# Uploads default to the entry's own folder (set per collection below).
+media_folder: apps/site/src/content/uploads
+public_folder: ./
+
+slug:
+  encoding: ascii
+  clean_accents: true
+  sanitize_replacement: '-'
+
+collections:
+  - name: posts
+    label: Log posts
+    label_singular: Log post
+    folder: apps/site/src/content/posts
+    path: '{{year}}-{{month}}-{{day}}-{{slug}}/index'
+    extension: mdx
+    format: frontmatter
+    create: true
+    media_folder: ''
+    public_folder: ''
+    summary: '{{date}}: {{title}}'
+    sortable_fields: [date, title]
+    fields:
+      - { name: title, label: Title, widget: string }
+      - name: date
+        label: Date
+        widget: datetime
+        format: YYYY-MM-DD
+        time_format: false
+      - name: summary
+        label: Summary
+        widget: text
+        hint: One or two sentences, at most 220 characters.
+        pattern: ['^[\s\S]{1,220}$', 'At most 220 characters']
+      - name: threads
+        label: Threads
+        widget: select
+        multiple: true
+        min: 1
+        options: [ai, research, software, venture, music, university, life]
+      - name: project
+        label: Project
+        widget: relation
+        collection: work
+        value_field: '{{slug}}'
+        search_fields: [title]
+        display_fields: [title]
+        required: false
+      - { name: tags, label: Tags, widget: list, required: false }
+      - &media
+        name: media
+        label: Media
+        widget: list
+        required: false
+        types:
+          - name: image
+            label: Photograph
+            widget: object
+            fields:
+              - { name: src, label: Image, widget: image }
+              - { name: alt, label: Alt text, widget: string, hint: What the image shows. }
+              - { name: caption, label: Caption, widget: string, required: false }
+          - name: youtube
+            label: YouTube video
+            widget: object
+            fields:
+              - name: id
+                label: Video id
+                widget: string
+                hint: The 11 characters after watch?v= in the video's address.
+                pattern: ['^[\w-]{11}$', 'A video id is 11 characters']
+              - { name: title, label: Title, widget: string }
+          - name: spotify
+            label: Spotify track or album
+            widget: object
+            fields:
+              - { name: url, label: Spotify link, widget: string }
+              - { name: title, label: Title, widget: string }
+          - name: audio
+            label: Audio
+            widget: object
+            fields:
+              - name: src
+                label: Audio file
+                widget: file
+                media_folder: /apps/site/public/media/audio
+                public_folder: /media/audio
+              - { name: title, label: Title, widget: string }
+              - name: transcript
+                label: Transcript
+                widget: text
+                required: false
+                hint: Needed if the audio has speech.
+          - name: document
+            label: PDF document
+            widget: object
+            fields:
+              - name: file
+                label: File name
+                widget: string
+                hint: The name in apps/site/public/documents/, added with pnpm media:pdf.
+              - { name: title, label: Title, widget: string }
+              - name: docType
+                label: Type
+                widget: select
+                options: [paper, dissertation, report, slides, poster]
+              - { name: peerReviewed, label: Peer-reviewed, widget: boolean, default: false }
+      - name: draft
+        label: Draft
+        widget: boolean
+        default: true
+        hint: Drafts are left out of the live site.
+      - { name: body, label: Body, widget: markdown, required: false }
+
+  - name: work
+    label: Work
+    label_singular: Work entry
+    folder: apps/site/src/content/work
+    path: '{{slug}}/index'
+    extension: mdx
+    format: frontmatter
+    create: true
+    media_folder: ''
+    public_folder: ''
+    summary: '{{title}} ({{kind}})'
+    sortable_fields: [date, title]
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: subtitle, label: Subtitle, widget: string, required: false }
+      - name: kind
+        label: Kind
+        widget: select
+        options: [research, software, venture, music, writing]
+      - name: threads
+        label: Threads
+        widget: select
+        multiple: true
+        min: 1
+        options: [ai, research, software, venture, music, university, life]
+      - name: summary
+        label: Summary
+        widget: text
+        hint: One or two sentences, at most 220 characters. Used in lists and search results.
+        pattern: ['^[\s\S]{1,220}$', 'At most 220 characters']
+      - name: date
+        label: Date
+        widget: datetime
+        format: YYYY-MM-DD
+        time_format: false
+        hint: When the work was completed or published.
+      - name: status
+        label: Status
+        widget: select
+        options: [complete, ongoing, archived]
+      - { name: role, label: Your role, widget: string, hint: 'For example "Sole author".' }
+      - name: authorship
+        label: Authorship
+        widget: object
+        fields:
+          - name: type
+            label: Type
+            widget: select
+            options: [sole, lead, contributor]
+          - name: collaborators
+            label: Collaborators
+            widget: list
+            required: false
+            fields:
+              - { name: name, label: Name, widget: string }
+              - { name: role, label: Role, widget: string, required: false }
+              - { name: url, label: Link, widget: string, required: false }
+          - { name: supervisor, label: Supervisor, widget: string, required: false }
+      - name: context
+        label: Context
+        widget: object
+        required: false
+        fields:
+          - { name: institution, label: Institution, widget: string, required: false }
+          - { name: programme, label: Programme, widget: string, required: false }
+          - { name: result, label: Result, widget: string, required: false }
+      - name: featured
+        label: Featured on the homepage
+        widget: boolean
+        default: false
+      - name: featuredOrder
+        label: Featured order
+        widget: number
+        value_type: int
+        required: false
+      - { name: cover, label: Cover image, widget: image, required: false }
+      - { name: coverAlt, label: Cover alt text, widget: string, required: false }
+      - { name: tags, label: Tags, widget: list, required: false }
+      - { name: tech, label: Tools and technologies, widget: list, required: false }
+      - name: links
+        label: Links
+        widget: list
+        required: false
+        fields:
+          - name: type
+            label: Type
+            widget: select
+            options: [github, live, demo, paper, video, spotify, other]
+          - { name: url, label: Address, widget: string }
+          - { name: label, label: Button text, widget: string }
+      - name: documents
+        label: Documents
+        widget: list
+        required: false
+        fields:
+          - name: file
+            label: File name
+            widget: string
+            hint: The name in apps/site/public/documents/, added with pnpm media:pdf.
+          - { name: title, label: Title, widget: string }
+          - name: docType
+            label: Type
+            widget: select
+            options: [paper, dissertation, report, slides, poster]
+          - { name: peerReviewed, label: Peer-reviewed, widget: boolean, default: false }
+      - *media
+      - name: references
+        label: References
+        widget: list
+        required: false
+        fields:
+          - { name: text, label: Reference, widget: string }
+          - { name: url, label: Link, widget: string, required: false }
+      - name: related
+        label: Related work
+        widget: relation
+        collection: work
+        value_field: '{{slug}}'
+        search_fields: [title]
+        display_fields: [title]
+        multiple: true
+        required: false
+      - name: draft
+        label: Draft
+        widget: boolean
+        default: true
+        hint: Drafts are left out of the live site.
+      - { name: body, label: Body, widget: markdown, required: false }
+
+  - name: profile
+    label: Profile
+    files:
+      - name: profile
+        label: Profile
+        file: apps/site/src/content/profile/profile.yaml
+        fields:
+          - { name: name, label: Name, widget: string }
+          - { name: alternateNames, label: Other names, widget: list, required: false }
+          - { name: artistName, label: Artist name, widget: string }
+          - { name: location, label: Location, widget: string, required: false }
+          - name: headline
+            label: Headline
+            widget: object
+            fields:
+              - { name: role, label: Role, widget: string }
+              - { name: focus, label: Focus areas, widget: list }
+          - { name: availability, label: Availability, widget: string, required: false }
+          - { name: bioShort, label: Short bio, widget: text }
+          - { name: bioLong, label: Long bio, widget: markdown, required: false }
+          - name: portrait
+            label: Portrait
+            widget: object
+            required: false
+            media_folder: ''
+            public_folder: ''
+            fields:
+              - { name: src, label: Image, widget: image }
+              - { name: alt, label: Alt text, widget: string, default: Josh Lennon }
+          - { name: now, label: Now, widget: list, hint: Sentences about what you are doing now. }
+          - name: links
+            label: Links
+            widget: object
+            fields:
+              - { name: github, label: GitHub, widget: string, required: false }
+              - { name: linkedin, label: LinkedIn, widget: string, required: false }
+              - { name: youtube, label: YouTube, widget: string, required: false }
+              - { name: spotify, label: Spotify, widget: string, required: false }
+              - { name: email, label: Public email, widget: string, required: false }
+          - name: cv
+            label: CV
+            widget: object
+            required: false
+            fields:
+              - { name: file, label: File, widget: string, default: /cv.pdf }
+          - name: education
+            label: Education
+            widget: list
+            fields:
+              - { name: institution, label: Institution, widget: string }
+              - { name: qualification, label: Qualification, widget: string }
+              - { name: start, label: Start year, widget: number, value_type: int }
+              - { name: end, label: End year, widget: number, value_type: int, required: false }
+              - name: status
+                label: Status
+                widget: select
+                options: [complete, in-progress]
+                default: complete
+              - { name: highlights, label: Highlights, widget: list, required: false }
+              - { name: draft, label: Draft, widget: boolean, default: false }
+          - name: experience
+            label: Experience
+            widget: list
+            fields:
+              - { name: title, label: Title, widget: string }
+              - { name: organisation, label: Organisation, widget: string }
+              - name: employmentType
+                label: Type
+                widget: select
+                options:
+                  [
+                    full-time,
+                    part-time,
+                    contract,
+                    founder,
+                    internship,
+                    placement,
+                    programme,
+                    volunteer,
+                  ]
+              - { name: start, label: Start (YYYY-MM), widget: string }
+              - { name: end, label: End (YYYY-MM), widget: string, required: false }
+              - { name: description, label: Description lines, widget: list, max: 4 }
+              - name: confidential
+                label: Confidential
+                widget: boolean
+                default: false
+                hint: Confidential roles show no links or images, and contract titles end with [Contract].
+              - { name: draft, label: Draft, widget: boolean, default: false }
+          - name: skills
+            label: Skills
+            widget: list
+            fields:
+              - { name: group, label: Group, widget: string }
+              - { name: items, label: Items, widget: list }
