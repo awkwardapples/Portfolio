@@ -1,9 +1,14 @@
 ---
 /**
- * A document on the shelf (spec G.3, H.7): its first page as the cover, the
- * title, the document type and date, the page count, whether it is
- * peer-reviewed, the entry's summary, and plain actions. The cover is the
- * artefact itself, so this is a document, not a decorative card.
+ * A document (spec G.3, H.6, H.7): its first page as the cover, the title,
+ * type, date, page count, size and peer-review status, a summary, and plain
+ * actions. "Open in a new tab" and "Download" are links and work without
+ * JavaScript; "Read here" (wider screens only, spec N.11) is added by
+ * src/scripts/documents.ts and opens the browser's own PDF viewer inline,
+ * loaded on click. "Cite" shows a plain-text and a BibTeX citation.
+ *
+ * `shelf` stacks the cover above the text (the homepage and /research);
+ * `row` puts it beside the text (the documents on a work page).
  */
 import { Picture } from 'astro:assets';
 
@@ -16,58 +21,124 @@ import {
   monthYear,
   pagesLabel,
   peerReviewLabel,
-  readDocumentLabel,
   type DocType,
 } from '~/lib/format';
 
 interface Props {
   document: { file: string; title: string; docType: DocType; peerReviewed: boolean };
-  /** One or two sentences about the work the document belongs to. */
-  summary: string;
+  /** One or two sentences about the document or the work it belongs to. */
+  summary?: string | undefined;
   date?: Date | undefined;
+  citation?: { plain: string; bibtex: string } | undefined;
+  /** A link to the work the document belongs to, when shown away from it. */
+  work?: { href: string; title: string } | undefined;
+  layout?: 'shelf' | 'row';
+  headingLevel?: 'h2' | 'h3';
 }
 
-const { document, summary, date } = Astro.props;
+const {
+  document,
+  summary,
+  date,
+  citation,
+  work,
+  layout = 'shelf',
+  headingLevel: Heading = 'h3',
+} = Astro.props;
 const info = documentInfo(document.file);
 const url = info?.url ?? `/documents/${document.file}`;
+const quiet = buttonClass({ variant: 'quiet' });
+const copyButton = buttonClass({ variant: 'secondary', size: 'compact' });
 ---
 
-<li class="flex flex-col gap-4">
+<li
+  class:list={['document-card', layout === 'row' ? 'grid gap-6 sm:grid-cols-12' : 'flex flex-col gap-4']}
+  data-document={url}
+  data-document-title={document.title}
+>
   {
     info?.cover && (
-      <Picture
-        src={info.cover}
-        alt={`The first page of ${document.title}`}
-        formats={['avif', 'webp']}
-        widths={[240, 360, 480, 720].filter((width) => width <= (info.cover?.width ?? 0))}
-        sizes="(min-width: 1024px) 360px, (min-width: 640px) 45vw, 70vw"
-        loading="lazy"
-        decoding="async"
-        class="aspect-page h-auto w-full max-w-xs rounded-media border border-rule object-cover object-top"
-      />
+      <div class:list={[layout === 'row' && 'sm:col-span-3']}>
+        <Picture
+          src={info.cover}
+          alt={`The first page of ${document.title}`}
+          formats={['avif', 'webp']}
+          widths={[240, 360, 480, 720].filter((width) => width <= (info.cover?.width ?? 0))}
+          sizes={
+            layout === 'row'
+              ? '(min-width: 640px) 200px, 50vw'
+              : '(min-width: 1024px) 360px, (min-width: 640px) 45vw, 70vw'
+          }
+          loading="lazy"
+          decoding="async"
+          class:list={[
+            'aspect-page h-auto rounded-media border border-rule object-cover object-top',
+            layout === 'row' ? 'w-1/2 sm:w-full' : 'w-full max-w-xs',
+          ]}
+        />
+      </div>
     )
   }
-  <div>
-    <h3 class="text-xl">{document.title}</h3>
+  <div class:list={[layout === 'row' && 'sm:col-span-9']}>
+    <Heading class="text-xl">{document.title}</Heading>
     <p class="mt-2 flex flex-wrap gap-x-4 text-sm text-graphite">
       <span>{DOC_TYPE_LABELS[document.docType]}</span>
       {date && <time datetime={isoDate(date)}>{monthYear(date)}</time>}
       {info && <span>{pagesLabel(info.pages)}</span>}
       <span>{peerReviewLabel(document.peerReviewed)}</span>
     </p>
-    <p class="mt-3">{summary}</p>
-    <ul class="mt-3 flex flex-wrap gap-x-6" role="list">
+    {summary && <p class="mt-3 max-w-reading">{summary}</p>}
+    {
+      work && (
+        <p class="mt-2 text-sm">
+          From <a href={work.href}>{work.title}</a>
+        </p>
+      )
+    }
+    <ul class="mt-3 flex flex-wrap gap-x-6" role="list" data-document-actions>
       <li>
-        <a href={url} class={buttonClass({ variant: 'quiet' })}>
-          {/* The size is on the download beside it. */}
-          {readDocumentLabel(document.docType, undefined)}
+        <a href={url} target="_blank" rel="noopener" class={quiet}>
+          Open in a new tab<span class="sr-only">: {document.title} (PDF)</span>
         </a>
       </li>
       <li>
-        <a href={url} download class={buttonClass({ variant: 'quiet' })}>
+        <a href={url} download class={quiet}>
           {downloadLabel(info)}<span class="sr-only">: {document.title}</span>
         </a>
       </li>
     </ul>
+    {
+      citation && (
+        <details class="mt-1">
+          <summary class={`${quiet} cursor-pointer`}>
+            Cite<span class="sr-only"> {document.title}</span>
+          </summary>
+          <div class="mt-3 flex max-w-reading flex-col gap-4 rounded-media border border-rule bg-paper-sunken p-4">
+            <div class="flex flex-col items-start gap-2">
+              <p class="text-sm font-medium">Plain text</p>
+              <p class="text-sm" data-copy-source>{citation.plain}</p>
+              <span hidden data-copy-control>
+                <button type="button" class={copyButton} data-copy>
+                  Copy<span class="sr-only"> the plain-text citation</span>
+                </button>
+              </span>
+            </div>
+            <div class="flex flex-col items-start gap-2">
+              <p class="text-sm font-medium">BibTeX</p>
+              <pre class="w-full whitespace-pre-wrap break-words text-xs" data-copy-source>{citation.bibtex}</pre>
+              <span hidden data-copy-control>
+                <button type="button" class={copyButton} data-copy>
+                  Copy<span class="sr-only"> the BibTeX citation</span>
+                </button>
+              </span>
+            </div>
+          </div>
+        </details>
+      )
+    }
   </div>
 </li>
+
+<script>
+  import '~/scripts/documents';
+</script>

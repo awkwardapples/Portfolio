@@ -1,0 +1,39 @@
+---
+/**
+ * A Spotify track, album or playlist as a facade (spec N.7): a link to it on
+ * Spotify, which with JavaScript swaps in Spotify's player on request.
+ */
+import { buttonClass } from '~/design/button';
+
+interface Props {
+  url: string;
+  title: string;
+  class?: string;
+}
+
+const { url, title, class: className } = Astro.props;
+const parsed = new URL(url);
+// Localised links (/intl-de/track/...) embed from the plain path.
+const embed = `https://open.spotify.com/embed${parsed.pathname.replace(/^\/intl-\w+/, '')}`;
+---
+
+<figure class:list={['flex flex-col gap-3', className]}>
+  <div
+    class="flex min-h-32 w-full flex-col items-start justify-end gap-4 rounded-media p-6"
+    data-surface="stage"
+    data-embed={embed}
+    data-embed-title={`${title} (Spotify player)`}
+    data-embed-allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+    data-embed-height="352"
+  >
+    <p class="max-w-reading font-serif text-xl">{title}</p>
+    <a href={url} class={buttonClass({ surface: 'stage' })} data-embed-play>
+      Listen on Spotify<span class="sr-only">: {title}</span>
+    </a>
+  </div>
+  <figcaption class="text-xs text-graphite">Listening here loads Spotify's player.</figcaption>
+</figure>
+
+<script>
+  import '~/scripts/embeds';
+</script>

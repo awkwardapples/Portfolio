@@ -1,0 +1,34 @@
+---
+/**
+ * A self-hosted video made by `pnpm media:video` (docs/media-pipeline.md):
+ * AV1 first, H.264 for browsers without it, the poster shown before play,
+ * and nothing downloaded until the visitor presses play. Loops for
+ * backgrounds (spec K.3) are a separate component in Pass 8.
+ */
+interface Props {
+  name: string;
+  title: string;
+  /** A WebVTT file in the same folder, e.g. captions.en.vtt. */
+  captions?: string | undefined;
+}
+
+const { name, title, captions } = Astro.props;
+const base = `/media/video/${name}`;
+---
+
+<figure class="flex flex-col gap-3">
+  <video
+    controls
+    preload="none"
+    playsinline
+    poster={`${base}/poster.jpg`}
+    class="aspect-video h-auto w-full rounded-media bg-stage"
+    aria-label={title}
+  >
+    <source src={`${base}/1080.av1.mp4`} type='video/mp4; codecs="av01.0.08M.08"' />
+    <source src={`${base}/1080.h264.mp4`} type="video/mp4" />
+    {captions && <track kind="captions" src={`${base}/${captions}`} srclang="en" label="English" default />}
+    <a href={`${base}/1080.h264.mp4`}>Download the video: {title}</a>
+  </video>
+  <figcaption class="text-xs text-graphite">{title}</figcaption>
+</figure>

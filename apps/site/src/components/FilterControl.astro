@@ -1,0 +1,66 @@
+---
+/**
+ * A segmented filter (spec N.14) for a list rendered in full: /work by kind,
+ * /log by thread. It is hidden without JavaScript, where every item shows,
+ * grouped under headings. With JavaScript (src/scripts/filters.ts) a choice
+ * applies instantly, is mirrored in the URL (`?kind=research`) and is
+ * announced; the list's items carry `data-filter-tags`.
+ */
+interface Props {
+  /** The query parameter, e.g. "kind". */
+  param: string;
+  label: string;
+  options: readonly { value: string; label: string }[];
+}
+
+const { param, label, options } = Astro.props;
+---
+
+<div hidden data-filter={param}>
+  <div class="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+    <div role="group" aria-label={label} class="flex w-max gap-2">
+      {
+        [{ value: '', label: 'All' }, ...options].map((option) => (
+          <button
+            type="button"
+            class="filter-option"
+            aria-pressed={option.value === '' ? 'true' : 'false'}
+            data-filter-value={option.value}
+          >
+            {option.label}
+          </button>
+        ))
+      }
+    </div>
+  </div>
+  <p class="sr-only" role="status" data-filter-status></p>
+</div>
+
+<script>
+  import '~/scripts/filters';
+</script>
+
+<style>
+  .filter-option {
+    display: inline-flex;
+    min-height: theme('spacing.11');
+    flex-shrink: 0;
+    align-items: center;
+    border: 1px solid theme('colors.line-strong');
+    border-radius: theme('borderRadius.DEFAULT');
+    padding: 0 theme('spacing.4');
+    font-size: theme('fontSize.sm[0]');
+    transition: background-color theme('transitionDuration.fast')
+      theme('transitionTimingFunction.DEFAULT');
+  }
+
+  .filter-option:hover {
+    background-color: theme('colors.paper-sunken');
+  }
+
+  .filter-option[aria-pressed='true'] {
+    border-color: theme('colors.ink');
+    background-color: theme('colors.ink');
+    color: theme('colors.paper');
+  }
+</style>

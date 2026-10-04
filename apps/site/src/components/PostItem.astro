@@ -1,0 +1,35 @@
+---
+/**
+ * A log post in a list (spec G.7, H.4, H.6): the date, the title linking to
+ * the post, its threads and its one-line summary.
+ */
+import { dateOf, type Post } from '~/lib/content';
+import { isoDate } from '~/lib/format';
+import { THREAD_LABELS } from '~/lib/threads';
+
+interface Props {
+  post: Post;
+  headingLevel?: 'h2' | 'h3';
+}
+
+const { post, headingLevel: Heading = 'h3' } = Astro.props;
+const date = dateOf(post.data.date);
+const day = date?.toLocaleDateString('en-GB', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+---
+
+<li class="border-t border-rule py-6" data-filter-item data-filter-tags={post.data.threads.join(' ')}>
+  <p class="flex flex-wrap gap-x-4 text-sm text-graphite">
+    {date && <time datetime={isoDate(date)}>{day}</time>}
+    <span>{post.data.threads.map((thread) => THREAD_LABELS[thread]).join(', ')}</span>
+  </p>
+  <Heading class="mt-1 text-xl">
+    <a href={`/log/${post.id}`}>{post.data.title}</a>
+    {post.data.draft && <span class="ml-2 font-sans text-xs text-graphite">(draft)</span>}
+  </Heading>
+  <p class="mt-2 max-w-reading">{post.data.summary}</p>
+</li>

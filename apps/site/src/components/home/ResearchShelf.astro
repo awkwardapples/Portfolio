@@ -10,6 +10,8 @@ export interface ShelfItem {
   document: { file: string; title: string; docType: DocType; peerReviewed: boolean };
   summary: string;
   date?: Date | undefined;
+  work?: { href: string; title: string } | undefined;
+  citation?: { plain: string; bibtex: string } | undefined;
 }
 
 interface Props {

@@ -1,0 +1,46 @@
+---
+/**
+ * One item from an entry's `media` list (spec H.2), rendered by type: images
+ * as zoomable figures with their credit, YouTube and Spotify as facades,
+ * self-hosted video and audio with native controls, documents as cards.
+ */
+import DocumentCard from '~/components/DocumentCard.astro';
+import Figure from '~/components/Figure.astro';
+import Audio from '~/components/media/Audio.astro';
+import Spotify from '~/components/media/Spotify.astro';
+import Video from '~/components/media/Video.astro';
+import YouTube from '~/components/media/YouTube.astro';
+import type { Work } from '~/lib/content';
+
+interface Props {
+  item: Work['data']['media'][number];
+}
+
+const { item } = Astro.props;
+---
+
+{
+  item.type === 'image' ? (
+    <Figure
+      src={item.src}
+      alt={item.alt}
+      caption={item.caption}
+      credit={item.credit}
+      sizes="(min-width: 1280px) 800px, 100vw"
+      widths={[480, 800, 1200, 1600]}
+      zoom
+    />
+  ) : item.type === 'youtube' ? (
+    <YouTube id={item.id} title={item.title} start={item.start} playlist={item.playlist} />
+  ) : item.type === 'spotify' ? (
+    <Spotify url={item.url} title={item.title} />
+  ) : item.type === 'video' ? (
+    <Video name={item.name} title={item.title} captions={item.captions} />
+  ) : item.type === 'audio' ? (
+    <Audio src={item.src} title={item.title} transcript={item.transcript} />
+  ) : (
+    <ul role="list">
+      <DocumentCard document={item} layout="row" />
+    </ul>
+  )
+}

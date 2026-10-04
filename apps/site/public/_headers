@@ -9,5 +9,10 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
   X-Frame-Options: DENY
 
+# PDFs may be framed by this site only, for "Read here" (spec N.11).
+/documents/*
+  ! X-Frame-Options
+  Content-Security-Policy: frame-ancestors 'self'
+
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable

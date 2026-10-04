@@ -1,0 +1,29 @@
+---
+/**
+ * Audio in a post or on a work page (spec N.16): the browser's own controls,
+ * which keep native keyboard behaviour, loading nothing until played. A
+ * transcript, when there is one, sits under it.
+ */
+interface Props {
+  src: string;
+  title: string;
+  transcript?: string | undefined;
+}
+
+const { src, title, transcript } = Astro.props;
+---
+
+<figure class="flex flex-col gap-3">
+  <figcaption class="font-serif text-lg">{title}</figcaption>
+  <audio controls preload="none" src={src} class="w-full max-w-reading">
+    <a href={src}>Download the audio: {title}</a>
+  </audio>
+  {
+    transcript && (
+      <details class="max-w-reading">
+        <summary class="cursor-pointer text-sm underline underline-offset-4">Transcript</summary>
+        <p class="mt-2 whitespace-pre-line text-sm">{transcript}</p>
+      </details>
+    )
+  }
+</figure>
