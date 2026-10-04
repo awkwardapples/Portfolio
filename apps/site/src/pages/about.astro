@@ -1,0 +1,261 @@
+---
+/**
+ * About (spec L): Josh's own words first, then one timeline interleaving
+ * education, experience, work and posts (N.9), the skills from his CV as
+ * plain grouped lists, and the CV download once it exists. Skills that a
+ * work entry lists in `tech` link to that work, so the list is also an
+ * index of evidence. Confidential roles show only their confirmed lines
+ * (spec H.5): the schema refuses links and images for them.
+ */
+import { Picture } from 'astro:assets';
+
+import Placeholder from '~/components/Placeholder.astro';
+import Section from '~/components/Section.astro';
+import { buttonClass } from '~/design/button';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { dateOf, getPosts, getProfile, getWork } from '~/lib/content';
+import { publicFileSize } from '~/lib/documents';
+import { KIND_LABELS, monthYear } from '~/lib/format';
+import { ROUTES } from '~/lib/routes';
+import { newestFirst, periodLabel, type TimelineItem } from '~/lib/timeline';
+
+const profile = await getProfile();
+const work = await getWork();
+const posts = await getPosts();
+
+const items: TimelineItem[] = [];
+for (const education of profile.education) {
+  items.push({
+    kind: 'education',
+    sortKey: String(education.start),
+    when: periodLabel(
+      String(education.start),
+      education.end === undefined ? undefined : String(education.end),
+      education.status === 'in-progress',
+    ),
+    title: education.qualification,
+    subtitle: education.institution,
+    href: education.url,
+    details: [...(education.result ? [education.result] : []), ...education.highlights],
+  });
+}
+for (const role of profile.experience) {
+  items.push({
+    kind: 'experience',
+    sortKey: role.start,
+    when: periodLabel(role.start, role.end),
+    title: role.title,
+    subtitle: role.organisation,
+    href: role.confidential ? undefined : role.links[0]?.url,
+    details: role.description,
+  });
+}
+for (const entry of work) {
+  const date = dateOf(entry.data.date);
+  items.push({
+    kind: 'work',
+    sortKey: date ? date.toISOString() : '',
+    when: date ? monthYear(date) : '',
+    title: entry.data.title,
+    subtitle: KIND_LABELS[entry.data.kind],
+    href: `${ROUTES.work.path}/${entry.id}`,
+    details: [entry.data.summary],
+  });
+}
+for (const post of posts) {
+  const date = dateOf(post.data.date);
+  items.push({
+    kind: 'post',
+    sortKey: date ? date.toISOString() : '',
+    when: date ? monthYear(date) : '',
+    title: post.data.title,
+    subtitle: 'Log',
+    href: `/log/${post.id}`,
+    details: [post.data.summary],
+  });
+}
+const timeline = newestFirst(items);
+
+// Skills that a piece of work lists in `tech` link to the newest such work.
+const evidence = (skill: string) =>
+  work.find((entry) =>
+    entry.data.tech.some((tech) => tech.toLowerCase() === skill.toLowerCase()),
+  );
+
+const cvSize = profile.cv ? publicFileSize(profile.cv.file) : undefined;
+const bio = profile.bioLong ?? profile.bioShort;
+---
+
+<BaseLayout
+  title="About | Josh Lennon"
+  description={`${profile.headline.role}. ${profile.availability ?? ''}`.trim()}
+>
+  <Section labelledby="about-heading">
+    <div class="grid gap-10 md:grid-cols-12 md:gap-12">
+      {
+        (profile.portrait || import.meta.env.DEV) && (
+          <div class="md:col-span-4">
+            {profile.portrait ? (
+              <Picture
+                src={profile.portrait.src}
+                alt={profile.portrait.alt}
+                formats={['avif', 'webp']}
+                widths={[320, 480, 720, 960].filter(
+                  (width) => width <= (profile.portrait?.src.width ?? 0),
+                )}
+                sizes="(min-width: 768px) 30vw, 100vw"
+                loading="eager"
+                fetchpriority="high"
+                class="aspect-portrait h-auto w-full max-w-sm rounded-media object-cover"
+              />
+            ) : (
+              <Placeholder label="Photo needed: portrait" class="aspect-portrait max-w-sm" />
+            )}
+          </div>
+        )
+      }
+      <div class="md:col-span-8">
+        <h1 id="about-heading" class="text-4xl">About me</h1>
+        <p class="mt-6 max-w-reading whitespace-pre-line font-serif text-reading">{bio}</p>
+        {profile.availability && <p class="mt-6 max-w-reading">{profile.availability}</p>}
+        {
+          profile.cv && (
+            <p class="mt-8">
+              <a href={profile.cv.file} download class={buttonClass()}>
+                {cvSize ? `Download CV (PDF, ${cvSize})` : 'Download CV (PDF)'}
+              </a>
+            </p>
+          )
+        }
+      </div>
+    </div>
+  </Section>
+
+  <Section labelledby="timeline-heading" divided>
+    <h2 id="timeline-heading" class="text-3xl">Timeline</h2>
+    <p class="mt-4 max-w-reading text-graphite">
+      Education, work and updates in one list, newest first.
+    </p>
+    <ol class="timeline mt-heading-gap" role="list">
+      {
+        timeline.map((item) => (
+          <li class="timeline-item">
+            <p class="text-sm text-graphite">{item.when}</p>
+            <h3 class="mt-1 text-xl">
+              {item.href ? <a href={item.href}>{item.title}</a> : item.title}
+            </h3>
+            {item.subtitle && <p class="text-sm">{item.subtitle}</p>}
+            {item.details.length > 0 && (
+              <ul class="mt-3 flex max-w-reading flex-col gap-1" role="list">
+                {item.details.map((detail) => (
+                  <li>{detail}</li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))
+      }
+    </ol>
+  </Section>
+
+  {
+    profile.skills.length > 0 && (
+      <Section labelledby="skills-heading" divided>
+        <h2 id="skills-heading" class="text-3xl">
+          Skills
+        </h2>
+        <div class="mt-heading-gap grid gap-10 md:grid-cols-3">
+          {profile.skills.map((group) => (
+            <div>
+              <h3 class="font-sans text-base font-medium">{group.group}</h3>
+              <ul class="mt-3 flex flex-col gap-1" role="list">
+                {group.items.map((skill) => {
+                  const proof = evidence(skill);
+                  return (
+                    <li>
+                      {proof ? (
+                        <a href={`${ROUTES.work.path}/${proof.id}`} class="underline">
+                          {skill}
+                        </a>
+                      ) : (
+                        skill
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </Section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  /*
+   * N.9: a thin line runs down the timeline and fills with tungsten as the
+   * visitor scrolls through it, using a CSS scroll-driven animation (no
+   * script). Browsers without them, and anyone who asks for less motion,
+   * see the line full.
+   */
+  .timeline {
+    position: relative;
+    padding-left: theme('spacing.8');
+  }
+
+  .timeline::before,
+  .timeline::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: theme('spacing.1');
+    width: 2px;
+    background-color: theme('colors.rule');
+  }
+
+  .timeline::after {
+    background-color: theme('colors.tungsten');
+    transform-origin: top;
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .timeline::after {
+        animation: timeline-fill linear both;
+        animation-timeline: view();
+        animation-range: cover 10% cover 90%;
+      }
+    }
+  }
+
+  @keyframes timeline-fill {
+    from {
+      transform: scaleY(0);
+    }
+
+    to {
+      transform: scaleY(1);
+    }
+  }
+
+  .timeline-item {
+    position: relative;
+    padding-bottom: theme('spacing.10');
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    top: theme('spacing.2');
+    /* Centred on the 2 px line: the line is at 4 to 6 px, the dot is 12 px wide. */
+    left: calc(theme('spacing.8') * -1 - 1px);
+    z-index: 1;
+    width: theme('spacing.3');
+    height: theme('spacing.3');
+    border: 2px solid theme('colors.ink');
+    border-radius: theme('borderRadius.full');
+    background-color: theme('colors.paper');
+  }
+</style>

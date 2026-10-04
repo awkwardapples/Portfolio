@@ -1,0 +1,54 @@
+---
+/**
+ * Research (spec F.1, H.6): the documents of every research entry as a
+ * shelf, each with its cover, metadata, summary, a link to its work page,
+ * and plain-text and BibTeX citations. Peer-review status is always stated,
+ * and nothing that is not peer-reviewed is called a publication.
+ */
+import DocumentCard from '~/components/DocumentCard.astro';
+import Section from '~/components/Section.astro';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { bibtexCitation, plainCitation } from '~/lib/citation';
+import { dateOf, getProfile, getWork } from '~/lib/content';
+import { ROUTES } from '~/lib/routes';
+import { citationInput } from '~/lib/work';
+
+const profile = await getProfile();
+const site = Astro.site ?? new URL('https://joshlennon.com');
+const research = (await getWork()).filter((entry) => entry.data.kind === 'research');
+
+const shelf = research.flatMap((entry) => {
+  const date = dateOf(entry.data.date);
+  return entry.data.documents.map((document) => {
+    const input = date
+      ? citationInput(entry.data, document, { name: profile.name, site, date })
+      : undefined;
+    return {
+      document,
+      date,
+      summary: entry.data.summary,
+      work: { href: `${ROUTES.work.path}/${entry.id}`, title: entry.data.title },
+      citation: input && { plain: plainCitation(input), bibtex: bibtexCitation(input) },
+    };
+  });
+});
+// One factual line about peer review, true for whatever is on the shelf.
+const reviewNote = shelf.some((item) => item.document.peerReviewed)
+  ? 'Each document says whether it has been peer-reviewed.'
+  : shelf.length === 1
+    ? 'This document has not been peer-reviewed.'
+    : 'None of these documents has been peer-reviewed.';
+---
+
+<BaseLayout
+  title="Research | Josh Lennon"
+  description="Josh Lennon's research documents, with their summaries, page counts, peer-review status and citations."
+>
+  <Section labelledby="research-heading">
+    <h1 id="research-heading" class="text-4xl">Research</h1>
+    <p class="mt-6 max-w-reading text-lg">{reviewNote}</p>
+    <ul class="mt-heading-gap grid gap-12 sm:grid-cols-2 lg:grid-cols-3" role="list">
+      {shelf.map((item) => <DocumentCard {...item} headingLevel="h2" />)}
+    </ul>
+  </Section>
+</BaseLayout>

@@ -1,0 +1,82 @@
+---
+/**
+ * The log (spec F.1, H.6): every post, newest first, under month headings,
+ * with a filter by thread mirrored in `?thread=`. Without JavaScript every
+ * post shows.
+ *
+ * This is a rest route rather than log/index.astro so that /log is only
+ * built once there is a post to show: with no posts, getStaticPaths returns
+ * nothing, and the navigation does not link to it (src/lib/routes.ts).
+ */
+import FilterControl from '~/components/FilterControl.astro';
+import PostItem from '~/components/PostItem.astro';
+import Section from '~/components/Section.astro';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { dateOf, getPosts, type Post } from '~/lib/content';
+import { THREAD_LABELS, type Thread } from '~/lib/threads';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.length > 0 ? [{ params: { index: undefined }, props: { posts } }] : [];
+}
+
+interface Props {
+  posts: Post[];
+}
+
+const { posts } = Astro.props;
+
+// Month headings, newest first: "October 2026".
+const months: { key: string; label: string; posts: Post[] }[] = [];
+for (const post of posts) {
+  const date = dateOf(post.data.date);
+  const key = date ? date.toISOString().slice(0, 7) : 'undated';
+  const label = date
+    ? date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+    : 'Undated';
+  const month = months.find((candidate) => candidate.key === key);
+  if (month) month.posts.push(post);
+  else months.push({ key, label, posts: [post] });
+}
+
+const threads = (Object.keys(THREAD_LABELS) as Thread[]).filter((thread) =>
+  posts.some((post) => post.data.threads.includes(thread)),
+);
+---
+
+<BaseLayout
+  title="Log | Josh Lennon"
+  description="Dated updates from Josh Lennon across research, software, ventures and music."
+>
+  <Section labelledby="log-heading">
+    <h1 id="log-heading" class="text-4xl">Log</h1>
+    <p class="mt-6 max-w-reading text-lg">
+      Dated updates, newest first. <a href="/rss.xml">Follow by RSS</a>.
+    </p>
+    {
+      threads.length > 1 && (
+        <div class="mt-10">
+          <FilterControl
+            param="thread"
+            label="Show posts from one thread"
+            options={threads.map((thread) => ({ value: thread, label: THREAD_LABELS[thread] }))}
+          />
+        </div>
+      )
+    }
+    {
+      months.map((month) => (
+        <section class="mt-12" aria-labelledby={`month-${month.key}`} data-filter-group>
+          <h2 id={`month-${month.key}`} class="text-2xl">
+            {month.label}
+          </h2>
+          <ul class="mt-4" role="list">
+            {month.posts.map((post) => (
+              <PostItem post={post} />
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </Section>
+</BaseLayout>

@@ -13,11 +13,13 @@ import ResearchShelf, { type ShelfItem } from '~/components/home/ResearchShelf.a
 import SelectedWork from '~/components/home/SelectedWork.astro';
 import Threshold from '~/components/home/Threshold.astro';
 import BaseLayout from '~/layouts/BaseLayout.astro';
+import { bibtexCitation, plainCitation } from '~/lib/citation';
 import { dateOf, getFeaturedWork, getProfile, getWork } from '~/lib/content';
 import { publicFileSize } from '~/lib/documents';
 import { intentCtas, selectWork, type HomeSection } from '~/lib/home';
 import { INTENTS } from '~/lib/intents';
 import { ROUTES, isLinkable } from '~/lib/routes';
+import { citationInput } from '~/lib/work';
 
 const sentence =
   "I studied Artificial Intelligence at the University of Manchester, I'm studying for an MSc in Artificial Intelligence at the University of Surrey, I founded GrowTrades, and I make music.";
@@ -27,14 +29,23 @@ const work = await getWork();
 const selected = selectWork(await getFeaturedWork(), work);
 
 // The shelf: the newest documents across all work, up to three (spec G.3).
+const site = Astro.site ?? new URL('https://joshlennon.com');
 const shelf: ShelfItem[] = work
-  .flatMap((entry) =>
-    entry.data.documents.map((document) => ({
-      document,
-      summary: entry.data.summary,
-      date: dateOf(entry.data.date),
-    })),
-  )
+  .flatMap((entry) => {
+    const date = dateOf(entry.data.date);
+    return entry.data.documents.map((document) => {
+      const input = date
+        ? citationInput(entry.data, document, { name: profile.name, site, date })
+        : undefined;
+      return {
+        document,
+        summary: entry.data.summary,
+        date,
+        work: { href: `${ROUTES.work.path}/${entry.id}`, title: entry.data.title },
+        citation: input && { plain: plainCitation(input), bibtex: bibtexCitation(input) },
+      };
+    });
+  })
   .slice(0, 3);
 
 const dev = import.meta.env.DEV;
