@@ -26,6 +26,9 @@ apps/site/public/demo/
 coverage/
 .nyc_output/
 *.lcov
+playwright-report/
+test-results/
+blob-report/
 
 # =============================================================================
 # Logs
