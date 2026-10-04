@@ -259,6 +259,19 @@
     border-color: theme('colors.rule');
   }
 
+  /* Case studies: figures and walk-throughs use the full width; text keeps its measure. */
+  .prose-body.prose-wide {
+    max-width: none;
+  }
+
+  .prose-wide > :where(p, ul, ol, h2, h3, blockquote, aside) {
+    max-width: theme('maxWidth.reading');
+  }
+
+  .prose-wide > :where(figure, div, dl) {
+    margin-top: theme('spacing.10');
+  }
+
   /* The inline PDF viewer opened by "Read here" (src/scripts/documents.ts). */
   .document-viewer iframe {
     display: block;
@@ -267,6 +280,34 @@
     border: 1px solid theme('colors.rule');
     border-radius: theme('borderRadius.media');
     background-color: theme('colors.paper-sunken');
+  }
+
+  /* The GrowTrades frame on phones (src/islands/SiteFrame.tsx, spec J.4). */
+  .phone-outline {
+    overflow: hidden;
+    border: 6px solid theme('colors.ink');
+    border-radius: 1.75rem;
+    background-color: theme('colors.ink');
+  }
+
+  .site-frame-dialog {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background-color: theme('colors.paper');
+  }
+
+  .site-frame-dialog[open] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .site-frame-dialog::backdrop {
+    background-color: theme('colors.ink');
   }
 
   /* The photo lightbox (src/scripts/lightbox.ts, spec N.15), on stage. */

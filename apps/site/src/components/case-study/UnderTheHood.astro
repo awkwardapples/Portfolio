@@ -1,0 +1,184 @@
+---
+/**
+ * Under the hood (spec J.2 item 4, N.5): the GrowTrades submission pipeline,
+ * step by step, each beside the code that does it, cut from this
+ * repository at build time (src/lib/excerpt.ts fails the build if the code
+ * moves), with the decision record behind it.
+ *
+ * Wider screens with JavaScript: the steps scroll on the left while the
+ * right-hand panel stays put and shows the code for the step in view.
+ * Phones, and anyone without JavaScript: each step is followed by its code.
+ * Nothing animates; the panel swaps.
+ */
+import botProtection from '../../../../edge/src/security/bot-protection.ts?raw';
+import consent from '../../../../edge/src/security/consent.ts?raw';
+import rateLimit from '../../../../edge/src/security/rate-limit.ts?raw';
+import sanitize from '../../../../edge/src/security/sanitize.ts?raw';
+import turnstile from '../../../../edge/src/security/turnstile.ts?raw';
+import scheduled from '../../../../edge/src/scheduled.ts?raw';
+import duplicates from '../../../../edge/src/submissions/duplicates.ts?raw';
+import forwarder from '../../../../edge/src/submissions/forwarder.ts?raw';
+import submit from '../../../../edge/src/submit.ts?raw';
+
+import { excerpt } from '~/lib/excerpt';
+
+const REPO = 'https://github.com/awkwardapples/Portfolio/blob/main';
+
+interface Step {
+  title: string;
+  text: string;
+  file: string;
+  code: string;
+  adr: { number: string; slug: string; title: string };
+}
+
+const steps: Step[] = [
+  {
+    title: 'Honeypot',
+    text: 'A field people never see. Anything that fills it in is turned away quietly, before any other work is done.',
+    file: 'apps/edge/src/security/bot-protection.ts',
+    code: excerpt(botProtection, '// Layer 1', "errorCode: 'honeypot_filled' };", { after: 1, file: 'bot-protection.ts' }),
+    adr: { number: '0027', slug: '0027-bot-protection', title: 'Bot protection' },
+  },
+  {
+    title: 'Rate limit',
+    text: 'Five messages an hour from one connection. The window keeps its original end time however many messages arrive, and the address is stored only as a keyed hash.',
+    file: 'apps/edge/src/security/rate-limit.ts',
+    code: excerpt(rateLimit, 'async record(key', 'expiresAt: entry.expiresAt', { after: 1, file: 'rate-limit.ts' }),
+    adr: { number: '0027', slug: '0027-bot-protection', title: 'Bot protection' },
+  },
+  {
+    title: 'Turnstile',
+    text: "Cloudflare's check that a person is using the form. A token only counts if it was issued for this site and this form.",
+    file: 'apps/edge/src/security/turnstile.ts',
+    code: excerpt(turnstile, 'export function turnstileMatches(', 'return true;', { after: 1, file: 'turnstile.ts' }),
+    adr: { number: '0038', slug: '0038-skip-and-submit-turnstile-gating', title: 'Turnstile gates both submit buttons' },
+  },
+  {
+    title: 'Consent',
+    text: 'Nothing is stored unless the consent box was ticked, checked on the server so a request that skips the form cannot skip it.',
+    file: 'apps/edge/src/security/consent.ts',
+    code: excerpt(consent, 'export function isConsentGiven', 'includes(CONSENT_VALUE)', { after: 1, file: 'consent.ts' }),
+    adr: { number: '0029', slug: '0029-data-protection', title: 'Data protection' },
+  },
+  {
+    title: 'Duplicates',
+    text: 'A second message from the same email within 24 hours is kept and flagged, but the owner is not notified twice.',
+    file: 'apps/edge/src/submissions/duplicates.ts',
+    code: excerpt(duplicates, 'export async function checkDuplicate', 'originalSubmissionId: match }', { after: 1, file: 'duplicates.ts' }),
+    adr: { number: '0028', slug: '0028-duplicate-prevention', title: 'Duplicate prevention' },
+  },
+  {
+    title: 'Persist before forward',
+    text: 'Every enquiry is saved before anything else happens, so a failure further along can never lose a customer.',
+    file: 'apps/edge/src/submit.ts',
+    code: excerpt(submit, 'let id: number;', "errorCode: 'persistence_failed' }", { after: 1, file: 'submit.ts' }),
+    adr: { number: '0001', slug: '0001-thin-wp-rest-endpoint', title: 'A thin endpoint that persists first' },
+  },
+  {
+    title: 'Formula-injection sanitising',
+    text: 'The copy that goes to the spreadsheet is cleaned: markup removed, and anything a spreadsheet would run as a formula made inert. The stored original is untouched.',
+    file: 'apps/edge/src/security/sanitize.ts',
+    code: excerpt(sanitize, 'function sanitizeText', 'return text;', { after: 1, file: 'sanitize.ts' }),
+    adr: { number: '0037', slug: '0037-security-posture', title: 'Security posture' },
+  },
+  {
+    title: 'Forward',
+    text: 'The enquiry goes to the automation that writes the spreadsheet row and notifies the owner, signed with a shared secret. A failure is retried later.',
+    file: 'apps/edge/src/submissions/forwarder.ts',
+    code: excerpt(forwarder, 'export async function forward', 'transport_error', { after: 3, file: 'forwarder.ts' }),
+    adr: { number: '0043', slug: '0043-submission-pipeline-port', title: 'The pipeline on the Worker' },
+  },
+  {
+    title: 'Retention',
+    text: 'Enquiries are deleted after 90 days, and rate-limit records as soon as their hour is over.',
+    file: 'apps/edge/src/scheduled.ts',
+    code: excerpt(scheduled, 'export async function pruneExpired', 'deleteExpiredRateLimits(Math.floor', { after: 2, file: 'scheduled.ts' }),
+    adr: { number: '0043', slug: '0043-submission-pipeline-port', title: 'The pipeline on the Worker' },
+  },
+];
+---
+
+<div class="under-the-hood grid gap-10 md:grid-cols-2 md:gap-12" data-under-the-hood>
+  <ol class="flex flex-col" role="list">
+    {
+      steps.map((step, index) => (
+        <li class="uth-step border-t border-rule py-8" data-step={index}>
+          <h3 class="text-xl">{step.title}</h3>
+          <p class="mt-2 max-w-reading">{step.text}</p>
+          <p class="mt-2 flex flex-wrap gap-x-4 text-sm">
+            <a href={`${REPO}/${step.file}`} class="underline underline-offset-4">
+              {step.file.split('/').pop()}
+            </a>
+            <a href={`${REPO}/docs/decisions/${step.adr.slug}.md`} class="underline underline-offset-4">
+              ADR-{step.adr.number}: {step.adr.title}
+            </a>
+          </p>
+          <pre class="uth-code uth-inline mt-4"><code>{step.code}</code></pre>
+        </li>
+      ))
+    }
+  </ol>
+  <div class="uth-panel" aria-hidden="true">
+    <div class="sticky top-24">
+      {
+        steps.map((step, index) => (
+          <figure class="uth-artefact" data-artefact={index} hidden={index !== 0}>
+            <figcaption class="mb-2 text-xs text-graphite">{step.file}</figcaption>
+            <pre class="uth-code"><code>{step.code}</code></pre>
+          </figure>
+        ))
+      }
+    </div>
+  </div>
+</div>
+
+<script>
+  // The step in the middle of the screen chooses the panel's code (spec N.5).
+  for (const root of document.querySelectorAll<HTMLElement>('[data-under-the-hood]')) {
+    const artefacts = Array.from(root.querySelectorAll<HTMLElement>('[data-artefact]'));
+    const show = (index: string) => {
+      for (const artefact of artefacts) artefact.hidden = artefact.dataset.artefact !== index;
+    };
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) show((entry.target as HTMLElement).dataset.step ?? '0');
+        }
+      },
+      { rootMargin: '-45% 0px -45% 0px' },
+    );
+    root.querySelectorAll('[data-step]').forEach((step) => observer.observe(step));
+  }
+</script>
+
+<style>
+  .uth-code {
+    overflow-x: auto;
+    border-radius: theme('borderRadius.media');
+    background-color: theme('colors.paper-sunken');
+    padding: theme('spacing.4');
+    font-size: theme('fontSize.xs[0]');
+    line-height: 1.5;
+    white-space: pre;
+  }
+
+  /* The panel exists only on wider screens with JavaScript; otherwise code follows each step. */
+  .uth-panel {
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    :global(html.js) .uth-panel {
+      display: block;
+    }
+
+    :global(html.js) .uth-inline {
+      display: none;
+    }
+
+    .uth-step {
+      min-height: 40vh;
+    }
+  }
+</style>

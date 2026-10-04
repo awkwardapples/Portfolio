@@ -1,0 +1,77 @@
+---
+/**
+ * The live client site (spec J.2 item 2, J.4, N.4; ADR-0044): the browser
+ * frame with the SCB demo, as Fig. 1 of the GrowTrades case study and on the
+ * homepage. The stills come from `pnpm media:screens`; the frame island
+ * hydrates when it comes into view, and loads nothing of the demo until the
+ * visitor presses "Try the live site".
+ *
+ * As the frame scrolls into view it tilts from slightly back to flat (N.4),
+ * with a CSS scroll-driven animation; with reduced motion, or in browsers
+ * without scroll-driven animations, it is simply flat.
+ */
+import { getImage } from 'astro:assets';
+
+import desktop from '~/content/work/growtrades/screens/scb-home-desktop.png';
+import mobile from '~/content/work/growtrades/screens/scb-home-mobile.png';
+import { SiteFrame } from '~/islands/SiteFrame';
+
+interface Props {
+  /** Show "Fig. 1." before the caption (the case study numbers its figures). */
+  number?: number;
+}
+
+const { number } = Astro.props;
+// Workers serves the demo folder at /demo/scb-handyman (no trailing slash, like every page);
+// the Astro dev server only serves its index.html by name.
+const demoUrl = import.meta.env.DEV ? '/demo/scb-handyman/index.html' : '/demo/scb-handyman';
+const [desktopStill, mobileStill] = await Promise.all([
+  getImage({ src: desktop, width: 1280, format: 'avif' }),
+  getImage({ src: mobile, width: 390, format: 'avif' }),
+]);
+---
+
+<figure class="live-site flex flex-col gap-3">
+  <div class="live-site-reveal">
+    <SiteFrame
+      client:visible
+      demoUrl={demoUrl}
+      domain="scbhandyman.co.uk"
+      siteName="SCB Handyman"
+      desktopStill={{ src: desktopStill.src, width: 1280, height: 800 }}
+      mobileStill={{ src: mobileStill.src, width: 390, height: 844 }}
+    />
+  </div>
+  <figcaption class="max-w-reading text-xs text-graphite">
+    {number !== undefined && <span class="font-medium text-ink">Fig. {number}. </span>}
+    The SCB Handyman site, the first GrowTrades client, running here as a demo. Nothing you enter
+    in it is sent anywhere.
+  </figcaption>
+</figure>
+
+<style>
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) and (min-width: 768px) {
+      .live-site {
+        perspective: 1200px;
+      }
+
+      .live-site-reveal {
+        transform-origin: center top;
+        animation: frame-settle linear both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 35%;
+      }
+    }
+  }
+
+  @keyframes frame-settle {
+    from {
+      transform: rotateX(12deg) scale(0.94);
+    }
+
+    to {
+      transform: none;
+    }
+  }
+</style>

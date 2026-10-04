@@ -6,8 +6,11 @@
  * authorship, updates from the log and related work. Every line of
  * generated text comes from the entry's data (src/lib/work.ts).
  *
- * The `case-study` template (GrowTrades) arrives in Pass 7; until then such
- * entries render with this one.
+ * The `case-study` template (GrowTrades, spec J.2) changes three things: the
+ * body is wide, so the live site, the pipeline walk-through and the
+ * evidence can use the full width while the text keeps its measure; the
+ * lead artefact comes from the body (Fig. 1, the live site) rather than
+ * above it; and the page ends with "Talk about your website".
  */
 import { getEntry, render } from 'astro:content';
 
@@ -83,6 +86,7 @@ const related = (await Promise.all(data.related.map((reference) => getEntry(refe
 );
 
 const title = data.seo?.title ?? data.title;
+const caseStudy = data.template === 'case-study';
 ---
 
 <BaseLayout title={`${title} | Josh Lennon`} description={data.seo?.description ?? data.summary}>
@@ -119,7 +123,7 @@ const title = data.seo?.title ?? data.title;
 
     <div class="mt-heading-gap">
       {
-        leadMedia ? (
+        caseStudy ? null : leadMedia ? (
           <div class="max-w-4xl">
             <MediaItem item={leadMedia} />
           </div>
@@ -145,9 +149,18 @@ const title = data.seo?.title ?? data.title;
     </div>
 
     <p class="mt-heading-gap max-w-reading font-serif text-lg">{data.summary}</p>
-    <div class="prose-body mt-8">
+    <div class:list={['prose-body mt-8', caseStudy && 'prose-wide']}>
       <Content components={mdxComponents} />
     </div>
+    {
+      caseStudy && (
+        <p class="mt-heading-gap">
+          <a href="/contact?intent=website" class={buttonClass()}>
+            Talk about your website
+          </a>
+        </p>
+      )
+    }
   </Section>
 
   {

@@ -14,5 +14,14 @@
   ! X-Frame-Options
   Content-Security-Policy: frame-ancestors 'self'
 
+# The SCB demo (ADR-0044): framed by this site only, never indexed.
+/demo/*
+  ! X-Frame-Options
+  Content-Security-Policy: frame-ancestors 'self'
+  X-Robots-Tag: noindex
+
 /_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/demo/scb-handyman/assets/*
   Cache-Control: public, max-age=31536000, immutable

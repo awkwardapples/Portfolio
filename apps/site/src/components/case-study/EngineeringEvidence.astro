@@ -1,0 +1,57 @@
+---
+/**
+ * Engineering evidence (spec J.2 item 5): only figures that are recorded or
+ * computed, each linking to where it can be checked. The test counts are
+ * the GrowTrades platform's as last recorded (docs/archive); the number of
+ * services is read from the engine's registry at build time.
+ */
+import { VERTICALS } from '@/domain/registry/verticals';
+
+const REPO = 'https://github.com/awkwardapples/Portfolio';
+// The last commit that still contains the WordPress plugin (deleted in Pass 6, ADR-0043).
+const BEFORE_PORT = 'f8ce4b29af82f5e04961479ec73a772451e3c303';
+const services = Object.keys(VERTICALS).length;
+
+const facts = [
+  {
+    figure: '856',
+    label: 'automated TypeScript tests in the quote engine when it came to this portfolio',
+    href: `${REPO}/tree/main/apps/wizard/src`,
+  },
+  {
+    figure: '274',
+    label: 'PHP tests passing in the WordPress plugin at its last recorded run',
+    href: `${REPO}/tree/${BEFORE_PORT}/plugins/quote-wizard/tests`,
+  },
+  {
+    figure: 'Level 8',
+    label: 'PHPStan static analysis on the plugin, with no errors',
+    href: `${REPO}/blob/main/docs/archive/growtrades-platform/current-state.md`,
+  },
+  {
+    figure: '38',
+    label: 'architecture decision records written while building it',
+    href: `${REPO}/tree/main/docs/decisions`,
+  },
+  {
+    figure: String(services),
+    label: 'services configured as data in one engine, with no per-service code',
+    href: `${REPO}/blob/main/apps/wizard/src/domain/registry/verticals.ts`,
+  },
+];
+---
+
+<dl class="grid gap-x-12 gap-y-8 sm:grid-cols-2">
+  {
+    facts.map((fact) => (
+      <div class="border-t border-rule pt-4">
+        <dt class="font-serif text-3xl">{fact.figure}</dt>
+        <dd class="mt-1 max-w-reading">
+          <a href={fact.href} class="underline underline-offset-4">
+            {fact.label}
+          </a>
+        </dd>
+      </div>
+    ))
+  }
+</dl>

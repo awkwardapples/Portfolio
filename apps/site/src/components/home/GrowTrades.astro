@@ -1,0 +1,32 @@
+---
+/**
+ * GrowTrades on the homepage (spec G.4): what it is, the browser frame with
+ * the SCB site (the still until the visitor asks for the live demo), and
+ * the case study. Shown whenever the GrowTrades entry is visible: in
+ * development now, in production once the entry is published.
+ */
+import LiveSite from '~/components/case-study/LiveSite.astro';
+import Section from '~/components/Section.astro';
+import { buttonClass } from '~/design/button';
+import type { Work } from '~/lib/content';
+import { ROUTES } from '~/lib/routes';
+
+interface Props {
+  entry: Work;
+}
+
+const { entry } = Astro.props;
+---
+
+<Section id="growtrades" labelledby="growtrades-heading" divided>
+  <h2 id="growtrades-heading" class="text-3xl" tabindex="-1" data-landing>GrowTrades</h2>
+  <p class="mt-6 max-w-reading text-lg">{entry.data.summary}</p>
+  <div class="mt-heading-gap">
+    <LiveSite />
+  </div>
+  <p class="mt-8">
+    <a href={`${ROUTES.work.path}/${entry.id}`} class={buttonClass({ variant: 'quiet' })}>
+      Read the case study
+    </a>
+  </p>
+</Section>
