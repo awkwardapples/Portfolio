@@ -21,12 +21,41 @@
  *
  * Anything that changes the above is a build-pipeline-breaking change and must
  * be accompanied by an update to the build script and the plugin's AssetLoader.
+ *
+ * `--mode demo` (portfolio ADR-0044) builds something else entirely: the SCB
+ * site as a static page for the portfolio's /demo/scb-handyman/, from
+ * demo/index.html into apps/site/public/demo/scb-handyman/, with routes in
+ * memory (.env.demo) and no source maps. The production build is unchanged.
  */
-import { defineConfig } from 'vite';
+import { defineConfig, type UserConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
 
-export default defineConfig({
+const alias = {
+  // Mirror of the tsconfig.json `paths` entry.
+  '@': fileURLToPath(new URL('./src', import.meta.url)),
+};
+
+/** The SCB demo for the portfolio (portfolio spec J.3, ADR-0044). */
+const demo: UserConfig = {
+  plugins: [react()],
+  root: fileURLToPath(new URL('./demo', import.meta.url)),
+  // .env.demo sits beside this file, not in demo/.
+  envDir: fileURLToPath(new URL('.', import.meta.url)),
+  base: '/demo/scb-handyman/',
+  publicDir: false,
+  resolve: { alias },
+  build: {
+    outDir: fileURLToPath(new URL('../site/public/demo/scb-handyman', import.meta.url)),
+    emptyOutDir: true,
+    target: 'es2020',
+    // The portfolio's CI refuses source maps in the published site.
+    sourcemap: false,
+    assetsInlineLimit: 0,
+  },
+};
+
+const production: UserConfig = {
   plugins: [react()],
 
   // Relative base (Phase 11 finding): the JS/CSS bundle is deployed at
@@ -113,4 +142,6 @@ export default defineConfig({
     // (Default behaviour, declared explicitly so it's auditable.)
     minify: 'esbuild',
   },
-});
+};
+
+export default defineConfig(({ mode }) => (mode === 'demo' ? demo : production));

@@ -23,7 +23,8 @@ Superseded or adapted for this repository:
 | [0041](0041-content-model-and-authoring.md)   | Content model, placeholders as drafts, documents, `pnpm new`, Sveltia CMS              |
 | [0042](0042-what-brings-you-here.md)          | "What brings you here?": the threshold, the contact wizard and the content-result step |
 | [0043](0043-submission-pipeline-port.md)      | The submission pipeline ported to the Worker, with parity tests; the plugin deleted    |
+| [0044](0044-scb-demo-and-framing.md)          | The SCB demo build, its memory router, and framing by this site only                   |
 | [0045](0045-visual-identity-and-theming.md)   | Visual identity and theming through a token contract shared with the wizard            |
 | [0047](0047-lighthouse-ci.md)                 | Performance budgets checked by Lighthouse CI, run as a GitHub Action                   |
 
-Planned (spec U.7): 0044 the SCB demo build, 0046 media pipeline and third-party facades.
+Planned (spec U.7): 0046 media pipeline and third-party facades.

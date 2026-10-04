@@ -1,11 +1,19 @@
 import { type AnchorHTMLAttributes, type ReactNode, type MouseEvent, useCallback } from 'react';
 
+import {
+  NAVIGATE_EVENT,
+  ROUTER_MODE,
+  currentPath,
+  memoryHref,
+  navigate,
+} from '@/site/routing/navigation';
+
 interface LinkProps extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
   readonly to: string;
   readonly children: ReactNode;
 }
 
-export const NAVIGATE_EVENT = 'goqw:navigate';
+export { NAVIGATE_EVENT };
 
 /**
  * Internal link component. Calls history.pushState on click and dispatches
@@ -28,18 +36,19 @@ export function Link({ to, children, onClick, ...rest }: LinkProps) {
         return;
       }
       e.preventDefault();
-      if (window.location.pathname !== to) {
-        window.history.pushState({}, '', to);
-        window.dispatchEvent(new Event(NAVIGATE_EVENT));
-        window.scrollTo(0, 0);
-      }
+      if (currentPath() !== to) navigate(to);
       onClick?.(e);
     },
     [to, onClick],
   );
 
   return (
-    <a href={to} onClick={handleClick} {...rest}>
+    <a
+      // In the framed demo, a link opened in a new tab opens the demo on that page.
+      href={ROUTER_MODE === 'memory' ? memoryHref(import.meta.env.BASE_URL, to) : to}
+      onClick={handleClick}
+      {...rest}
+    >
       {children}
     </a>
   );

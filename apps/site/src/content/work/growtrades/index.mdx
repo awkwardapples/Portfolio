@@ -15,10 +15,42 @@ authorship:
 tech: [React, TypeScript, Zod, Tailwind CSS, WordPress, PHP, Make.com, Cloudflare Turnstile]
 template: case-study
 draft: true
-# The case study page (Pass 7) adds the live SCB demo, the brand files in ./brand/ and the
-# "under the hood" walk through the submission pipeline.
 # TODO(josh): any results or figures, only with Shane's agreement to publish them (spec J.1).
+# TODO(josh): confirm scbhandyman.co.uk is the domain to show in the frame's address bar (spec J.3).
 ---
+
+import estimator from './screens/scb-quote-desktop.png';
 
 TODO(josh): two short paragraphs in your words on what GrowTrades is and what you built for SCB
 Handyman (spec G.4, J.2).
+
+<LiveSite number={1} />
+
+## What it does
+
+A homeowner chooses a service, answers a few questions about the job, and sees an estimated price
+range straight away; services that need pricing by hand send a quote request instead. Each request
+becomes a row in the business's Google Sheet and a WhatsApp message to the owner.
+
+<Figure
+  src={estimator}
+  alt="The SCB Handyman quote page listing services to choose from: fencing, decking, painting and decorating, patio and paving, driveway, garden steps, pressure washing and general repairs."
+  caption="The estimator's first step: choosing a service."
+  number={2}
+  sizes="(min-width: 1280px) 1200px, 100vw"
+/>
+
+TODO(josh): screenshots of the Sheet row and the WhatsApp notification, with test data only (spec
+J.2).
+
+## Under the hood
+
+The submission pipeline behind the quote form, step by step, beside the code that runs it. It
+began as a WordPress plugin; on this site the same pipeline runs on a Cloudflare Worker, ported with
+its tests.
+
+<UnderTheHood />
+
+## Engineering
+
+<EngineeringEvidence />
