@@ -20,11 +20,19 @@
     "test": "pnpm -r --if-present test",
     "build": "pnpm --filter @growth-ops/wizard build && pnpm --filter @jl/site build && pnpm --filter @jl/edge build",
     "gates": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm --filter @jl/site check && pnpm --filter @jl/edge test && pnpm build",
+    "new": "node scripts/new.mjs",
+    "media:images": "node scripts/media/images.mjs",
+    "media:pdf": "node scripts/media/pdf.mjs",
+    "media:video": "node scripts/media/video.mjs",
+    "content:todo": "node scripts/content-todo.mjs",
     "prepare": "husky"
   },
   "devDependencies": {
+    "@napi-rs/canvas": "^1.0.10",
     "husky": "^9.1.7",
     "lint-staged": "^15.2.10",
-    "prettier": "^3.4.2"
+    "pdfjs-dist": "^6.4.299",
+    "prettier": "^3.4.2",
+    "sharp": "^0.35.5"
   }
 }
