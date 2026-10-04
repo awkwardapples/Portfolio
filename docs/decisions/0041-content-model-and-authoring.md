@@ -41,6 +41,8 @@ The content pack wrote some placeholders into published profile fields (LinkedIn
 
 **Dev-only pages** are injected by an integration only for `astro dev` (`/dev/content` now, the style guide in Pass 3), so they never reach a production build or the sitemap.
 
+**Addendum, Pass 5 (2026-10-04): the body conveniences.** Every MDX body renders with a components map (`components/mdx/index.ts`). Its paragraph override renders the paragraph's children, and when they are a single link or a single image and nothing else, swaps in the YouTube or Spotify facade, the document card, or a figure captioned from the image's title (`lib/embeds.ts`, unit-tested). The same map makes `<Figure>`, `<Video>`, `<Audio>`, `<YouTube>`, `<Spotify>` and `<Aside>` available without imports. Markdown images stay Astro's optimised `<img>` (WebP with dimensions) rather than a `<picture>` with AVIF, because Astro processes them before the override sees them; `<Figure>` gives the full `<picture>` when it matters. A Sätteri plugin would need `@astrojs/markdown-satteri` as a direct dependency, which spec U.6 does not list.
+
 ## Alternatives considered
 
 - **A preview mode that hides placeholders instead of failing.** Rejected: it would weaken the spec's guard into a convention; drafts express the same thing explicitly.
