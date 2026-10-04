@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-10-04 (Portfolio Pass 6)_
+_Last updated: 2026-10-04 (Portfolio Pass 7)_
 
 This repository is being turned into Josh Lennon's portfolio. The governing document is [`docs/portfolio-spec.md`](portfolio-spec.md) (v1.2). Work happens in the passes of its section V on the `portfolio-transformation` branch, with a draft pull request open against `main` and a merge to `main` at the end of each pass once its gates are green. The GrowTrades platform's own state, as last recorded, is archived in [`archive/growtrades-platform/current-state.md`](archive/growtrades-platform/current-state.md).
 
@@ -15,12 +15,22 @@ This repository is being turned into Josh Lennon's portfolio. The governing docu
 | 4    | Homepage, threshold and navigation flow    | Done 2026-10-04 |
 | 5    | Work, research, log and about pages        | Done 2026-10-04 |
 | 6    | Contact wizard and submission pipeline     | Done 2026-10-04 |
-| 7    | GrowTrades case study and SCB demo         | Next            |
-| 8    | Music, media, GitHub and LinkedIn          |                 |
+| 7    | GrowTrades case study and SCB demo         | Done 2026-10-04 |
+| 8    | Music, media, GitHub and LinkedIn          | Next            |
 | 9    | Responsive, performance and accessibility  |                 |
 | 10   | SEO foundations, documentation and launch  |                 |
 
 ## What exists
+
+### Pass 7: GrowTrades case study and SCB demo (2026-10-04)
+
+- The SCB demo (spec J.3; ADR-0044): the real SCB site built with `vite build --mode demo` into `apps/site/public/demo/scb-handyman/` by the root build, served at `/demo/scb-handyman`. Routes live in memory and each page is reported to the framing page; a banner and the success screen say nothing is sent, and nothing is (QuotePage's development port). Every SCB image is present; oversized copies are re-encoded in the build only (1.3 MB in all). `/demo/*` may be framed by this site only and is not indexed.
+- The browser frame (spec J.4): a still of the SCB homepage and "Try the live site" (a link without JavaScript); then the demo at 1280 px scaled to fit, a Desktop and Mobile toggle, a skeleton until it loads, and an address bar that follows the demo; on phones a phone outline and a full-screen dialog. Stills come from `pnpm media:screens`.
+- The case-study template and the GrowTrades body: Fig. 1 the live site, what it does with the estimator as Fig. 2, "Under the hood" (nine pipeline steps beside code cut from `apps/edge` at build time, with their ADRs; N.5's sticky panel on wider screens with JavaScript), "Engineering" (856 TypeScript tests at handover, 274 PHP tests and PHPStan level 8 at the plugin's last recorded run, 38 ADRs, the service count read from the registry, each linked), and "Talk about your website". The frame tilts flat as it scrolls into view (N.4) in CSS.
+- The homepage GrowTrades section (spec G.4) appears with the entry. **GrowTrades is still a draft**: it needs Josh's start date, authorship type and two paragraphs, so production builds leave out the case study, the homepage section and the threshold's website answer until then.
+- Engine changes for the demo, all inert outside it: router modes (`site/routing/navigation.ts`), the demo banner, demo copy on the success screen, and the Vite demo mode.
+- Browser tests (`e2e/demo.spec.ts`): a whole quote request through the demo with no request to any submission endpoint, the headers, framing from another origin refused, the navigation messages, and every SCB image loading. The case-study tests skip themselves until the entry is published.
+- Docs: ADR-0044.
 
 ### Pass 6: Contact wizard and submission pipeline (2026-10-04)
 
@@ -104,21 +114,35 @@ This repository is being turned into Josh Lennon's portfolio. The governing docu
 - `docs/portfolio-spec.md` committed and excluded from Prettier, so each version Josh supplies stays byte-for-byte as supplied.
 - History scans of every blob on every ref (including inside `.docx`, `.tar.gz` and PDF streams) and every commit message, with values never printed. Before the rewrite, the only live Make.com webhook token and the only Google Sheet link were in `docs/Agency Docs/Technical Onboarding.IPYNB`. After it, a fresh clone from GitHub has neither, and no agency document, in any of its 285 commits. No Turnstile secret key existed anywhere: the `0x4A…` values in tests and the plugin are the public SCB site key, and the `1x/2x/3x000…` values are Cloudflare's documented test keys. Other `hook.eu1.make.com/…` strings are placeholders (`abc123def456`, `<real-id>`), and `.env.example` on `deploy/test-live` has empty values.
 
-## Gate state (last verified: Pass 6, 2026-10-04)
+## Gate state (last verified: Pass 7, 2026-10-04)
 
 Node 24.21.0, pnpm 9.15.0, Windows.
 
 - `pnpm format:check`: clean.
 - `pnpm lint`: ESLint 0 errors and 0 warnings in the wizard, the site and the Worker; `scripts/check-design.mjs` clean.
 - `pnpm typecheck`: 0 errors (wizard production and test tsconfig, Worker).
-- `pnpm test`: **1,110 passed**: wizard 884 (the original 856, 11 theme-contract checks and 17 for the Pass 6 engine changes; 69 files), site 104 (11 files, now including the contact wizard configurations and result selection), Worker 122 (4 files: health, the ported protections, the submit handler, and the forwarder, cron and D1 repository).
+- `pnpm test`: **1,121 passed**: wizard 888 (the original 856, 11 theme-contract checks, 17 for the Pass 6 engine changes and 4 for the demo router; 70 files), site 111 (13 files, now including the frame's message checks and the code excerpts), Worker 122 (4 files).
 - `pnpm --filter @jl/site check`: 0 errors, 0 warnings (one hint: `tseslint.config()` is deprecated).
 - `pnpm --filter @jl/edge test`: 122/122.
-- `pnpm build`: clean, no placeholders in the built site. Wizard JS about 100 kB gzip. `/contact` JavaScript 77.5 kB gzip (budget 120 kB). Homepage JavaScript before interaction: about 2 kB gzip (navigation, prefetch, the threshold and the stored answer); React loads only when a copy button comes into view.
-- `pnpm test:e2e`: 103 passed on desktop and an emulated phone (7 skipped where a test applies to one device only), zero serious or critical axe violations on every route, against `wrangler dev` with a fresh local D1 and a stub webhook.
-- Pass 6 acceptance: every intent completes to success against `wrangler dev` with a stubbed webhook; the honeypot, the rate limit (the sixth message in an hour is refused and the screen says "Please try again in 60 minutes."), missing consent, another origin, an oversized body and duplicates behave as spec Q.3 says; the retry cron is tested with a webhook that fails and then succeeds; the 856 original wizard tests pass with the new ones. The SCB quote flow is unchanged apart from 44 px controls (its wizard tests pass).
+- `pnpm build`: clean, no placeholders in the built site. Builds the wizard, then the SCB demo (1.3 MB, no source maps), then the site and the Worker. `/contact` JavaScript 77.5 kB gzip (budget 120 kB).
+- `pnpm test:e2e`: 112 passed on desktop and an emulated phone (12 skipped: device-specific tests, and the case-study tests until GrowTrades is published), zero serious or critical axe violations, against `wrangler dev` with a fresh local D1 and a stub webhook.
+- Pass 7 acceptance: the demo runs at `/demo/scb-handyman` with no request to any submission endpoint (a whole quote request in Playwright); it reports each page to the framing page, which the frame shows in its address bar; another origin cannot frame it; every SCB image is present. The case study's performance budget waits for its publication (it is a draft). Spec X reviewed below.
 - Lighthouse CI (homepage): first run in Pass 4 gave a median LCP of 1.59 s, CLS 0 and a performance score of 99 on the mobile preset.
 - PHP: none left; the plugin was deleted once the Worker matched it (ADR-0043).
+
+## Anti-slop review (spec X), Pass 7
+
+- No gradients, blur, glass or glow; the frame and phone outline are borders, and nothing in the case study casts a shadow.
+- No purple: code is shown plain, without a highlighting theme.
+- One accent: no new uses of tungsten.
+- No identical cards: the case study's evidence is the live site, the estimator, real code and linked figures.
+- Icons: Lucide's monitor, phone and close, each with a label and a tooltip.
+- No spinners: a skeleton of the SCB homepage while the demo loads.
+- No all-caps labels or middle dots; the pipeline's steps are numbered because they are a real sequence.
+- Motion: only N.4 (the frame settles as it scrolls in) and N.5 (the code panel swaps), both without animation libraries, both off with reduced motion.
+- Copy: what the product does is described from the code; results and figures about SCB are left out (spec J.1); Josh's own paragraphs are a placeholder in the draft.
+- Aceternity: Container Scroll and Sticky Scroll as ideas, rebuilt in CSS and a few lines of script, keyboard and screen-reader friendly, with phone and reduced-motion behaviour.
+- Without JavaScript: the case study reads in full, each step shows its code, and "Try the live site" opens the demo.
 
 ## Anti-slop review (spec X), Pass 5
 
