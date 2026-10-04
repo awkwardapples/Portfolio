@@ -53,7 +53,7 @@ Node 24.21.0, pnpm 9.15.0, Windows.
 - `pnpm --filter @jl/edge test`: 6/6.
 - `pnpm build`: clean. Wizard JS 99.50 kB gzip and CSS 5.47 kB gzip (unchanged); site 2 pages and a sitemap; Worker dry run reads 9 asset files.
 - `wrangler dev` (Pass 1 acceptance): `/api/health` returns 200 with `{"status":"ok"}`; `/` returns the page; `/index.html` redirects to `/`; an unknown path returns `404.html` with status 404; an unknown `/api/` path returns a JSON 404; the `_headers` security headers are applied.
-- CI on GitHub: has not run (see open items).
+- CI on GitHub: green on the Pass 1 head (pull request and manual runs). No Actions run had been created for this repository on 3 October; runs started normally on 4 October once the workflow gained a manual trigger, and pull-request runs work too.
 - PHP: not run; the plugin is out of the build and unchanged.
 
 ## Open items
@@ -61,7 +61,6 @@ Node 24.21.0, pnpm 9.15.0, Windows.
 Needs Josh:
 
 - **Cloudflare set-up** (blocks the first real deploy, not the merges): account, `workers.dev` subdomain, API token, and the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets. Steps in [`deployment.md`](deployment.md).
-- **GitHub Actions does not start on this repository.** Actions is enabled and the workflow is registered, but no run has been created for any push or pull request since the repository was created on 3 October (Josh's other repositories ran CI in July). Check **Settings > Actions > General** and any notice on the Actions tab; if nothing explains it, GitHub Support can look at the repository. Until it runs, the gates are verified locally before each merge.
 - `awkwardapples/scb-handyman` and `awkwardapples/Handy-Man` are public and still hold the agency documents (SCB's ranking and enquiry figures, the agreement template, the sales PDF), the old Sheet link and the now-rotated webhook token on `main`. Josh is handling these repositories (spec W item 2).
 - GitHub can keep serving the pre-rewrite commits to anyone who already has their hashes until it garbage-collects them; GitHub Support can purge them on request (first changed commit `fa585a21686cd0bb88e015af7870ae735d3e40cb`).
 - Any clone made before the Pass 0 rewrite must be re-cloned rather than pushed from. This machine's clone still holds the old objects in its reflog until `git reflog expire --expire=now --all && git gc --prune=now` is run.
