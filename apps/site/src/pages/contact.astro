@@ -1,0 +1,122 @@
+---
+/**
+ * Start a conversation (spec I.2): the "What brings you here?" wizard as a
+ * React island, mounted client-only with a skeleton in the shape of its
+ * first screen, so nothing shifts when it arrives. Its result step shows
+ * real content from the collections, computed here at build time and
+ * passed as props (spec I.4). Without JavaScript, the page gives the email
+ * address instead.
+ */
+import { getImage } from 'astro:assets';
+
+import Section from '~/components/Section.astro';
+import { CopyEmail } from '~/islands/CopyEmail';
+import { ContactWizard } from '~/islands/ContactWizard';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { dateOf, getProfile, getWork } from '~/lib/content';
+import { documentInfo, publicFileSize } from '~/lib/documents';
+import { KIND_LABELS, readDocumentLabel } from '~/lib/format';
+import { ROUTES } from '~/lib/routes';
+import { resultsBySelection, type ContentIndexEntry } from '~/wizard/content-index';
+
+const profile = await getProfile();
+const work = await getWork();
+
+const index: ContentIndexEntry[] = await Promise.all(
+  work.map(async (entry) => {
+    const { data } = entry;
+    const date = dateOf(data.date);
+    const document = data.documents[0];
+    const info = document ? documentInfo(document.file) : undefined;
+    const coverSource = data.cover ?? info?.cover;
+    const cover = coverSource
+      ? await getImage({ src: coverSource, width: 192, format: 'webp' })
+      : undefined;
+    const actions = [
+      ...(document
+        ? [
+            {
+              label: readDocumentLabel(document.docType, info),
+              href: info?.url ?? `/documents/${document.file}`,
+            },
+          ]
+        : []),
+      ...data.links.map((link) => ({ label: link.label, href: link.url })),
+    ];
+    return {
+      id: entry.id,
+      kind: data.kind,
+      featured: data.featured,
+      featuredOrder: data.featuredOrder,
+      date: date?.toISOString(),
+      item: {
+        title: data.title,
+        summary: data.summary,
+        meta: date ? `${KIND_LABELS[data.kind]}, ${date.getUTCFullYear()}` : KIND_LABELS[data.kind],
+        url: `${ROUTES.work.path}/${entry.id}`,
+        coverUrl: cover?.src,
+        coverAlt: cover ? '' : undefined,
+        actions,
+      },
+    };
+  }),
+);
+
+const cvSize = profile.cv ? publicFileSize(profile.cv.file) : undefined;
+const cvAction = profile.cv
+  ? {
+      label: cvSize ? `Download CV (PDF, ${cvSize})` : 'Download CV (PDF)',
+      href: profile.cv.file,
+      download: true,
+    }
+  : undefined;
+---
+
+<BaseLayout
+  title="Start a conversation | Josh Lennon"
+  description="Tell me what brings you here, see the most relevant work, and send me a message."
+>
+  <Section labelledby="contact-heading" width="reading">
+    <h1 id="contact-heading" class="text-4xl">Start a conversation</h1>
+    <p class="mt-6 text-lg">
+      A few short questions, then the work most relevant to you. Your details are only asked for at
+      the end.
+    </p>
+
+    <div class="contact-wizard js-only mt-10">
+      <ContactWizard
+        client:only="react"
+        results={resultsBySelection(index)}
+        cvAction={cvAction}
+        hiringIntro={profile.availability}
+        turnstileSiteKey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? ''}
+        endpointUrl="/api/submit"
+      >
+        <div slot="fallback" aria-hidden="true" class="rounded border border-rule bg-paper p-6">
+          <div class="h-6 w-2/3 animate-goqw-pulse rounded bg-paper-sunken"></div>
+          <div class="mt-6 flex flex-col gap-3">
+            {
+              [0, 1, 2, 3, 4].map(() => (
+                <div class="h-16 animate-goqw-pulse rounded border border-rule bg-paper-sunken" />
+              ))
+            }
+          </div>
+        </div>
+      </ContactWizard>
+    </div>
+
+    <p class="no-js-only mt-10">
+      The questions need JavaScript. You can email me at <a href={`mailto:${profile.links.email}`}
+        >{profile.links.email}</a
+      > instead.
+    </p>
+
+    {
+      profile.links.email && (
+        <p class="mt-10 text-sm text-graphite">
+          Prefer email? <CopyEmail client:visible email={profile.links.email} surface="paper" />
+        </p>
+      )
+    }
+  </Section>
+</BaseLayout>

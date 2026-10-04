@@ -16,11 +16,20 @@ import { StepRenderer } from '@/components/steps';
 import { EstimateDisplayStep } from '@/components/steps/EstimateDisplayStep';
 import { VisualCardSelectorStep } from '@/components/steps/VisualCardSelectorStep';
 import { SizeBracketSelectorStep } from '@/components/steps/SizeBracketSelectorStep';
+import { ContentResultStep } from '@/components/steps/ContentResultStep';
 import { HoneypotField } from '@/components/HoneypotField';
 
 interface WizardShellProps {
   /** Called when the user presses Back on the first wizard step. */
   onReturnToSelector?: () => void;
+  /**
+   * Whether the shell is the page's main landmark, with its own skip link
+   * (the SCB quote page, the default). A host page that already has a
+   * <main> and a skip link, like the portfolio, passes false.
+   */
+  landmark?: boolean;
+  /** Classes for the step container; the default centres it at max-w-xl with padding. */
+  className?: string;
 }
 
 /**
@@ -29,7 +38,11 @@ interface WizardShellProps {
  * Re-renders on every store dispatch; inner components use key={step.id} so
  * their local state resets cleanly on step change.
  */
-export function WizardShell({ onReturnToSelector }: WizardShellProps = {}): JSX.Element {
+export function WizardShell({
+  onReturnToSelector,
+  landmark = true,
+  className = 'mx-auto max-w-xl space-y-4 p-6',
+}: WizardShellProps = {}): JSX.Element {
   const { state, dispatch } = useWizard();
   const store = useWizardStore();
   const config = store.getConfig();
@@ -49,7 +62,13 @@ export function WizardShell({ onReturnToSelector }: WizardShellProps = {}): JSX.
       state.submissionResult?.outcome === 'success' ? state.submissionResult.submissionId : null;
     const isDuplicate =
       state.submissionResult?.outcome === 'success' && state.submissionResult.isDuplicate;
-    return <SuccessScreen submissionId={submissionId} isDuplicate={isDuplicate} />;
+    return (
+      <SuccessScreen
+        submissionId={submissionId}
+        isDuplicate={isDuplicate}
+        answers={state.answers}
+      />
+    );
   }
 
   if (phase === 'submit_failure') {
@@ -75,16 +94,19 @@ export function WizardShell({ onReturnToSelector }: WizardShellProps = {}): JSX.
 
   const quoteMode = wizard.quoteMode ?? 'instant';
   const price = quoteMode === 'instant' ? selectPrice(state, config) : null;
+  const Container = landmark ? 'main' : 'div';
 
   return (
     <>
-      <a
-        href="#wizard-main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-surface focus:px-4 focus:py-2 focus:text-text focus:shadow-elevated"
-      >
-        Skip to main content
-      </a>
-      <main id="wizard-main" className="mx-auto max-w-xl space-y-4 p-6">
+      {landmark && (
+        <a
+          href="#wizard-main"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-surface focus:px-4 focus:py-2 focus:text-text focus:shadow-elevated"
+        >
+          Skip to main content
+        </a>
+      )}
+      <Container id="wizard-main" className={className}>
         {/* Mounted once for the whole wizard session (Step 5.13f) — unlike
             StepRenderer, this element is not keyed by step.id and so never
             remounts on step change, preserving whatever a bot wrote into it. */}
@@ -100,6 +122,13 @@ export function WizardShell({ onReturnToSelector }: WizardShellProps = {}): JSX.
           />
         ) : currentStep.stepKind === 'estimate-display' ? (
           <EstimateDisplayStep
+            key={currentStep.id}
+            step={currentStep}
+            isFirst={isFirst}
+            onFirstBack={onReturnToSelector}
+          />
+        ) : currentStep.stepKind === 'content-result' ? (
+          <ContentResultStep
             key={currentStep.id}
             step={currentStep}
             isFirst={isFirst}
@@ -133,7 +162,7 @@ export function WizardShell({ onReturnToSelector }: WizardShellProps = {}): JSX.
               rangeMaxPence={price.rangeMaxPence}
             />
           )}
-      </main>
+      </Container>
     </>
   );
 }

@@ -1,0 +1,104 @@
+---
+/**
+ * The privacy notice (spec Q.5), written for Josh as an individual
+ * controller and for what the site actually does today. Update it whenever
+ * that changes: analytics (Pass 9 or 10) must be added here before they go
+ * live. Not legal advice; Josh checks it, and whether the ICO data
+ * protection fee applies to him.
+ */
+import Section from '~/components/Section.astro';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { getProfile } from '~/lib/content';
+
+const profile = await getProfile();
+const email = profile.links.email ?? 'hello@joshlennon.com';
+const updated = '4 October 2026';
+---
+
+<BaseLayout
+  title="Privacy | Josh Lennon"
+  description="What this site collects, why, who processes it, how long it is kept, and your rights."
+>
+  <Section labelledby="privacy-heading" width="reading">
+    <h1 id="privacy-heading" class="text-4xl">Privacy</h1>
+    <p class="mt-4 text-sm text-graphite">Last updated {updated}</p>
+
+    <div class="prose-body mt-10">
+      <p>
+        This site is run by me, Josh Lennon, as an individual. I am the controller of the personal
+        data described here. You can reach me about it at <a href={`mailto:${email}`}>{email}</a>.
+      </p>
+
+      <h2>What I collect</h2>
+      <ul>
+        <li>
+          <strong>What you type into the contact form</strong> at /contact: your name, email
+          address, your message, your answers to its questions, and, if you give them, your
+          organisation and anything else you add. I also record when you gave consent.
+        </li>
+        <li>
+          <strong>A hashed form of your IP address</strong>, kept for at most an hour, to limit how
+          many messages can be sent from one connection. The address itself is never stored.
+        </li>
+        <li>
+          <strong>Nothing else.</strong> The site sets no cookies and runs no analytics or adverts.
+        </li>
+      </ul>
+
+      <h2>What stays in your browser</h2>
+      <p>
+        If you answer "What brings you here?" on the homepage, your answer is saved in your
+        browser's local storage so the site can remember it on your next visit. It is never sent to
+        me. "Change what brought you here", at the foot of every page, removes it. Answers you type
+        into the contact form are kept in your browser's session storage until you send them or
+        close the tab, so you don't lose them if you look around first.
+      </p>
+
+      <h2>Why, and on what basis</h2>
+      <p>
+        I use what you send through the contact form only to read and reply to your message. The
+        lawful basis is your consent, which you give with the checkbox before sending. You can
+        withdraw it at any time by emailing me; I will then delete your message.
+      </p>
+
+      <h2>Who processes it for me</h2>
+      <ul>
+        <li>
+          <strong>Cloudflare</strong> hosts the site, stores contact form messages, and runs
+          Turnstile, the check that the form is being used by a person.
+        </li>
+        <li>
+          <strong>Make.com</strong> passes each message on to me automatically.
+        </li>
+        <li>
+          <strong>Google</strong> holds the copy that reaches my email inbox and a private
+          spreadsheet of messages.
+        </li>
+      </ul>
+      <p>
+        Videos and music on this site load nothing from YouTube or Spotify until you press Play.
+        After that, their own privacy policies apply to what they collect.
+      </p>
+
+      <h2>How long it is kept</h2>
+      <p>
+        Messages are deleted from the site's database automatically after 90 days. The copies in my
+        inbox and spreadsheet are kept only as long as I need them to deal with your message, and
+        I delete them if you ask.
+      </p>
+
+      <h2>Your rights</h2>
+      <p>
+        Under UK data protection law you can ask me for a copy of your data, to correct it, to
+        delete it, to restrict or object to how I use it, or to have it in a portable form. Email
+        me at <a href={`mailto:${email}`}>{email}</a> and I will reply within one month.
+      </p>
+      <p>
+        If you are unhappy with how I have handled your data, you can complain to the Information
+        Commissioner's Office at <a href="https://ico.org.uk/make-a-complaint/"
+          >ico.org.uk/make-a-complaint</a
+        >.
+      </p>
+    </div>
+  </Section>
+</BaseLayout>

@@ -13,7 +13,7 @@
     "binding": "ASSETS",
     "run_worker_first": ["/api/*"],
     "not_found_handling": "404-page",
-    "html_handling": "drop-trailing-slash"
+    "html_handling": "drop-trailing-slash",
   },
   // No database_id: the deploy workflow creates the database by name on the
   // first deploy and Wrangler looks it up by name after that.
@@ -21,8 +21,8 @@
     {
       "binding": "DB",
       "database_name": "joshlennon-site",
-      "migrations_dir": "migrations"
-    }
+      "migrations_dir": "migrations",
+    },
   ],
   // Plain configuration (spec Q.3, U.8). Secrets are set with
   // `wrangler secret put` and never appear in this file.
@@ -30,7 +30,10 @@
     "SITE_ORIGIN": "https://joshlennon.com",
     "RATE_LIMIT_PER_HOUR": "5",
     "RETENTION_DAYS": "90",
-    "TURNSTILE_EXPECTED_HOSTNAME": "joshlennon.com"
+    // Comma-separated; the hostname a request arrives on is accepted too (src/index.ts).
+    "TURNSTILE_EXPECTED_HOSTNAME": "joshlennon.com,www.joshlennon.com",
   },
-  "workers_dev": true
+  // Retry pending forwards every 15 minutes; prune old data daily (spec Q.2, src/scheduled.ts).
+  "triggers": { "crons": ["*/15 * * * *", "17 3 * * *"] },
+  "workers_dev": true,
 }

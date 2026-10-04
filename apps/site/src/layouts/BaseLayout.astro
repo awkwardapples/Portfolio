@@ -28,11 +28,13 @@ const { title, description, noindex = false } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!--
-      Before the first paint: if this browser has answered "What brings you here?",
+      Before the first paint: mark that JavaScript runs (html.js, for .js-only and
+      .no-js-only), and if this browser has answered "What brings you here?",
       set html[data-intent] so the threshold stays hidden and the intro shows the
       right calls to action (spec G.0). The answer never leaves the browser.
     -->
     <script is:inline>
+      document.documentElement.classList.add('js');
       try {
         var stored = JSON.parse(localStorage.getItem('jl:intent') || 'null');
         if (stored && /^(hiring|research|website|music|looking)$/.test(stored.value)) {

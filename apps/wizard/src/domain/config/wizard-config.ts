@@ -106,6 +106,22 @@ export const FieldSchema = z.strictObject({
   condition: ConditionSchema.optional(),
   /** Maximum number of photos (photo fields only, default 1). Ignored for other field types. */
   maxCount: z.number().int().min(1).max(5).optional(),
+  /**
+   * Maximum length in characters (text and textarea fields only). Optional:
+   * absent means no limit, as before. Enforced by validateStep, so a server
+   * validating with the same config rejects over-long answers too.
+   */
+  maxLength: z.number().int().positive().optional(),
+  /**
+   * A link shown with the help text (checkbox fields), e.g. the privacy notice
+   * beside a consent checkbox (portfolio Pass 6). Optional; absent as before.
+   */
+  helpLink: z
+    .strictObject({
+      label: z.string().min(1),
+      href: z.string().regex(/^(\/|https:\/\/)/, 'Links start with / or https://'),
+    })
+    .optional(),
 });
 
 export type Field = z.infer<typeof FieldSchema>;
@@ -244,6 +260,28 @@ export const SizeBracketSelectorStepSchema = z.strictObject({
 export type SizeBracketSelectorStep = z.infer<typeof SizeBracketSelectorStepSchema>;
 
 /**
+ * Content Result step (portfolio Pass 6, ADR-0042): shows what on the host
+ * site is most relevant to the answers so far, before asking for personal
+ * details. The engine stays content-agnostic: the step names a `selection`,
+ * and the host supplies the items for it through ContentResultsContext.
+ *
+ * Like estimate-display it has no fields and is always valid. "Continue"
+ * dispatches STEP_NEXT; the exit button calls the host's onExit handler.
+ */
+export const ContentResultStepSchema = z.strictObject({
+  stepKind: z.literal('content-result'),
+  id: idSchema,
+  title: z.string().min(1),
+  description: z.string().optional(),
+  condition: ConditionSchema.optional(),
+  selection: z.enum(['featured', 'research', 'venture', 'music']),
+  continueLabel: z.string().min(1),
+  exitLabel: z.string().min(1),
+});
+
+export type ContentResultStep = z.infer<typeof ContentResultStepSchema>;
+
+/**
  * A wizard step can be a classic field step (Step) or one of the new step kinds.
  *
  * Classic field steps are identified by the presence of a `fields` array.
@@ -254,6 +292,7 @@ export const AnyStepSchema = z.union([
   EstimateDisplayStepSchema,
   VisualCardSelectorStepSchema,
   SizeBracketSelectorStepSchema,
+  ContentResultStepSchema,
 ]);
 
 export type AnyStep = z.infer<typeof AnyStepSchema>;

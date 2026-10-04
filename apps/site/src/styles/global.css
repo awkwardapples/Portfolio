@@ -110,6 +110,12 @@
     display: flex;
   }
 
+  /* Content that needs JavaScript, and its fallback (html.js is set in BaseLayout's head). */
+  html:not(.js) .js-only,
+  html.js .no-js-only {
+    display: none !important;
+  }
+
   /* Sections land below the sticky bar. */
   section[id] {
     scroll-margin-top: theme('spacing.16');

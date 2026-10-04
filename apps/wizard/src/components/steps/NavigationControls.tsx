@@ -1,4 +1,5 @@
 import { Button } from '@/components/primitives';
+import { useWizardCopy } from '@/runtime/copy';
 
 interface NavigationControlsProps {
   onBack: () => void;
@@ -23,18 +24,19 @@ export function NavigationControls({
   disabled = false,
   onSkip,
 }: NavigationControlsProps): JSX.Element {
+  const copy = useWizardCopy();
   return (
     <div className="mt-6 flex items-center justify-between">
       <Button type="button" variant="secondary" onClick={onBack}>
-        Back
+        {copy.backLabel}
       </Button>
       {onSkip && (
         <Button type="button" variant="secondary" onClick={onSkip} disabled={disabled}>
-          Skip and Submit
+          {copy.skipAndSubmitLabel}
         </Button>
       )}
       <Button type="submit" variant="primary" onClick={onNext} disabled={disabled}>
-        {isLast ? 'Submit' : 'Next'}
+        {isLast ? copy.submitLabel : copy.nextLabel}
       </Button>
     </div>
   );

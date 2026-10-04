@@ -21,9 +21,9 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  * All colours/spacing reference the closed token system via semantic Tailwind
  * classes. There are no raw hex values or arbitrary spacings.
  *
- * `lg` (44px, added in the UI overhaul's Phase 1 foundation) is the WCAG
- * touch-target-compliant size and should be used for every marketing-page
- * CTA; `sm`/`md` are unchanged and remain in use inside the quote wizard.
+ * `md` and `lg` are both 44px, the WCAG touch-target size (`md` was 40px
+ * until portfolio Pass 6; `lg` keeps its wider padding for marketing-page
+ * CTAs). `sm` (32px) is for dense secondary controls only.
  * `destructive` is a completeness addition (no current call site) — added so
  * the system doesn't have a missing tier if one is ever needed, using the
  * existing `danger` state token rather than a new colour.
@@ -38,7 +38,7 @@ const variantClasses: Record<ButtonVariant, string> = {
 
 const sizeClasses: Record<ButtonSize, string> = {
   sm: 'h-8 px-3 text-sm',
-  md: 'h-10 px-4 text-base',
+  md: 'h-11 px-4 text-base',
   lg: 'h-11 px-6 text-base',
 };
 

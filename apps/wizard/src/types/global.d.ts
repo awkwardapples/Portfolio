@@ -8,10 +8,11 @@
  * before the wizard bundle runs. This file tells TypeScript what shape that
  * global has so we get type-checking when reading it.
  *
- * The contract on the PHP side lives in
- *   plugins/quote-wizard/src/Frontend/PublicConfig.php
- *
- * Keep this declaration in sync with that file. The `contractVersion` field
+ * The contract on the PHP side lived in the WordPress plugin's
+ *   src/Frontend/PublicConfig.php
+ * (removed from this repository in portfolio Pass 6, ADR-0043; it remains in
+ * git history and in the SCB site's own plugin copy). Keep the two in sync
+ * wherever the SCB build is deployed. The `contractVersion` field
  * lets us detect drift at runtime (see config-loader.ts).
  */
 

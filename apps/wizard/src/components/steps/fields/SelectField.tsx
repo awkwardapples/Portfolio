@@ -32,7 +32,7 @@ export function SelectField({
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
         className={cn(
-          'h-10 w-full rounded border bg-surface px-3 text-base text-text',
+          'h-11 w-full rounded border bg-surface px-3 text-base text-text',
           'transition-colors duration-fast',
           error ? 'border-danger' : 'border-border-strong',
         )}

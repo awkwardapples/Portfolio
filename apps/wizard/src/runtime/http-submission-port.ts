@@ -8,10 +8,13 @@ import type { SubmissionPort, SubmissionPortResult, SubmissionRequest } from '@/
 
 export interface HttpPortOptions {
   /** REST namespace base URL from PublicConfig (e.g. https://example.com/wp-json/qw/v1).
-   *  The port appends the per-endpoint path; see ADR-0015 amendment 2026-06-05. */
-  readonly restUrl: string;
-  /** WP REST nonce from PublicConfig. */
-  readonly restNonce: string;
+   *  The port appends the per-endpoint path; see ADR-0015 amendment 2026-06-05.
+   *  Ignored when `endpointUrl` is given. */
+  readonly restUrl?: string;
+  /** The full submission URL (portfolio: '/api/submit'); takes precedence over restUrl. */
+  readonly endpointUrl?: string;
+  /** WP REST nonce from PublicConfig. Optional: no X-WP-Nonce header is sent without one. */
+  readonly restNonce?: string;
   /** Override for tests; defaults to global fetch. */
   readonly fetchImpl?: typeof fetch;
   /** Override for tests; default 30 000 ms. */
@@ -83,19 +86,20 @@ export function httpSubmissionPort(options: HttpPortOptions): SubmissionPort {
       const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
       // PHP emits the namespace base (qw/v1); we own the per-endpoint path.
-      const endpointUrl = options.restUrl.endsWith('/')
-        ? `${options.restUrl}submit`
-        : `${options.restUrl}/submit`;
+      const restUrl = options.restUrl ?? '';
+      const endpointUrl =
+        options.endpointUrl ?? (restUrl.endsWith('/') ? `${restUrl}submit` : `${restUrl}/submit`);
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      };
+      if (options.restNonce) headers['X-WP-Nonce'] = options.restNonce;
 
       let response: Response;
       try {
         response = await fetchImpl(endpointUrl, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-WP-Nonce': options.restNonce,
-            Accept: 'application/json',
-          },
+          headers,
           body: JSON.stringify(payload),
           credentials: 'same-origin',
           signal: controller.signal,

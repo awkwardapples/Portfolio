@@ -24,12 +24,21 @@ export default defineConfig({
     },
     { name: 'phone', use: { ...devices['Pixel 7'] } },
   ],
-  webServer: {
-    command: `pnpm --filter @jl/edge exec wrangler dev --port ${PORT} --ip 127.0.0.1`,
-    cwd: '../..',
-    url: `http://127.0.0.1:${PORT}/api/health`,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-    stdout: 'ignore',
-  },
+  // The Worker on a fresh local D1, forwarding to a stub webhook (e2e/start-worker.mjs,
+  // e2e/webhook-stub.mjs). Never reused: a stale server would make every test lie.
+  webServer: [
+    {
+      command: 'node e2e/webhook-stub.mjs',
+      url: 'http://127.0.0.1:8799/health',
+      reuseExistingServer: false,
+      timeout: 30_000,
+    },
+    {
+      command: 'node e2e/start-worker.mjs',
+      url: `http://127.0.0.1:${PORT}/api/health`,
+      reuseExistingServer: false,
+      timeout: 120_000,
+      stdout: 'ignore',
+    },
+  ],
 });

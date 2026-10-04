@@ -11,7 +11,7 @@ export function CheckboxGroupField({
 }: FieldRendererProps): JSX.Element {
   const groupId = field.key;
   const errorId = error ? `${groupId}-error` : undefined;
-  const helpId = field.help ? `${groupId}-help` : undefined;
+  const helpId = field.help || field.helpLink ? `${groupId}-help` : undefined;
   const current = Array.isArray(value) ? (value as ReadonlyArray<string>) : [];
 
   function handleChange(optValue: string, checked: boolean): void {
@@ -29,9 +29,15 @@ export function CheckboxGroupField({
           </span>
         )}
       </legend>
-      {field.help && (
+      {(field.help || field.helpLink) && (
         <p id={helpId} className="mt-1 text-sm text-text-muted">
           {field.help}
+          {field.help && field.helpLink && ' '}
+          {field.helpLink && (
+            <a href={field.helpLink.href} className="text-text underline underline-offset-4">
+              {field.helpLink.label}
+            </a>
+          )}
         </p>
       )}
       <div className="mt-2 space-y-2">

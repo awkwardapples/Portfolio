@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url';
+
 import { defineConfig } from 'vitest/config';
 
 /**
@@ -6,6 +8,10 @@ import { defineConfig } from 'vitest/config';
  * so tests supply small in-memory stand-ins instead of a workerd runtime.
  */
 export default defineConfig({
+  // The wizard engine's files import each other through `@/` (shared validation, ADR-0043).
+  resolve: {
+    alias: { '@': fileURLToPath(new URL('../wizard/src', import.meta.url)) },
+  },
   test: {
     environment: 'node',
     include: ['test/**/*.test.ts'],

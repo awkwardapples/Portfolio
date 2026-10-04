@@ -1,4 +1,5 @@
 import { Button } from '@/components/primitives';
+import { useWizardCopy } from '@/runtime/copy';
 import type { SubmissionErrorInfo } from '@/domain/runtime/state';
 
 function AlertCircleIcon(): JSX.Element {
@@ -32,6 +33,8 @@ export function FailureScreen({ error, onRetry }: FailureScreenProps): JSX.Eleme
   const canRetry = error?.retryable ?? true;
   const referenceId = error?.submissionId;
   const isRateLimited = error?.code === 'rate_limited';
+  const copy = useWizardCopy();
+  const Heading = copy.screenHeadingLevel;
 
   return (
     <div className="mx-auto max-w-xl p-6">
@@ -39,19 +42,19 @@ export function FailureScreen({ error, onRetry }: FailureScreenProps): JSX.Eleme
         <div className="mb-4 flex justify-center">
           <AlertCircleIcon />
         </div>
-        <h1 className="text-xl font-semibold text-text">
-          {isRateLimited ? 'Please wait a moment' : 'Something went wrong'}
-        </h1>
-        <p className="mt-2 text-base text-text-muted">
-          {error?.message ?? 'Your request could not be submitted. Please try again.'}
-        </p>
+        <Heading className="text-xl font-semibold text-text">
+          {isRateLimited ? copy.rateLimitedTitle : copy.failureTitle}
+        </Heading>
+        <p className="mt-2 text-base text-text-muted">{error?.message ?? copy.failureFallback}</p>
         {referenceId !== undefined && referenceId !== null && (
-          <p className="mt-3 text-sm text-text-subtle">Reference: {referenceId}</p>
+          <p className="mt-3 text-sm text-text-subtle">
+            {copy.referenceLabel}: {referenceId}
+          </p>
         )}
         {canRetry && (
           <div className="mt-6 flex justify-center">
             <Button variant="primary" onClick={onRetry}>
-              Try again
+              {copy.retryLabel}
             </Button>
           </div>
         )}

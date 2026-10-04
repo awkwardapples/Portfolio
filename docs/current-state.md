@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-10-04 (Portfolio Pass 5)_
+_Last updated: 2026-10-04 (Portfolio Pass 6)_
 
 This repository is being turned into Josh Lennon's portfolio. The governing document is [`docs/portfolio-spec.md`](portfolio-spec.md) (v1.2). Work happens in the passes of its section V on the `portfolio-transformation` branch, with a draft pull request open against `main` and a merge to `main` at the end of each pass once its gates are green. The GrowTrades platform's own state, as last recorded, is archived in [`archive/growtrades-platform/current-state.md`](archive/growtrades-platform/current-state.md).
 
@@ -14,13 +14,24 @@ This repository is being turned into Josh Lennon's portfolio. The governing docu
 | 3    | Visual system and global layout            | Done 2026-10-04 |
 | 4    | Homepage, threshold and navigation flow    | Done 2026-10-04 |
 | 5    | Work, research, log and about pages        | Done 2026-10-04 |
-| 6    | Contact wizard and submission pipeline     | Next            |
-| 7    | GrowTrades case study and SCB demo         |                 |
+| 6    | Contact wizard and submission pipeline     | Done 2026-10-04 |
+| 7    | GrowTrades case study and SCB demo         | Next            |
 | 8    | Music, media, GitHub and LinkedIn          |                 |
 | 9    | Responsive, performance and accessibility  |                 |
 | 10   | SEO foundations, documentation and launch  |                 |
 
 ## What exists
+
+### Pass 6: Contact wizard and submission pipeline (2026-10-04)
+
+- `/contact` (spec I; ADR-0042): "What brings you here?" as a React island. The intent comes from `?intent=`, the homepage's stored answer, or a selector; then two or three questions, a result step showing real work from the collections (dropped when there is nothing to show), your details with consent linked to `/privacy`, optional details with "Skip and send", and a success screen with the reference and the address the reply goes to. Duplicates within 24 hours get "I already have a message from you today. I'll reply to both together." Without JavaScript the page offers the email address. 77.5 kB of JavaScript gzipped (budget 120 kB).
+- Five intent configurations in `apps/site/src/wizard/intents.ts` (hiring, research, website, music, something else), shared by the island and the Worker.
+- Engine changes, all additive and defaulting to the SCB behaviour: the `content-result` step kind; environment, copy and content-result contexts; `httpSubmissionPort` with `endpointUrl`; `WizardShell` `landmark` and `className`; field `maxLength` and `helpLink`; a `role_link` URL check; and 44 px inputs, selects and buttons (spec O), which also changes the SCB build.
+- `POST /api/submit` on the Worker (spec Q.2, Q.3; ADR-0043): the plugin's pipeline in the plugin's order (honeypot, rate limit, Turnstile, shape, consent, duplicates, persist), plus the origin check, the 16 kB limit, server-side answer validation with the engine's own code, Turnstile hostname and action checks, an HMAC rate-limit key and random `JL-` references. The forward to Make.com runs after the response, with the `X-Webhook-Secret` header; failures are retried every 15 minutes with back-off for five attempts. A daily cron deletes messages after 90 days and ended rate-limit windows. Migration `0002` adds the client timestamp.
+- Parity: every PHP test of the ported classes has a Vitest counterpart named after it; the D1 SQL runs against the real migrations on Node's built-in SQLite. `plugins/quote-wizard/` is deleted (in git history before this merge).
+- `/privacy` (spec Q.5): written for what the site does today, in Josh's voice; analytics must be added there before they go live.
+- Browser tests (`e2e/contact.spec.ts`, 18 per device) against `wrangler dev` with a fresh local D1 and a stub webhook (`e2e/start-worker.mjs`, `e2e/webhook-stub.mjs`): every intent to success with the forwarded payload checked, the selector and the stored intent, "Keep exploring", duplicates, a failing webhook invisible to the visitor, the sixth message in an hour refused with "Please try again in 60 minutes.", the honeypot, missing consent, another origin, an oversized body, answers the browser would refuse, axe and 320 px on `/contact` and `/privacy`, and the no-JavaScript fallback.
+- Docs: ADR-0042 completed, ADR-0043, [`make-com.md`](make-com.md), [`data-protection.md`](data-protection.md), and the contact set-up steps in [`deployment.md`](deployment.md).
 
 ### Pass 5: Work, research, log and about pages (2026-10-04)
 
@@ -93,21 +104,21 @@ This repository is being turned into Josh Lennon's portfolio. The governing docu
 - `docs/portfolio-spec.md` committed and excluded from Prettier, so each version Josh supplies stays byte-for-byte as supplied.
 - History scans of every blob on every ref (including inside `.docx`, `.tar.gz` and PDF streams) and every commit message, with values never printed. Before the rewrite, the only live Make.com webhook token and the only Google Sheet link were in `docs/Agency Docs/Technical Onboarding.IPYNB`. After it, a fresh clone from GitHub has neither, and no agency document, in any of its 285 commits. No Turnstile secret key existed anywhere: the `0x4A…` values in tests and the plugin are the public SCB site key, and the `1x/2x/3x000…` values are Cloudflare's documented test keys. Other `hook.eu1.make.com/…` strings are placeholders (`abc123def456`, `<real-id>`), and `.env.example` on `deploy/test-live` has empty values.
 
-## Gate state (last verified: Pass 5, 2026-10-04)
+## Gate state (last verified: Pass 6, 2026-10-04)
 
 Node 24.21.0, pnpm 9.15.0, Windows.
 
 - `pnpm format:check`: clean.
 - `pnpm lint`: ESLint 0 errors and 0 warnings in the wizard, the site and the Worker; `scripts/check-design.mjs` clean.
 - `pnpm typecheck`: 0 errors (wizard production and test tsconfig, Worker).
-- `pnpm test`: **968 passed**: wizard 867 (the original 856 plus 11 theme-contract checks, 67 files), site 95 (10 files: URLs, content checks, contrast, theme contract, labels, homepage decisions, citations, work text, embeds, timeline), Worker 6.
+- `pnpm test`: **1,110 passed**: wizard 884 (the original 856, 11 theme-contract checks and 17 for the Pass 6 engine changes; 69 files), site 104 (11 files, now including the contact wizard configurations and result selection), Worker 122 (4 files: health, the ported protections, the submit handler, and the forwarder, cron and D1 repository).
 - `pnpm --filter @jl/site check`: 0 errors, 0 warnings (one hint: `tseslint.config()` is deprecated).
-- `pnpm --filter @jl/edge test`: 6/6.
-- `pnpm build`: clean, no placeholders in the built site. Wizard JS 99.50 kB gzip (unchanged). Homepage JavaScript before interaction: about 2 kB gzip (navigation, prefetch, the threshold and the stored answer); React loads only when a copy button comes into view.
-- `pnpm test:e2e`: 67 passed on desktop and an emulated phone (7 skipped where a test applies to one device only), zero serious or critical axe violations on every route.
-- Pass 5 acceptance: every published entry renders; filters work with and without JavaScript; documents open and download; citations parse in a unit test; axe is clean on every route. Spec X reviewed below.
+- `pnpm --filter @jl/edge test`: 122/122.
+- `pnpm build`: clean, no placeholders in the built site. Wizard JS about 100 kB gzip. `/contact` JavaScript 77.5 kB gzip (budget 120 kB). Homepage JavaScript before interaction: about 2 kB gzip (navigation, prefetch, the threshold and the stored answer); React loads only when a copy button comes into view.
+- `pnpm test:e2e`: 103 passed on desktop and an emulated phone (7 skipped where a test applies to one device only), zero serious or critical axe violations on every route, against `wrangler dev` with a fresh local D1 and a stub webhook.
+- Pass 6 acceptance: every intent completes to success against `wrangler dev` with a stubbed webhook; the honeypot, the rate limit (the sixth message in an hour is refused and the screen says "Please try again in 60 minutes."), missing consent, another origin, an oversized body and duplicates behave as spec Q.3 says; the retry cron is tested with a webhook that fails and then succeeds; the 856 original wizard tests pass with the new ones. The SCB quote flow is unchanged apart from 44 px controls (its wizard tests pass).
 - Lighthouse CI (homepage): first run in Pass 4 gave a median LCP of 1.59 s, CLS 0 and a performance score of 99 on the mobile preset.
-- PHP: not run; the plugin is unchanged.
+- PHP: none left; the plugin was deleted once the Worker matched it (ADR-0043).
 
 ## Anti-slop review (spec X), Pass 5
 
@@ -169,7 +180,9 @@ Needs Josh, for content (each one keeps an entry or item a draft until it is ans
 
 Needs Josh, for set-up:
 
-- **Cloudflare set-up** (blocks the first real deploy, not the merges): account, `workers.dev` subdomain, API token, and the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets. Steps in [`deployment.md`](deployment.md).
+- **Cloudflare set-up** (blocks the first real deploy, not the merges): account, `workers.dev` subdomain, API token, and the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets. Steps 1 to 3 in [`deployment.md`](deployment.md).
+- **The contact form** (after the first deploy): a Turnstile widget and the `PUBLIC_TURNSTILE_SITE_KEY` variable, the Make.com scenario ([`make-com.md`](make-com.md)), and the four Worker secrets. Steps 4 to 6 in [`deployment.md`](deployment.md). Until then, messages are stored in D1 and wait.
+- **The privacy notice** at `/privacy` is written for what the site does; read it, and check with the ICO's self-assessment whether the data protection fee applies to you. It says your inbox and Sheet copies are kept "only as long as I need them"; give a period if you prefer one.
 - `awkwardapples/scb-handyman` and `awkwardapples/Handy-Man` are public and still hold the agency documents (SCB's ranking and enquiry figures, the agreement template, the sales PDF), the old Sheet link and the now-rotated webhook token on `main`. Josh is handling these repositories (spec W item 2).
 - GitHub can keep serving the pre-rewrite commits to anyone who already has their hashes until it garbage-collects them; GitHub Support can purge them on request (first changed commit `fa585a21686cd0bb88e015af7870ae735d3e40cb`).
 - Any clone made before the Pass 0 rewrite must be re-cloned rather than pushed from. This machine's clone still holds the old objects in its reflog until `git reflog expire --expire=now --all && git gc --prune=now` is run.
