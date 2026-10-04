@@ -2,8 +2,8 @@ name: CI
 
 # The gates from spec V.0, run on a clean machine: the same commands as
 # `pnpm gates` locally, plus guards that only make sense on a fresh checkout.
-# ADR-0039 records the scope; the PHP job left with the WordPress host
-# (plugins/quote-wizard/ stays only as the reference for the Pass 6 port).
+# ADR-0039 records the scope; the PHP job left with the WordPress host, and
+# the plugin itself was deleted once the Worker matched it (ADR-0043).
 
 on:
   push:

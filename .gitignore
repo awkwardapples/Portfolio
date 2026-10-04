@@ -6,13 +6,11 @@ vendor/
 
 # =============================================================================
 # Build outputs — apps/wizard/dist is a build artefact.
-# NOTE: plugins/quote-wizard/assets/dist/ IS committed (see ADR-0006).
 # =============================================================================
 apps/wizard/dist/
 apps/wizard/.vite/
 dist/
 *.zip
-!plugins/quote-wizard/assets/dist/
 
 # Astro's generated types and content cache, Wrangler's local state (including
 # the local D1 database), and the SCB demo build copied into the site (Pass 7).

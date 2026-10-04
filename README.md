@@ -8,14 +8,13 @@ The source of [joshlennon.com](https://joshlennon.com), Josh Lennon's personal p
 
 ## What is in this repository
 
-| Path                    | What it is                                                                                                                                                                                          |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/site/`            | The portfolio (`@jl/site`): Astro, every page pre-rendered, React islands for the interactive parts.                                                                                                |
-| `apps/edge/`            | The Cloudflare Worker (`@jl/edge`) that serves the site and the `/api/*` routes, with D1 migrations in `migrations/`.                                                                               |
-| `apps/wizard/`          | The wizard engine (`@growth-ops/wizard`): a config-driven form engine with a pure state machine, typed ports for persistence and submission, and 856 tests. It also contains the SCB Handyman site. |
-| `plugins/quote-wizard/` | The GrowTrades WordPress plugin, kept only as the reference for porting its submission pipeline to the Worker. It is not built or deployed, and it leaves in Pass 6.                                |
-| `scripts/`              | Repository checks (`check-design.mjs`).                                                                                                                                                             |
-| `docs/`                 | The spec, living documents and decision records. GrowTrades-era documents are in `docs/archive/growtrades-platform/`.                                                                               |
+| Path           | What it is                                                                                                                                                                                          |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/site/`   | The portfolio (`@jl/site`): Astro, every page pre-rendered, React islands for the interactive parts.                                                                                                |
+| `apps/edge/`   | The Cloudflare Worker (`@jl/edge`) that serves the site and the `/api/*` routes, with D1 migrations in `migrations/`.                                                                               |
+| `apps/wizard/` | The wizard engine (`@growth-ops/wizard`): a config-driven form engine with a pure state machine, typed ports for persistence and submission, and 856 tests. It also contains the SCB Handyman site. |
+| `scripts/`     | Repository checks (`check-design.mjs`).                                                                                                                                                             |
+| `docs/`        | The spec, living documents and decision records. GrowTrades-era documents are in `docs/archive/growtrades-platform/`.                                                                               |
 
 ---
 
