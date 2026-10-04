@@ -1,6 +1,6 @@
-# ADR-0042: "What brings you here?": the threshold, and later the wizard
+# ADR-0042: "What brings you here?": the threshold, the contact wizard and the content-result step
 
-**Status:** Accepted for the threshold (Portfolio Pass 4). The contact wizard and the `content-result` step kind are added to this record in Pass 6.
+**Status:** Accepted (the threshold in Portfolio Pass 4; the contact wizard and the engine changes in Pass 6)
 **Date:** 2026-10-04
 
 ## Context
@@ -25,6 +25,25 @@ Spec G.0 asks the homepage to put one question first, "What brings you here?", a
 
 **Bringing it back.** "Choose again" in the intro and "Change what brought you here" in the footer are links to `/#threshold` marked `data-choose-again`. A shared script forgets the answer; on the homepage it shows the threshold in place and focuses its question, and on any other page the link goes home, where the head script now finds no answer.
 
+## Decision, part two: the contact wizard (Pass 6)
+
+**One question, asked once.** `/contact` opens on the intent: from `?intent=` (the homepage's calls to action), else from the answer the threshold stored, else a selector with the threshold's wording. Choosing there stores the answer too. "Just looking" maps to the wizard's `other` intent.
+
+**Five configurations, one registry.** `apps/site/src/wizard/intents.ts` holds a manual-mode `WizardConfig` per intent (spec I.3), with the contact field ids the Worker's checks rely on (`contact_name`, `contact_email`, `organisation`, `message`, `data_processing_consent`). Every journey is: two or three questions, the result, your details, optional details with "Skip and send", sent. Every free-text field has a `maxLength`. The file imports only engine types, so the Worker imports the same objects and validates answers with the same code as the browser (ADR-0043).
+
+**The content-result step.** A new step kind in the engine, added the way ADR-0024 adds step kinds: no fields, always valid, Next continues, the exit button calls a host handler. The engine stays content-agnostic: the step names a `selection` (featured, research, venture, music) and the host provides the items through `ContentResultsContext`. The portfolio computes them at build time from the collections (`src/wizard/content-index.ts`, unit-tested; "featured" follows the homepage's selected-work rule) and passes them as island props. A result step with nothing to show is dropped for that visit; the hiring result opens with the availability sentence and ends with the CV download once the CV exists (spec Y.5).
+
+**Additive engine changes (spec I.6), each defaulting to the SCB behaviour:**
+
+- `WizardEnvironmentContext`: the Turnstile site key and action. The SCB quote page now provides its key from `window.GOQW_CONFIG`; components no longer import `config-loader`, which would pull all twelve SCB trade configurations into any host's bundle (`/contact` ships 77.5 kB of JavaScript gzipped against a 120 kB budget).
+- `WizardCopyContext`: every string on the success, failure and submitting screens, the navigation buttons and the selector, plus the screens' heading level; the defaults are the SCB strings, checked by a test.
+- `httpSubmissionPort` takes an `endpointUrl`, and sends no nonce header without a nonce.
+- `WizardShell` takes `landmark` (the portfolio's page already has the `<main>` and the skip link) and `className`.
+- Fields take an optional `maxLength`, and checkbox fields an optional `helpLink` (the consent checkbox links to `/privacy`); `role_link` gets a URL format check.
+- Inputs, selects and standard buttons are 44 px tall (spec O), up from 40: a visible change to the SCB build too, and an accessibility improvement there as well.
+
+**The island.** `apps/site/src/islands/ContactWizard.tsx` is adapted from the SCB `QuotePage`: the same store, session-storage persistence per intent, bot-protection enrichment and HTTP port, configured by props, mounted `client:only` with a skeleton in the shape of the selector. Without JavaScript the page shows the email address instead (`.no-js-only`, set from `html.js` in the head script, because Chromium does not render `<noscript>` when scripting is turned off for tests).
+
 ## Alternatives considered
 
 - **A modal or overlay.** Rejected: it blocks content for crawlers and assistive technology and fails spec G.0's "not a hard gate".
@@ -32,8 +51,13 @@ Spec G.0 asks the homepage to put one question first, "What brings you here?", a
 - **A cookie read by the Worker.** Rejected: it would make the homepage dynamic for no gain and would send the answer to the server, which spec G.0 forbids.
 - **Hiding the threshold with the `hidden` attribute from script after load.** Rejected: it paints first and then hides, the flash the head script prevents.
 
+- **Rendering the result step's items inside the engine from a content API.** Rejected: the engine would learn about the portfolio's collections; the context keeps it reusable.
+- **Separate server-side copies of the validation rules.** Rejected: two definitions of a valid answer drift; sharing the configs and `validateStep` cannot.
+
 ## Consequences
 
 - The head script must stay tiny and must be allowed by the Content Security Policy by hash (Pass 9).
 - Each pass that adds a homepage section adds its id to the set in `pages/index.astro`, and the threshold offers its answer from then on.
-- Work pages join the "never shows on other routes" browser test in Pass 5.
+- Work pages joined the "never shows on other routes" browser test in Pass 5.
+- A new intent is a new entry in `intents.ts` and a label in `lib/intents.ts`; the Worker accepts it with no change.
+- Labels and copy can change freely; ids and option values are contracts (stored rows, the webhook payload, the Sheet's columns).

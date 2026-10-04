@@ -47,18 +47,49 @@ gh secret set CLOUDFLARE_ACCOUNT_ID --repo awkwardapples/Portfolio
 
 Then start a deploy (**Actions > Deploy > Run workflow**). When it finishes, `https://joshlennon-site.<your-subdomain>.workers.dev/api/health` should return `{"status":"ok"}`.
 
+## The contact form (Pass 6)
+
+The form works as soon as the site deploys, but until these steps are done messages are stored in D1 and not forwarded, and there is no Turnstile check (honeypot and rate limit still apply). Do them in this order. Every value is typed at a prompt or into a dashboard, never into a file or a message.
+
+### 4. Turnstile
+
+1. Cloudflare dashboard > **Turnstile > Add widget**. Name it "joshlennon.com contact", mode **Managed**.
+2. Hostnames: `joshlennon.com` and your `joshlennon-site.<subdomain>.workers.dev` while the site lives there.
+3. Copy the **site key** (public) and the **secret key** (secret).
+4. GitHub: **Settings > Secrets and variables > Actions > Variables > New repository variable**: `PUBLIC_TURNSTILE_SITE_KEY` = the site key. It is public by design and built into the page.
+5. Set the secret key on the Worker (step 6 below) **in the same sitting**: a secret without the widget refuses every message, and the widget without the secret is not checked.
+
+### 5. Make.com
+
+Follow [`make-com.md`](make-com.md): a new webhook, the shared-secret filter, the Sheet and the email. You end with the webhook address and the shared secret.
+
+### 6. Worker secrets
+
+From `apps/edge`, after `pnpm exec wrangler login` (see "Running Wrangler" below), run each command and paste the value when asked:
+
+```bash
+pnpm exec wrangler secret put TURNSTILE_SECRET_KEY   # the Turnstile secret key
+pnpm exec wrangler secret put MAKE_WEBHOOK_URL       # the Make.com webhook address
+pnpm exec wrangler secret put MAKE_WEBHOOK_SECRET    # the shared secret from make-com.md step 3
+pnpm exec wrangler secret put RATE_LIMIT_SALT        # any long random value
+```
+
+For the two random values, a password manager's generator works, or in PowerShell:
+
+```powershell
+[Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(32))
+```
+
+Secrets take effect immediately; no redeploy is needed. Run a deploy anyway after setting `PUBLIC_TURNSTILE_SITE_KEY`, so the page includes the widget. Then send yourself a message from `/contact`: it should reach the Sheet and your inbox, with the reference the success screen showed. [`data-protection.md`](data-protection.md) shows how to check what is stored.
+
 ## Needed in later passes
 
 These are listed here so they can be done in one sitting; the passes that need them say so when they arrive.
 
-| When    | What                                                                                                                                                             | How                                                                                       |
-| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Pass 6  | A Turnstile widget for `joshlennon.com` (add the `workers.dev` hostname too while the site lives there)                                                          | Dashboard > Turnstile > Add widget; mode "Managed"                                        |
-| Pass 6  | The widget's site key as a repository **variable** `PUBLIC_TURNSTILE_SITE_KEY` (it is public by design)                                                          | Settings > Secrets and variables > Actions > Variables                                    |
-| Pass 6  | Worker secrets `MAKE_WEBHOOK_URL`, `MAKE_WEBHOOK_SECRET`, `TURNSTILE_SECRET_KEY`, `RATE_LIMIT_SALT`                                                              | `wrangler secret put <NAME>` from `apps/edge` (see below); paste each value at the prompt |
-| Pass 6  | The Make.com scenario changes (secret filter, new Sheet columns, email instead of WhatsApp)                                                                      | Step-by-step in `docs/data-protection.md` (written in Pass 6)                             |
-| Pass 8  | `GH_PROFILE_TOKEN`: a fine-grained personal access token with read-only access to public repositories, as a repository **secret**                                | GitHub > Settings > Developer settings > Fine-grained tokens                              |
-| Pass 10 | The domain `joshlennon.com` on Cloudflare, attached to the Worker as a custom domain, `www` redirected to the apex, and Email Routing for `hello@joshlennon.com` | Steps in this file, added in Pass 10                                                      |
+| When    | What                                                                                                                                                             | How                                                          |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Pass 8  | `GH_PROFILE_TOKEN`: a fine-grained personal access token with read-only access to public repositories, as a repository **secret**                                | GitHub > Settings > Developer settings > Fine-grained tokens |
+| Pass 10 | The domain `joshlennon.com` on Cloudflare, attached to the Worker as a custom domain, `www` redirected to the apex, and Email Routing for `hello@joshlennon.com` | Steps in this file, added in Pass 10                         |
 
 ### Running Wrangler on your machine
 
