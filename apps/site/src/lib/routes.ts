@@ -20,8 +20,8 @@ export const ROUTES = {
   about: { path: '/about', label: 'About', ready: true },
   // Built once the first post exists; the footer checks (Footer.astro).
   log: { path: '/log', label: 'Log', ready: true },
-  contact: { path: '/contact', label: 'Start a conversation', ready: false }, // Pass 6
-  privacy: { path: '/privacy', label: 'Privacy', ready: false }, // Pass 6
+  contact: { path: '/contact', label: 'Start a conversation', ready: true },
+  privacy: { path: '/privacy', label: 'Privacy', ready: true },
   rss: { path: '/rss.xml', label: 'RSS', ready: true },
 } as const satisfies Record<string, SiteRoute>;
 
