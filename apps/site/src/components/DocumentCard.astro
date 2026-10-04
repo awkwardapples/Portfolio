@@ -1,0 +1,73 @@
+---
+/**
+ * A document on the shelf (spec G.3, H.7): its first page as the cover, the
+ * title, the document type and date, the page count, whether it is
+ * peer-reviewed, the entry's summary, and plain actions. The cover is the
+ * artefact itself, so this is a document, not a decorative card.
+ */
+import { Picture } from 'astro:assets';
+
+import { buttonClass } from '~/design/button';
+import { documentInfo } from '~/lib/documents';
+import {
+  DOC_TYPE_LABELS,
+  downloadLabel,
+  isoDate,
+  monthYear,
+  pagesLabel,
+  peerReviewLabel,
+  readDocumentLabel,
+  type DocType,
+} from '~/lib/format';
+
+interface Props {
+  document: { file: string; title: string; docType: DocType; peerReviewed: boolean };
+  /** One or two sentences about the work the document belongs to. */
+  summary: string;
+  date?: Date | undefined;
+}
+
+const { document, summary, date } = Astro.props;
+const info = documentInfo(document.file);
+const url = info?.url ?? `/documents/${document.file}`;
+---
+
+<li class="flex flex-col gap-4">
+  {
+    info?.cover && (
+      <Picture
+        src={info.cover}
+        alt={`The first page of ${document.title}`}
+        formats={['avif', 'webp']}
+        widths={[240, 360, 480, 720].filter((width) => width <= (info.cover?.width ?? 0))}
+        sizes="(min-width: 1024px) 360px, (min-width: 640px) 45vw, 70vw"
+        loading="lazy"
+        decoding="async"
+        class="aspect-page h-auto w-full max-w-xs rounded-media border border-rule object-cover object-top"
+      />
+    )
+  }
+  <div>
+    <h3 class="text-xl">{document.title}</h3>
+    <p class="mt-2 flex flex-wrap gap-x-4 text-sm text-graphite">
+      <span>{DOC_TYPE_LABELS[document.docType]}</span>
+      {date && <time datetime={isoDate(date)}>{monthYear(date)}</time>}
+      {info && <span>{pagesLabel(info.pages)}</span>}
+      <span>{peerReviewLabel(document.peerReviewed)}</span>
+    </p>
+    <p class="mt-3">{summary}</p>
+    <ul class="mt-3 flex flex-wrap gap-x-6" role="list">
+      <li>
+        <a href={url} class={buttonClass({ variant: 'quiet' })}>
+          {/* The size is on the download beside it. */}
+          {readDocumentLabel(document.docType, undefined)}
+        </a>
+      </li>
+      <li>
+        <a href={url} download class={buttonClass({ variant: 'quiet' })}>
+          {downloadLabel(info)}<span class="sr-only">: {document.title}</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</li>

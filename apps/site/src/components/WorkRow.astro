@@ -1,0 +1,93 @@
+---
+/**
+ * One piece of work as a row (spec G.2, H.6): title, one-sentence summary,
+ * kind and year, Josh's role and the evidence actions, with the artefact
+ * itself beside it (the entry's cover, or the first page of its PDF). On
+ * phones the artefact sits above the text. The homepage and /work share it.
+ */
+import { Picture } from 'astro:assets';
+
+import { buttonClass } from '~/design/button';
+import { dateOf, type Work } from '~/lib/content';
+import { documentInfo } from '~/lib/documents';
+import { KIND_LABELS, readDocumentLabel } from '~/lib/format';
+import { ROUTES, isLinkable } from '~/lib/routes';
+
+interface Props {
+  entry: Work;
+}
+
+const { entry } = Astro.props;
+const { data } = entry;
+
+const href = isLinkable(ROUTES.work) ? `${ROUTES.work.path}/${entry.id}` : undefined;
+const year = dateOf(data.date)?.getUTCFullYear();
+const kindAndYear = year ? `${KIND_LABELS[data.kind]}, ${year}` : KIND_LABELS[data.kind];
+
+const document = data.documents[0];
+const info = document ? documentInfo(document.file) : undefined;
+
+const artefact = data.cover
+  ? { src: data.cover, alt: data.coverAlt ?? '' }
+  : info?.cover && document
+    ? { src: info.cover, alt: `The first page of the ${document.docType}` }
+    : undefined;
+
+const actions: { label: string; href: string }[] = [];
+if (document) {
+  actions.push({
+    label: readDocumentLabel(document.docType, info),
+    href: info?.url ?? `/documents/${document.file}`,
+  });
+}
+for (const link of data.links) actions.push({ label: link.label, href: link.url });
+for (const item of data.media) {
+  if (item.type === 'youtube') {
+    actions.push({ label: 'Watch on YouTube', href: `https://www.youtube.com/watch?v=${item.id}` });
+    break;
+  }
+}
+---
+
+<li class="grid gap-6 border-t border-rule py-10 md:grid-cols-12 md:gap-12">
+  <div class="md:col-span-8">
+    <h3 class="text-2xl">
+      {href ? <a href={href}>{data.title}</a> : data.title}
+      {data.draft && <span class="ml-2 align-middle font-sans text-xs text-graphite">(draft)</span>}
+    </h3>
+    <p class="mt-2 flex flex-wrap gap-x-4 text-sm text-graphite">
+      <span>{kindAndYear}</span>
+      <span>{data.role}</span>
+    </p>
+    <p class="mt-4 max-w-reading">{data.summary}</p>
+    {
+      actions.length > 0 && (
+        <ul class="mt-4 flex flex-wrap gap-x-6" role="list">
+          {actions.map((action) => (
+            <li>
+              <a href={action.href} class={buttonClass({ variant: 'quiet' })}>
+                {action.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+  {
+    artefact && (
+      <div class="order-first md:order-none md:col-span-4">
+        <Picture
+          src={artefact.src}
+          alt={artefact.alt}
+          formats={['avif', 'webp']}
+          widths={[240, 360, 480, 720].filter((width) => width <= artefact.src.width)}
+          sizes="(min-width: 1280px) 360px, (min-width: 768px) 30vw, 50vw"
+          loading="lazy"
+          decoding="async"
+          class="h-auto w-1/2 max-w-xs rounded-media border border-rule md:w-full"
+        />
+      </div>
+    )
+  }
+</li>
