@@ -1,0 +1,44 @@
+---
+/**
+ * The document shell every page uses: language, viewport, title, description,
+ * canonical URL, a skip link and the single `main` landmark.
+ *
+ * Pass 10 replaces the head tags here with the full `Seo.astro` component
+ * (spec S); Pass 3 adds the navigation, footer and fonts.
+ */
+import '~/styles/global.css';
+
+import { publicPath } from '~/lib/urls';
+
+interface Props {
+  /** The full document title, e.g. "Work | Josh Lennon" or "Josh Lennon". */
+  title: string;
+  description: string;
+  /** Keeps a page out of search results (404, previews). */
+  noindex?: boolean;
+}
+
+const { title, description, noindex = false } = Astro.props;
+const canonical = new URL(publicPath(Astro.url.pathname), Astro.site);
+---
+
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+  </head>
+  <body class="bg-paper text-ink antialiased">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-ink focus:px-4 focus:py-2 focus:text-paper"
+      >Skip to content</a
+    >
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+  </body>
+</html>

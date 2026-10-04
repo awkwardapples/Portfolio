@@ -1,0 +1,13 @@
+# Response headers for static assets served by the Worker (spec Q.4, P.3).
+# The Content Security Policy is added in Pass 9 once every page's script and
+# style hashes are known; /api/* responses set their own headers in the Worker.
+
+/*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  X-Frame-Options: DENY
+
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable

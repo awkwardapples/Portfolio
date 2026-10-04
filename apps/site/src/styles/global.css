@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Reduced motion, carried over from the wizard (apps/wizard/src/styles/index.css)
+ * and applied to the whole document. Durations are 0.01ms rather than 0 so
+ * transitionend and animationend still fire; delays are zeroed too so staggered
+ * groups appear together instead of one after another.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

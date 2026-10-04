@@ -1,0 +1,22 @@
+---
+/**
+ * The real 404 page (spec F.1). The Worker's asset handler serves it with a
+ * 404 status for any unknown path (`not_found_handling: "404-page"`), so
+ * search engines never see a soft 404.
+ */
+import BaseLayout from '~/layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Page not found | Josh Lennon"
+  description="There is no page at this address."
+  noindex
+>
+  <div class="mx-auto max-w-3xl px-4 py-16">
+    <h1 class="text-4xl font-semibold">Page not found</h1>
+    <p class="mt-6 text-lg leading-relaxed">
+      There is no page at this address. It may have moved, or the link may have a typo.
+    </p>
+    <p class="mt-4 text-lg"><a class="underline" href="/">Go to the homepage</a></p>
+  </div>
+</BaseLayout>

@@ -1,35 +1,41 @@
 name: CI
 
-# Runs the same gates we run locally. Nothing here invents a new process;
-# every command below is one a developer runs on their own machine.
-# See docs/decisions/0011-ci-scope.md for the scope rationale.
+# The gates from spec V.0, run on a clean machine: the same commands as
+# `pnpm gates` locally, plus guards that only make sense on a fresh checkout.
+# ADR-0039 records the scope; the PHP job left with the WordPress host
+# (plugins/quote-wizard/ stays only as the reference for the Pass 6 port).
 
 on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
-# Cancel previous runs on the same branch if a new push comes in
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
+env:
+  ASTRO_TELEMETRY_DISABLED: '1'
+  WRANGLER_SEND_METRICS: 'false'
+
 jobs:
-  # ---------------------------------------------------------------------------
-  # JS / TS Job
-  # ---------------------------------------------------------------------------
-  js-ts:
-    name: JS/TS (Node 20)
+  gates:
+    name: Gates (Node 24)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -40,77 +46,26 @@ jobs:
       - name: Prettier format check
         run: pnpm format:check
 
-      - name: ESLint
+      - name: Lint (ESLint and design check)
         run: pnpm lint
 
-      - name: TypeScript typecheck
+      - name: Typecheck (wizard and Worker)
         run: pnpm typecheck
 
-      - name: Vitest (unit tests)
+      - name: Unit tests (wizard, site and Worker)
         run: pnpm test
 
-      - name: Build plugin (production pipeline)
-        run: pnpm build-plugin
+      - name: Astro check (site)
+        run: pnpm --filter @jl/site check
 
-      - name: Guard - no source maps in plugin dist
+      - name: Build (wizard, site, Worker dry run)
+        run: pnpm build
+
+      - name: Guard - no source maps in the site output
         run: |
-          if find plugins/quote-wizard/assets/dist -name '*.map' -print -quit | grep -q .; then
-            echo "::error::Source map found in plugins/quote-wizard/assets/dist - must not ship."
-            find plugins/quote-wizard/assets/dist -name '*.map'
+          if find apps/site/dist -name '*.map' -print -quit | grep -q .; then
+            echo "::error::Source map found in apps/site/dist; source maps must not ship."
+            find apps/site/dist -name '*.map'
             exit 1
           fi
-          echo "OK: no source maps in plugin dist."
-
-      - name: Guard - manifest present in plugin dist
-        run: |
-          if [ ! -f plugins/quote-wizard/assets/dist/manifest.json ]; then
-            echo "::error::manifest.json missing from plugin dist after build."
-            exit 1
-          fi
-          echo "OK: manifest.json present."
-
-  # ---------------------------------------------------------------------------
-  # PHP Job
-  # ---------------------------------------------------------------------------
-  php:
-    name: PHP (8.2)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          coverage: none
-          tools: composer:v2
-
-      - name: Install dependencies
-        working-directory: plugins/quote-wizard
-        run: composer install --no-interaction --no-progress --prefer-dist
-
-      - name: PHPCS (lint - warnings fail)
-        working-directory: plugins/quote-wizard
-        run: composer lint
-
-      - name: PHPStan (static analysis)
-        working-directory: plugins/quote-wizard
-        run: composer analyse
-
-      - name: Pest (unit tests)
-        working-directory: plugins/quote-wizard
-        run: |
-          if [ -f phpunit.xml.dist ]; then
-            CONFIG="phpunit.xml.dist"
-          elif [ -f phpunit.xml ]; then
-            CONFIG="phpunit.xml"
-          else
-            echo "::error::No phpunit config file found!"
-            ls -la phpunit*
-            exit 1
-          fi
-          echo "Using config: $CONFIG"
-          vendor/bin/pest --configuration "$CONFIG"
+          echo "OK: no source maps in apps/site/dist."

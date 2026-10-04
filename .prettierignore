@@ -7,6 +7,9 @@ apps/wizard/dist
 plugins/quote-wizard/assets/dist
 dist
 coverage
+.astro
+.wrangler
+apps/site/public/demo
 
 # Prettier does not format PHP — handled by PHPCS in plugin/composer.json
 plugins/quote-wizard/**/*.php
