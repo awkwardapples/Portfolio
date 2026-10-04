@@ -3,6 +3,8 @@ import { Header } from '@/site/layout/Header';
 import { Footer } from '@/site/Footer';
 import { footerContent } from '@/site/pages/footer-content';
 import { SkipLink } from '@/site/layout/SkipLink';
+import { DemoBanner } from '@/site/layout/DemoBanner';
+import { IS_DEMO } from '@/site/demo';
 
 interface SiteShellProps {
   readonly currentPath: string;
@@ -28,13 +30,14 @@ interface SiteShellProps {
  */
 export function SiteShell({ currentPath, children }: SiteShellProps): ReactElement {
   return (
-    <div className="flex min-h-screen flex-col bg-surface-dark">
+    <div className={`flex min-h-screen flex-col bg-surface-dark${IS_DEMO ? ' pb-10' : ''}`}>
       <SkipLink />
       <Header currentPath={currentPath} />
       <main id="main" className="flex-1">
         {children}
       </main>
       <Footer content={footerContent} />
+      {IS_DEMO && <DemoBanner />}
     </div>
   );
 }

@@ -24,7 +24,10 @@ import { addressPreStep } from '@/domain/wizards/address-prestep';
 import { ServiceSelector, CategorySelector } from '@/components/selection';
 import { WizardShell } from '@/components/WizardShell';
 import { WizardEnvironmentProvider } from '@/runtime/environment';
+import { WizardCopyProvider } from '@/runtime/copy';
+import { DEMO_NOTICE, IS_DEMO } from '@/site/demo';
 import { resolvePreselectedServiceId } from './quote-preselect';
+import { currentSearch } from '@/site/routing/navigation';
 
 const devSubmissionPort: SubmissionPort = {
   submit: () =>
@@ -48,6 +51,16 @@ const categories = listCategories();
 // The SCB deployment's Turnstile site key, from window.GOQW_CONFIG, for the
 // wizard's components (WizardEnvironmentContext, portfolio ADR-0042).
 const environment = { turnstileSiteKey: config.turnstileSiteKey };
+
+// In the portfolio's demo, the success screen says nothing was sent (spec J.3).
+const copy = IS_DEMO
+  ? {
+      successTitle: 'Demo: nothing was sent',
+      successBody: DEMO_NOTICE,
+      duplicateTitle: 'Demo: nothing was sent',
+      duplicateBody: DEMO_NOTICE,
+    }
+  : {};
 
 /**
  * The Quote page. Per-session service selection — state is local to this
@@ -73,7 +86,7 @@ export function QuotePage(): ReactElement {
     services.length === 1
       ? (services[0]?.id ?? null)
       : resolvePreselectedServiceId(
-          typeof window === 'undefined' ? '' : window.location.search,
+          typeof window === 'undefined' ? '' : currentSearch(),
           services.map((s) => s.id),
         ),
   );
@@ -120,13 +133,15 @@ export function QuotePage(): ReactElement {
     return (
       <div className="mx-auto max-w-3xl px-6 py-12">
         <WizardEnvironmentProvider value={environment}>
-          <WizardProvider
-            store={fallbackStore}
-            photoStore={fallbackPhotoStore}
-            botProtectionStore={fallbackBotProtectionStore}
-          >
-            <WizardShell />
-          </WizardProvider>
+          <WizardCopyProvider value={copy}>
+            <WizardProvider
+              store={fallbackStore}
+              photoStore={fallbackPhotoStore}
+              botProtectionStore={fallbackBotProtectionStore}
+            >
+              <WizardShell />
+            </WizardProvider>
+          </WizardCopyProvider>
         </WizardEnvironmentProvider>
       </div>
     );
@@ -169,13 +184,15 @@ export function QuotePage(): ReactElement {
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
       <WizardEnvironmentProvider value={environment}>
-        <WizardProvider
-          store={wizardResources.store}
-          photoStore={wizardResources.photoStore}
-          botProtectionStore={wizardResources.botProtectionStore}
-        >
-          <WizardShell onReturnToSelector={() => setSelectedId(null)} />
-        </WizardProvider>
+        <WizardCopyProvider value={copy}>
+          <WizardProvider
+            store={wizardResources.store}
+            photoStore={wizardResources.photoStore}
+            botProtectionStore={wizardResources.botProtectionStore}
+          >
+            <WizardShell onReturnToSelector={() => setSelectedId(null)} />
+          </WizardProvider>
+        </WizardCopyProvider>
       </WizardEnvironmentProvider>
     </div>
   );
