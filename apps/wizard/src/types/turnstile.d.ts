@@ -11,6 +11,8 @@
 declare global {
   interface TurnstileRenderOptions {
     sitekey: string;
+    /** Sent with the token; the server can check it (portfolio: 'contact-submit'). */
+    action?: string;
     callback?: (token: string) => void;
     'expired-callback'?: () => void;
     'error-callback'?: () => void;

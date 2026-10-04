@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-import { config } from '@/config-loader';
+import { useWizardEnvironment } from '@/runtime/environment';
 import { useBotProtectionStore } from '@/runtime/hooks/useBotProtectionStore';
 
 const TURNSTILE_SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
@@ -53,7 +53,9 @@ interface TurnstileWidgetProps {
 
 /**
  * Renders the Cloudflare Turnstile widget on the final wizard step (Step
- * 5.13f, ADR-0027). Renders nothing when config.turnstileSiteKey is empty —
+ * 5.13f, ADR-0027). The site key and optional action come from
+ * WizardEnvironmentContext (portfolio ADR-0042). Renders nothing when the
+ * site key is empty —
  * Turnstile is not configured for this deployment, and BotProtection's
  * server-side check skips Layer 3 entirely in that case.
  *
@@ -69,11 +71,12 @@ interface TurnstileWidgetProps {
  */
 export function TurnstileWidget({ onTokenChange }: TurnstileWidgetProps = {}): JSX.Element | null {
   const store = useBotProtectionStore();
+  const { turnstileSiteKey, turnstileAction } = useWizardEnvironment();
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (config.turnstileSiteKey === '' || containerRef.current === null) {
+    if (turnstileSiteKey === '' || containerRef.current === null) {
       return;
     }
 
@@ -90,7 +93,8 @@ export function TurnstileWidget({ onTokenChange }: TurnstileWidgetProps = {}): J
           return;
         }
         widgetIdRef.current = window.turnstile.render(containerRef.current, {
-          sitekey: config.turnstileSiteKey,
+          sitekey: turnstileSiteKey,
+          ...(turnstileAction ? { action: turnstileAction } : {}),
           callback: (token: string) => setToken(token),
           'expired-callback': () => setToken(null),
           'error-callback': () => setToken(null),
@@ -108,9 +112,9 @@ export function TurnstileWidget({ onTokenChange }: TurnstileWidgetProps = {}): J
         window.turnstile.remove(widgetIdRef.current);
       }
     };
-  }, [store, onTokenChange]);
+  }, [store, onTokenChange, turnstileSiteKey, turnstileAction]);
 
-  if (config.turnstileSiteKey === '') {
+  if (turnstileSiteKey === '') {
     return null;
   }
 

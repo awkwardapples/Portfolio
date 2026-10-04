@@ -17,6 +17,7 @@ import type { ValidationResult } from './address-validator';
 import { validatePostcode } from './address-validator';
 import { validateEmail } from './email-validator';
 import { validatePhone } from './phone-validator';
+import { validateUrl } from './url-validator';
 
 export type FieldFormatValidator = (value: string) => ValidationResult;
 
@@ -24,4 +25,6 @@ export const FORMAT_VALIDATORS: ReadonlyMap<string, FieldFormatValidator> = new 
   ['postcode', validatePostcode],
   ['contact_email', validateEmail],
   ['contact_phone', validatePhone],
+  // The portfolio's "Link to the role" (portfolio Pass 6).
+  ['role_link', validateUrl],
 ]);

@@ -36,6 +36,9 @@ function validateField(field: Field, answer: AnswerValue | undefined): string | 
     case 'text':
     case 'textarea': {
       if (typeof answer !== 'string') return 'Expected a text value.';
+      if (field.maxLength !== undefined && answer.length > field.maxLength) {
+        return `Please keep this to ${field.maxLength} characters or fewer.`;
+      }
       const fmtValidator = FORMAT_VALIDATORS.get(field.key);
       if (fmtValidator) {
         const result = fmtValidator(answer);
@@ -106,7 +109,8 @@ export function validateStep(
   answers: AnswerMap,
   fieldKeyById: ReadonlyMap<string, string>,
 ): StepValidationSnapshot {
-  // Non-field steps (estimate-display, visual-card-selector, size-bracket-selector)
+  // Non-field steps (estimate-display, visual-card-selector, size-bracket-selector,
+  // content-result)
   // have no field-level answers to validate; they are always considered valid.
   if (!isFieldStep(step)) {
     return { stepId: step.id, valid: true, issues: [] };

@@ -3,6 +3,7 @@ import type { ReactElement } from 'react';
 import type { ServiceConfig } from '@/domain/registry';
 import { VERTICALS } from '@/domain/registry';
 import { ServiceCard } from '@/components/selection/ServiceCard';
+import { useWizardCopy } from '@/runtime/copy';
 
 interface ServiceSelectorProps {
   /** Ordered list of services to display. */
@@ -42,6 +43,8 @@ export function ServiceSelector({
     filterByCategoryId !== undefined
       ? services.filter((s) => VERTICALS[s.id]?.categoryId === filterByCategoryId)
       : services;
+  const copy = useWizardCopy();
+  const Heading = copy.screenHeadingLevel;
 
   return (
     <section className="mx-auto max-w-2xl p-6">
@@ -56,8 +59,8 @@ export function ServiceSelector({
           All categories
         </button>
       )}
-      <h1 className="text-xl font-semibold text-text">What would you like a quote for?</h1>
-      <p className="mt-2 text-base text-text-muted">Choose a service to start your quote.</p>
+      <Heading className="text-xl font-semibold text-text">{copy.selectorHeading}</Heading>
+      <p className="mt-2 text-base text-text-muted">{copy.selectorDescription}</p>
       <ul className="mt-6 space-y-3" role="list">
         {visibleServices.map((service) => (
           <li key={service.id}>

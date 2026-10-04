@@ -1,3 +1,6 @@
+import type { AnswerMap } from '@/domain/runtime/answer-types';
+import { resolveCopy, useWizardCopy } from '@/runtime/copy';
+
 function CheckCircleIcon(): JSX.Element {
   return (
     <svg
@@ -28,30 +31,36 @@ interface SuccessScreenProps {
    * false so existing callers/tests don't need updating.
    */
   isDuplicate?: boolean;
+  /** The submitted answers, for copy that names them (e.g. the reply address). */
+  answers?: AnswerMap;
 }
 
 /** Terminal screen rendered after a successful submission. */
 export function SuccessScreen({
   submissionId,
   isDuplicate = false,
+  answers = {},
 }: SuccessScreenProps): JSX.Element {
+  const copy = useWizardCopy();
+  const Heading = copy.screenHeadingLevel;
   return (
     <div className="mx-auto max-w-xl p-6">
       <div className="rounded border border-border bg-surface p-6 text-center">
         <div className="mb-4 flex justify-center">
           <CheckCircleIcon />
         </div>
-        <h1 className="text-xl font-semibold text-text">
-          {isDuplicate ? 'We already have your request' : 'Quote request received'}
-        </h1>
+        <Heading className="text-xl font-semibold text-text">
+          {isDuplicate ? copy.duplicateTitle : copy.successTitle}
+        </Heading>
         <p className="mt-2 text-base text-text-muted">
-          {isDuplicate
-            ? 'We received a matching request from you recently. We will be in touch soon — no need to submit again.'
-            : 'We will be in touch shortly with your personalised quote.'}
+          {resolveCopy(isDuplicate ? copy.duplicateBody : copy.successBody, answers)}
         </p>
         {submissionId !== null && (
-          <p className="mt-4 text-sm text-text-subtle">Reference: {submissionId}</p>
+          <p className="mt-4 text-sm text-text-subtle">
+            {copy.referenceLabel}: {submissionId}
+          </p>
         )}
+        {copy.successExtras}
       </div>
     </div>
   );

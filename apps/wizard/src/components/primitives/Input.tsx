@@ -24,7 +24,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       ref={ref}
       aria-invalid={invalid || undefined}
       className={cn(
-        'h-10 w-full rounded border bg-surface px-3 text-base text-text',
+        'h-11 w-full rounded border bg-surface px-3 text-base text-text',
         'placeholder:text-text-subtle',
         'transition-colors duration-fast',
         invalid ? 'border-danger' : 'border-border-strong',

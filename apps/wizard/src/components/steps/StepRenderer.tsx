@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { config } from '@/config-loader';
 import type { Step } from '@/domain/config/wizard-config';
 import type { AnswerValue } from '@/domain/runtime/answer-types';
 import { isPhotoAnswerValue } from '@/domain/runtime/photos';
+import { useWizardEnvironment } from '@/runtime/environment';
 import { useWizard } from '@/runtime/useWizard';
 import { usePhotoStore } from '@/runtime/hooks/usePhotoStore';
 import { StepCard } from '@/components/composites';
@@ -42,6 +42,7 @@ export function StepRenderer({
   const [touched, setTouched] = useState<ReadonlySet<string>>(new Set());
   const [showAllErrors, setShowAllErrors] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const { turnstileSiteKey } = useWizardEnvironment();
 
   // Disable Submit when any photo field has metadata entries missing base64
   // (user reloaded the page mid-session; photos must be re-attached).
@@ -57,9 +58,9 @@ export function StepRenderer({
 
   // Step 5.13f: when Turnstile is configured for this deployment, disable
   // Submit on the final step until a token has been issued. Not gated at
-  // all when config.turnstileSiteKey is empty (Turnstile not configured) —
+  // all when the site key is empty (Turnstile not configured) —
   // turnstileReady starts true in that case so it never blocks submission.
-  const turnstileConfigured = isLast && config.turnstileSiteKey !== '';
+  const turnstileConfigured = isLast && turnstileSiteKey !== '';
   const [turnstileReady, setTurnstileReady] = useState(!turnstileConfigured);
   const handleTurnstileTokenChange = useCallback((token: string | null) => {
     setTurnstileReady(token !== null);

@@ -11,7 +11,8 @@
  * different validation flow (runtime fail-safe vs build-time fail-closed).
  *
  * The TypeScript shape here must stay in step with:
- *   - PHP:  plugins/quote-wizard/src/Frontend/PublicConfig.php
+ *   - PHP:  the plugin's src/Frontend/PublicConfig.php (removed from this
+ *           repository in portfolio Pass 6, ADR-0043; in git history)
  *   - TS:   src/types/global.d.ts (the ambient window.GOQW_CONFIG declaration)
  *
  * `contractVersion` is the PHP<->JS boundary version (ADR-0009), distinct from

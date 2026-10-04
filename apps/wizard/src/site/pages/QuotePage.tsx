@@ -23,6 +23,7 @@ import { useCategorySelection } from '@/runtime/hooks/useCategorySelection';
 import { addressPreStep } from '@/domain/wizards/address-prestep';
 import { ServiceSelector, CategorySelector } from '@/components/selection';
 import { WizardShell } from '@/components/WizardShell';
+import { WizardEnvironmentProvider } from '@/runtime/environment';
 import { resolvePreselectedServiceId } from './quote-preselect';
 
 const devSubmissionPort: SubmissionPort = {
@@ -43,6 +44,10 @@ const services = enabledIds
   .map((id) => resolveService(id))
   .filter((s): s is ServiceConfig => s !== null);
 const categories = listCategories();
+
+// The SCB deployment's Turnstile site key, from window.GOQW_CONFIG, for the
+// wizard's components (WizardEnvironmentContext, portfolio ADR-0042).
+const environment = { turnstileSiteKey: config.turnstileSiteKey };
 
 /**
  * The Quote page. Per-session service selection — state is local to this
@@ -114,13 +119,15 @@ export function QuotePage(): ReactElement {
     );
     return (
       <div className="mx-auto max-w-3xl px-6 py-12">
-        <WizardProvider
-          store={fallbackStore}
-          photoStore={fallbackPhotoStore}
-          botProtectionStore={fallbackBotProtectionStore}
-        >
-          <WizardShell />
-        </WizardProvider>
+        <WizardEnvironmentProvider value={environment}>
+          <WizardProvider
+            store={fallbackStore}
+            photoStore={fallbackPhotoStore}
+            botProtectionStore={fallbackBotProtectionStore}
+          >
+            <WizardShell />
+          </WizardProvider>
+        </WizardEnvironmentProvider>
       </div>
     );
   }
@@ -161,13 +168,15 @@ export function QuotePage(): ReactElement {
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
-      <WizardProvider
-        store={wizardResources.store}
-        photoStore={wizardResources.photoStore}
-        botProtectionStore={wizardResources.botProtectionStore}
-      >
-        <WizardShell onReturnToSelector={() => setSelectedId(null)} />
-      </WizardProvider>
+      <WizardEnvironmentProvider value={environment}>
+        <WizardProvider
+          store={wizardResources.store}
+          photoStore={wizardResources.photoStore}
+          botProtectionStore={wizardResources.botProtectionStore}
+        >
+          <WizardShell onReturnToSelector={() => setSelectedId(null)} />
+        </WizardProvider>
+      </WizardEnvironmentProvider>
     </div>
   );
 }
