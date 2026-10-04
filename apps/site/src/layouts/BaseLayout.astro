@@ -40,5 +40,27 @@ const canonical = new URL(publicPath(Astro.url.pathname), Astro.site);
     <main id="main" tabindex="-1">
       <slot />
     </main>
+    {
+      import.meta.env.DEV && (
+        <script is:inline>
+          // Development only (spec T.4): highlight every placeholder on the page so gaps are
+          // visible. Production builds never contain placeholders at all.
+          (() => {
+            const mark = 'TODO' + '(josh)';
+            const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+            const found = [];
+            while (walker.nextNode()) {
+              if (walker.currentNode.nodeValue.includes(mark)) found.push(walker.currentNode);
+            }
+            for (const node of found) {
+              const highlight = document.createElement('mark');
+              highlight.className = 'todo';
+              highlight.textContent = node.nodeValue;
+              node.replaceWith(highlight);
+            }
+          })();
+        </script>
+      )
+    }
   </body>
 </html>

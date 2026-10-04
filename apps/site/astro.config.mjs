@@ -13,6 +13,9 @@ import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import { defineConfig } from 'astro/config';
 
+import { devRoutes } from './integrations/dev-routes.mjs';
+import { placeholderGuard } from './integrations/placeholder-guard.mjs';
+
 // The canonical origin (spec U.8). CI and local builds use the same value so
 // canonical URLs never point at a preview host.
 const SITE_URL = process.env.SITE_URL ?? 'https://joshlennon.com';
@@ -24,7 +27,7 @@ export default defineConfig({
   build: {
     format: 'file',
   },
-  integrations: [react(), mdx(), sitemap()],
+  integrations: [react(), mdx(), sitemap(), devRoutes(), placeholderGuard()],
   prefetch: {
     prefetchAll: false,
     defaultStrategy: 'hover',
