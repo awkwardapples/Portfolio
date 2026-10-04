@@ -1,67 +1,73 @@
-# Growth Operations Platform
+# Josh Lennon: portfolio
 
-A template WordPress-based lead generation platform with an embedded React quote wizard, built for local trades businesses with vanilla UI to be adapted per client. This repository is the source of truth for the React engine, the WordPress plugin, the Make.com automation blueprints, and all supporting documentation.
+The source of [joshlennon.com](https://joshlennon.com), Josh Lennon's personal portfolio: a static Astro site served by a Cloudflare Worker, with a contact wizard built on the quote-wizard engine from GrowTrades.
 
-> **Status:** Main Development Closed - additional develoopment will continue as small updates every now and then.
+> **Status:** being built in the passes of [`docs/portfolio-spec.md`](docs/portfolio-spec.md). Progress is in [`docs/current-state.md`](docs/current-state.md).
 
 ---
 
 ## What is in this repository
 
-| Path                    | What it is                                                                                                  |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `apps/wizard/`          | The React + TypeScript quote wizard (built with Vite).                                                      |
-| `plugins/quote-wizard/` | The WordPress plugin that hosts the wizard, exposes the REST submission endpoint, and forwards to Make.com. |
-| `config/trades/`        | Reference pricing configs (JSON) and the canonical TypeScript types/schema.                                 |
-| `automation/`           | Make.com scenario blueprints, HubSpot property definitions, email templates.                                |
-| `docs/`                 | Architecture, roadmap, risk analysis, pricing engine spec, and Architecture Decision Records (ADRs).        |
-| `scripts/`              | Build and packaging scripts.                                                                                |
-
-For the full layout and the rationale behind it, see [`docs/03-project-structure.md`](docs/03-project-structure.md).
+| Path                    | What it is                                                                                                                                                                                          |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/site/`            | The portfolio (`@jl/site`): Astro, every page pre-rendered, React islands for the interactive parts.                                                                                                |
+| `apps/edge/`            | The Cloudflare Worker (`@jl/edge`) that serves the site and the `/api/*` routes, with D1 migrations in `migrations/`.                                                                               |
+| `apps/wizard/`          | The wizard engine (`@growth-ops/wizard`): a config-driven form engine with a pure state machine, typed ports for persistence and submission, and 856 tests. It also contains the SCB Handyman site. |
+| `plugins/quote-wizard/` | The GrowTrades WordPress plugin, kept only as the reference for porting its submission pipeline to the Worker. It is not built or deployed, and it leaves in Pass 6.                                |
+| `scripts/`              | Repository checks (`check-design.mjs`).                                                                                                                                                             |
+| `docs/`                 | The spec, living documents and decision records. GrowTrades-era documents are in `docs/archive/growtrades-platform/`.                                                                               |
 
 ---
 
 ## Prerequisites
 
-| Tool     | Version | Notes                                                                |
-| -------- | ------- | -------------------------------------------------------------------- |
-| Node     | 20 LTS  | Pinned via `.nvmrc`. Run `nvm use` after cloning.                    |
-| pnpm     | 9.x     | Pinned via the `packageManager` field in `package.json`.             |
-| Git      | 2.30+   |                                                                      |
-| LocalWP  | latest  | For running a local WordPress with the plugin installed.             |
-| PHP      | 8.2     | LocalWP installs this for you inside its environment.                |
-| Composer | 2.x     | Used inside `plugins/quote-wizard/` for autoloading and dev tooling. |
-
----
+| Tool | Version       | Notes                                                                                                             |
+| ---- | ------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Node | 24 LTS        | Pinned in `.nvmrc`. Astro 7 and Wrangler 4 need Node 22.12 or newer. With nvm for Windows: `nvm install 24.21.0`. |
+| pnpm | 9.15          | Pinned in `package.json` (`packageManager`). `corepack enable pnpm` installs the right version.                   |
+| Git  | 2.30 or newer |                                                                                                                   |
 
 ## Quick start
 
 ```bash
-# 1. Use the pinned Node version
-nvm use
-
-# 2. Install JS dependencies (root + workspaces)
+nvm use 24.21.0          # or any Node 24
+corepack enable pnpm
 pnpm install
-
-# 3. Verify formatting
-pnpm format:check
+pnpm dev                 # the site at http://localhost:4321
 ```
 
-## Documentation map
+To run the Worker with the built site, as it runs on Cloudflare:
 
-Start here:
+```bash
+pnpm build
+pnpm --filter @jl/edge dev   # http://localhost:8787, try /api/health
+```
 
-- [`docs/01-system-overview.md`](docs/01-system-overview.md) — what this system is, who it serves, success criteria.
-- [`docs/02-architecture.md`](docs/02-architecture.md) — component diagram, data flow, security model, GDPR.
-- [`docs/03-project-structure.md`](docs/03-project-structure.md) — the full repository layout with annotations.
-- [`docs/04-implementation-roadmap.md`](docs/04-implementation-roadmap.md) — phases, tickets, acceptance criteria.
-- [`docs/05-risk-analysis.md`](docs/05-risk-analysis.md) — known risks and mitigations.
-- [`docs/06-pricing-engine-spec.md`](docs/06-pricing-engine-spec.md) — the formal pricing engine contract.
-- [`docs/decisions/`](docs/decisions/) — Architecture Decision Records (ADRs).
+## Gates
+
+Every change passes the gates in spec V.0. `pnpm gates` runs them all in order:
+
+| Command                        | Checks                                                              |
+| ------------------------------ | ------------------------------------------------------------------- |
+| `pnpm format:check`            | Prettier                                                            |
+| `pnpm lint`                    | ESLint in every package, then the design check for `.astro` and CSS |
+| `pnpm typecheck`               | TypeScript in the wizard and the Worker                             |
+| `pnpm test`                    | Vitest in every package (the wizard's 856 tests and the new ones)   |
+| `pnpm --filter @jl/site check` | `astro check` for the site                                          |
+| `pnpm --filter @jl/edge test`  | The Worker's tests                                                  |
+| `pnpm build`                   | Wizard build, site build, Worker dry run                            |
+
+CI runs the same gates on every pull request (`.github/workflows/ci.yml`). Pushes to `main` deploy (`.github/workflows/deploy.yml`, [`docs/deployment.md`](docs/deployment.md)).
+
+## Documentation
+
+- [`docs/portfolio-spec.md`](docs/portfolio-spec.md): the governing specification.
+- [`docs/current-state.md`](docs/current-state.md): what is built, the last gate run and open items.
+- [`docs/roadmap.md`](docs/roadmap.md), [`docs/technical-debt.md`](docs/technical-debt.md), [`docs/handoff.md`](docs/handoff.md): what is next, what is deferred, how to pick the work up.
+- [`docs/deployment.md`](docs/deployment.md): hosting, the deploy workflow and the one-time Cloudflare set-up.
+- [`docs/decisions/`](docs/decisions/README.md): architecture decision records. 0001 to 0038 record the GrowTrades platform; 0039 onwards the portfolio.
 
 Before opening a pull request, read [`CONTRIBUTING.md`](CONTRIBUTING.md).
-
----
 
 ## Licence
 

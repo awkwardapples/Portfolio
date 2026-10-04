@@ -1,110 +1,59 @@
 # Contributing
 
-This document is the rulebook for working on this codebase. It exists so that the conventions agreed in Phase 1 survive engineer turnover.
+The rules for working on this codebase. If a rule seems wrong for a situation, change it with an ADR rather than ignoring it.
 
-If a rule below seems wrong for a specific situation, raise it in an ADR rather than ignoring it silently.
-
----
-
-## 1. Branching
-
-| Branch               | Purpose                                                         | Lifecycle                         |
-| -------------------- | --------------------------------------------------------------- | --------------------------------- |
-| `main`               | Production-ready. Tagged releases come from here.               | Protected. No direct pushes.      |
-| `feat/<short-name>`  | A new feature or capability.                                    | Short-lived. Deleted after merge. |
-| `fix/<short-name>`   | A bug fix.                                                      | Short-lived. Deleted after merge. |
-| `chore/<short-name>` | Tooling, deps, refactors with no user-visible behaviour change. | Short-lived.                      |
-| `docs/<short-name>`  | Documentation-only changes.                                     | Short-lived.                      |
-
-We do **not** use a `develop` branch. PRs target `main` directly. If a change is too big to land in `main` within a week, hide it behind a feature flag or break it into smaller PRs.
+The governing document is [`docs/portfolio-spec.md`](docs/portfolio-spec.md). Where it and older documents disagree, the code is the source of truth, then the spec, then ADRs 0039 onwards.
 
 ---
 
-## 2. Commits
+## Branches and pull requests
 
-We follow [Conventional Commits](https://www.conventionalcommits.org/) so that release notes and changelogs are mechanically generatable.
+The transformation happens on `portfolio-transformation`, in the passes of spec section V:
 
-Format:
+- A draft pull request against `main` stays open, so CI runs on every push.
+- At the end of each pass, once every gate is green, the pass is merged to `main` with a merge commit (not a squash, so the branch can continue without rewriting history). A new draft pull request is opened for the next pass.
+- Merging to `main` deploys (see [`docs/deployment.md`](docs/deployment.md)).
+- Never push from a clone made before the Pass 0 history rewrite (3 October 2026); re-clone instead.
+
+After the transformation, short-lived branches (`feat/`, `fix/`, `chore/`, `docs/`) target `main` directly.
+
+Every pull request description answers: what changed, why, how it was verified, and which ADRs it relates to (the template in `.github/PULL_REQUEST_TEMPLATE.md` has the sections).
+
+## Commits
+
+[Conventional Commits](https://www.conventionalcommits.org/):
 
 ```
 <type>(<scope>): <short imperative description>
 
 [optional body explaining the why]
-
-[optional footer: BREAKING CHANGE, refs to ADRs, etc.]
 ```
 
-Allowed types:
+| Type       | Use                                                 |
+| ---------- | --------------------------------------------------- |
+| `feat`     | A new capability for visitors or for Josh as author |
+| `fix`      | A bug fix                                           |
+| `chore`    | Tooling, build, dependency or non-visible clean-up  |
+| `docs`     | Documentation only                                  |
+| `refactor` | Internal restructuring with no behaviour change     |
+| `test`     | Adding or improving tests                           |
+| `perf`     | A measurable performance change                     |
+| `style`    | Formatting only                                     |
 
-| Type       | Use                                                               |
-| ---------- | ----------------------------------------------------------------- |
-| `feat`     | A new capability for users (homeowner-facing or operator-facing). |
-| `fix`      | A bug fix.                                                        |
-| `chore`    | Tooling, build, dependency, or non-user-visible cleanup.          |
-| `docs`     | Documentation only.                                               |
-| `refactor` | Internal restructuring with no behaviour change.                  |
-| `test`     | Adding or improving tests.                                        |
-| `perf`     | A measurable performance change.                                  |
+Scopes in use: `site`, `edge`, `wizard`, `content`, `ci`, `repo`, `security`, `deps`. Keep the subject under 72 characters and in the imperative mood ("add", not "added").
 
-Examples:
+## Gates
 
-```
-feat(wizard): add photo upload step with client-side compression
-fix(plugin): handle missing WP nonce with 403 instead of 500
-chore(deps): bump zod to 3.23.0
-docs(architecture): clarify forwarder error contract
-refactor(engine): extract rule evaluator into separate file
-```
+Before pushing, run `pnpm gates` (or the individual commands listed in the [README](README.md#gates)). The pre-commit hook runs ESLint and Prettier on staged files. A pass never starts with a red gate.
 
-Keep the subject line under 72 characters and in the imperative mood ("add", not "added" or "adds").
+## Architecture decision records
 
----
+ADRs live in `docs/decisions/`, indexed in its [README](docs/decisions/README.md). Write one, within a day of the decision, when you:
 
-## 3. Pull requests
-
-### Before opening a PR
-
-- Rebase onto the latest `main`.
-- Run `pnpm format` and ensure CI checks pass locally where possible.
-- Update or add relevant documentation in the same PR.
-- If the change is non-trivially architectural, write an ADR in `docs/decisions/`.
-
-### PR description
-
-The pull request template in `.github/PULL_REQUEST_TEMPLATE.md` defines the required structure. At minimum, every PR description must answer:
-
-1. **What changed?** A short summary.
-2. **Why?** The motivation — what problem this solves, or what capability it adds.
-3. **How was it verified?** Manual steps, screenshots, or test references.
-4. **Related ADRs / issues?** Links to relevant decision records or tickets.
-
-### Review and merge
-
-- At least one approving review is required (where the team is larger than one). Solo work still goes through a PR for the audit trail.
-- All CI checks must be green.
-- We squash-merge by default. Keep the squashed commit message conventional.
-- Delete the branch after merge.
-
----
-
-## 4. Architecture Decision Records (ADRs)
-
-ADRs live in `docs/decisions/` and capture significant decisions with their context, alternatives, and consequences.
-
-When to write one:
-
-- Introducing a new dependency that materially changes the stack.
-- Choosing between two non-trivial implementation paths.
-- Departing from a previously-recorded decision.
-- Adding a new pattern that should be applied consistently elsewhere.
-
-When **not** to write one:
-
-- Small bug fixes.
-- Refactors with no architectural implication.
-- Anything that's a re-application of an existing pattern.
-
-ADRs are short (one page). Late ADRs lie because they rationalise; same-day ADRs tell the truth about the tradeoff. Write them within 24 hours of the decision being made.
+- add a dependency that changes the stack;
+- choose between two non-trivial implementation paths;
+- depart from an earlier decision;
+- introduce a pattern that should be applied consistently.
 
 Template:
 
@@ -128,50 +77,27 @@ What else was on the table? Why was it rejected?
 
 ## Consequences
 
-What does this make easier? What does this make harder?
-What might we have to revisit?
+What does this make easier or harder? What might we revisit?
 ```
 
----
+## Code style
 
-## 5. Tags and releases
+- TypeScript, JavaScript, CSS, JSON, YAML and Markdown are formatted by Prettier (`.prettierrc`). `pnpm format` fixes formatting. `.astro` files are not formatted by Prettier (that needs a plugin outside the approved dependencies).
+- Text files use LF line endings everywhere (`.gitattributes`).
+- The design rules are enforced, not suggested: no gradients, blur, spinners, raw hex colours outside the token definitions, Tailwind arbitrary values, marketing words or emoji. ESLint checks TypeScript and React files; `scripts/check-design.mjs` checks `.astro`, CSS and Markdown.
+- The site's own code imports with `~/`; `@/` always means `apps/wizard/src`.
 
-Plugin versions follow [Semantic Versioning](https://semver.org/):
+## Adding a dependency
 
-- `MAJOR.MINOR.PATCH`
-- `v0.x.x` while pre-production
-- `v1.0.0` is "first client live in production"
+The approved dependencies are listed in spec section U.6. Anything else needs a reason recorded in the relevant ADR before it is added, covering:
 
-Phase milestone tags:
+1. What problem it solves that the standard library or existing code cannot, in a reasonable amount of code.
+2. Its weight (kB gzipped for anything shipped to browsers).
+3. Who maintains it and how active it is.
+4. Its licence.
+5. How it would be removed if it stopped being maintained.
 
-| Tag                   | Marks          |
-| --------------------- | -------------- |
-| `v0.1.0-scaffold`     | End of Phase 3 |
-| `v0.2.0-engine`       | End of Phase 4 |
-| `v0.3.0-integrations` | End of Phase 5 |
-| `v1.0.0-rc1`          | End of Phase 6 |
-| `v1.0.0`              | End of Phase 7 |
+## Content and secrets
 
-The plugin version in `plugins/quote-wizard/quote-wizard.php` (the plugin header) is the single source of truth. Tags must match it.
-
----
-
-## 6. Code style
-
-- TypeScript/JavaScript/CSS/Markdown: formatted by Prettier. Configuration in `.prettierrc`. Run `pnpm format` before pushing.
-- PHP: WordPress Coding Standards via PHPCS. Configuration arrives in step 3D.
-- File and directory naming: see `docs/03-project-structure.md` §8.
-
----
-
-## 7. Adding a dependency
-
-Every new dependency needs a justification. Before running `pnpm add` or `composer require`, answer in the PR description:
-
-1. What problem does it solve that we cannot solve with the standard library in a reasonable amount of code?
-2. What is its weight (KB gzipped for runtime; install time for dev)?
-3. Who maintains it? How active is it? Last commit?
-4. What is the licence?
-5. What is the rollback story if it becomes unmaintained?
-
-This is not bureaucracy — it is the difference between a codebase that stays maintainable and one that drowns in supply-chain weight.
+- Never write facts about Josh that are not in the spec or in content he supplied; use `TODO(josh): what is needed` placeholders (spec T.4).
+- Never commit secrets, webhook URLs, personal contact details or real enquiry data. Worker secrets are set with `wrangler secret put`; CI secrets live in the repository settings.

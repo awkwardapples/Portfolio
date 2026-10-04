@@ -41,10 +41,9 @@
 
 ## Checklist
 
-- [ ] Branch rebased onto latest `main`
-- [ ] `pnpm format:check` passes
-- [ ] Linting and typechecking pass (once tooling is in place)
-- [ ] Tests added or updated (once testing harness is in place)
-- [ ] Documentation updated (README, docs/, or inline)
-- [ ] No new dependencies — OR justification provided in the PR description
-- [ ] No secrets or environment-specific values committed
+- [ ] `pnpm gates` passes (format, lint, typecheck, tests, `astro check`, Worker tests, build)
+- [ ] `docs/current-state.md` updated; other docs updated where they became inaccurate
+- [ ] Architectural decisions have an ADR (spec U.7)
+- [ ] No dependency outside spec U.6, or the reason is recorded in an ADR
+- [ ] No invented facts about Josh; missing content uses `TODO(josh)` placeholders
+- [ ] No secrets, webhook URLs, personal contact details or real enquiry data committed
