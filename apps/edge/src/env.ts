@@ -1,9 +1,11 @@
 /**
  * Bindings and configuration available to the Worker (wrangler.jsonc).
  *
- * Secrets are optional in the type until the submission pipeline that uses
- * them lands (Pass 6); they are set with `wrangler secret put` and never
- * committed (spec Q.3, U.8).
+ * Secrets are set with `wrangler secret put` and never committed (spec Q.3,
+ * U.8; docs/deployment.md). They are optional in the type because the
+ * Worker degrades safely without them: no Turnstile secret skips that check
+ * (as the plugin did), and no webhook keeps submissions pending in D1 until
+ * one is set, when the cron forwards them.
  */
 export interface Env {
   /** The built site in apps/site/dist. */

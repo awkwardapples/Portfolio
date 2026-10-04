@@ -16,7 +16,10 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@/*": ["../wizard/src/*"]
+    }
   },
   "include": ["src", "test"]
 }
