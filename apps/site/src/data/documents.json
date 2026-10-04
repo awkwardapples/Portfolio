@@ -1,0 +1,16 @@
+{
+  "kerr-microscopy-dissertation.pdf": {
+    "pages": 58,
+    "bytes": 2324004,
+    "title": null,
+    "author": "Josh Lennon",
+    "cover": "content/work/kerr-microscopy-dissertation/kerr-microscopy-dissertation.cover.png"
+  },
+  "neural-network-iris-report.pdf": {
+    "pages": 96,
+    "bytes": 8619261,
+    "title": null,
+    "author": "Josh Lennon",
+    "cover": "content/work/neural-network-from-scratch/neural-network-iris-report.cover.png"
+  }
+}
