@@ -1,4 +1,6 @@
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+
+import { expect, test } from './fixtures';
 
 /**
  * The SCB demo and the GrowTrades case study (spec J; Pass 7 acceptance):
@@ -59,7 +61,10 @@ test.describe('the SCB demo', () => {
     const response = await request.get(DEMO);
     expect(response.status()).toBe(200);
     expect(response.headers()['x-frame-options']).toBeUndefined();
-    expect(response.headers()['content-security-policy']).toBe("frame-ancestors 'self'");
+    // Its own policy (ADR-0048): framed by this site only, no inline script.
+    const policy = response.headers()['content-security-policy'] ?? '';
+    expect(policy).toContain("frame-ancestors 'self'");
+    expect(policy).toContain("script-src 'self';");
     expect(response.headers()['x-robots-tag']).toBe('noindex');
     expect(await response.text()).toContain('<meta name="robots" content="noindex"');
   });
@@ -162,7 +167,7 @@ test.describe('the GrowTrades case study', () => {
       .getByRole('link', { name: /^Try the live site/ })
       .first()
       .click();
-    const demo = page.frameLocator('.site-frame iframe').first();
+    const demo = page.locator('.site-frame iframe').first().contentFrame();
     await demo.getByRole('link', { name: 'Services', exact: true }).first().click();
     await expect(page.locator('.site-frame').getByText('scbhandyman.co.uk/services')).toBeVisible();
   });

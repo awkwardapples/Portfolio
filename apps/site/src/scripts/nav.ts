@@ -3,18 +3,28 @@
  * page loads React just for its header.
  *
  * Ported from the wizard's SCB site: the condensing bar from
- * useHeaderScrollState (the same 8 px threshold), and the drawer behaviour
+ * useHeaderScrollState (with a second threshold, so it cannot flicker), and the drawer behaviour
  * from MobileMenu and useFocusTrap (dialog semantics, focus kept inside,
  * Escape closes, focus returns to the trigger, the page behind does not
  * scroll). The drawer is a native modal <dialog>, which provides the dialog
  * semantics, the focus containment and Escape itself.
  */
 
-const SCROLL_THRESHOLD_PX = 8;
+// The bar condenses past 32 px and grows again only within 8 px of the top.
+// The gap is wider than the 16 px the bar loses, so the browser's scroll
+// anchoring (which moves the page by that much as the bar changes) cannot
+// bounce it between the two states. With one threshold it did, every frame.
+const CONDENSE_AFTER_PX = 32;
+const EXPAND_WITHIN_PX = 8;
 
 function initCondensing(header: HTMLElement): void {
-  const update = () =>
-    header.toggleAttribute('data-condensed', window.scrollY > SCROLL_THRESHOLD_PX);
+  const update = () => {
+    const condensed = header.hasAttribute('data-condensed');
+    if (!condensed && window.scrollY > CONDENSE_AFTER_PX)
+      header.toggleAttribute('data-condensed', true);
+    if (condensed && window.scrollY <= EXPAND_WITHIN_PX)
+      header.toggleAttribute('data-condensed', false);
+  };
   update();
   window.addEventListener('scroll', update, { passive: true });
 }

@@ -1,6 +1,7 @@
-import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import type { APIRequestContext, Page } from '@playwright/test';
 
 import { expectNoSeriousViolations } from './axe';
+import { expect, test } from './fixtures';
 
 /**
  * "What brings you here?" end to end (spec I, Q; Pass 6 acceptance): every

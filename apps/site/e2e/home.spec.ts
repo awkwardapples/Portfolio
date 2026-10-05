@@ -1,6 +1,7 @@
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 import { expectNoSeriousViolations } from './axe';
+import { expect, test } from './fixtures';
 
 /**
  * The homepage threshold and the intent it remembers (spec G.0, G.1, N.1;

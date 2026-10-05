@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 
-import { Tooltip } from '@/components/primitives/Tooltip';
-
 import { buttonClass, type ButtonSurface } from '~/design/button';
 
 interface CopyEmailProps {
@@ -17,6 +15,8 @@ type CopyState = 'idle' | 'copied' | 'failed';
  * after two seconds. If the clipboard is unavailable, the address is
  * selected and the visitor is told to press Ctrl+C. The address itself is a
  * mailto link, so it works before this hydrates and without JavaScript.
+ * The button has a visible label, so it needs no tooltip (one would also
+ * hang past the edge of a phone screen).
  */
 export function CopyEmail({ email, surface = 'stage' }: CopyEmailProps): ReactElement {
   const [state, setState] = useState<CopyState>('idle');
@@ -40,19 +40,17 @@ export function CopyEmail({ email, surface = 'stage' }: CopyEmailProps): ReactEl
 
   return (
     <span className="inline-flex flex-wrap items-center gap-3">
-      <a href={`mailto:${email}`} className="underline">
+      <a href={`mailto:${email}`} className="inline-flex min-h-11 items-center underline">
         <span ref={addressRef}>{email}</span>
       </a>
-      <Tooltip label={state === 'copied' ? 'Copied' : 'Copy the email address'}>
-        <button
-          type="button"
-          onClick={copy}
-          aria-label={state === 'copied' ? 'Copied' : 'Copy the email address'}
-          className={buttonClass({ variant: 'secondary', surface, size: 'compact' })}
-        >
-          {state === 'copied' ? 'Copied' : 'Copy'}
-        </button>
-      </Tooltip>
+      <button
+        type="button"
+        onClick={copy}
+        aria-label={state === 'copied' ? 'Copied' : 'Copy the email address'}
+        className={buttonClass({ variant: 'secondary', surface, size: 'compact' })}
+      >
+        {state === 'copied' ? 'Copied' : 'Copy'}
+      </button>
       {state === 'failed' && <span className="text-xs">Press Ctrl+C to copy</span>}
       <span role="status" aria-live="polite" className="sr-only">
         {state === 'copied'

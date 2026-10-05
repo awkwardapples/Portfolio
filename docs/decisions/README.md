@@ -27,3 +27,4 @@ Superseded or adapted for this repository:
 | [0045](0045-visual-identity-and-theming.md)   | Visual identity and theming through a token contract shared with the wizard            |
 | [0046](0046-media-and-facades.md)             | Facades for YouTube and Spotify, the footage loop, and GitHub at build time            |
 | [0047](0047-lighthouse-ci.md)                 | Performance budgets checked by Lighthouse CI, run as a GitHub Action                   |
+| [0048](0048-csp-and-hardening.md)             | The Content Security Policy, the deferred contact wizard, and hardening checks in CI   |

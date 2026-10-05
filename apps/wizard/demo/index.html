@@ -11,26 +11,8 @@
         --goqw-primary: 28 74 61; /* SCB's green, as the plugin injected it */
       }
     </style>
-    <script>
-      // The public config the WordPress plugin used to inject. restUrl is empty,
-      // so QuotePage uses its built-in development port: nothing is ever sent.
-      window.GOQW_CONFIG = {
-        contractVersion: 3,
-        wizardId: 'fencing',
-        enableCategoryNavigation: false,
-        businessName: 'SCB Handyman',
-        businessPhone: '',
-        businessEmail: '',
-        primaryColor: '#1C4A3D',
-        calendlyUrl: '',
-        turnstileSiteKey: '',
-        restNamespace: 'qw/v1',
-        restUrl: '',
-        restNonce: '',
-        pluginVersion: 'demo',
-        buildTimestamp: '',
-      };
-    </script>
+    <!-- window.GOQW_CONFIG, from demo/public/config.js (a file, for the CSP: ADR-0048). -->
+    <script src="/demo/scb-handyman/config.js"></script>
   </head>
   <body>
     <div id="qw-root"></div>

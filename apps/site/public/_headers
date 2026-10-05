@@ -1,6 +1,9 @@
 # Response headers for static assets served by the Worker (spec Q.4, P.3).
-# The Content Security Policy is added in Pass 9 once every page's script and
-# style hashes are known; /api/* responses set their own headers in the Worker.
+# Each page carries its Content Security Policy in a <meta> element with the
+# hashes of its scripts (astro.config.mjs `security.csp`); this file adds what
+# a meta policy cannot hold (frame-ancestors). Paths with their own policy
+# detach the global one first, because two CSP headers would both apply.
+# /api/* responses set their own headers in the Worker.
 
 /*
   Strict-Transport-Security: max-age=31536000; includeSubDomains
@@ -8,16 +11,21 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
   X-Frame-Options: DENY
+  Content-Security-Policy: frame-ancestors 'none'
 
 # PDFs may be framed by this site only, for "Read here" (spec N.11).
 /documents/*
   ! X-Frame-Options
+  ! Content-Security-Policy
   Content-Security-Policy: frame-ancestors 'self'
+  Cache-Control: public, max-age=604800
 
-# The SCB demo (ADR-0044): framed by this site only, never indexed.
+# The SCB demo (ADR-0044, ADR-0048): framed by this site only, never indexed,
+# and under its own policy (a Vite page, so no Astro meta policy).
 /demo/*
   ! X-Frame-Options
-  Content-Security-Policy: frame-ancestors 'self'
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-src 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'self'
   X-Robots-Tag: noindex
 
 /_astro/*
@@ -25,3 +33,19 @@
 
 /demo/scb-handyman/assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+# Self-hosted video loops (pnpm media:video); a changed loop gets a new folder name.
+/media/*
+  Cache-Control: public, max-age=604800
+
+# The content editor (Sveltia CMS, ADR-0041): its own policy, for these paths only.
+# The page is served at /admin (no trailing slash), which /admin/* does not match.
+/admin
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: data: https://*.githubusercontent.com; media-src blob:; frame-src blob:; connect-src 'self' blob: data: https://unpkg.com https://api.github.com https://www.githubstatus.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
+  X-Robots-Tag: noindex
+
+/admin/*
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: data: https://*.githubusercontent.com; media-src blob:; frame-src blob:; connect-src 'self' blob: data: https://unpkg.com https://api.github.com https://www.githubstatus.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'
+  X-Robots-Tag: noindex

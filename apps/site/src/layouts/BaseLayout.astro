@@ -10,6 +10,7 @@ import stixRoman from '@fontsource-variable/stix-two-text/files/stix-two-text-la
 import Footer from '~/components/Footer.astro';
 import Nav from '~/components/Nav.astro';
 import Seo from '~/components/Seo.astro';
+import { EARLY_SCRIPT } from '~/lib/early-script';
 
 interface Props {
   /** The full document title, e.g. "Work | Josh Lennon" or "Josh Lennon". */
@@ -27,21 +28,8 @@ const { title, description, noindex = false } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!--
-      Before the first paint: mark that JavaScript runs (html.js, for .js-only and
-      .no-js-only), and if this browser has answered "What brings you here?",
-      set html[data-intent] so the threshold stays hidden and the intro shows the
-      right calls to action (spec G.0). The answer never leaves the browser.
-    -->
-    <script is:inline>
-      document.documentElement.classList.add('js');
-      try {
-        var stored = JSON.parse(localStorage.getItem('jl:intent') || 'null');
-        if (stored && /^(hiring|research|website|music|looking)$/.test(stored.value)) {
-          document.documentElement.dataset.intent = stored.value;
-        }
-      } catch (error) {}
-    </script>
+    <!-- Before the first paint: html.js and the stored intent (src/lib/early-script.ts). -->
+    <script is:inline set:html={EARLY_SCRIPT} />
     <Seo title={title} description={description} noindex={noindex} />
     <!-- Only the STIX roman file is preloaded: page titles and the threshold use it (spec E.3). -->
     <link rel="preload" href={stixRoman} as="font" type="font/woff2" crossorigin />

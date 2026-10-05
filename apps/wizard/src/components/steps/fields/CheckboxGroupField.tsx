@@ -12,6 +12,8 @@ export function CheckboxGroupField({
   const groupId = field.key;
   const errorId = error ? `${groupId}-error` : undefined;
   const helpId = field.help || field.helpLink ? `${groupId}-help` : undefined;
+  // Help text and the error both describe each option (spec R: help tied with aria-describedby).
+  const describedBy = [helpId, errorId].filter(Boolean).join(' ') || undefined;
   const current = Array.isArray(value) ? (value as ReadonlyArray<string>) : [];
 
   function handleChange(optValue: string, checked: boolean): void {
@@ -42,13 +44,13 @@ export function CheckboxGroupField({
       )}
       <div className="mt-2 space-y-2">
         {field.options?.map((opt) => (
-          <label key={opt.value} className="flex cursor-pointer items-center gap-3">
+          <label key={opt.value} className="flex min-h-11 cursor-pointer items-center gap-3">
             <input
               type="checkbox"
               name={groupId}
               value={opt.value}
               checked={current.includes(opt.value)}
-              aria-describedby={errorId}
+              aria-describedby={describedBy}
               onChange={(e) => handleChange(opt.value, e.target.checked)}
               onBlur={onBlur}
               className="h-4 w-4 shrink-0 accent-primary"

@@ -8,14 +8,14 @@
  *   secondary:         an outline in the surface's text colour
  *   quiet:             an underlined text action
  *
- * Every size keeps the 44 px minimum touch target (spec O).
+ * Every size keeps the 44 by 44 px minimum touch target (spec O).
  */
 export type ButtonVariant = 'primary' | 'secondary' | 'quiet';
 export type ButtonSurface = 'paper' | 'stage';
 export type ButtonSize = 'regular' | 'compact';
 
 const base =
-  'inline-flex min-h-11 items-center justify-center gap-2 rounded font-sans font-medium transition-colors duration-fast';
+  'inline-flex min-h-11 min-w-11 items-center gap-2 rounded font-sans font-medium transition-colors duration-fast';
 
 const sizes: Record<ButtonSize, string> = {
   regular: 'px-5 text-base',
@@ -44,7 +44,11 @@ export function buttonClass({
   surface?: ButtonSurface;
   size?: ButtonSize;
 } = {}): string {
-  return [base, variant === 'quiet' ? '' : sizes[size], variants[surface][variant]]
+  return [
+    base,
+    variant === 'quiet' ? 'justify-start' : `justify-center ${sizes[size]}`,
+    variants[surface][variant],
+  ]
     .filter(Boolean)
     .join(' ');
 }

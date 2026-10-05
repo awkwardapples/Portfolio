@@ -1,6 +1,5 @@
-import { expect, test } from '@playwright/test';
-
 import { expectNoSeriousViolations } from './axe';
+import { expect, test } from './fixtures';
 
 /**
  * Third parties and the social sections (spec K.2, M, P.2; Pass 8

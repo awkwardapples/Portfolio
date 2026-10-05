@@ -52,7 +52,6 @@ const shelf: ShelfItem[] = work
   })
   .slice(0, 3);
 
-const dev = import.meta.env.DEV;
 // GrowTrades appears with its entry (published, or a draft in development).
 const growtrades = work.find((entry) => entry.id === 'growtrades');
 const sections = new Set<HomeSection>(['intro', 'get-in-touch']);

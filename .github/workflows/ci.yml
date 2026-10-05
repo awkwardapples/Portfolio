@@ -63,6 +63,10 @@ jobs:
       - name: Build (wizard, site, Worker dry run)
         run: pnpm build
 
+      # Initial JavaScript on the homepage and /contact, gzipped (spec P.1).
+      - name: JavaScript budgets
+        run: pnpm check:budgets
+
       - name: PDF cover rendering on Linux (spec Pass 2 acceptance)
         run: pnpm media:pdf apps/site/public/documents/kerr-microscopy-dissertation.pdf --dry-run
 
@@ -82,11 +86,11 @@ jobs:
           path: apps/site/playwright-report
           retention-days: 7
 
-      # Performance budgets on the homepage (spec P.1, Pass 4 acceptance): the
-      # median of three mobile runs against the built site. ADR-0047 records why
-      # Lighthouse CI runs as an action rather than a dependency; Pass 9 adds
-      # the other pages and budgets.
-      - name: Lighthouse budgets (LCP and CLS on the homepage)
+      # Performance budgets (spec P.1): the median of three mobile runs on the
+      # homepage, a work page and /contact. LCP, CLS and Total Blocking Time (the
+      # lab stand-in for INP) everywhere; a performance score of 95 on the home
+      # and work pages. ADR-0047 records why Lighthouse CI runs as an action.
+      - name: Lighthouse budgets
         uses: treosh/lighthouse-ci-action@v12
         with:
           configPath: ./lighthouserc.json

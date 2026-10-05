@@ -92,11 +92,14 @@ const caseStudy = data.template === 'case-study';
 <BaseLayout title={`${title} | Josh Lennon`} description={data.seo?.description ?? data.summary}>
   <Section labelledby="work-title">
     <nav aria-label="Breadcrumb" class="text-sm">
-      <a href={ROUTES.work.path} class="text-graphite underline underline-offset-4 hover:text-ink">
+      <a
+        href={ROUTES.work.path}
+        class="inline-flex min-h-11 min-w-11 items-center text-graphite underline underline-offset-4 hover:text-ink"
+      >
         Work
       </a>
     </nav>
-    <h1 id="work-title" class="mt-4 max-w-reading text-2xl sm:text-3xl lg:text-4xl">
+    <h1 id="work-title" class="mt-2 max-w-reading text-2xl sm:text-3xl lg:text-4xl">
       {data.title}
       {data.draft && <span class="font-sans text-sm text-graphite">(draft)</span>}
     </h1>

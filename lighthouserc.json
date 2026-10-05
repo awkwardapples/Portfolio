@@ -2,20 +2,42 @@
   "ci": {
     "collect": {
       "staticDistDir": "./apps/site/dist",
-      "url": ["http://localhost/"],
+      "url": [
+        "http://localhost/",
+        "http://localhost/work/kerr-microscopy-dissertation.html",
+        "http://localhost/contact.html"
+      ],
       "numberOfRuns": 3
     },
     "assert": {
-      "assertions": {
-        "largest-contentful-paint": [
-          "error",
-          { "maxNumericValue": 2000, "aggregationMethod": "median-run" }
-        ],
-        "cumulative-layout-shift": [
-          "error",
-          { "maxNumericValue": 0.05, "aggregationMethod": "median-run" }
-        ]
-      }
+      "assertMatrix": [
+        {
+          "matchingUrlPattern": ".*",
+          "assertions": {
+            "largest-contentful-paint": [
+              "error",
+              { "maxNumericValue": 2000, "aggregationMethod": "median-run" }
+            ],
+            "cumulative-layout-shift": [
+              "error",
+              { "maxNumericValue": 0.05, "aggregationMethod": "median-run" }
+            ],
+            "total-blocking-time": [
+              "error",
+              { "maxNumericValue": 200, "aggregationMethod": "median-run" }
+            ]
+          }
+        },
+        {
+          "matchingUrlPattern": "^http://localhost(:[0-9]+)?/(work/.*)?$",
+          "assertions": {
+            "categories:performance": [
+              "error",
+              { "minScore": 0.95, "aggregationMethod": "median-run" }
+            ]
+          }
+        }
+      ]
     }
   }
 }

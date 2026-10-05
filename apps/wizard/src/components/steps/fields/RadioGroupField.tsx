@@ -12,6 +12,8 @@ export function RadioGroupField({
   const groupId = field.key;
   const errorId = error ? `${groupId}-error` : undefined;
   const helpId = field.help ? `${groupId}-help` : undefined;
+  // Help text and the error both describe each option (spec R: help tied with aria-describedby).
+  const describedBy = [helpId, errorId].filter(Boolean).join(' ') || undefined;
 
   return (
     <fieldset>
@@ -30,13 +32,13 @@ export function RadioGroupField({
       )}
       <div className="mt-2 space-y-2">
         {field.options?.map((opt) => (
-          <label key={opt.value} className="flex cursor-pointer items-center gap-3">
+          <label key={opt.value} className="flex min-h-11 cursor-pointer items-center gap-3">
             <input
               type="radio"
               name={groupId}
               value={opt.value}
               checked={value === opt.value}
-              aria-describedby={errorId}
+              aria-describedby={describedBy}
               onChange={() => onChange(opt.value)}
               onBlur={onBlur}
               className="h-4 w-4 shrink-0 accent-primary"
