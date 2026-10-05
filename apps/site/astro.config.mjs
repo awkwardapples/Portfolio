@@ -28,6 +28,12 @@ export default defineConfig({
     format: 'file',
   },
   integrations: [react(), mdx(), sitemap(), devRoutes(), placeholderGuard()],
+  // Thumbnails and avatars fetched at build time and served from this site
+  // (spec K.2, M.1; ADR-0046): the browser never asks these hosts.
+  image: {
+    domains: ['i.ytimg.com', 'i.scdn.co', 'avatars.githubusercontent.com'],
+    remotePatterns: [{ protocol: 'https', hostname: '**.spotifycdn.com' }],
+  },
   prefetch: {
     prefetchAll: false,
     defaultStrategy: 'hover',
