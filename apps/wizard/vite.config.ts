@@ -43,7 +43,8 @@ const demo: UserConfig = {
   // .env.demo sits beside this file, not in demo/.
   envDir: fileURLToPath(new URL('.', import.meta.url)),
   base: '/demo/scb-handyman/',
-  publicDir: false,
+  // demo/public/config.js: window.GOQW_CONFIG, copied as it is.
+  publicDir: fileURLToPath(new URL('./demo/public', import.meta.url)),
   resolve: { alias },
   build: {
     outDir: fileURLToPath(new URL('../site/public/demo/scb-handyman', import.meta.url)),
