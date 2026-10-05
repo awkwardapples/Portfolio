@@ -1,32 +1,83 @@
 ---
 /**
- * Head tags every page uses (spec S). Title, description, canonical URL in
- * its served form, robots, theme colour and the basic Open Graph and Twitter
- * tags. Pass 10 adds structured data and Open Graph images.
+ * Head tags every page uses (spec S): title, description, the canonical URL
+ * in its served form, robots, theme colour, icons, Open Graph and Twitter
+ * tags with a share image (the page's own, else the default from
+ * `pnpm media:og`), and structured data: Josh as a Person on every page,
+ * plus whatever the page adds (src/lib/structured-data.ts).
  */
+import { getImage } from 'astro:assets';
+
 import { palette } from '~/design/tokens';
+import { getProfile } from '~/lib/content';
+import { person, serialize } from '~/lib/structured-data';
 import { publicPath } from '~/lib/urls';
+
+export interface ShareImage {
+  /** A path on this site or an absolute URL. */
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+}
 
 interface Props {
   /** The full title: "{page} | Josh Lennon", or "Josh Lennon" for the homepage. */
   title: string;
   description: string;
-  /** Keeps the page out of search results (404, development pages). */
+  /** Keeps the page out of search results (404, development pages, drafts). */
   noindex?: boolean;
+  /** The page's own share image; the default card otherwise. */
+  image?: ShareImage | undefined;
+  /** Structured data nodes for this page, beside the Person. */
+  structuredData?: (Record<string, unknown> | undefined)[];
 }
 
-const { title, description, noindex = false } = Astro.props;
+const { title, description, noindex = false, image, structuredData = [] } = Astro.props;
+const site = (Astro.site ?? new URL('https://joshlennon.com')).origin;
 const canonical = new URL(publicPath(Astro.url.pathname), Astro.site).href;
+
+const share = image ?? {
+  src: '/og/default.png',
+  alt: 'Josh Lennon',
+  width: 1200,
+  height: 630,
+};
+const shareUrl = new URL(share.src, `${site}/`).href;
+
+const profile = await getProfile();
+const portrait = profile.portrait
+  ? await getImage({ src: profile.portrait.src, width: 800, format: 'jpg' })
+  : undefined;
+const graph = serialize([
+  person({
+    site,
+    name: profile.name,
+    alternateNames: profile.alternateNames,
+    headline: profile.headline,
+    portraitUrl: portrait ? new URL(portrait.src, `${site}/`).href : undefined,
+    links: profile.links,
+    education: profile.education.filter((entry) => !entry.draft),
+  }),
+  ...structuredData,
+]);
 ---
 
 <title>{title}</title>
 <meta name="description" content={description} />
 {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
 <meta name="theme-color" content={palette.paper} />
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Josh Lennon" />
 <meta property="og:locale" content="en_GB" />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />
 <meta property="og:url" content={canonical} />
-<meta name="twitter:card" content="summary" />
+<meta property="og:image" content={shareUrl} />
+<meta property="og:image:alt" content={share.alt} />
+<meta property="og:image:width" content={String(share.width)} />
+<meta property="og:image:height" content={String(share.height)} />
+<meta name="twitter:card" content="summary_large_image" />
+<script type="application/ld+json" is:inline set:html={graph} />

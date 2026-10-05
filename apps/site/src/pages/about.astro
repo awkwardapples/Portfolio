@@ -17,6 +17,7 @@ import { dateOf, getPosts, getProfile, getWork } from '~/lib/content';
 import { publicFileSize } from '~/lib/documents';
 import { KIND_LABELS, monthYear } from '~/lib/format';
 import { ROUTES } from '~/lib/routes';
+import { profilePage } from '~/lib/structured-data';
 import { newestFirst, periodLabel, type TimelineItem } from '~/lib/timeline';
 
 const profile = await getProfile();
@@ -89,6 +90,12 @@ const bio = profile.bioLong ?? profile.bioShort;
 <BaseLayout
   title="About | Josh Lennon"
   description={`${profile.headline.role}. ${profile.availability ?? ''}`.trim()}
+  structuredData={[
+    profilePage(
+      (Astro.site ?? new URL('https://joshlennon.com')).origin,
+      new URL(ROUTES.about.path, Astro.site).href,
+    ),
+  ]}
 >
   <Section labelledby="about-heading">
     <div class="grid gap-10 md:grid-cols-12 md:gap-12">

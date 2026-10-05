@@ -12,6 +12,7 @@
  * lead artefact comes from the body (Fig. 1, the live site) rather than
  * above it; and the page ends with "Talk about your website".
  */
+import { getImage } from 'astro:assets';
 import { getEntry, render } from 'astro:content';
 
 import DocumentCard from '~/components/DocumentCard.astro';
@@ -28,6 +29,7 @@ import { SHOW_DRAFTS, dateOf, getPosts, getProfile, getWork, type Work } from '~
 import { documentInfo } from '~/lib/documents';
 import { KIND_LABELS, isoDate, monthYear, readDocumentLabel } from '~/lib/format';
 import { ROUTES } from '~/lib/routes';
+import { breadcrumbs, video, work } from '~/lib/structured-data';
 import { STATUS_LABELS, attributionLine, authorshipStatement, citationInput } from '~/lib/work';
 
 export async function getStaticPaths() {
@@ -87,9 +89,68 @@ const related = (await Promise.all(data.related.map((reference) => getEntry(refe
 
 const title = data.seo?.title ?? data.title;
 const caseStudy = data.template === 'case-study';
+
+// For search engines and link previews (spec S): what this work is, where
+// it sits, and a share image cut from its cover or its document's first page.
+const pageUrl = new URL(`${ROUTES.work.path}/${entry.id}`, site).href;
+const coverSource = data.cover ?? documentInfo(data.documents[0]?.file ?? '')?.cover;
+const shareImage = coverSource
+  ? await getImage({
+      src: coverSource,
+      width: 1200,
+      height: 630,
+      fit: 'cover',
+      position: 'top',
+      format: 'jpg',
+    })
+  : undefined;
+const share = shareImage
+  ? {
+      src: shareImage.src,
+      alt: data.coverAlt ?? `The first page of "${data.documents[0]?.title ?? data.title}"`,
+      width: 1200,
+      height: 630,
+    }
+  : undefined;
+const structuredData = [
+  work({
+    site: site.origin,
+    url: pageUrl,
+    title: data.title,
+    summary: data.summary,
+    kind: data.kind,
+    date,
+    updated: data.updated,
+    authorship: data.authorship.type,
+    context: data.context,
+    documents: data.documents.map((document) => ({
+      url: new URL(documentInfo(document.file)?.url ?? `/documents/${document.file}`, site).href,
+      title: document.title,
+      docType: document.docType,
+    })),
+    tags: data.tags,
+    imageUrl: share ? new URL(share.src, site).href : undefined,
+  }),
+  ...data.media.map((item) =>
+    item.type === 'youtube'
+      ? video({ id: item.id, title: item.title, uploadDate: item.uploadDate })
+      : undefined,
+  ),
+  breadcrumbs(site.origin, [
+    { name: 'Home', path: '/' },
+    { name: ROUTES.work.label, path: ROUTES.work.path },
+    { name: data.title, path: `${ROUTES.work.path}/${entry.id}` },
+  ]),
+];
 ---
 
-<BaseLayout title={`${title} | Josh Lennon`} description={data.seo?.description ?? data.summary}>
+<BaseLayout
+  title={`${title} | Josh Lennon`}
+  description={data.seo?.description ?? data.summary}
+  noindex={data.draft}
+  image={share}
+  structuredData={structuredData}
+>
   <Section labelledby="work-title">
     <nav aria-label="Breadcrumb" class="text-sm">
       <a

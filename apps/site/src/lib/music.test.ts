@@ -15,7 +15,7 @@ describe('musicContent (spec K.1)', () => {
       ]),
       entry('newer', 'music', '2026-01-01', [
         { type: 'spotify', url: 'https://open.spotify.com/track/b', title: 'New song' },
-        { type: 'youtube', id: 'wWAGaOdlyMw', title: 'Video' },
+        { type: 'youtube', id: 'wWAGaOdlyMw', title: 'Video', uploadDate: new Date('2025-06-01') },
         { type: 'video', name: 'stage', title: 'On stage', loop: true },
       ]),
       entry('code', 'software', '2026-02-01', [
@@ -24,6 +24,7 @@ describe('musicContent (spec K.1)', () => {
     ]);
     expect(content.releases.map((release) => release.title)).toEqual(['New song', 'Old song']);
     expect(content.videos.map((video) => video.id)).toEqual(['wWAGaOdlyMw']);
+    expect(content.videos[0]?.uploadDate).toEqual(new Date('2025-06-01'));
     expect(content.loop).toEqual({ name: 'stage', title: 'On stage' });
     expect(hasMusic(content)).toBe(true);
   });
