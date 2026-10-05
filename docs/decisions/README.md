@@ -11,7 +11,7 @@ The decisions about the wizard engine and the tooling still hold where they are 
 Superseded or adapted for this repository:
 
 - The WordPress host, the PHP boundary, and the plugin's build pipeline and CI (0001, 0008, 0009, 0010, 0011, 0016, 0019, 0030) are superseded by [ADR-0039](0039-portfolio-architecture.md).
-- The SEO layers (0023) are kept but emitted by Astro at build time instead of by PHP (Pass 10).
+- The SEO layers (0023) are replaced by [ADR-0049](0049-seo-foundations.md): structured data, share images and robots.txt emitted by Astro at build time.
 - The synchronous forward to Make.com (0005) is superseded by [ADR-0043](0043-submission-pipeline-port.md), and photo storage on the server (0026, 0031, 0032) has no counterpart: the portfolio accepts no uploads. The protections of 0001, 0027, 0028, 0029 and 0037 are ported with parity tests.
 
 ## ADRs 0039 onwards: the portfolio
@@ -28,3 +28,4 @@ Superseded or adapted for this repository:
 | [0046](0046-media-and-facades.md)             | Facades for YouTube and Spotify, the footage loop, and GitHub at build time            |
 | [0047](0047-lighthouse-ci.md)                 | Performance budgets checked by Lighthouse CI, run as a GitHub Action                   |
 | [0048](0048-csp-and-hardening.md)             | The Content Security Policy, the deferred contact wizard, and hardening checks in CI   |
+| [0049](0049-seo-foundations.md)               | Structured data, share images and robots.txt                                           |

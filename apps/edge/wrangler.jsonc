@@ -35,5 +35,7 @@
   },
   // Retry pending forwards every 15 minutes; prune old data daily (spec Q.2, src/scheduled.ts).
   "triggers": { "crons": ["*/15 * * * *", "17 3 * * *"] },
+  // On until joshlennon.com serves the site; then false, with the custom domain
+  // listed under "routes" (docs/deployment.md step 11).
   "workers_dev": true,
 }

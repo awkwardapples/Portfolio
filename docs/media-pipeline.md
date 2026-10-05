@@ -7,7 +7,8 @@ The scripts that prepare photographs, PDFs and video for the site (spec T.3). Th
 | `pnpm media:images`  | none (uses `sharp`)                    | JPEGs in the entry folder                                                             |
 | `pnpm media:pdf`     | none (`pdfjs-dist`, `@napi-rs/canvas`) | the PDF in `public/documents/`, its cover beside the entry, `src/data/documents.json` |
 | `pnpm media:video`   | ffmpeg with SVT-AV1 and x264           | a loop set in `public/media/video/<name>/`                                            |
-| `pnpm media:screens` | Playwright (Pass 7)                    | stills of the SCB demo for the GrowTrades frame                                       |
+| `pnpm media:screens` | Playwright                             | stills of the SCB demo for the GrowTrades frame                                       |
+| `pnpm media:og`      | Playwright, `sharp`                    | the default share image and the site icons in `public/`                               |
 
 ## Photographs: `pnpm media:images`
 
@@ -63,4 +64,17 @@ Writes `apps/site/public/media/video/<name>/`:
 
 ## SCB demo stills: `pnpm media:screens`
 
-Arrives with the GrowTrades case study in Pass 7.
+```bash
+pnpm --filter @growth-ops/wizard build:demo   # once, to build the demo
+pnpm media:screens
+```
+
+Opens the built demo in Playwright's Chromium and saves the homepage at desktop and phone sizes, and the quote page, as PNGs in `src/content/work/growtrades/screens/`. Astro turns them into AVIF and WebP for the frame's still. Run it again when the SCB site changes.
+
+## Share image and icons: `pnpm media:og`
+
+```bash
+pnpm media:og
+```
+
+Renders the default share image (`public/og/default.png`, 1200 by 630: the name and headline from the profile on the stage colour) and the icons (`favicon-32.png`, `favicon.ico`, `apple-touch-icon.png`) with the site's own fonts. Work pages share their cover instead, cut at build time (ADR-0049). Run it again when the name or headline changes, and commit the files.

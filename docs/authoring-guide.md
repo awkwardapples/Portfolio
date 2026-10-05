@@ -55,6 +55,7 @@ media:
   - type: youtube
     id: wWAGaOdlyMw # the 11 characters after watch?v=
     title: Video title
+    uploadDate: 2023-10-14 # optional: the date under the video on YouTube, for search engines
   - type: spotify
     url: https://open.spotify.com/track/...
     title: Track title
