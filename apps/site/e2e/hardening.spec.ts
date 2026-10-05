@@ -41,6 +41,7 @@ async function returning(page: Page): Promise<void> {
 
 test.describe('the Content Security Policy (spec Q.4)', () => {
   test('every page carries the enforced policy and runs without a violation', async ({ page }) => {
+    test.slow(); // visits every page
     for (const path of await routes(page)) {
       const response = await page.goto(path);
       expect(response?.headers()['content-security-policy'], path).toBe("frame-ancestors 'none'");
@@ -80,6 +81,7 @@ test.describe('the viewport matrix (spec O)', () => {
 
   for (const width of WIDTHS) {
     test(`no page scrolls sideways at ${width} px`, async ({ page }) => {
+      test.slow(); // visits every page
       await page.setViewportSize({ width, height: 800 });
       const overflowing: string[] = [];
       const check = async (label: string) => {
@@ -154,6 +156,7 @@ test.describe('touch (spec O)', () => {
   test.skip(({ isMobile }) => !isMobile, 'Touch sizes are checked on the phone project.');
 
   test('every target is at least 44 by 44 px', async ({ page }) => {
+    test.slow(); // visits every page
     const found: string[] = [];
     for (const path of await routes(page)) {
       await page.goto(path);
@@ -250,6 +253,7 @@ test.describe('keyboard (spec R)', () => {
   }
 
   test('every tab stop on every page shows where focus is', async ({ page }) => {
+    test.slow(); // visits every page
     const problems: string[] = [];
     for (const path of await routes(page)) {
       await page.goto(path);

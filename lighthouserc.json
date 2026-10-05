@@ -16,15 +16,38 @@
           "assertions": {
             "largest-contentful-paint": [
               "error",
-              { "maxNumericValue": 2000, "aggregationMethod": "median-run" }
+              {
+                "maxNumericValue": 2000,
+                "aggregationMethod": "median-run"
+              }
             ],
             "cumulative-layout-shift": [
               "error",
-              { "maxNumericValue": 0.05, "aggregationMethod": "median-run" }
+              {
+                "maxNumericValue": 0.05,
+                "aggregationMethod": "median-run"
+              }
             ],
             "total-blocking-time": [
               "error",
-              { "maxNumericValue": 200, "aggregationMethod": "median-run" }
+              {
+                "maxNumericValue": 200,
+                "aggregationMethod": "median-run"
+              }
+            ],
+            "categories:seo": [
+              "error",
+              {
+                "minScore": 1,
+                "aggregationMethod": "median-run"
+              }
+            ],
+            "categories:accessibility": [
+              "error",
+              {
+                "minScore": 1,
+                "aggregationMethod": "median-run"
+              }
             ]
           }
         },
@@ -33,7 +56,10 @@
           "assertions": {
             "categories:performance": [
               "error",
-              { "minScore": 0.95, "aggregationMethod": "median-run" }
+              {
+                "minScore": 0.95,
+                "aggregationMethod": "median-run"
+              }
             ]
           }
         }
