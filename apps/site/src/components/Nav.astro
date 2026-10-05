@@ -11,11 +11,15 @@
  */
 import { Menu, X } from 'lucide-react';
 
+import { getWork } from '~/lib/content';
+import { hasMusic, musicContent } from '~/lib/music';
 import { ROUTES, MAIN_NAV, isCurrent, isLinkable } from '~/lib/routes';
 import { publicPath } from '~/lib/urls';
 
 const current = publicPath(Astro.url.pathname);
-const links = MAIN_NAV.filter(isLinkable);
+// Music is linked once there is music to show (lib/music.ts).
+const musicReady = hasMusic(musicContent(await getWork()));
+const links = MAIN_NAV.filter(isLinkable).filter((route) => route !== ROUTES.music || musicReady);
 const contact = isLinkable(ROUTES.contact) ? ROUTES.contact : undefined;
 ---
 

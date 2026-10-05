@@ -6,9 +6,11 @@
  * production builds, and the threshold only offers answers whose section is
  * on the page (spec T.4); `astro dev` shows them as labelled gaps.
  */
+import Elsewhere from '~/components/home/Elsewhere.astro';
 import GetInTouch from '~/components/home/GetInTouch.astro';
 import GrowTrades from '~/components/home/GrowTrades.astro';
 import Intro from '~/components/home/Intro.astro';
+import Music from '~/components/home/Music.astro';
 import Pending from '~/components/home/Pending.astro';
 import ResearchShelf, { type ShelfItem } from '~/components/home/ResearchShelf.astro';
 import SelectedWork from '~/components/home/SelectedWork.astro';
@@ -19,6 +21,7 @@ import { dateOf, getFeaturedWork, getProfile, getWork } from '~/lib/content';
 import { publicFileSize } from '~/lib/documents';
 import { intentCtas, selectWork, type HomeSection } from '~/lib/home';
 import { INTENTS } from '~/lib/intents';
+import { hasMusic, musicContent } from '~/lib/music';
 import { ROUTES, isLinkable } from '~/lib/routes';
 import { citationInput } from '~/lib/work';
 
@@ -56,8 +59,10 @@ const sections = new Set<HomeSection>(['intro', 'get-in-touch']);
 if (selected.length > 0) sections.add('selected-work');
 if (shelf.length > 0) sections.add('research');
 if (growtrades) sections.add('growtrades');
-// Music (Pass 8) appears in development only for now.
-if (dev) sections.add('music');
+// Music appears once there is music in the content (spec G.5).
+const music = musicContent(work);
+const showMusic = hasMusic(music);
+if (showMusic) sections.add('music');
 
 const cv = profile.cv && { href: profile.cv.file, size: publicFileSize(profile.cv.file) };
 const ctas = intentCtas({
@@ -66,7 +71,7 @@ const ctas = intentCtas({
   pages: {
     contact: isLinkable(ROUTES.contact),
     research: isLinkable(ROUTES.research),
-    music: isLinkable(ROUTES.music),
+    music: isLinkable(ROUTES.music) && showMusic,
     growtrades: isLinkable(ROUTES.work) && growtrades !== undefined,
   },
 });
@@ -79,20 +84,23 @@ const options = INTENTS.filter((intent) => sections.has(intent.target as HomeSec
   {selected.length > 0 && <SelectedWork entries={selected} />}
   {shelf.length > 0 && <ResearchShelf items={shelf} />}
   {growtrades && <GrowTrades entry={growtrades} />}
-  <Pending
-    id="music"
-    title="Music"
-    surface="stage"
-    needs="Needs the footage loop, the latest release and the Spotify link (Pass 8)"
-  />
+  {
+    showMusic ? (
+      <Music artistName={profile.artistName} content={music} />
+    ) : (
+      <Pending
+        id="music"
+        title="Music"
+        surface="stage"
+        needs="Needs a music entry with Josh's footage loop, a release and the Spotify link"
+      />
+    )
+  }
   <Pending
     title="Outside work"
     needs="Photos needed: performing, badminton, university, each with a caption"
   />
   <Pending title="Lately" needs="Appears once the first log post is published" />
-  <Pending
-    title="Elsewhere"
-    needs="GitHub calendar and pinned repositories (Pass 8), LinkedIn URL from Josh"
-  />
+  <Elsewhere profile={profile} />
   <GetInTouch profile={profile} />
 </BaseLayout>

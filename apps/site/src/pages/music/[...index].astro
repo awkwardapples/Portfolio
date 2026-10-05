@@ -1,0 +1,92 @@
+---
+/**
+ * Music (spec K.1), on stage: Josh's footage as the hero with a pause
+ * control, the releases as Spotify facades, the videos as YouTube facades,
+ * and the links. Built only once there is music in the content (like the
+ * log, a rest route so getStaticPaths can return nothing); the navigation
+ * links it from then on (Nav.astro, Footer.astro).
+ */
+import Section from '~/components/Section.astro';
+import Spotify from '~/components/media/Spotify.astro';
+import YouTube from '~/components/media/YouTube.astro';
+import { buttonClass } from '~/design/button';
+import { FootageLoop } from '~/islands/FootageLoop';
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import { getProfile, getWork } from '~/lib/content';
+import { hasMusic, musicContent } from '~/lib/music';
+
+export async function getStaticPaths() {
+  const content = musicContent(await getWork());
+  return hasMusic(content) ? [{ params: { index: undefined } }] : [];
+}
+
+const profile = await getProfile();
+const content = musicContent(await getWork());
+const { spotify, youtube } = profile.links;
+---
+
+<BaseLayout title="Music | Josh Lennon" description={`Music by ${profile.artistName}: releases and videos.`}>
+  <Section surface="stage" labelledby="music-heading" width="full">
+    {content.loop && <FootageLoop client:visible name={content.loop.name} title={content.loop.title} />}
+    <div class="mx-auto max-w-content px-4 pt-section-sm sm:px-6 lg:px-8">
+      <h1 id="music-heading" class="text-display">{profile.artistName}</h1>
+    </div>
+  </Section>
+
+  {
+    content.releases.length > 0 && (
+      <Section surface="stage" labelledby="releases-heading">
+        <h2 id="releases-heading" class="text-3xl">
+          Releases
+        </h2>
+        <div class="mt-heading-gap flex flex-col gap-8">
+          {content.releases.map((release) => (
+            <Spotify url={release.url} title={release.title} />
+          ))}
+        </div>
+      </Section>
+    )
+  }
+
+  {
+    content.videos.length > 0 && (
+      <Section surface="stage" labelledby="videos-heading">
+        <h2 id="videos-heading" class="text-3xl">
+          Videos
+        </h2>
+        <div class="mt-heading-gap grid gap-8 md:grid-cols-2">
+          {content.videos.map((video) => (
+            <YouTube id={video.id} title={video.title} />
+          ))}
+        </div>
+      </Section>
+    )
+  }
+
+  <Section surface="stage" labelledby="music-links-heading">
+    <h2 id="music-links-heading" class="sr-only">Links</h2>
+    <ul class="flex flex-wrap gap-x-6 gap-y-3" role="list">
+      {
+        spotify && (
+          <li>
+            <a href={spotify} class={buttonClass({ variant: 'quiet', surface: 'stage' })}>
+              Spotify
+            </a>
+          </li>
+        )
+      }
+      {
+        youtube && (
+          <li>
+            <a href={youtube} class={buttonClass({ variant: 'quiet', surface: 'stage' })}>
+              YouTube
+            </a>
+          </li>
+        )
+      }
+      <li>
+        <a href="/contact?intent=music" class={buttonClass({ surface: 'stage' })}>Get in touch</a>
+      </li>
+    </ul>
+  </Section>
+</BaseLayout>

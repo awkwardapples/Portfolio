@@ -11,15 +11,17 @@
  */
 import BrandIcon from '~/components/BrandIcon.astro';
 import { CopyEmail } from '~/islands/CopyEmail';
-import { getPosts, getProfile } from '~/lib/content';
+import { getPosts, getProfile, getWork } from '~/lib/content';
+import { hasMusic, musicContent } from '~/lib/music';
 import { FOOTER_NAV, MAIN_NAV, ROUTES, isLinkable } from '~/lib/routes';
 
 const profile = await getProfile();
 // The log and its feed are linked once there is a post to read.
 const hasPosts = (await getPosts()).length > 0;
+const musicReady = hasMusic(musicContent(await getWork()));
 const siteLinks = [
   { path: '/', label: 'Home' },
-  ...MAIN_NAV.filter(isLinkable),
+  ...MAIN_NAV.filter(isLinkable).filter((route) => route !== ROUTES.music || musicReady),
   ...FOOTER_NAV.filter(isLinkable).filter(
     (route) => hasPosts || (route !== ROUTES.log && route !== ROUTES.rss),
   ),
