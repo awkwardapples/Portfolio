@@ -106,6 +106,28 @@ import photo from './photo.jpg';
 
 `zoom` on a `<Figure>` opens the image full size in a viewer. The before-and-after comparison (`<Compare>`) arrives once there are Kerr images that can be published.
 
+## Music
+
+The music page, the homepage's music band, the Music link and the threshold's "Music" answer all appear as soon as there is one music entry. Create it with `pnpm new work --kind music --title "Release or video title"`, then list what to show under `media:`:
+
+```yaml
+media:
+  - type: spotify
+    url: https://open.spotify.com/track/...
+    title: Track title
+  - type: youtube
+    id: wWAGaOdlyMw
+    title: Video title
+  - type: video
+    name: stage # a loop made with pnpm media:video
+    title: What the footage shows
+    loop: true
+```
+
+Releases and videos show as players that load nothing from Spotify or YouTube until someone presses Play; their titles and artwork are fetched when the site builds. The first `loop: true` video becomes the footage behind your name. Make it on your machine with `pnpm media:video clip.mov --name stage` (see [`media-pipeline.md`](media-pipeline.md)); it is muted, pauses when off screen, and never plays by itself for people who ask for less motion or save data. Add your Spotify artist page to `links.spotify` in the profile for the links at the end of the page.
+
+GitHub needs nothing from you here: the calendar updates on every deploy. Pin the repositories you want listed on your GitHub profile; only pinned ones appear.
+
 ## The profile
 
 `content/profile/profile.yaml` holds your name, headline, bios, the "Now" list, links, education, experience and skills. Things still missing are noted in comments starting `# TODO(josh)`. To add one, write the field and delete the comment; for example, once you have the LinkedIn URL:

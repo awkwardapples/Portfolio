@@ -1,0 +1,39 @@
+---
+/**
+ * Music on the homepage (spec G.5), a full-bleed stage band: the footage
+ * loop with its pause control, the artist name, the latest release and the
+ * latest video, then a link to /music. Shown only once there is music in the
+ * content.
+ */
+import Section from '~/components/Section.astro';
+import Spotify from '~/components/media/Spotify.astro';
+import YouTube from '~/components/media/YouTube.astro';
+import { buttonClass } from '~/design/button';
+import { FootageLoop } from '~/islands/FootageLoop';
+import type { Work } from '~/lib/content';
+import type { MusicContent } from '~/lib/music';
+import { ROUTES } from '~/lib/routes';
+
+interface Props {
+  artistName: string;
+  content: MusicContent<Work>;
+}
+
+const { artistName, content } = Astro.props;
+const [release] = content.releases;
+const [video] = content.videos;
+---
+
+<Section id="music" surface="stage" labelledby="music-band-heading" width="full">
+  {content.loop && <FootageLoop client:visible name={content.loop.name} title={content.loop.title} />}
+  <div class="mx-auto max-w-content px-4 pt-section-sm sm:px-6 lg:px-8">
+    <h2 id="music-band-heading" class="text-4xl" tabindex="-1" data-landing>{artistName}</h2>
+    <div class="mt-heading-gap grid gap-8 md:grid-cols-2">
+      {release && <Spotify url={release.url} title={release.title} />}
+      {video && <YouTube id={video.id} title={video.title} />}
+    </div>
+    <p class="mt-8">
+      <a href={ROUTES.music.path} class={buttonClass({ variant: 'quiet', surface: 'stage' })}>Music</a>
+    </p>
+  </div>
+</Section>

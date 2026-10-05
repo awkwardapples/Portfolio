@@ -1,9 +1,14 @@
 ---
 /**
- * A Spotify track, album or playlist as a facade (spec N.7): a link to it on
- * Spotify, which with JavaScript swaps in Spotify's player on request.
+ * A Spotify track, album or playlist as a facade (spec K.2, N.7): the title
+ * and artwork come from oEmbed at build time and are served from this site;
+ * "Play on Spotify" is a link to it on Spotify, which with JavaScript swaps
+ * in Spotify's player on request.
  */
+import { getImage } from 'astro:assets';
+
 import { buttonClass } from '~/design/button';
+import { fetchOembed, firstAvailable, spotifyOembedUrl } from '~/lib/oembed';
 
 interface Props {
   url: string;
@@ -11,27 +16,55 @@ interface Props {
   class?: string;
 }
 
-const { url, title, class: className } = Astro.props;
+const { url, title: contentTitle, class: className } = Astro.props;
 const parsed = new URL(url);
 // Localised links (/intl-de/track/...) embed from the plain path.
 const embed = `https://open.spotify.com/embed${parsed.pathname.replace(/^\/intl-\w+/, '')}`;
+
+const info = await fetchOembed(spotifyOembedUrl(url), contentTitle);
+// Artwork only when it can be fetched; otherwise the panel shows the title alone.
+const cover = info.thumbnail ? await firstAvailable([info.thumbnail]) : undefined;
+const artwork = cover
+  ? await getImage({
+      src: cover.url,
+      width: Math.min(cover.width, 320),
+      height: Math.min(cover.height, 320),
+      format: 'avif',
+    })
+  : undefined;
+const title = info.title;
 ---
 
 <figure class:list={['flex flex-col gap-3', className]}>
   <div
-    class="flex min-h-32 w-full flex-col items-start justify-end gap-4 rounded-media p-6"
+    class="flex min-h-32 w-full items-center gap-6 rounded-media p-6"
     data-surface="stage"
     data-embed={embed}
     data-embed-title={`${title} (Spotify player)`}
     data-embed-allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
     data-embed-height="352"
   >
-    <p class="max-w-reading font-serif text-xl">{title}</p>
-    <a href={url} class={buttonClass({ surface: 'stage' })} data-embed-play>
-      Listen on Spotify<span class="sr-only">: {title}</span>
-    </a>
+    {
+      artwork && (
+        <img
+          src={artwork.src}
+          alt=""
+          width="128"
+          height="128"
+          loading="lazy"
+          decoding="async"
+          class="h-32 w-32 shrink-0 rounded-media object-cover"
+        />
+      )
+    }
+    <div class="flex flex-col items-start gap-4">
+      <p class="max-w-reading font-serif text-xl">{title}</p>
+      <a href={url} class={buttonClass({ surface: 'stage' })} data-embed-play>
+        Play on Spotify<span class="sr-only">: {title}</span>
+      </a>
+    </div>
   </div>
-  <figcaption class="text-xs text-graphite">Listening here loads Spotify's player.</figcaption>
+  <figcaption class="text-xs text-graphite">Plays from Spotify.</figcaption>
 </figure>
 
 <script>

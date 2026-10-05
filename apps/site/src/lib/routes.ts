@@ -16,7 +16,8 @@ export interface SiteRoute {
 export const ROUTES = {
   work: { path: '/work', label: 'Work', ready: true },
   research: { path: '/research', label: 'Research', ready: true },
-  music: { path: '/music', label: 'Music', ready: false }, // Pass 8
+  // Built once there is music in the content; Nav and Footer check (lib/music.ts).
+  music: { path: '/music', label: 'Music', ready: true },
   about: { path: '/about', label: 'About', ready: true },
   // Built once the first post exists; the footer checks (Footer.astro).
   log: { path: '/log', label: 'Log', ready: true },

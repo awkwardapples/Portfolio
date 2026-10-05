@@ -1,12 +1,18 @@
 ---
 /**
- * A YouTube video as a facade (spec N.7, P.2): nothing loads from YouTube
- * until the visitor asks. The poster is a plain stage panel with the title;
- * "Play the video" is a link to the video on YouTube, so it works without
- * JavaScript, and with JavaScript (src/scripts/embeds.ts) it swaps in the
+ * A YouTube video as a facade (spec K.2, N.7, P.2): nothing loads from
+ * YouTube until the visitor asks. The title and thumbnail come from oEmbed
+ * at build time (src/lib/oembed.ts) and the thumbnail is served from this
+ * site; without them, a plain stage panel with the content's title.
+ *
+ * "Play video" is a link to the video on YouTube, so it works without
+ * JavaScript; with JavaScript (src/scripts/embeds.ts) it swaps in the
  * privacy-enhanced player and moves focus to it.
  */
+import { getImage } from 'astro:assets';
+
 import { buttonClass } from '~/design/button';
+import { fetchOembed, firstAvailable, youtubeOembedUrl } from '~/lib/oembed';
 
 interface Props {
   id: string;
@@ -16,7 +22,7 @@ interface Props {
   class?: string;
 }
 
-const { id, title, start, playlist, class: className } = Astro.props;
+const { id, title: contentTitle, start, playlist, class: className } = Astro.props;
 const watch = new URL('https://www.youtube.com/watch');
 watch.searchParams.set('v', id);
 if (playlist) watch.searchParams.set('list', playlist);
@@ -26,22 +32,58 @@ const embed = new URL(`https://www.youtube-nocookie.com/embed/${id}`);
 embed.searchParams.set('autoplay', '1');
 if (playlist) embed.searchParams.set('list', playlist);
 if (start) embed.searchParams.set('start', String(start));
+
+const info = await fetchOembed(youtubeOembedUrl(id), contentTitle);
+// oEmbed's thumbnail is 480 px wide; YouTube's larger stills are tried first.
+const candidates = [
+  { url: `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`, width: 1280, height: 720 },
+  { url: `https://i.ytimg.com/vi/${id}/sddefault.jpg`, width: 640, height: 480 },
+  ...(info.thumbnail ? [info.thumbnail] : []),
+];
+// Only when oEmbed answered (the build is online); otherwise the plain panel stands in.
+const still = info.thumbnail ? await firstAvailable(candidates) : undefined;
+const poster = still
+  ? {
+      src: (await getImage({ src: still.url, width: still.width, height: still.height, format: 'avif' }))
+        .src,
+      width: still.width,
+      height: still.height,
+    }
+  : undefined;
+const title = info.title;
 ---
 
 <figure class:list={['flex flex-col gap-3', className]}>
   <div
-    class="flex aspect-video w-full flex-col items-start justify-end gap-4 rounded-media p-6"
+    class="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-media"
     data-surface="stage"
     data-embed={embed.href}
     data-embed-title={`${title} (YouTube video)`}
     data-embed-allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
   >
-    <p class="max-w-reading font-serif text-xl">{title}</p>
-    <a href={watch.href} class={buttonClass({ surface: 'stage' })} data-embed-play>
-      Play the video<span class="sr-only">: {title}</span>
+    {
+      poster ? (
+        <img
+          src={poster.src}
+          alt=""
+          width={poster.width}
+          height={poster.height}
+          loading="lazy"
+          decoding="async"
+          class="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <p class="absolute inset-x-6 top-6 max-w-reading font-serif text-xl">{title}</p>
+      )
+    }
+    <a href={watch.href} class:list={[buttonClass({ surface: 'stage' }), 'relative']} data-embed-play>
+      Play video<span class="sr-only">: {title}</span>
     </a>
   </div>
-  <figcaption class="text-xs text-graphite">Playing loads the video from YouTube.</figcaption>
+  <figcaption class="flex flex-col gap-1">
+    {poster && <span class="font-serif text-lg">{title}</span>}
+    <span class="text-xs text-graphite">Plays from YouTube.</span>
+  </figcaption>
 </figure>
 
 <script>

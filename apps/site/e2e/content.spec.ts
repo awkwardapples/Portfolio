@@ -166,13 +166,13 @@ test.describe('media', () => {
     // The player itself is not needed to check the facade.
     await page.route(/youtube-nocookie\.com/, (route) => route.abort());
     await page.goto('/work/neural-network-from-scratch');
-    await expect(page.getByRole('link', { name: /^Play the video/ })).toHaveAttribute(
+    await expect(page.getByRole('link', { name: /^Play video/ })).toHaveAttribute(
       'href',
       'https://www.youtube.com/watch?v=wWAGaOdlyMw',
     );
     expect(external).toEqual([]);
 
-    await page.getByRole('link', { name: /^Play the video/ }).click();
+    await page.getByRole('link', { name: /^Play video/ }).click();
     const frame = page.locator('iframe[src^="https://www.youtube-nocookie.com/embed/wWAGaOdlyMw"]');
     await expect(frame).toBeFocused();
   });

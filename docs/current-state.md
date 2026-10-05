@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-10-04 (Portfolio Pass 7)_
+_Last updated: 2026-10-05 (Portfolio Pass 8)_
 
 This repository is being turned into Josh Lennon's portfolio. The governing document is [`docs/portfolio-spec.md`](portfolio-spec.md) (v1.2). Work happens in the passes of its section V on the `portfolio-transformation` branch, with a draft pull request open against `main` and a merge to `main` at the end of each pass once its gates are green. The GrowTrades platform's own state, as last recorded, is archived in [`archive/growtrades-platform/current-state.md`](archive/growtrades-platform/current-state.md).
 
@@ -16,11 +16,21 @@ This repository is being turned into Josh Lennon's portfolio. The governing docu
 | 5    | Work, research, log and about pages        | Done 2026-10-04 |
 | 6    | Contact wizard and submission pipeline     | Done 2026-10-04 |
 | 7    | GrowTrades case study and SCB demo         | Done 2026-10-04 |
-| 8    | Music, media, GitHub and LinkedIn          | Next            |
-| 9    | Responsive, performance and accessibility  |                 |
+| 8    | Music, media, GitHub and LinkedIn          | Done 2026-10-05 |
+| 9    | Responsive, performance and accessibility  | Next            |
 | 10   | SEO foundations, documentation and launch  |                 |
 
 ## What exists
+
+### Pass 8: Music, media, GitHub and LinkedIn (2026-10-05)
+
+- Facades (spec K.2; ADR-0046): YouTube and Spotify players show the real title and a thumbnail fetched by oEmbed at build time and served from this site (the 1280 px YouTube still where it exists), load nothing from the provider until Play, and fall back to the content's title and a plain panel if the provider cannot be reached. Every remote image is checked before Astro is asked for it, so a missing one never fails the build.
+- The footage loop (spec K.3): poster first at a fixed 16:9, files attached within a screen of view and chosen for the screen (AV1, then H.264, portrait crop on upright phones), plays while half visible, pauses otherwise, never starts by itself with reduced motion, Save-Data or a slow connection, always has a pause and play button. Waiting for Josh's footage.
+- `/music` (spec K.1) and the homepage music band (G.5): built from music entries (Spotify releases, YouTube videos, the first footage loop) and the profile's links, and only once a music entry exists; until then the page, the band, the Music link and the threshold's music answer stay out of production.
+- GitHub (spec M.1): profile, pinned repositories and the contribution calendar from the GraphQL API at build time with `GH_PROFILE_TOKEN`, written to `src/data/github.snapshot.json`; without the token or if GitHub fails, the committed snapshot (real data, fetched 4 October 2026: 1,230 contributions in the last year, 8 public repositories). The homepage's Elsewhere section (G.8) is now live: the calendar in five palette steps with a summary and a monthly table for screen readers, pinned repositories (none pinned yet), the avatar served from this site, "Updated" date, and YouTube.
+- LinkedIn (spec M.2): a plain card from the profile, shown once `links.linkedin` is set. Link previews are skipped until Josh supplies screenshots.
+- Browser tests (`e2e/media.spec.ts`): no request to another host on any route before interaction (every request recorded, pages scrolled through), the YouTube facade's real title and local thumbnail, and Elsewhere from the snapshot with axe. Unit tests: oEmbed parsing and fallbacks, the image probe, GitHub parsing, the no-token and API-blocked fallbacks and the calendar helpers, the footage decisions, and the music selection.
+- Docs: ADR-0046; the authoring guide's Music section; the GitHub token step in `deployment.md`.
 
 ### Pass 7: GrowTrades case study and SCB demo (2026-10-04)
 
@@ -114,21 +124,35 @@ This repository is being turned into Josh Lennon's portfolio. The governing docu
 - `docs/portfolio-spec.md` committed and excluded from Prettier, so each version Josh supplies stays byte-for-byte as supplied.
 - History scans of every blob on every ref (including inside `.docx`, `.tar.gz` and PDF streams) and every commit message, with values never printed. Before the rewrite, the only live Make.com webhook token and the only Google Sheet link were in `docs/Agency Docs/Technical Onboarding.IPYNB`. After it, a fresh clone from GitHub has neither, and no agency document, in any of its 285 commits. No Turnstile secret key existed anywhere: the `0x4A…` values in tests and the plugin are the public SCB site key, and the `1x/2x/3x000…` values are Cloudflare's documented test keys. Other `hook.eu1.make.com/…` strings are placeholders (`abc123def456`, `<real-id>`), and `.env.example` on `deploy/test-live` has empty values.
 
-## Gate state (last verified: Pass 7, 2026-10-04)
+## Gate state (last verified: Pass 8, 2026-10-05)
 
 Node 24.21.0, pnpm 9.15.0, Windows.
 
 - `pnpm format:check`: clean.
 - `pnpm lint`: ESLint 0 errors and 0 warnings in the wizard, the site and the Worker; `scripts/check-design.mjs` clean.
 - `pnpm typecheck`: 0 errors (wizard production and test tsconfig, Worker).
-- `pnpm test`: **1,121 passed**: wizard 888 (the original 856, 11 theme-contract checks, 17 for the Pass 6 engine changes and 4 for the demo router; 70 files), site 111 (13 files, now including the frame's message checks and the code excerpts), Worker 122 (4 files).
+- `pnpm test`: **1,140 passed**: wizard 888 (70 files), site 130 (17 files, now including oEmbed, GitHub, the footage decisions and the music selection), Worker 122 (4 files).
 - `pnpm --filter @jl/site check`: 0 errors, 0 warnings (one hint: `tseslint.config()` is deprecated).
 - `pnpm --filter @jl/edge test`: 122/122.
 - `pnpm build`: clean, no placeholders in the built site. Builds the wizard, then the SCB demo (1.3 MB, no source maps), then the site and the Worker. `/contact` JavaScript 77.5 kB gzip (budget 120 kB).
-- `pnpm test:e2e`: 112 passed on desktop and an emulated phone (12 skipped: device-specific tests, and the case-study tests until GrowTrades is published), zero serious or critical axe violations, against `wrangler dev` with a fresh local D1 and a stub webhook.
-- Pass 7 acceptance: the demo runs at `/demo/scb-handyman` with no request to any submission endpoint (a whole quote request in Playwright); it reports each page to the framing page, which the frame shows in its address bar; another origin cannot frame it; every SCB image is present. The case study's performance budget waits for its publication (it is a draft). Spec X reviewed below.
+- `pnpm test:e2e`: 120 passed on desktop and an emulated phone (12 skipped: device-specific tests, and the case-study tests until GrowTrades is published), zero serious or critical axe violations, no request to another host before interaction on any route.
+- Pass 8 acceptance: no third-party request before interaction on any route (recorded in Playwright); the footage loop's reduced-motion, Save-Data and slow-connection rules and its off-screen pause are built and unit-tested, waiting for footage for a browser test; the GitHub build succeeds with the API blocked or no token (the snapshot, unit-tested; CI builds have no token). Spec X reviewed below.
 - Lighthouse CI (homepage): first run in Pass 4 gave a median LCP of 1.59 s, CLS 0 and a performance score of 99 on the mobile preset.
 - PHP: none left; the plugin was deleted once the Worker matched it (ADR-0043).
+
+## Anti-slop review (spec X), Pass 8
+
+- No gradients, blur or glow: the calendar is flat squares in palette steps; facades are flat stage panels with a still.
+- No purple: none.
+- One accent: tungsten only on the stage Play buttons.
+- No identical cards: Elsewhere shows real data (the calendar), not tiles; the LinkedIn card is one plain card, shown only with a real profile URL.
+- Icons: Simple Icons marks beside text labels; Lucide play and pause on the footage control, with a label and tooltip.
+- No spinners.
+- No all-caps labels, middle dots or arrows.
+- Motion: the footage loop only (N.6), with reduced-motion, Save-Data and slow-connection rules and a pause button.
+- Copy: titles come from the providers or the content; GitHub figures from GitHub; nothing invented.
+- Aceternity: none used; link previews skipped without Josh's screenshots.
+- Without JavaScript: facades are links to the video or track; the calendar and its table are plain HTML.
 
 ## Anti-slop review (spec X), Pass 7
 
@@ -206,6 +230,9 @@ Needs Josh, for set-up:
 
 - **Cloudflare set-up** (blocks the first real deploy, not the merges): account, `workers.dev` subdomain, API token, and the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets. Steps 1 to 3 in [`deployment.md`](deployment.md).
 - **The contact form** (after the first deploy): a Turnstile widget and the `PUBLIC_TURNSTILE_SITE_KEY` variable, the Make.com scenario ([`make-com.md`](make-com.md)), and the four Worker secrets. Steps 4 to 6 in [`deployment.md`](deployment.md). Until then, messages are stored in D1 and wait.
+- **Music** (spec W, K): the Spotify artist URL for `links.spotify`, the releases and music videos to feature, and encoded footage (`pnpm media:video` on a Lumix clip, after `winget install Gyan.FFmpeg`). One music entry brings the page, the band and the Music link.
+- **GitHub**: pin up to four repositories to list them; add `GH_PROFILE_TOKEN` (`deployment.md` step 7) for fresh data on every deploy.
+- **LinkedIn**: the profile URL for `links.linkedin` (the card and the footer link appear with it), and optionally screenshots of your GitHub and LinkedIn profiles for link previews.
 - **The privacy notice** at `/privacy` is written for what the site does; read it, and check with the ICO's self-assessment whether the data protection fee applies to you. It says your inbox and Sheet copies are kept "only as long as I need them"; give a period if you prefer one.
 - `awkwardapples/scb-handyman` and `awkwardapples/Handy-Man` are public and still hold the agency documents (SCB's ranking and enquiry figures, the agreement template, the sales PDF), the old Sheet link and the now-rotated webhook token on `main`. Josh is handling these repositories (spec W item 2).
 - GitHub can keep serving the pre-rewrite commits to anyone who already has their hashes until it garbage-collects them; GitHub Support can purge them on request (first changed commit `fa585a21686cd0bb88e015af7870ae735d3e40cb`).

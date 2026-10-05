@@ -82,14 +82,24 @@ For the two random values, a password manager's generator works, or in PowerShel
 
 Secrets take effect immediately; no redeploy is needed. Run a deploy anyway after setting `PUBLIC_TURNSTILE_SITE_KEY`, so the page includes the widget. Then send yourself a message from `/contact`: it should reach the Sheet and your inbox, with the reference the success screen showed. [`data-protection.md`](data-protection.md) shows how to check what is stored.
 
+## GitHub on the homepage (Pass 8)
+
+The homepage's GitHub calendar comes from a snapshot in the repository until this is set; with it, every deploy (including the daily one) fetches fresh data.
+
+### 7. A read-only GitHub token
+
+1. GitHub > **Settings > Developer settings > Personal access tokens > Fine-grained tokens > Generate new token**.
+2. Name it "joshlennon.com build", expiry up to a year, **Repository access: Public repositories (read-only)**. No other permissions are needed.
+3. Copy the token, then in **awkwardapples/Portfolio > Settings > Secrets and variables > Actions > New repository secret** add `GH_PROFILE_TOKEN` with it (or `gh secret set GH_PROFILE_TOKEN --repo awkwardapples/Portfolio`).
+4. Pin up to four repositories on your GitHub profile to list them on the site.
+
 ## Needed in later passes
 
 These are listed here so they can be done in one sitting; the passes that need them say so when they arrive.
 
-| When    | What                                                                                                                                                             | How                                                          |
-| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Pass 8  | `GH_PROFILE_TOKEN`: a fine-grained personal access token with read-only access to public repositories, as a repository **secret**                                | GitHub > Settings > Developer settings > Fine-grained tokens |
-| Pass 10 | The domain `joshlennon.com` on Cloudflare, attached to the Worker as a custom domain, `www` redirected to the apex, and Email Routing for `hello@joshlennon.com` | Steps in this file, added in Pass 10                         |
+| When    | What                                                                                                                                                             | How                                  |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| Pass 10 | The domain `joshlennon.com` on Cloudflare, attached to the Worker as a custom domain, `www` redirected to the apex, and Email Routing for `hello@joshlennon.com` | Steps in this file, added in Pass 10 |
 
 ### Running Wrangler on your machine
 
