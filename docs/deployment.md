@@ -97,9 +97,10 @@ The homepage's GitHub calendar comes from a snapshot in the repository until thi
 
 These are listed here so they can be done in one sitting; the passes that need them say so when they arrive.
 
-| When    | What                                                                                                                                                             | How                                  |
-| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| Pass 10 | The domain `joshlennon.com` on Cloudflare, attached to the Worker as a custom domain, `www` redirected to the apex, and Email Routing for `hello@joshlennon.com` | Steps in this file, added in Pass 10 |
+| When                      | What                                                                                                                                                             | How                                                                                                                                                                                                  |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pass 10                   | The domain `joshlennon.com` on Cloudflare, attached to the Worker as a custom domain, `www` redirected to the apex, and Email Routing for `hello@joshlennon.com` | Steps in this file, added in Pass 10                                                                                                                                                                 |
+| Any time after the domain | Cloudflare Web Analytics (cookieless, spec P.2), if you want visitor counts                                                                                      | First add it to `/privacy` (the notice says the site runs no analytics). Then **Analytics & Logs > Web Analytics > Add a site**. The Content Security Policy already allows its two hosts (ADR-0048) |
 
 ### Running Wrangler on your machine
 

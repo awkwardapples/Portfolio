@@ -22,4 +22,4 @@ Nothing is added to `package.json`: the action brings its own Lighthouse and Chr
 
 - The budgets are checked against the static build without the Worker's headers. Headers do not affect LCP or CLS; caching and the Content Security Policy are checked separately in Pass 9.
 - Running Lighthouse locally is optional and needs `npx @lhci/cli autorun` with Chrome installed.
-- Pass 9 adds URLs and assertions to `lighthouserc.json`; the workflow step does not change.
+- Pass 9 added the work page and `/contact`, Total Blocking Time (the lab stand-in for INP) and the performance score ([ADR-0048](0048-csp-and-hardening.md)); the workflow step did not change. LHCI serves on a random port, so URL patterns in `assertMatrix` must allow one.

@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-10-05 (Portfolio Pass 8)_
+_Last updated: 2026-10-05 (Portfolio Pass 9)_
 
 This repository is being turned into Josh Lennon's portfolio. The governing document is [`docs/portfolio-spec.md`](portfolio-spec.md) (v1.2). Work happens in the passes of its section V on the `portfolio-transformation` branch, with a draft pull request open against `main` and a merge to `main` at the end of each pass once its gates are green. The GrowTrades platform's own state, as last recorded, is archived in [`archive/growtrades-platform/current-state.md`](archive/growtrades-platform/current-state.md).
 
@@ -17,10 +17,47 @@ This repository is being turned into Josh Lennon's portfolio. The governing docu
 | 6    | Contact wizard and submission pipeline     | Done 2026-10-04 |
 | 7    | GrowTrades case study and SCB demo         | Done 2026-10-04 |
 | 8    | Music, media, GitHub and LinkedIn          | Done 2026-10-05 |
-| 9    | Responsive, performance and accessibility  | Next            |
-| 10   | SEO foundations, documentation and launch  |                 |
+| 9    | Responsive, performance and accessibility  | Done 2026-10-05 |
+| 10   | SEO foundations, documentation and launch  | Next            |
 
 ## What exists
+
+### Pass 9: Responsive, performance and accessibility hardening (2026-10-05)
+
+- **Content Security Policy, enforced** (spec Q.4; ADR-0048).
+  - Every page carries a policy with a hash for each script and style element the build rendered: no inline script runs unless the build put it there, and only style attributes may be inline.
+  - Outside scripts: Turnstile, and the Cloudflare Web Analytics host for when analytics are switched on.
+  - `frame-ancestors 'none'` by header.
+  - Own policies for `/documents/*`, `/demo/*` and `/admin`. The demo's configuration moved from an inline script to `demo/public/config.js` so it runs under `script-src 'self'`.
+- **Every browser test runs under the policy** and fails on a violation in any page of this site (`e2e/fixtures.ts`). So every browser test is also a CSP test: every route in the sitemap, the wizard to success, the demo's whole quote request, the facades and the viewer. An injected script was used to check that the fixture reports violations.
+- **`/contact` waits for its wizard** until the page has loaded and painted.
+  - `DeferredContactWizard` with a new `client:afterload` directive.
+  - The skeleton is server-rendered in the wizard's shape.
+  - Its Largest Contentful Paint in Lighthouse went from 2.1 s to 1.66 s.
+- **Budgets enforced in CI** (spec P.1).
+  - `pnpm check:budgets`: homepage initial JavaScript 5.4 kB of 40 kB, and `/contact` 82 kB of 120 kB with the wizard included.
+  - Lighthouse CI on the homepage, a work page and `/contact`: LCP, CLS and Total Blocking Time (for INP) on all three, and a performance score of 95 or more on home and work. Locally all three scored 99, with LCP 1.66 to 1.74 s, CLS 0 and TBT 0.
+  - The homepage loads 163 kB on desktop and 169 kB on a phone with everything scrolled into view (budget 500 kB before video).
+- **Responsive** (spec O). No page scrolls sideways at 320, 375, 390, 768, 1024, 1280 or 1440 px, including the returning homepage and the wizard's details step. Fixed: the email Copy button's tooltip hung past the edge at 375 and 390 px. It is gone, since the button has a visible label.
+- **Touch targets at least 44 by 44 px** on every page and wizard screen. Fixed:
+  - the name in the bar;
+  - text buttons ("Cite");
+  - footer links;
+  - the email link;
+  - the work breadcrumb;
+  - timeline titles;
+  - radio and checkbox rows (wizard engine, so the SCB demo too).
+- **Forms.** 16 px text in every field. Help text is now tied to radio and checkbox options with `aria-describedby`; before, only errors were.
+- **Keyboard.**
+  - Every tab stop on every page shows a visible indicator.
+  - The skip link is first and moves focus to the main content.
+  - These flows were run by keyboard alone in the browser tests: the threshold, the contact wizard from first question to sent, the document viewer, and the video facade.
+- **Caching** (spec P.3), checked against `wrangler dev`:
+  - HTML `public, max-age=0, must-revalidate` (the Worker's default);
+  - `/_astro/*` immutable for a year;
+  - `/documents/*` and `/media/*` for a week.
+- **Manual passes.** The keyboard pass is scripted (above). The screen-reader pass of spec R (VoiceOver or NVDA on the homepage, a work page, `/contact` and `/work/growtrades`) has not been done: it needs a person with a screen reader. It is listed for Josh under Open items.
+- Docs: ADR-0048; ADR-0047's consequences; the analytics row in `deployment.md`.
 
 ### Pass 8: Music, media, GitHub and LinkedIn (2026-10-05)
 
@@ -124,7 +161,7 @@ This repository is being turned into Josh Lennon's portfolio. The governing docu
 - `docs/portfolio-spec.md` committed and excluded from Prettier, so each version Josh supplies stays byte-for-byte as supplied.
 - History scans of every blob on every ref (including inside `.docx`, `.tar.gz` and PDF streams) and every commit message, with values never printed. Before the rewrite, the only live Make.com webhook token and the only Google Sheet link were in `docs/Agency Docs/Technical Onboarding.IPYNB`. After it, a fresh clone from GitHub has neither, and no agency document, in any of its 285 commits. No Turnstile secret key existed anywhere: the `0x4A…` values in tests and the plugin are the public SCB site key, and the `1x/2x/3x000…` values are Cloudflare's documented test keys. Other `hook.eu1.make.com/…` strings are placeholders (`abc123def456`, `<real-id>`), and `.env.example` on `deploy/test-live` has empty values.
 
-## Gate state (last verified: Pass 8, 2026-10-05)
+## Gate state (last verified: Pass 9, 2026-10-05)
 
 Node 24.21.0, pnpm 9.15.0, Windows.
 
@@ -134,11 +171,20 @@ Node 24.21.0, pnpm 9.15.0, Windows.
 - `pnpm test`: **1,140 passed**: wizard 888 (70 files), site 130 (17 files, now including oEmbed, GitHub, the footage decisions and the music selection), Worker 122 (4 files).
 - `pnpm --filter @jl/site check`: 0 errors, 0 warnings (one hint: `tseslint.config()` is deprecated).
 - `pnpm --filter @jl/edge test`: 122/122.
-- `pnpm build`: clean, no placeholders in the built site. Builds the wizard, then the SCB demo (1.3 MB, no source maps), then the site and the Worker. `/contact` JavaScript 77.5 kB gzip (budget 120 kB).
-- `pnpm test:e2e`: 120 passed on desktop and an emulated phone (12 skipped: device-specific tests, and the case-study tests until GrowTrades is published), zero serious or critical axe violations, no request to another host before interaction on any route.
-- Pass 8 acceptance: no third-party request before interaction on any route (recorded in Playwright); the footage loop's reduced-motion, Save-Data and slow-connection rules and its off-screen pause are built and unit-tested, waiting for footage for a browser test; the GitHub build succeeds with the API blocked or no token (the snapshot, unit-tested; CI builds have no token). Spec X reviewed below.
-- Lighthouse CI (homepage): first run in Pass 4 gave a median LCP of 1.59 s, CLS 0 and a performance score of 99 on the mobile preset.
+- `pnpm build`: clean, no placeholders in the built site. Builds the wizard, then the SCB demo (1.3 MB, no source maps), then the site and the Worker.
+- `pnpm check:budgets`: homepage 5.4 kB of 40 kB, `/contact` 82 kB of 120 kB (gzip).
+- `pnpm test:e2e`: **141 passed** on desktop and an emulated phone (27 skipped: tests that run on one device only, such as the viewport matrix on desktop and touch sizes on the phone, and the case-study tests until GrowTrades is published). Every test runs under the enforced Content Security Policy with no violation; zero serious or critical axe violations; no request to another host before interaction on any route.
+- Pass 9 acceptance: budgets met (above and below); zero serious or critical axe violations; the CSP enforced with no violation on any route or flow the suite runs; no horizontal scroll at 320 px or any other width in the matrix. Spec X reviewed below.
+- Lighthouse CI (homepage, `/work/kerr-microscopy-dissertation`, `/contact`; three mobile runs each, run locally with the CI configuration): performance 99, 99 and 99; LCP 1.74, 1.66 and 1.66 s; CLS 0; TBT 0 ms.
 - PHP: none left; the plugin was deleted once the Worker matched it (ADR-0043).
+
+## Anti-slop review (spec X), Pass 9
+
+- Nothing new to look at: this pass changed sizes, not styles. Targets grew to 44 px without new borders, fills or shadows.
+- One tooltip fewer: the email Copy button says what it does, so it needs none.
+- The contact skeleton is the same flat pulse as before, now rendered by the page.
+- No spinners, no motion added.
+- Copy: one new sentence, for a wizard that fails to load ("The questions did not load. Reload the page to try again, or use the email address below.").
 
 ## Anti-slop review (spec X), Pass 8
 
@@ -227,6 +273,15 @@ Needs Josh, for content (each one keeps an entry or item a draft until it is ans
 - **Citations name "Josh Lennon"**, from the profile, while the dissertation's title page says "Joshua Lennon". Either is easy to switch; say which you want in citations.
 
 Needs Josh, for set-up:
+
+- **A screen-reader pass before launch** (spec R): VoiceOver (Safari, Mac or iPhone) or NVDA (Windows, free) on the homepage, a work page, `/contact` and `/work/growtrades`. Listen for:
+  - the threshold's question and its five answers;
+  - the work rows' titles and links;
+  - the GitHub summary;
+  - each wizard step's heading as it changes, and the errors;
+  - the success message with its reference.
+
+  Record what you find here. The automated checks (axe on every page, keyboard flows) do not replace this.
 
 - **Cloudflare set-up** (blocks the first real deploy, not the merges): account, `workers.dev` subdomain, API token, and the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets. Steps 1 to 3 in [`deployment.md`](deployment.md).
 - **The contact form** (after the first deploy): a Turnstile widget and the `PUBLIC_TURNSTILE_SITE_KEY` variable, the Make.com scenario ([`make-com.md`](make-com.md)), and the four Worker secrets. Steps 4 to 6 in [`deployment.md`](deployment.md). Until then, messages are stored in D1 and wait.
