@@ -59,6 +59,25 @@ test.describe('the bar', () => {
     await page.mouse.wheel(0, 40);
     await expect(header).toHaveAttribute('data-condensed', '');
   });
+
+  test('holds still when the page rests just past the top', async ({ page }) => {
+    // With one threshold, the bar and the browser's scroll anchoring moved
+    // each other every frame at about 10 px (it stopped clicks landing).
+    await page.goto('/about');
+    for (const y of [10, 20, 30]) {
+      await page.evaluate((top) => window.scrollTo(0, top), y);
+      const states = await page.evaluate(async () => {
+        const header = document.querySelector('[data-site-header]') as HTMLElement;
+        const seen: string[] = [];
+        for (let frame = 0; frame < 20; frame += 1) {
+          await new Promise((resolve) => requestAnimationFrame(resolve));
+          if (frame >= 10) seen.push(`${window.scrollY}:${header.hasAttribute('data-condensed')}`);
+        }
+        return new Set(seen).size;
+      });
+      expect(states, `scrolled to ${y} px`).toBe(1);
+    }
+  });
 });
 
 test.describe('the menu on phones', () => {
