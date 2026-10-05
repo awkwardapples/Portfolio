@@ -9,18 +9,22 @@ import stixRoman from '@fontsource-variable/stix-two-text/files/stix-two-text-la
 
 import Footer from '~/components/Footer.astro';
 import Nav from '~/components/Nav.astro';
-import Seo from '~/components/Seo.astro';
+import Seo, { type ShareImage } from '~/components/Seo.astro';
 import { EARLY_SCRIPT } from '~/lib/early-script';
 
 interface Props {
   /** The full document title, e.g. "Work | Josh Lennon" or "Josh Lennon". */
   title: string;
   description: string;
-  /** Keeps a page out of search results (404, development pages). */
+  /** Keeps a page out of search results (404, development pages, drafts). */
   noindex?: boolean;
+  /** The page's share image (Seo.astro); the default card otherwise. */
+  image?: ShareImage | undefined;
+  /** Structured data for this page, beside the Person on every page. */
+  structuredData?: (Record<string, unknown> | undefined)[];
 }
 
-const { title, description, noindex = false } = Astro.props;
+const { title, description, noindex = false, image, structuredData } = Astro.props;
 ---
 
 <!doctype html>
@@ -30,7 +34,13 @@ const { title, description, noindex = false } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- Before the first paint: html.js and the stored intent (src/lib/early-script.ts). -->
     <script is:inline set:html={EARLY_SCRIPT} />
-    <Seo title={title} description={description} noindex={noindex} />
+    <Seo
+      title={title}
+      description={description}
+      noindex={noindex}
+      image={image}
+      structuredData={structuredData}
+    />
     <!-- Only the STIX roman file is preloaded: page titles and the threshold use it (spec E.3). -->
     <link rel="preload" href={stixRoman} as="font" type="font/woff2" crossorigin />
     <slot name="head" />

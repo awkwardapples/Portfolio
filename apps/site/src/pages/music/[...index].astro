@@ -14,6 +14,7 @@ import { FootageLoop } from '~/islands/FootageLoop';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import { getProfile, getWork } from '~/lib/content';
 import { hasMusic, musicContent } from '~/lib/music';
+import { recording, video } from '~/lib/structured-data';
 
 export async function getStaticPaths() {
   const content = musicContent(await getWork());
@@ -25,7 +26,16 @@ const content = musicContent(await getWork());
 const { spotify, youtube } = profile.links;
 ---
 
-<BaseLayout title="Music | Josh Lennon" description={`Music by ${profile.artistName}: releases and videos.`}>
+<BaseLayout
+  title="Music | Josh Lennon"
+  description={`Music by ${profile.artistName}: releases and videos.`}
+  structuredData={[
+    ...content.releases.map((release) =>
+      recording((Astro.site ?? new URL('https://joshlennon.com')).origin, release),
+    ),
+    ...content.videos.map((item) => video(item)),
+  ]}
+>
   <Section surface="stage" labelledby="music-heading" width="full">
     {content.loop && <FootageLoop client:visible name={content.loop.name} title={content.loop.title} />}
     <div class="mx-auto max-w-content px-4 pt-section-sm sm:px-6 lg:px-8">

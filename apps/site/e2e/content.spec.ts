@@ -194,7 +194,7 @@ test.describe('site files', () => {
     for (const path of ['/work', '/research', '/about', KERR]) {
       expect(sitemap, path).toContain(`${path}</loc>`);
     }
-    expect(sitemap).not.toMatch(/\/(404|dev\/|admin)/);
+    expect(sitemap).not.toMatch(/\/(404|dev\/|admin|demo|api)/);
   });
 
   test('the RSS feed is valid XML', async ({ request }) => {

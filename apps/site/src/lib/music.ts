@@ -23,7 +23,7 @@ export interface MusicEntryLike {
 
 export interface MusicContent<E extends MusicEntryLike> {
   releases: { entry: E; url: string; title: string }[];
-  videos: { entry: E; id: string; title: string }[];
+  videos: { entry: E; id: string; title: string; uploadDate?: Date | undefined }[];
   loop?: { name: string; title: string } | undefined;
 }
 
@@ -41,7 +41,12 @@ export function musicContent<E extends MusicEntryLike>(entries: readonly E[]): M
       if (item.type === 'spotify')
         releases.push({ entry, url: String(item.url), title: String(item.title) });
       if (item.type === 'youtube')
-        videos.push({ entry, id: String(item.id), title: String(item.title) });
+        videos.push({
+          entry,
+          id: String(item.id),
+          title: String(item.title),
+          uploadDate: item.uploadDate instanceof Date ? item.uploadDate : undefined,
+        });
       if (item.type === 'video' && item.loop === true && !loop) {
         loop = { name: String(item.name), title: String(item.title) };
       }

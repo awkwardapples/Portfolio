@@ -93,16 +93,59 @@ The homepage's GitHub calendar comes from a snapshot in the repository until thi
 3. Copy the token, then in **awkwardapples/Portfolio > Settings > Secrets and variables > Actions > New repository secret** add `GH_PROFILE_TOKEN` with it (or `gh secret set GH_PROFILE_TOKEN --repo awkwardapples/Portfolio`).
 4. Pin up to four repositories on your GitHub profile to list them on the site.
 
-## Needed in later passes
+## The domain and launch (Pass 10)
 
-These are listed here so they can be done in one sitting; the passes that need them say so when they arrive.
+Do these once the site is live on `workers.dev` (step 3). Each step ends with a check.
 
-| When                      | What                                                                                                                                                             | How                                                                                                                                                                                                  |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pass 10                   | The domain `joshlennon.com` on Cloudflare, attached to the Worker as a custom domain, `www` redirected to the apex, and Email Routing for `hello@joshlennon.com` | Steps in this file, added in Pass 10                                                                                                                                                                 |
-| Any time after the domain | Cloudflare Web Analytics (cookieless, spec P.2), if you want visitor counts                                                                                      | First add it to `/privacy` (the notice says the site runs no analytics). Then **Analytics & Logs > Web Analytics > Add a site**. The Content Security Policy already allows its two hosts (ADR-0048) |
+### 8. Put joshlennon.com on Cloudflare
 
-### Running Wrangler on your machine
+1. Cloudflare dashboard > **Add a domain** > `joshlennon.com` > the Free plan. If the domain was bought through Cloudflare Registrar it is already there; go to step 9.
+2. Cloudflare shows two nameservers. At the registrar where the domain is registered, replace its nameservers with those two.
+3. If Cloudflare imported DNS records for an old host, delete the `A`, `AAAA` and `CNAME` records for `joshlennon.com` and `www`; step 9 cannot attach the domain while they exist.
+4. Check: the domain's overview page says **Active** (this can take from minutes to a day).
+
+### 9. Attach the domain to the Worker
+
+1. **Workers & Pages > joshlennon-site > Settings > Domains & Routes > Add > Custom domain**: `joshlennon.com`. Cloudflare creates the DNS record and the certificate.
+2. Check: `https://joshlennon.com` shows the site and `https://joshlennon.com/api/health` returns `{"status":"ok"}`.
+
+### 10. Send www to the apex
+
+1. **DNS > Records > Add record**: type `AAAA`, name `www`, IPv6 address `100::`, proxy status **Proxied**. The address is a placeholder; Cloudflare answers for it.
+2. **Rules > Redirect Rules > Create rule**, from the template **Redirect from WWW to root**. Use status 301 and keep the query string.
+3. Check: `https://www.joshlennon.com/work` ends at `https://joshlennon.com/work`.
+
+### 11. Switch off the workers.dev address
+
+Spec S asks for one address, so once steps 9 and 10 work the `workers.dev` copy goes. Tell Claude "the domain is live", or make this change in `apps/edge/wrangler.jsonc` yourself and merge it to `main`:
+
+```jsonc
+  "routes": [{ "pattern": "joshlennon.com", "custom_domain": true }],
+  "workers_dev": false,
+```
+
+The routes line records in the repository the domain you attached in step 9, so a deploy never detaches it. Check: after the deploy, the `workers.dev` address no longer serves the site and `joshlennon.com` still does. Then remove the `workers.dev` hostname from the Turnstile widget (step 4).
+
+### 12. Email for hello@joshlennon.com
+
+1. **joshlennon.com > Email > Email Routing > Get started**, and add the records Cloudflare proposes.
+2. **Routing rules > Create address**: `hello`, action **Send to an email**, your own inbox. Cloudflare sends that inbox a link to confirm it. Your own address is typed only into this dashboard, never into the repository.
+3. Check: a message to `hello@joshlennon.com` from another account arrives in your inbox. Email Routing only receives; replies go from your own address unless your mail provider can send as another address.
+
+### 13. Search engines (optional)
+
+1. Google Search Console > **Add property > Domain** `joshlennon.com`, verified with the TXT record (Cloudflare can add it for you). Then **Sitemaps** > `https://joshlennon.com/sitemap-index.xml`. Bing Webmaster Tools can import the property from Search Console.
+2. Run `/`, `/about` and `/work/kerr-microscopy-dissertation` through Google's Rich Results Test and validator.schema.org. The browser tests already check the structured data against schema.org's definitions; these confirm it on the live pages.
+
+### 14. The old domain
+
+If `superdan1505.com` stays registered, replace the GitHub Pages site behind it with one page that links to `https://joshlennon.com`, so old links do not dead-end (spec S). Claude can make that page in the repository that serves it.
+
+### 15. Visitor counts (optional)
+
+Cloudflare Web Analytics is cookieless (spec P.2). First add it to `/privacy`, which says the site runs no analytics. Then **Analytics & Logs > Web Analytics > Add a site**. The Content Security Policy already allows its two hosts (ADR-0048).
+
+## Running Wrangler on your machine
 
 The repository needs Node 24 (Astro 7 and Wrangler 4 require Node 22.12 or newer). With nvm for Windows:
 

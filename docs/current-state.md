@@ -1,8 +1,8 @@
 # Current State
 
-_Last updated: 2026-10-05 (Portfolio Pass 9)_
+_Last updated: 2026-10-05 (Portfolio Pass 10)_
 
-This repository is being turned into Josh Lennon's portfolio. The governing document is [`docs/portfolio-spec.md`](portfolio-spec.md) (v1.2). Work happens in the passes of its section V on the `portfolio-transformation` branch, with a draft pull request open against `main` and a merge to `main` at the end of each pass once its gates are green. The GrowTrades platform's own state, as last recorded, is archived in [`archive/growtrades-platform/current-state.md`](archive/growtrades-platform/current-state.md).
+This repository is Josh Lennon's portfolio. It was built in the passes of section V of [`docs/portfolio-spec.md`](portfolio-spec.md) (v1.2) on the `portfolio-transformation` branch, each merged to `main` once its gates were green. All eleven passes are done. What remains is the set-up and content under Open items, in the order [`handoff.md`](handoff.md) gives. The GrowTrades platform's own state, as last recorded, is archived in [`archive/growtrades-platform/current-state.md`](archive/growtrades-platform/current-state.md).
 
 ## Passes
 
@@ -18,9 +18,56 @@ This repository is being turned into Josh Lennon's portfolio. The governing docu
 | 7    | GrowTrades case study and SCB demo         | Done 2026-10-04 |
 | 8    | Music, media, GitHub and LinkedIn          | Done 2026-10-05 |
 | 9    | Responsive, performance and accessibility  | Done 2026-10-05 |
-| 10   | SEO foundations, documentation and launch  | Next            |
+| 10   | SEO foundations, documentation and launch  | Done 2026-10-05 |
 
 ## What exists
+
+### Pass 10: SEO foundations, documentation and launch (2026-10-05)
+
+- **Structured data** (spec S; ADR-0049): one JSON-LD graph per page, built from the content by `src/lib/structured-data.ts`.
+  - **Every page:** Josh as a Person, with:
+    - both alternate names;
+    - the profiles that exist as `sameAs`;
+    - Manchester as `alumniOf` and Surrey as `affiliation`;
+    - the fixed `knowsAbout` list;
+    - no job title.
+  - **Homepage:** a WebSite. **`/about`:** a ProfilePage.
+  - **Work pages:** the entry, plus breadcrumbs. The dissertation is a Thesis, with its programme, university and PDF.
+  - **Log posts:** a BlogPosting, plus breadcrumbs.
+  - **`/music`:** releases as MusicRecordings.
+  - **YouTube items with the new `uploadDate` field:** a VideoObject.
+  - **Validation:** every node on every page is checked against the schema.org definitions the site uses (`src/lib/testing/schema-org.ts`), in unit tests and in `e2e/seo.spec.ts`.
+- **Share images.**
+  - Work pages share their cover or their document's first page, cut to 1200 by 630 at build time.
+  - Every other page shares a card with the name and headline, rendered by the new `pnpm media:og`, which also makes the icons. That fixed the one Lighthouse best-practices finding (a missing favicon).
+  - `twitter:card` is `summary_large_image`.
+- **`robots.txt`:** allows everything except `/admin` and `/api/`, and names the sitemap. The sitemap is checked to contain public pages only (no 404, `/dev`, `/admin`, `/demo` or `/api`).
+- **Lighthouse CI asserts accessibility and SEO scores of 100** on the homepage, a work page and `/contact`. Locally, all three score 100 for accessibility, best practices and SEO, and 98 to 99 for performance.
+- **Browser tests** (`e2e/seo.spec.ts`) check every page for:
+  - one valid graph;
+  - a canonical URL;
+  - a unique title and description;
+  - a share image that loads.
+
+  They also check `robots.txt` and the icons.
+
+- **Launch steps.** `deployment.md` steps 8 to 15, for Josh:
+  - the domain on Cloudflare and attached to the Worker;
+  - `www` redirected to the apex;
+  - `workers.dev` switched off (a two-line change in `wrangler.jsonc`, marked there);
+  - Email Routing for `hello@`;
+  - Search Console and the online validators;
+  - the old domain;
+  - optional analytics.
+- **Docs:**
+  - `handoff.md`: final, how to keep the site going;
+  - `roadmap.md`: what arrives with content and after launch;
+  - README;
+  - `CONTRIBUTING.md`: branches after the transformation;
+  - `media-pipeline.md`: `media:screens` and `media:og`;
+  - the authoring guide (`uploadDate`);
+  - ADR-0049.
+- **Not done, because it needs Josh's Cloudflare account:** the custom domain, disabling `workers.dev` and Email Routing. They are steps 8 to 12, and the site cannot launch until they are done.
 
 ### Pass 9: Responsive, performance and accessibility hardening (2026-10-05)
 
@@ -162,22 +209,56 @@ This repository is being turned into Josh Lennon's portfolio. The governing docu
 - `docs/portfolio-spec.md` committed and excluded from Prettier, so each version Josh supplies stays byte-for-byte as supplied.
 - History scans of every blob on every ref (including inside `.docx`, `.tar.gz` and PDF streams) and every commit message, with values never printed. Before the rewrite, the only live Make.com webhook token and the only Google Sheet link were in `docs/Agency Docs/Technical Onboarding.IPYNB`. After it, a fresh clone from GitHub has neither, and no agency document, in any of its 285 commits. No Turnstile secret key existed anywhere: the `0x4A…` values in tests and the plugin are the public SCB site key, and the `1x/2x/3x000…` values are Cloudflare's documented test keys. Other `hook.eu1.make.com/…` strings are placeholders (`abc123def456`, `<real-id>`), and `.env.example` on `deploy/test-live` has empty values.
 
-## Gate state (last verified: Pass 9, 2026-10-05)
+## Gate state (last verified: Pass 10, 2026-10-05)
 
 Node 24.21.0, pnpm 9.15.0, Windows.
 
 - `pnpm format:check`: clean.
 - `pnpm lint`: ESLint 0 errors and 0 warnings in the wizard, the site and the Worker; `scripts/check-design.mjs` clean.
 - `pnpm typecheck`: 0 errors (wizard production and test tsconfig, Worker).
-- `pnpm test`: **1,140 passed**: wizard 888 (70 files), site 130 (17 files, now including oEmbed, GitHub, the footage decisions and the music selection), Worker 122 (4 files).
+- `pnpm test`: **1,149 passed**: wizard 888 (70 files), site 139 (18 files, now including the structured data), Worker 122 (4 files).
 - `pnpm --filter @jl/site check`: 0 errors, 0 warnings (one hint: `tseslint.config()` is deprecated).
 - `pnpm --filter @jl/edge test`: 122/122.
 - `pnpm build`: clean, no placeholders in the built site. Builds the wizard, then the SCB demo (1.3 MB, no source maps), then the site and the Worker.
 - `pnpm check:budgets`: homepage 5.4 kB of 40 kB, `/contact` 82 kB of 120 kB (gzip).
-- `pnpm test:e2e`: **143 passed** on desktop and an emulated phone (27 skipped: tests that run on one device only, such as the viewport matrix on desktop and touch sizes on the phone, and the case-study tests until GrowTrades is published). Every test runs under the enforced Content Security Policy with no violation; zero serious or critical axe violations; no request to another host before interaction on any route.
-- Pass 9 acceptance: budgets met (above and below); zero serious or critical axe violations; the CSP enforced with no violation on any route or flow the suite runs; no horizontal scroll at 320 px or any other width in the matrix. Spec X reviewed below.
-- Lighthouse CI (homepage, `/work/kerr-microscopy-dissertation`, `/contact`; three mobile runs each, run locally with the CI configuration): performance 99, 99 and 99; LCP 1.74, 1.66 and 1.66 s; CLS 0; TBT 0 ms.
+- `pnpm test:e2e`: **147 passed** on desktop and an emulated phone (31 skipped: tests that run on one device only, such as the viewport matrix on desktop and touch sizes on the phone, and the case-study tests until GrowTrades is published). Every test runs under the enforced Content Security Policy with no violation; zero serious or critical axe violations; no request to another host before interaction on any route.
+- Pass 10 acceptance:
+  - Structured data validates against schema.org's definitions on every page (browser test). The online validators need the live URL ([`deployment.md`](deployment.md) step 13).
+  - The sitemap lists only public pages.
+  - Lighthouse accessibility and SEO are 100 on the key pages.
+  - Spec X passes on every page (reviewed below).
+- Pass 9 acceptance, still met: budgets; zero serious or critical axe violations; the CSP enforced with no violation on any route or flow the suite runs; no horizontal scroll at any width in the matrix.
+- Lighthouse CI (homepage, `/work/kerr-microscopy-dissertation` and `/contact`; three mobile runs each, run locally with the CI configuration):
+  - performance 99, 99 and 99;
+  - accessibility, best practices and SEO 100 on all three;
+  - LCP 1.74, 1.66 and 1.66 s;
+  - CLS 0;
+  - TBT 0 ms.
 - PHP: none left; the plugin was deleted once the Worker matched it (ADR-0043).
+
+## Anti-slop review (spec X), Pass 10: every page
+
+Each page was reviewed at desktop width and on a phone. The homepage was reviewed both for a first visit and for a returning visitor. Pages: the homepage, `/work`, both work pages, `/research`, `/about`, `/contact`, `/privacy` and the 404.
+
+- **No gradients, blur, glass or glow:** none anywhere. Covers sit on a hairline; the stage sections are flat black.
+- **No purple:** none.
+- **One accent:**
+  - tungsten is only the stage buttons (the bar's "Start a conversation" over the threshold, "Get in touch");
+  - it is the timeline's line on `/about`;
+  - it is never text on paper.
+- **No rows of identical cards:**
+  - work rows and the research shelf show each document's own first page;
+  - Elsewhere shows the real calendar;
+  - the contact wizard's options are a selection list, not content cards.
+- **Icons:** GitHub and YouTube marks beside their labels, and the menu icon with a label. Nothing decorative.
+- **No spinners:** the wizard's skeleton is a flat pulse.
+- **No all-caps labels, middle dots, arrows in link text, or coloured or italic headline words.**
+- **Motion:** the threshold's transition and the timeline fill only, both off with reduced motion.
+- **Copy:**
+  - every sentence about Josh is from the profile or the entries;
+  - the new share card says only the name, the headline and the domain;
+  - the 404 says what happened and offers the homepage.
+- **Without JavaScript:** every page reads in full. The browser tests check the homepage, `/work`, the menu and `/contact` without it.
 
 ## Anti-slop review (spec X), Pass 9
 
@@ -275,6 +356,7 @@ Needs Josh, for content (each one keeps an entry or item a draft until it is ans
 
 Needs Josh, for set-up:
 
+- **The domain and email** ([`deployment.md`](deployment.md) steps 8 to 12): `joshlennon.com` on Cloudflare and attached to the Worker, `www` redirected, then `workers.dev` switched off (tell Claude "the domain is live" for the `wrangler.jsonc` change), and Email Routing for `hello@joshlennon.com`. After launch, step 13: Search Console and the online structured-data validators.
 - **A screen-reader pass before launch** (spec R): VoiceOver (Safari, Mac or iPhone) or NVDA (Windows, free) on the homepage, a work page, `/contact` and `/work/growtrades`. Listen for:
   - the threshold's question and its five answers;
   - the work rows' titles and links;

@@ -11,6 +11,7 @@ import Section from '~/components/Section.astro';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import { SHOW_DRAFTS, dateOf, getPosts, type Post } from '~/lib/content';
 import { isoDate } from '~/lib/format';
+import { breadcrumbs, post as postNode } from '~/lib/structured-data';
 import { THREAD_LABELS } from '~/lib/threads';
 
 export async function getStaticPaths() {
@@ -34,9 +35,31 @@ const day = date?.toLocaleDateString('en-GB', {
 });
 const project = data.project ? await getEntry(data.project) : undefined;
 const projectLink = project && (SHOW_DRAFTS || !project.data.draft) ? project : undefined;
+
+// For search engines (spec S): the post, and where it sits.
+const origin = (Astro.site ?? new URL('https://joshlennon.com')).origin;
+const structuredData = [
+  postNode({
+    site: origin,
+    url: new URL(`/log/${post.id}`, `${origin}/`).href,
+    title: data.title,
+    summary: data.summary,
+    date,
+  }),
+  breadcrumbs(origin, [
+    { name: 'Home', path: '/' },
+    { name: 'Log', path: '/log' },
+    { name: data.title, path: `/log/${post.id}` },
+  ]),
+];
 ---
 
-<BaseLayout title={`${data.title} | Josh Lennon`} description={data.summary}>
+<BaseLayout
+  title={`${data.title} | Josh Lennon`}
+  description={data.summary}
+  noindex={data.draft}
+  structuredData={structuredData}
+>
   <Section labelledby="post-title" width="reading">
     <nav aria-label="Breadcrumb" class="text-sm">
       <a href="/log" class="text-graphite underline underline-offset-4 hover:text-ink">Log</a>

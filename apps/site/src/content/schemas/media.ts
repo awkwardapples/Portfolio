@@ -63,6 +63,8 @@ export const mediaItem = (image: ImageFn) =>
       title: z.string().min(1),
       start: z.number().int().optional(),
       playlist: z.string().optional(),
+      // The date YouTube shows under the video; with it, search engines get a VideoObject (spec S).
+      uploadDate: z.coerce.date().optional(),
     }),
     z.strictObject({
       type: z.literal('spotify'),

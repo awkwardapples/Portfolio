@@ -8,14 +8,11 @@ The governing document is [`docs/portfolio-spec.md`](docs/portfolio-spec.md). Wh
 
 ## Branches and pull requests
 
-The transformation happens on `portfolio-transformation`, in the passes of spec section V:
+The transformation (spec section V, Passes 0 to 10) happened on `portfolio-transformation` and is complete. From now on:
 
-- A draft pull request against `main` stays open, so CI runs on every push.
-- At the end of each pass, once every gate is green, the pass is merged to `main` with a merge commit (not a squash, so the branch can continue without rewriting history). A new draft pull request is opened for the next pass.
+- Short-lived branches (`feat/`, `fix/`, `chore/`, `docs/`) target `main` through a pull request and merge once CI is green.
 - Merging to `main` deploys (see [`docs/deployment.md`](docs/deployment.md)).
 - Never push from a clone made before the Pass 0 history rewrite (3 October 2026); re-clone instead.
-
-After the transformation, short-lived branches (`feat/`, `fix/`, `chore/`, `docs/`) target `main` directly.
 
 Every pull request description answers: what changed, why, how it was verified, and which ADRs it relates to (the template in `.github/PULL_REQUEST_TEMPLATE.md` has the sections).
 

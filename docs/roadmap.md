@@ -1,21 +1,25 @@
 # Roadmap
 
-The work follows the passes in [`docs/portfolio-spec.md`](portfolio-spec.md), section V. Each pass ends with every gate green, `docs/current-state.md` updated, and a merge to `main`. Status per pass is in [`current-state.md`](current-state.md#passes).
+The transformation in [`docs/portfolio-spec.md`](portfolio-spec.md) section V is complete: Passes 0 to 10 are merged ([`current-state.md`](current-state.md#passes)). What happens next depends on Josh.
 
-| Pass | Objective                                                            | Waits on Josh for                                  |
-| ---- | -------------------------------------------------------------------- | -------------------------------------------------- |
-| 0    | Remove sensitive material and clutter; scrub history                 | Done                                               |
-| 1    | The monorepo builds and deploys an empty but real site               | Cloudflare secrets, for the first real deploy      |
-| 2    | Content model, legacy entries, media and PDF tooling, the TODO guard | PDFs for the research and software entries         |
-| 3    | Visual identity as tokens, fonts, navigation, footer, style guide    | Footage stills to check the accent against         |
-| 4    | Homepage with the "What brings you here?" threshold                  | Portrait is supplied; bio and photos fill in later |
-| 5    | Work, research, log and about pages, documents and citations         | Content and PDFs                                   |
-| 6    | Contact wizard and the Worker submission pipeline                    | Turnstile keys, Worker secrets, Make.com changes   |
-| 7    | GrowTrades case study with the live SCB demo                         | Case-study narrative and test-data screenshots     |
-| 8    | Music, footage loop, video and Spotify facades, GitHub and LinkedIn  | Footage, music links, `GH_PROFILE_TOKEN`           |
-| 9    | Responsive, performance and accessibility hardening, CSP enforced    | Nothing                                            |
-| 10   | SEO foundations, final documentation, custom domain and launch       | Domain on Cloudflare, Email Routing                |
+## Before launch (Josh)
 
-Content still needed from Josh is listed in spec section W.
+Steps 1 to 12 in [`deployment.md`](deployment.md), a screen-reader pass, and the content in spec section W. [`handoff.md`](handoff.md) puts them in order.
 
-After launch, candidates (not committed): a GrowTrades website health check for tradespeople on a separate GrowTrades site (spec I.1), generated Open Graph images (spec S).
+## As content arrives
+
+Each of these is code that is already built and waits for content, so it appears without further development:
+
+- **GrowTrades.** The case study, the homepage section and the threshold's website answer.
+- **Music.** A music entry brings `/music`, the homepage band and the Music link; footage brings the loop.
+- **The first log post.** It brings `/log`, the feed link and the Log link.
+- **LinkedIn and Spotify links.** The LinkedIn card, the footer links and the `sameAs` links in structured data.
+- **The headshot.** The about page portrait and the `image` in structured data.
+- **The CV.** The download on the about page and in the contact wizard's hiring result.
+
+## After launch (candidates, not commitments)
+
+- A reporting endpoint for the Content Security Policy, if an outside script is ever added (ADR-0048).
+- Generated share images per work entry, if covers prove a poor fit (spec S).
+- A GrowTrades website health check for tradespeople, on a separate GrowTrades site (spec I.1).
+- Cloudflare Web Analytics, once `/privacy` says so ([`deployment.md`](deployment.md) step 15).

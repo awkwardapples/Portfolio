@@ -27,6 +27,7 @@
     "media:pdf": "node scripts/media/pdf.mjs",
     "media:video": "node scripts/media/video.mjs",
     "media:screens": "node scripts/media/screens.mjs",
+    "media:og": "node scripts/media/og.mjs",
     "content:todo": "node scripts/content-todo.mjs",
     "prepare": "husky"
   },
