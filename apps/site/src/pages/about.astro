@@ -142,7 +142,13 @@ const bio = profile.bioLong ?? profile.bioShort;
           <li class="timeline-item">
             <p class="text-sm text-graphite">{item.when}</p>
             <h3 class="mt-1 text-xl">
-              {item.href ? <a href={item.href}>{item.title}</a> : item.title}
+              {item.href ? (
+                <a href={item.href} class="inline-flex min-h-11 items-center">
+                  {item.title}
+                </a>
+              ) : (
+                item.title
+              )}
             </h3>
             {item.subtitle && <p class="text-sm">{item.subtitle}</p>}
             {item.details.length > 0 && (

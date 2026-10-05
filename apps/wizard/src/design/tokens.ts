@@ -170,7 +170,7 @@ export const spacing = {
   6: '1.5rem', // 24px
   8: '2rem', // 32px
   10: '2.5rem', // 40px — Button md height, Input height (pre-existing, now fixed)
-  11: '2.75rem', // 44px — WCAG touch-target minimum (Button lg only)
+  11: '2.75rem', // 44px — WCAG touch-target minimum (Button lg, radio and checkbox rows)
   12: '3rem', // 48px
   16: '4rem', // 64px
   20: '5rem', // 80px — section vertical padding, mobile/tablet
