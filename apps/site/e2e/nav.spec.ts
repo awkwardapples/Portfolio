@@ -1,6 +1,5 @@
-import { expect, test } from '@playwright/test';
-
 import { expectNoSeriousViolations } from './axe';
+import { expect, test } from './fixtures';
 
 /**
  * The navigation bar and drawer (spec F.2, N.2, R; Pass 3 acceptance:

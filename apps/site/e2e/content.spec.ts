@@ -1,6 +1,7 @@
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
 import { expectNoSeriousViolations } from './axe';
+import { expect, test } from './fixtures';
 
 /**
  * The content routes (spec H.6, H.7, L; Pass 5 acceptance): every entry
