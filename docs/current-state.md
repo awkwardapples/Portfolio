@@ -47,6 +47,7 @@ This repository is being turned into Josh Lennon's portfolio. The governing docu
   - the work breadcrumb;
   - timeline titles;
   - radio and checkbox rows (wizard engine, so the SCB demo too).
+- **The bar no longer flickers.** With one 8 px threshold, the condensing bar and the browser's scroll anchoring moved each other every frame when a page rested just past the top, which also stopped clicks landing (it surfaced in CI on the taller wizard rows). The bar now condenses past 32 px and grows again within 8 px, and a browser test holds the page at 10, 20 and 30 px.
 - **Forms.** 16 px text in every field. Help text is now tied to radio and checkbox options with `aria-describedby`; before, only errors were.
 - **Keyboard.**
   - Every tab stop on every page shows a visible indicator.
@@ -173,7 +174,7 @@ Node 24.21.0, pnpm 9.15.0, Windows.
 - `pnpm --filter @jl/edge test`: 122/122.
 - `pnpm build`: clean, no placeholders in the built site. Builds the wizard, then the SCB demo (1.3 MB, no source maps), then the site and the Worker.
 - `pnpm check:budgets`: homepage 5.4 kB of 40 kB, `/contact` 82 kB of 120 kB (gzip).
-- `pnpm test:e2e`: **141 passed** on desktop and an emulated phone (27 skipped: tests that run on one device only, such as the viewport matrix on desktop and touch sizes on the phone, and the case-study tests until GrowTrades is published). Every test runs under the enforced Content Security Policy with no violation; zero serious or critical axe violations; no request to another host before interaction on any route.
+- `pnpm test:e2e`: **143 passed** on desktop and an emulated phone (27 skipped: tests that run on one device only, such as the viewport matrix on desktop and touch sizes on the phone, and the case-study tests until GrowTrades is published). Every test runs under the enforced Content Security Policy with no violation; zero serious or critical axe violations; no request to another host before interaction on any route.
 - Pass 9 acceptance: budgets met (above and below); zero serious or critical axe violations; the CSP enforced with no violation on any route or flow the suite runs; no horizontal scroll at 320 px or any other width in the matrix. Spec X reviewed below.
 - Lighthouse CI (homepage, `/work/kerr-microscopy-dissertation`, `/contact`; three mobile runs each, run locally with the CI configuration): performance 99, 99 and 99; LCP 1.74, 1.66 and 1.66 s; CLS 0; TBT 0 ms.
 - PHP: none left; the plugin was deleted once the Worker matched it (ADR-0043).
