@@ -14,6 +14,7 @@ import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import { defineConfig } from 'astro/config';
 
+import { afterLoad } from './integrations/after-load.mjs';
 import { devRoutes } from './integrations/dev-routes.mjs';
 import { placeholderGuard } from './integrations/placeholder-guard.mjs';
 import { EARLY_SCRIPT } from './src/lib/early-script.ts';
@@ -32,7 +33,7 @@ export default defineConfig({
   build: {
     format: 'file',
   },
-  integrations: [react(), mdx(), sitemap(), devRoutes(), placeholderGuard()],
+  integrations: [react(), mdx(), sitemap(), afterLoad(), devRoutes(), placeholderGuard()],
   // Content Security Policy (spec Q.4, ADR-0048): Astro writes a <meta> policy
   // into each page with the hash of every script and style it rendered, so no
   // inline script runs unless the build put it there. The layout's is:inline

@@ -1,8 +1,9 @@
 ---
 /**
  * Start a conversation (spec I.2): the "What brings you here?" wizard as a
- * React island, mounted client-only with a skeleton in the shape of its
- * first screen, so nothing shifts when it arrives. Its result step shows
+ * React island. The page renders a skeleton in the shape of its first
+ * screen, so nothing shifts when it arrives, and the wizard is fetched once
+ * the page has painted (DeferredContactWizard, ADR-0048). Its result step shows
  * real content from the collections, computed here at build time and
  * passed as props (spec I.4). Without JavaScript, the page gives the email
  * address instead.
@@ -11,7 +12,7 @@ import { getImage } from 'astro:assets';
 
 import Section from '~/components/Section.astro';
 import { CopyEmail } from '~/islands/CopyEmail';
-import { ContactWizard } from '~/islands/ContactWizard';
+import { DeferredContactWizard } from '~/islands/DeferredContactWizard';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import { dateOf, getProfile, getWork } from '~/lib/content';
 import { documentInfo, publicFileSize } from '~/lib/documents';
@@ -84,25 +85,14 @@ const cvAction = profile.cv
     </p>
 
     <div class="contact-wizard js-only mt-10">
-      <ContactWizard
-        client:only="react"
+      <DeferredContactWizard
+        client:afterload
         results={resultsBySelection(index)}
         cvAction={cvAction}
         hiringIntro={profile.availability}
         turnstileSiteKey={import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? ''}
         endpointUrl="/api/submit"
-      >
-        <div slot="fallback" aria-hidden="true" class="rounded border border-rule bg-paper p-6">
-          <div class="h-6 w-2/3 animate-goqw-pulse rounded bg-paper-sunken"></div>
-          <div class="mt-6 flex flex-col gap-3">
-            {
-              [0, 1, 2, 3, 4].map(() => (
-                <div class="h-16 animate-goqw-pulse rounded border border-rule bg-paper-sunken" />
-              ))
-            }
-          </div>
-        </div>
-      </ContactWizard>
+      />
     </div>
 
     <p class="no-js-only mt-10">
