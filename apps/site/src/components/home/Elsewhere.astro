@@ -1,0 +1,157 @@
+---
+/**
+ * Elsewhere (spec G.8, M.1, M.2): GitHub from the build-time snapshot (the
+ * calendar, the repositories Josh pins, when it was updated), a LinkedIn
+ * card from profile.yaml once the profile URL is there, and the YouTube and
+ * Spotify links. Nothing here asks GitHub or LinkedIn for anything in the
+ * browser; the avatar is downloaded and optimised at build time.
+ */
+import { getImage } from 'astro:assets';
+
+import BrandIcon from '~/components/BrandIcon.astro';
+import GitHubCalendar from '~/components/GitHubCalendar.astro';
+import Section from '~/components/Section.astro';
+import { buttonClass } from '~/design/button';
+import type { Profile } from '~/lib/content';
+import { isoDate } from '~/lib/format';
+import { githubData } from '~/lib/github';
+import { firstAvailable } from '~/lib/oembed';
+
+interface Props {
+  profile: Profile;
+}
+
+const { profile } = Astro.props;
+const { snapshot } = await githubData();
+const updated = new Date(snapshot.fetchedAt);
+const updatedLabel = updated.toLocaleDateString('en-GB', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
+// The avatar only when it can be fetched at build time; otherwise the name stands alone.
+const avatarSource = snapshot.avatarUrl
+  ? await firstAvailable([{ url: snapshot.avatarUrl, width: 96, height: 96 }])
+  : undefined;
+const avatar = avatarSource
+  ? await getImage({ src: avatarSource.url, width: 96, height: 96, format: 'avif' })
+  : undefined;
+
+// Current roles for the LinkedIn card: published experience without an end date.
+const currentRoles = profile.experience.filter((role) => !role.end && !role.draft);
+const { linkedin, youtube, spotify } = profile.links;
+---
+
+<Section id="elsewhere" labelledby="elsewhere-heading" divided>
+  <h2 id="elsewhere-heading" class="text-3xl" tabindex="-1" data-landing>Elsewhere</h2>
+
+  <div class="mt-heading-gap grid gap-12 lg:grid-cols-12">
+    <section aria-labelledby="github-heading" class="min-w-0 lg:col-span-8">
+      <div class="flex items-center gap-4">
+        {
+          avatar && (
+            <img
+              src={avatar.src}
+              alt=""
+              width="48"
+              height="48"
+              loading="lazy"
+              decoding="async"
+              class="h-12 w-12 rounded-full"
+            />
+          )
+        }
+        <div>
+          <h3 id="github-heading" class="flex items-center gap-2 text-xl">
+            <BrandIcon name="github" class="h-5 w-5" />
+            GitHub
+          </h3>
+          <p class="text-sm text-graphite">
+            {snapshot.name ?? snapshot.login}, {snapshot.publicRepos} public repositories
+          </p>
+        </div>
+      </div>
+      <div class="mt-6">
+        <GitHubCalendar calendar={snapshot.calendar} />
+      </div>
+      {
+        snapshot.pinned.length > 0 && (
+          <ul class="mt-6" role="list">
+            {snapshot.pinned.map((repo) => (
+              <li class="border-t border-rule py-4">
+                <a href={repo.url} class="font-medium underline underline-offset-4">
+                  {repo.name}
+                </a>
+                {repo.description && <p class="mt-1 max-w-reading text-sm">{repo.description}</p>}
+                <p class="mt-1 flex flex-wrap gap-x-4 text-xs text-graphite">
+                  {repo.language && <span>{repo.language}</span>}
+                  <span>
+                    {repo.stars} {repo.stars === 1 ? 'star' : 'stars'}
+                  </span>
+                </p>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+      <p class="mt-6 flex flex-wrap items-center gap-x-6 text-sm">
+        <a href={snapshot.url} class={buttonClass({ variant: 'quiet' })}>View profile on GitHub</a>
+        <span class="text-graphite">
+          Updated <time datetime={isoDate(updated)}>{updatedLabel}</time>
+        </span>
+      </p>
+    </section>
+
+    <div class="flex flex-col gap-8 lg:col-span-4">
+      {
+        linkedin && (
+          <section aria-labelledby="linkedin-heading" class="rounded-media border border-rule p-6">
+            <h3 id="linkedin-heading" class="text-xl">
+              LinkedIn
+            </h3>
+            <p class="mt-3 font-medium">{profile.name}</p>
+            <p class="text-sm">{profile.headline.role}</p>
+            {currentRoles.length > 0 && (
+              <ul class="mt-3 flex flex-col gap-1 text-sm text-graphite" role="list">
+                {currentRoles.map((role) => (
+                  <li>
+                    {role.title}, {role.organisation}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <p class="mt-4">
+              <a href={linkedin} class={buttonClass({ variant: 'quiet' })}>
+                View profile on LinkedIn
+              </a>
+            </p>
+          </section>
+        )
+      }
+      {
+        (youtube || spotify) && (
+          <ul class="flex flex-col gap-1" role="list">
+            {youtube && (
+              <li>
+                <a href={youtube} class={`${buttonClass({ variant: 'quiet' })} gap-2`}>
+                  <BrandIcon name="youtube" />
+                  YouTube
+                </a>
+              </li>
+            )}
+            {spotify && (
+              <li>
+                <a href={spotify} class={`${buttonClass({ variant: 'quiet' })} gap-2`}>
+                  <BrandIcon name="spotify" />
+                  Spotify
+                </a>
+              </li>
+            )}
+          </ul>
+        )
+      }
+    </div>
+  </div>
+</Section>
