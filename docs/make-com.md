@@ -21,13 +21,13 @@ Use a new webhook for the portfolio, not the SCB one.
 | -------------------------------------------------- | --------------------------------------------------------------- |
 | `reference`                                        | `JL-7Q4MZ2KD` (quote this when replying)                        |
 | `intent_label`                                     | `I'm hiring`                                                    |
-| `wizard_id`                                        | `hiring`, `research`, `website`, `music` or `other`             |
+| `wizard_id`                                        | `hiring`, `research`, `growtrades`, `music` or `other`          |
 | `answers`                                          | every answer, keyed by field id (below)                         |
 | `submission_id`                                    | the row number in D1                                            |
 | `client_timestamp`                                 | when the visitor pressed Send                                   |
 | `schema_version`, `quote_mode`, `pricing`, `media` | always `1`, `manual`, empty, empty (kept from the old contract) |
 
-Answer fields: `contact_name`, `contact_email`, `organisation`, `message`, `anything_else`, `reply_window`, `data_processing_consent`, and per intent `work_type`, `arrangement`, `role_link` (hiring), `research_topic`, `which_work` (research), `business_type`, `current_site`, `priorities` (website), `music_topic` (music), `topic` (something else). A field the visitor did not fill is absent.
+Answer fields: `contact_name`, `contact_email`, `organisation`, `message`, `anything_else`, `reply_window`, `data_processing_consent`, and per intent `work_type`, `arrangement`, `role_link` (hiring), `research_topic`, `which_work` (research), `growtrades_question` (GrowTrades), `music_topic` (music), `topic` (something else). A field the visitor did not fill is absent.
 
 ## 3. Reject anything without the secret
 

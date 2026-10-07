@@ -207,12 +207,7 @@ describe('shape validation', () => {
   it('new: accepts every intent with its own answers', async () => {
     const valid: Record<string, Record<string, unknown>> = {
       research: { research_topic: 'collaboration' },
-      website: {
-        business_type: 'trades',
-        current_site: 'no',
-        priorities: ['more-enquiries'],
-        organisation: 'SCB',
-      },
+      growtrades: { growtrades_question: 'How does the quote wizard work?', organisation: 'SCB' },
       music: { music_topic: 'booking' },
       other: { topic: 'Hello' },
     };

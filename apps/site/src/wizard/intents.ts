@@ -14,32 +14,36 @@
  */
 import type { AnyStep, Field, WizardConfig } from '@/domain/config/wizard-config';
 
-export const CONTACT_INTENT_IDS = ['hiring', 'research', 'website', 'music', 'other'] as const;
+export const CONTACT_INTENT_IDS = ['hiring', 'research', 'growtrades', 'music', 'other'] as const;
 export type ContactIntentId = (typeof CONTACT_INTENT_IDS)[number];
 
-/** The threshold's answers (src/lib/intents.ts) map onto these; "just looking" becomes "other". */
+/**
+ * The threshold's answers (src/lib/intents.ts) map onto these. "What experience
+ * do you have?" and "just looking" become "other": the form asks what the
+ * visitor wants to talk about rather than assuming.
+ */
 export const INTENT_FROM_THRESHOLD = {
   hiring: 'hiring',
   research: 'research',
-  website: 'website',
+  experience: 'other',
   music: 'music',
   looking: 'other',
 } as const satisfies Record<string, ContactIntentId>;
 
-/** Labels as on the threshold (spec I.2), used by the selector and forwarded as intent_label. */
+/** The selector's labels on /contact, forwarded as intent_label. */
 export const INTENT_LABELS: Record<ContactIntentId, string> = {
   hiring: "I'm hiring",
   research: 'Research',
-  website: 'A website for my business',
+  growtrades: "I'm interested in GrowTrades",
   music: 'Music',
   other: 'Something else',
 };
 
 export const INTENT_DESCRIPTIONS: Record<ContactIntentId, string> = {
-  hiring: 'A role you would like to talk about',
+  hiring: 'A role or consulting work to talk about',
   research: 'A collaboration, a paper or an academic opportunity',
-  website: 'A website for a trades or local business',
-  music: 'A booking, a collaboration or licensing',
+  growtrades: 'A question about GrowTrades',
+  music: 'Contact my management',
   other: 'Anything else',
 };
 
@@ -164,12 +168,14 @@ export const CONTACT_WIZARDS: Readonly<Record<ContactIntentId, WizardConfig>> = 
             option('llm-evaluation', 'LLM evaluation'),
             option('ai-automation', 'AI automation'),
             option('agentic-ai', 'Agentic AI'),
+            option('data-science', 'Data science'),
             option('something-else', 'Something else'),
           ]),
           choice('arrangement', 'What kind of arrangement?', [
             option('full-time', 'Full-time'),
             option('graduate-scheme', 'Graduate scheme'),
             option('contract', 'Contract'),
+            option('consulting', 'Consulting'),
             option('research-position', 'Research position'),
           ]),
         ],
@@ -215,37 +221,24 @@ export const CONTACT_WIZARDS: Readonly<Record<ContactIntentId, WizardConfig>> = 
       optionalStep,
     ],
   },
-  website: {
+  growtrades: {
     schemaVersion: 1,
-    id: 'website',
-    title: INTENT_LABELS.website,
+    id: 'growtrades',
+    title: INTENT_LABELS.growtrades,
     quoteMode: 'manual',
     steps: [
       {
-        id: 'business',
-        title: 'Your business',
+        id: 'question',
+        title: 'About GrowTrades',
         fields: [
-          choice('business_type', 'What kind of business?', [
-            option('trades', 'Trades or home services'),
-            option('local-business', 'Another local business'),
-            option('something-else', 'Something else'),
-          ]),
-          choice('current_site', 'Do you have a website now?', [
-            option('yes', 'Yes'),
-            option('no', 'No'),
-            option('needs-replacing', 'Yes, but it needs replacing'),
-          ]),
-          choice(
-            'priorities',
-            'What matters most?',
-            [
-              option('more-enquiries', 'More enquiries'),
-              option('instant-quotes', 'Instant quotes for customers'),
-              option('google', 'Showing up on Google'),
-              option('new-site', 'A new site'),
-            ],
-            'checkbox',
-          ),
+          {
+            id: 'growtrades_question',
+            key: 'growtrades_question',
+            type: 'textarea',
+            label: 'What would you like to know?',
+            required: true,
+            maxLength: LONG,
+          },
         ],
       },
       result('venture', 'GrowTrades', RESULT_DESCRIPTION),

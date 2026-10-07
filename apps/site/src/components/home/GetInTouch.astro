@@ -1,12 +1,11 @@
 ---
 /**
  * Get in touch (spec G.9), a stage band: one sentence, "Start a conversation"
- * once /contact exists, the email address with a copy button, and the
- * profiles that are in profile.yaml.
+ * once /contact exists, and the profiles that are in profile.yaml. The form
+ * is the way in; the email address appears only beside it on /contact.
  */
 import Section from '~/components/Section.astro';
 import { buttonClass } from '~/design/button';
-import { CopyEmail } from '~/islands/CopyEmail';
 import type { Profile } from '~/lib/content';
 import { ROUTES, isLinkable } from '~/lib/routes';
 
@@ -15,7 +14,7 @@ interface Props {
 }
 
 const { profile } = Astro.props;
-const { email, linkedin, github } = profile.links;
+const { linkedin, github } = profile.links;
 const profiles = [
   ...(linkedin ? [{ href: linkedin, label: 'LinkedIn' }] : []),
   ...(github ? [{ href: github, label: 'GitHub' }] : []),
@@ -25,7 +24,7 @@ const profiles = [
 <Section id="get-in-touch" surface="stage" labelledby="get-in-touch-heading">
   <h2 id="get-in-touch-heading" class="text-3xl" tabindex="-1" data-landing>Get in touch</h2>
   <p class="mt-6 max-w-reading text-lg text-fog">
-    If you'd like to talk about a role, research or a website for your business, email me.
+    Whatever brings you here, I'd like to hear from you.
   </p>
   <div class="mt-10 flex flex-col gap-6">
     {
@@ -34,13 +33,6 @@ const profiles = [
           <a href={ROUTES.contact.path} class={buttonClass({ surface: 'stage' })}>
             {ROUTES.contact.label}
           </a>
-        </p>
-      )
-    }
-    {
-      email && (
-        <p>
-          <CopyEmail client:visible email={email} surface="stage" />
         </p>
       )
     }

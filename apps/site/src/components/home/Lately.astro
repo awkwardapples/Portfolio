@@ -1,0 +1,43 @@
+---
+/**
+ * Lately (spec G.7): the three most recent log posts across all threads,
+ * with "All posts". Until the first post is published, the section says so
+ * plainly instead of disappearing, so the homepage reads the same either way.
+ */
+import PostItem from '~/components/PostItem.astro';
+import Section from '~/components/Section.astro';
+import { buttonClass } from '~/design/button';
+import type { Post } from '~/lib/content';
+
+interface Props {
+  /** Published posts, newest first. */
+  posts: readonly Post[];
+}
+
+const { posts } = Astro.props;
+const latest = posts.slice(0, 3);
+---
+
+<Section id="lately" labelledby="lately-heading" divided>
+  <h2 id="lately-heading" class="text-3xl" tabindex="-1" data-landing>Lately</h2>
+  {
+    latest.length > 0 ? (
+      <>
+        <ul class="mt-heading-gap max-w-reading" role="list">
+          {latest.map((post) => (
+            <PostItem post={post} />
+          ))}
+        </ul>
+        <p class="mt-6">
+          <a href="/log" class={buttonClass({ variant: 'quiet' })}>
+            All posts
+          </a>
+        </p>
+      </>
+    ) : (
+      <p class="mt-6 max-w-reading text-graphite">
+        No posts yet. Short updates on what I'm working on, studying and making will appear here.
+      </p>
+    )
+  }
+</Section>

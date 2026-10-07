@@ -1,7 +1,7 @@
 ---
 /**
- * The footer (spec F.2), on stage. Every navigation link, the profiles, the
- * email address with a copy button, and the year. It is also where the menu
+ * The footer (spec F.2), on stage. Every navigation link, the profiles and
+ * the year (the contact form is the way to get in touch). It is also where the menu
  * button leads when JavaScript is off (#site-footer-nav).
  *
  * Links appear once their pages exist (src/lib/routes.ts) and profiles once
@@ -10,7 +10,6 @@
  * question; it forgets the answer and goes back to it (src/scripts/intent.ts).
  */
 import BrandIcon from '~/components/BrandIcon.astro';
-import { CopyEmail } from '~/islands/CopyEmail';
 import { getPosts, getProfile, getWork } from '~/lib/content';
 import { hasMusic, musicContent } from '~/lib/music';
 import { FOOTER_NAV, MAIN_NAV, ROUTES, isLinkable } from '~/lib/routes';
@@ -81,17 +80,6 @@ const year = new Date().getFullYear();
                 </li>
               ))}
             </ul>
-          </div>
-        )
-      }
-
-      {
-        profile.links.email && (
-          <div class="sm:col-span-2">
-            <h2 class="font-sans text-sm font-medium text-fog">Email</h2>
-            <p class="mt-4">
-              <CopyEmail client:visible email={profile.links.email} surface="stage" />
-            </p>
           </div>
         )
       }

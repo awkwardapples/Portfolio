@@ -41,7 +41,7 @@ describe('intentCtas', () => {
     expect(ctas.research[0]).toEqual({ label: 'Read the research', href: '#research' });
     // No CV, no GrowTrades section and no music yet: those answers use the default set.
     expect(ctas.hiring).toEqual(ctas.looking);
-    expect(ctas.website).toEqual(ctas.looking);
+    expect(ctas.experience).toEqual(ctas.looking);
     expect(ctas.music).toEqual(ctas.looking);
   });
 
@@ -56,9 +56,9 @@ describe('intentCtas', () => {
       { label: 'Start a conversation', href: '/contact?intent=hiring' },
     ]);
     expect(ctas.research[0]?.href).toBe('/research');
-    expect(ctas.website).toEqual([
+    expect(ctas.experience).toEqual([
       { label: 'See GrowTrades', href: '/work/growtrades' },
-      { label: 'Talk about your website', href: '/contact?intent=website' },
+      { label: 'Start a conversation', href: '/contact?intent=experience' },
     ]);
     expect(ctas.music).toEqual([
       { label: 'Listen', href: '/music' },
@@ -71,7 +71,7 @@ describe('intentCtas', () => {
       sections: sections('growtrades', 'music', 'get-in-touch'),
       pages: noPages,
     });
-    expect(ctas.website[0]).toEqual({ label: 'See GrowTrades', href: '#growtrades' });
+    expect(ctas.experience[0]).toEqual({ label: 'See GrowTrades', href: '#growtrades' });
     expect(ctas.music[0]).toEqual({ label: 'Listen', href: '#music' });
     // Without a selected-work section the default set is just the conversation.
     expect(ctas.looking).toEqual([{ label: 'Get in touch', href: '#get-in-touch' }]);
