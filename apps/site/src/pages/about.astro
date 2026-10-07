@@ -15,7 +15,7 @@ import { buttonClass } from '~/design/button';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import { dateOf, getPosts, getProfile, getWork } from '~/lib/content';
 import { publicFileSize } from '~/lib/documents';
-import { KIND_LABELS, monthYear } from '~/lib/format';
+import { KIND_LABELS, monthYear, workDateLabel } from '~/lib/format';
 import { ROUTES } from '~/lib/routes';
 import { profilePage } from '~/lib/structured-data';
 import { newestFirst, periodLabel, type TimelineItem } from '~/lib/timeline';
@@ -56,7 +56,7 @@ for (const entry of work) {
   items.push({
     kind: 'work',
     sortKey: date ? date.toISOString() : '',
-    when: date ? monthYear(date) : '',
+    when: date ? workDateLabel(date, entry.data.datePrecision) : '',
     title: entry.data.title,
     subtitle: KIND_LABELS[entry.data.kind],
     href: `${ROUTES.work.path}/${entry.id}`,
@@ -185,9 +185,12 @@ const bio = profile.bioLong ?? profile.bioShort;
                 {group.items.map((skill) => {
                   const proof = evidence(skill);
                   return (
-                    <li>
+                    <li class="flex min-h-11 items-center">
                       {proof ? (
-                        <a href={`${ROUTES.work.path}/${proof.id}`} class="underline">
+                        <a
+                          href={`${ROUTES.work.path}/${proof.id}`}
+                          class="inline-flex min-h-11 min-w-11 items-center underline"
+                        >
                           {skill}
                         </a>
                       ) : (

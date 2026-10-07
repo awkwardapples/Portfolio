@@ -100,17 +100,17 @@ const steps: Step[] = [
 ---
 
 <div class="under-the-hood grid gap-10 md:grid-cols-2 md:gap-12" data-under-the-hood>
-  <ol class="flex flex-col" role="list">
+  <ol class="flex min-w-0 flex-col" role="list">
     {
       steps.map((step, index) => (
         <li class="uth-step border-t border-rule py-8" data-step={index}>
           <h3 class="text-xl">{step.title}</h3>
           <p class="mt-2 max-w-reading">{step.text}</p>
           <p class="mt-2 flex flex-wrap gap-x-4 text-sm">
-            <a href={`${REPO}/${step.file}`} class="underline underline-offset-4">
+            <a href={`${REPO}/${step.file}`} class="inline-flex min-h-11 items-center underline underline-offset-4">
               {step.file.split('/').pop()}
             </a>
-            <a href={`${REPO}/docs/decisions/${step.adr.slug}.md`} class="underline underline-offset-4">
+            <a href={`${REPO}/docs/decisions/${step.adr.slug}.md`} class="inline-flex min-h-11 items-center underline underline-offset-4">
               ADR-{step.adr.number}: {step.adr.title}
             </a>
           </p>
@@ -119,7 +119,7 @@ const steps: Step[] = [
       ))
     }
   </ol>
-  <div class="uth-panel" aria-hidden="true">
+  <div class="uth-panel min-w-0" aria-hidden="true">
     <div class="sticky top-24">
       {
         steps.map((step, index) => (

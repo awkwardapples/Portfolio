@@ -12,6 +12,8 @@ export interface FootageLoopProps {
   title: string;
   /** Whether `pnpm media:video --portrait` made a vertical crop. */
   hasPortrait?: boolean;
+  /** The loop opens the page (on /music): its poster loads at once, not lazily. */
+  priority?: boolean;
   class?: string;
 }
 
@@ -21,8 +23,11 @@ interface NetworkInformation {
 }
 
 /**
- * Josh's footage as a quiet loop (spec K.3, N.6; ADR-0046). The poster shows
- * at once, at a fixed 16:9, so nothing shifts. Video files are attached only
+ * Josh's footage as a quiet loop (spec K.3, N.6; ADR-0046). The poster is a
+ * picture at a fixed 16:9, so nothing shifts: AVIF at the screen's width,
+ * JPEG otherwise, and lazy unless the loop opens the page (a video's own
+ * poster attribute would download at once, wherever the loop sits). The video
+ * stays invisible until it plays. Video files are attached only
  * when the loop comes within a screen of view, chosen for the screen (AV1,
  * then H.264). It plays while at least half visible and pauses otherwise;
  * it never starts by itself with reduced motion, Save-Data or a slow
@@ -34,6 +39,7 @@ export function FootageLoop({
   name,
   title,
   hasPortrait = false,
+  priority = false,
   class: className,
 }: FootageLoopProps): ReactElement {
   const base = `/media/video/${name}`;
@@ -42,6 +48,8 @@ export function FootageLoop({
   const [sources, setSources] = useState<Source[]>([]);
   const [auto, setAuto] = useState(false);
   const [playing, setPlaying] = useState(false);
+  // The poster picture shows until the first frame plays.
+  const [started, setStarted] = useState(false);
   // Once the visitor pauses, scrolling never restarts it.
   const userPaused = useRef(false);
 
@@ -130,6 +138,22 @@ export function FootageLoop({
       ref={rootRef}
       className={`relative aspect-video w-full overflow-hidden bg-stage ${className ?? ''}`}
     >
+      <picture>
+        <source
+          type="image/avif"
+          srcSet={`${base}/poster-800.avif 800w, ${base}/poster-1280.avif 1280w, ${base}/poster.avif 1920w`}
+          sizes="100vw"
+        />
+        <img
+          src={`${base}/poster.jpg`}
+          alt=""
+          width={1920}
+          height={1080}
+          loading={priority ? 'eager' : 'lazy'}
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      </picture>
       <video
         ref={videoRef}
         muted
@@ -138,10 +162,10 @@ export function FootageLoop({
         preload="none"
         disablePictureInPicture
         aria-hidden="true"
-        poster={`${base}/poster.jpg`}
         onPlay={() => setPlaying(true)}
+        onPlaying={() => setStarted(true)}
         onPause={() => setPlaying(false)}
-        className="absolute inset-0 h-full w-full object-cover"
+        className={`absolute inset-0 h-full w-full object-cover ${started ? '' : 'opacity-0'}`}
       >
         {sources.map((source) => (
           <source key={source.src} src={source.src} type={source.type} />

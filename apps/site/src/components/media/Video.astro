@@ -2,7 +2,9 @@
 /**
  * A self-hosted video made by `pnpm media:video` (docs/media-pipeline.md):
  * AV1 first, H.264 for browsers without it, the poster shown before play,
- * and nothing downloaded until the visitor presses play. Loops for
+ * and nothing downloaded until the visitor presses play. The poster is the
+ * 1280 px AVIF (a third of the JPEG's size): it is often the page's largest
+ * paint, and every current browser shows AVIF. Loops for
  * backgrounds (spec K.3) are a separate component in Pass 8.
  */
 interface Props {
@@ -21,7 +23,7 @@ const base = `/media/video/${name}`;
     controls
     preload="none"
     playsinline
-    poster={`${base}/poster.jpg`}
+    poster={`${base}/poster-1280.avif`}
     class="aspect-video h-auto w-full rounded-media bg-stage"
     aria-label={title}
   >

@@ -123,6 +123,14 @@
 }
 
 @layer components {
+  /*
+   * Muted text keeps its contrast on stage: graphite is the muted colour on paper (spec E.2)
+   * and would fall to about 3:1 on black, so inside a stage surface the same role is fog.
+   */
+  [data-surface='stage'] .text-graphite {
+    color: theme('colors.fog');
+  }
+
   /* An icon-only control: 44 px target, label in aria-label, tooltip from data-tooltip. */
   .icon-button {
     display: inline-flex;
