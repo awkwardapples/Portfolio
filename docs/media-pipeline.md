@@ -6,7 +6,7 @@ The scripts that prepare photographs, PDFs and video for the site (spec T.3). Th
 | -------------------- | -------------------------------------- | ------------------------------------------------------------------------------------- |
 | `pnpm media:images`  | none (uses `sharp`)                    | JPEGs in the entry folder                                                             |
 | `pnpm media:pdf`     | none (`pdfjs-dist`, `@napi-rs/canvas`) | the PDF in `public/documents/`, its cover beside the entry, `src/data/documents.json` |
-| `pnpm media:video`   | ffmpeg with SVT-AV1 and x264           | a loop set in `public/media/video/<name>/`                                            |
+| `pnpm media:video`   | ffmpeg with SVT-AV1 and x264           | a loop or a silent recording in `public/media/video/<name>/`                          |
 | `pnpm media:screens` | Playwright                             | stills of the SCB demo for the GrowTrades frame                                       |
 | `pnpm media:og`      | Playwright, `sharp`                    | the default share image and the site icons in `public/`                               |
 
@@ -36,7 +36,7 @@ pnpm media:pdf report.pdf --dry-run
 - Prints the `documents:` lines to paste.
 - `--dry-run` renders the cover to a temporary folder and changes nothing; CI uses it to check rendering on Linux.
 
-Before adding a PDF, check its first pages for personal details: the public site never shows a personal email address, home address or personal phone number (spec Q.5, U.8).
+Before adding a PDF, check its first pages for personal details: the public site never shows a home address or a personal phone number (spec Q.5), and other people's contact details need their agreement. Josh's own email address may appear (Josh's choice, 7 October 2026).
 
 ## Footage loops: `pnpm media:video`
 
@@ -57,7 +57,9 @@ Writes `apps/site/public/media/video/<name>/`:
 | `poster.avif`, `poster.jpg`              | the still shown before the loop plays                       |
 | `manifest.json`                          | durations, sizes and dimensions, read by the loop component |
 
-- Loops are 8 to 15 seconds, silent (no audio track), 30 frames per second constant, with `+faststart`.
+- Loops are 5 to 15 seconds (8 to 15 where the footage allows), silent (no audio track), 30 frames per second constant, with `+faststart`.
+- `--player` makes a recording to be shown with player controls (`type: video` without `loop`), 5 to 120 seconds, still silent: a recording with speech needs captions before it can go up (spec R). `--start` picks the part to use, e.g. `pnpm media:video talk.mp4 --name app-demo --start 404 --duration 82 --player`.
+- The poster is re-encoded with mozjpeg, so the page that shows it stays inside its weight budget.
 - `--lut` applies a `.cube` LUT for footage shot in a log profile such as V-Log.
 - Targets: about 3 MB for 1080 AV1 and 6 MB for 1080 H.264. The script flags files over target, and fails if any file is over Cloudflare's 25 MiB limit.
 - Reference the set from an entry as `type: video` with `name: <name>`.
