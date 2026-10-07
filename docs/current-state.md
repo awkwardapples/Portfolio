@@ -41,7 +41,9 @@ Josh's second set of changes of 7 October 2026, on `content/music-and-first-post
   - **The first log post**, "Competing in the Open Agent Hackathon 2026", fills "Lately". It brings `/log`, the post's page, the RSS feed and the Log link in the footer, and it heads the About timeline.
 - **The Hex group project is described in Josh's words:** "A Monte Carlo AI agent built to compete in the game of Hex. This was a team project that scored well."
   - The repository belongs to a teammate, so its GitHub description cannot be changed from Josh's account. `githubRepos` entries can now carry a `description`.
-- **Fixed on the way:** the post page's "Log" breadcrumb and the post titles in lists are now 44 px targets.
+- **Fixed on the way:**
+  - The post page's "Log" breadcrumb and the post titles in lists are now 44 px targets.
+  - YouTube thumbnails are responsive (480, 800 and 1280 px), so phones no longer fetch the 1280 px still. With two videos, `/music` had gone over its LCP budget in CI.
 
 ### Launch content (2026-10-07)
 
@@ -304,7 +306,7 @@ Node 24.21.0, pnpm 9.15.0, Windows.
 - Lighthouse CI (homepage, `/work/kerr-microscopy-dissertation`, `/work/growtrades`, `/music` and `/contact`; three mobile runs each, run locally with the CI configuration):
   - performance 99 or 100 on all five;
   - accessibility, best practices and SEO 100 on all five;
-  - LCP, median: home 1.96 s, the dissertation 1.88 s, GrowTrades 1.96 s, `/music` 1.96 s, `/contact` 1.66 s (after the music changes; the homepage is close to its 2.0 s budget);
+  - LCP, median: home 1.82 s, the dissertation 1.88 s, GrowTrades 1.88 s, `/music` 1.89 s, `/contact` 1.66 s. The second video's 1280 px thumbnail pushed `/music` to 2.03 s in CI; YouTube thumbnails now come at 480, 800 and 1280 px, chosen by `sizes`;
   - CLS 0;
   - TBT 0 ms.
 - PHP: none left; the plugin was deleted once the Worker matched it (ADR-0043).

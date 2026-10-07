@@ -77,7 +77,11 @@ const { spotify, youtube } = profile.links;
           </h2>
           <div class="mt-heading-gap grid gap-8 md:grid-cols-2">
             {content.videos.map((video) => (
-              <YouTube id={video.id} title={video.title} />
+              <YouTube
+                id={video.id}
+                title={video.title}
+                sizes="(min-width: 1200px) 35rem, (min-width: 768px) 50vw, 100vw"
+              />
             ))}
           </div>
         </section>

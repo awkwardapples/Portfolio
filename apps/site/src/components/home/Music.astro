@@ -47,7 +47,16 @@ const screenshot = spotify && spotifyScreenshot;
       I also make music as a hobby
     </h2>
     <div class="mt-heading-gap grid gap-8 sm:grid-cols-2 lg:grid-cols-12">
-      {videos.map((video) => <YouTube id={video.id} title={video.title} class="lg:col-span-5" />)}
+      {
+        videos.map((video) => (
+          <YouTube
+            id={video.id}
+            title={video.title}
+            sizes="(min-width: 1024px) 38vw, (min-width: 640px) 50vw, 100vw"
+            class="lg:col-span-5"
+          />
+        ))
+      }
       {
         screenshot && (
           <SpotifyProfile
