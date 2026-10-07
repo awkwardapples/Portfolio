@@ -109,13 +109,28 @@ describe('the contact wizards (spec I.3)', () => {
     }
   });
 
-  it('map every threshold answer to an intent', () => {
-    expect(Object.values(INTENT_FROM_THRESHOLD)).toEqual([
-      'hiring',
-      'research',
-      'website',
-      'music',
-      'other',
-    ]);
+  it('map every threshold answer to an intent, the open-ended ones to "something else"', () => {
+    expect(INTENT_FROM_THRESHOLD).toEqual({
+      hiring: 'hiring',
+      research: 'research',
+      experience: 'other',
+      music: 'music',
+      looking: 'other',
+    });
+  });
+
+  it('never offer a website: GrowTrades asks an open question, and hiring covers data science and consulting', () => {
+    const text = JSON.stringify(CONTACT_WIZARDS).toLowerCase();
+    expect(text).not.toContain('website');
+    const growtrades = CONTACT_WIZARDS.growtrades.steps[0];
+    expect(growtrades && 'fields' in growtrades ? growtrades.fields.map((f) => f.key) : []).toEqual(
+      ['growtrades_question'],
+    );
+    const role = CONTACT_WIZARDS.hiring.steps[0];
+    const values =
+      role && 'fields' in role
+        ? role.fields.flatMap((f) => f.options?.map((o) => o.value) ?? [])
+        : [];
+    expect(values).toEqual(expect.arrayContaining(['data-science', 'consulting']));
   });
 });

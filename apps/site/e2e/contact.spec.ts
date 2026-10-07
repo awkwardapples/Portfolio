@@ -17,10 +17,15 @@ const STUB = 'http://127.0.0.1:8799';
 const run = `${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
 let counter = 0;
 
+// Each worker process counts up from a random point in 198.18.0.0/15 (addresses for
+// benchmarking), so two tests never share a rate limit by chance.
+const ipBase = Math.floor(Math.random() * 120_000);
+
 function identity() {
   counter += 1;
+  const n = ipBase + counter;
   return {
-    ip: `198.18.${Math.floor(Math.random() * 250)}.${(counter % 250) + 1}`,
+    ip: `198.${18 + ((n >> 16) & 1)}.${(n >> 8) & 255}.${n & 255}`,
     email: `visitor-${run}-${counter}@example.com`,
   };
 }
@@ -48,7 +53,12 @@ async function forwardsFor(request: APIRequestContext, reference: string): Promi
 const next = (page: Page) => page.getByRole('button', { name: 'Next', exact: true }).click();
 
 async function details(page: Page, email: string, message = 'Hello from a browser test.') {
-  await expect(page.getByRole('heading', { name: 'Your details' })).toBeFocused();
+  // Intents with work to show put it first (spec I.2 step 3); go on past it.
+  const onwards = page.getByRole('button', { name: 'Send Josh a message' });
+  const heading = page.getByRole('heading', { name: 'Your details' });
+  await expect(onwards.or(heading)).toBeVisible();
+  if (await onwards.isVisible()) await onwards.click();
+  await expect(heading).toBeFocused();
   await page.getByRole('textbox', { name: 'Your name' }).fill('Test Visitor');
   await page.getByRole('textbox', { name: 'Email address' }).fill(email);
   const messageField = page.getByRole('textbox', { name: /Your message|Anything to add/ });
@@ -120,21 +130,33 @@ test.describe('each intent, through to success', () => {
       .toBe('research');
   });
 
-  test('website (no result step until GrowTrades is published)', async ({ page, request }) => {
+  test('GrowTrades: an open question, then the case study, and nothing offered', async ({
+    page,
+    request,
+  }) => {
     const { ip, email } = identity();
     await as(page, ip);
-    await page.goto('/contact?intent=website');
-    await page.getByLabel('Trades or home services').check();
-    await page.getByLabel('No', { exact: true }).check();
-    await page.getByLabel('More enquiries').check();
-    await page.getByLabel('Instant quotes for customers').check();
+    await page.goto('/contact?intent=growtrades');
+    await page
+      .getByRole('textbox', { name: 'What would you like to know?' })
+      .fill('How does the quote wizard work?');
     await next(page);
+    await expect(page.getByRole('heading', { name: 'GrowTrades', level: 2 })).toBeFocused();
+    await expect(page.getByRole('link', { name: 'GrowTrades', exact: true })).toHaveAttribute(
+      'href',
+      '/work/growtrades',
+    );
+    await page.getByRole('button', { name: 'Send Josh a message' }).click();
     await details(page, email);
     await send(page);
     const ref = await reference(page);
     await expect
-      .poll(async () => (await forwardsFor(request, ref))[0]?.payload?.answers.priorities)
-      .toEqual(['more-enquiries', 'instant-quotes']);
+      .poll(async () => (await forwardsFor(request, ref))[0]?.payload)
+      .toMatchObject({
+        wizard_id: 'growtrades',
+        intent_label: "I'm interested in GrowTrades",
+        answers: { growtrades_question: 'How does the quote wizard work?' },
+      });
   });
 
   test('music', async ({ page, request }) => {
@@ -143,6 +165,8 @@ test.describe('each intent, through to success', () => {
     await page.goto('/contact?intent=music');
     await page.getByLabel('A booking or a gig').check();
     await next(page);
+    await expect(page.getByRole('heading', { name: 'Music' })).toBeFocused();
+    await page.getByRole('button', { name: 'Send Josh a message' }).click();
     await details(page, email);
     await send(page);
     const ref = await reference(page);
@@ -354,7 +378,9 @@ test.describe('pages', () => {
     test('/contact offers the email address instead', async ({ page }) => {
       await page.goto('/contact');
       await expect(page.getByText('The questions need JavaScript.')).toBeVisible();
-      await expect(page.getByRole('link', { name: 'hello@joshlennon.com' }).first()).toBeVisible();
+      await expect(
+        page.getByRole('link', { name: 'joshlennon71@gmail.com' }).first(),
+      ).toBeVisible();
     });
   });
 });

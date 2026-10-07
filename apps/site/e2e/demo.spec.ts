@@ -169,7 +169,10 @@ test.describe('the GrowTrades case study', () => {
       .click();
     const demo = page.locator('.site-frame iframe').first().contentFrame();
     await demo.getByRole('link', { name: 'Services', exact: true }).first().click();
-    await expect(page.locator('.site-frame').getByText('scbhandyman.co.uk/services')).toBeVisible();
+    // The address bar (the frame also announces the address to screen readers).
+    await expect(
+      page.locator('.site-frame').getByText('scbhandyman.co.uk/services').first(),
+    ).toBeVisible();
   });
 
   test('on phones, opens the demo full screen and returns focus on close', async ({
@@ -179,6 +182,11 @@ test.describe('the GrowTrades case study', () => {
     test.skip(!isMobile, 'Phone layout only.');
     await page.goto('/work/growtrades');
     const trigger = page.getByRole('link', { name: /^Try the live site/ }).last();
+    // Until the frame hydrates, the link simply opens the demo (its no-JavaScript fallback).
+    await trigger.scrollIntoViewIfNeeded();
+    await expect(
+      page.locator('astro-island[component-export="SiteFrame"]').first(),
+    ).not.toHaveAttribute('ssr', '');
     await trigger.click();
     await expect(page.getByRole('dialog', { name: 'SCB Handyman site (demo)' })).toBeVisible();
     await page.keyboard.press('Escape');

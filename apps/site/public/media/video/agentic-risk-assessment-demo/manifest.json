@@ -1,0 +1,15 @@
+{
+  "name": "agentic-risk-assessment-demo",
+  "source": "Agentic prototype recording.mp4",
+  "duration": 78,
+  "width": 1920,
+  "height": 1080,
+  "portrait": false,
+  "player": true,
+  "files": {
+    "1080.av1.mp4": 1463933,
+    "1080.h264.mp4": 1122876,
+    "720.av1.mp4": 735458,
+    "720.h264.mp4": 640660
+  }
+}

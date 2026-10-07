@@ -37,7 +37,17 @@ const { spotify, youtube } = profile.links;
   ]}
 >
   <Section surface="stage" labelledby="music-heading" width="full">
-    {content.loop && <FootageLoop client:visible name={content.loop.name} title={content.loop.title} />}
+    {
+      // The loop opens this page: its poster is the largest paint, and its code waits until after.
+      content.loop && (
+        <FootageLoop
+          client:afterload
+          priority
+          name={content.loop.name}
+          title={content.loop.title}
+        />
+      )
+    }
     <div class="mx-auto max-w-content px-4 pt-section-sm sm:px-6 lg:px-8">
       <h1 id="music-heading" class="text-display">{profile.artistName}</h1>
     </div>

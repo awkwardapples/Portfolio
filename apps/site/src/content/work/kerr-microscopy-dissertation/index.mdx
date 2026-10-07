@@ -12,21 +12,31 @@ featuredOrder: 1
 role: Sole author
 authorship:
   type: sole
-  # TODO(josh): the title page names your supervisor; add `supervisor:` here only if you want it on the page.
+  supervisor: Prof Thomas Thomson
 context:
   institution: University of Manchester
-  programme: BSc dissertation
+  # The degree as on Josh's certificate; the PDF's title page says Computer Science.
+  programme: BSc Artificial Intelligence dissertation
   result: Awarded 76% (first class)
 documents:
   - file: kerr-microscopy-dissertation.pdf
     title: Extracting magnetic information from Kerr Microscopy images
     docType: dissertation
     peerReviewed: false
+media:
+  - type: video
+    name: kerr-web-application
+    title: >-
+      The web application, from the dissertation presentation: uploading the images, choosing a
+      tracking point, setting the drift corrections and viewing the processed dataset.
+  - type: image
+    src: ./kerr-raw-frame.jpg
+    alt: >-
+      A raw Kerr microscope image: pale magnetic features and a small square marker on a black
+      background, above the microscope's status bar, which reads a magnetic field of -20.04 mT and
+      a 200 µm scale.
+    caption: A raw frame from the Kerr microscope, the kind of image the pipeline starts from.
 tags: [computer vision, image processing, Kerr microscopy]
-# TODO(josh): the code repository, if there is one you can share:
-#   links: [{ type: github, url: https://github.com/..., label: Code on GitHub }]
-# TODO(josh): before and after Kerr images you are allowed to publish, for a comparison figure (spec N.8).
-# TODO(josh): the submission date, if it is not 11 August 2025.
 ---
 
 My final-year project at the University of Manchester, awarded 76% (first class). The project

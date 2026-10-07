@@ -21,7 +21,11 @@ const shelf = research.flatMap((entry) => {
   const date = dateOf(entry.data.date);
   return entry.data.documents.map((document) => {
     const input = date
-      ? citationInput(entry.data, document, { name: profile.name, site, date })
+      ? citationInput(entry.data, document, {
+          name: profile.citationName ?? profile.name,
+          site,
+          date,
+        })
       : undefined;
     return {
       document,

@@ -6,7 +6,7 @@
 export const INTENT_KEY = 'jl:intent';
 
 export interface Intent {
-  readonly value: 'hiring' | 'research' | 'website' | 'music' | 'looking';
+  readonly value: 'hiring' | 'research' | 'experience' | 'music' | 'looking';
   readonly label: string;
   readonly description?: string;
   /** The homepage section the answer leads to. */
@@ -27,8 +27,8 @@ export const INTENTS: readonly Intent[] = [
     target: 'research',
   },
   {
-    value: 'website',
-    label: 'A website for my business',
+    value: 'experience',
+    label: 'What experience do you have?',
     description: 'GrowTrades and a live client site',
     target: 'growtrades',
   },

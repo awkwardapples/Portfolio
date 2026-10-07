@@ -5,24 +5,38 @@ threads: [venture, software]
 summary: >-
   Lead-generation websites with instant quote calculators for local trades businesses. The first
   client is SCB Handyman Services in Guildford, Surrey.
-date: 'TODO(josh): when you started GrowTrades (YYYY-MM)'
+# Started in 2026 (only the year is given, so pages show "2026").
+date: 2026
 status: ongoing
 featured: true
 featuredOrder: 2
 role: Founder
 authorship:
-  type: 'TODO(josh): sole, unless someone else built part of it'
+  type: lead
 tech: [React, TypeScript, Zod, Tailwind CSS, WordPress, PHP, Make.com, Cloudflare Turnstile]
 template: case-study
-draft: true
-# TODO(josh): any results or figures, only with Shane's agreement to publish them (spec J.1).
-# TODO(josh): confirm scbhandyman.co.uk is the domain to show in the frame's address bar (spec J.3).
+cover: ./screens/scb-home-desktop.png
+coverAlt: The SCB Handyman homepage, with its offer of a free instant price estimate.
+# No results or figures about SCB are shown (spec J.1). The frame's address bar shows
+# scbhandyman.co.uk, the domain of SCB's own contact address on their site.
 ---
 
 import estimator from './screens/scb-quote-desktop.png';
+import notification from './whatsapp-notification.jpg';
 
-TODO(josh): two short paragraphs in your words on what GrowTrades is and what you built for SCB
-Handyman (spec G.4, J.2).
+I started GrowTrades in 2026: a small digital marketing agency that handles the digital side of
+local trades businesses, so their owners can be more selective about the jobs they take. Each client
+gets a lead-generation site built to turn local searches into qualified leads, an instant quote
+wizard that gives customers a price guide and sends the owner the job details, local SEO including
+their Google Business Profile, automated replies to Google reviews that we approve, analytics that
+compare before and during the service, and an automated lead flow, with support around the clock.
+Inside the agency, AI agents automate the work, so onboarding is the only regular manual upkeep.
+
+The agency works only if client results justify a monthly retainer, new clients go live quickly
+enough for the margin, and many small sites can be maintained without the cost growing with every
+client. That is why the software is one engine configured per client rather than a site built from
+scratch each time. SCB Handyman Services in Guildford is the first client: this is their live site,
+with the quote wizard I built, and the pipeline behind it.
 
 <LiveSite number={1} />
 
@@ -40,8 +54,15 @@ becomes a row in the business's Google Sheet and a WhatsApp message to the owner
   sizes="(min-width: 1280px) 1200px, 100vw"
 />
 
-TODO(josh): screenshots of the Sheet row and the WhatsApp notification, with test data only (spec
-J.2).
+<Figure
+  src={notification}
+  alt="Two WhatsApp messages from Grow Trades headed 'Website form submission received': each gives the service (fencing), who submitted it, a contact number that is blacked out, a postcode and an estimated total (£2,415.00 and £5,265.00), with a View Submission Record button."
+  caption="The owner's side: each quote request arrives as a WhatsApp message with the job's details and a link to its record. Phone numbers are hidden."
+  number={3}
+  sizes="20rem"
+  widths={[320, 560]}
+  class="max-w-xs"
+/>
 
 ## Under the hood
 

@@ -1,13 +1,41 @@
 {
-  "fetchedAt": "2026-10-04T21:47:06.533Z",
+  "fetchedAt": "2026-10-07T18:09:47.338Z",
   "login": "awkwardapples",
   "name": "Josh Lennon",
   "url": "https://github.com/awkwardapples",
   "avatarUrl": "https://avatars.githubusercontent.com/u/134640848?u=d49e5ccebbdd722143b79ae4d13b054172d9ff9c&v=4",
-  "publicRepos": 8,
-  "pinned": [],
+  "publicRepos": 9,
+  "repos": [
+    {
+      "fullName": "awkwardapples/neetcode-submissions",
+      "name": "neetcode-submissions",
+      "description": "My NeetCode.io problem submissions",
+      "url": "https://github.com/awkwardapples/neetcode-submissions",
+      "stars": 0,
+      "pushedAt": "2026-08-09T15:58:40Z",
+      "language": "Python"
+    },
+    {
+      "fullName": "fmcewan/COMP34111-AI-Games-Hex-Group34",
+      "name": "COMP34111-AI-Games-Hex-Group34",
+      "description": "Group 34's implementation of the AI.",
+      "url": "https://github.com/fmcewan/COMP34111-AI-Games-Hex-Group34",
+      "stars": 0,
+      "pushedAt": "2024-12-13T17:09:41Z",
+      "language": "Python"
+    },
+    {
+      "fullName": "awkwardapples/BEATLEASE",
+      "name": "BEATLEASE",
+      "description": "A scalable platform that allows music producers to sell their beats and lease options via custom website.",
+      "url": "https://github.com/awkwardapples/BEATLEASE",
+      "stars": 0,
+      "pushedAt": "2025-10-20T21:00:40Z",
+      "language": "TypeScript"
+    }
+  ],
   "calendar": {
-    "total": 1230,
+    "total": 1256,
     "days": [
       {
         "date": "2025-10-05",
@@ -1833,6 +1861,21 @@
         "date": "2026-10-04",
         "count": 48,
         "level": 2
+      },
+      {
+        "date": "2026-10-05",
+        "count": 26,
+        "level": 1
+      },
+      {
+        "date": "2026-10-06",
+        "count": 0,
+        "level": 0
+      },
+      {
+        "date": "2026-10-07",
+        "count": 0,
+        "level": 0
       }
     ]
   }

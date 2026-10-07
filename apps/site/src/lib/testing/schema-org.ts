@@ -62,7 +62,11 @@ export function vocabularyProblems(node: unknown, path = 'graph'): string[] {
         }
       }
     }
-    if (/^date|Date$/.test(key) && typeof value === 'string' && !/^\d{4}-\d{2}-\d{2}/.test(value)) {
+    if (
+      /^date|Date$/.test(key) &&
+      typeof value === 'string' &&
+      !/^\d{4}(-\d{2}-\d{2})?/.test(value)
+    ) {
       problems.push(`${path}.${key}: ${value} is not an ISO 8601 date`);
     }
     problems.push(...vocabularyProblems(value, `${path}.${key}`));

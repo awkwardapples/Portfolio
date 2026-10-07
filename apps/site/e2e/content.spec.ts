@@ -146,13 +146,23 @@ test.describe('documents', () => {
 
   test('"Cite" shows plain-text and BibTeX citations with copy buttons', async ({ page }) => {
     await page.goto('/research');
-    await page.locator('summary', { hasText: 'Cite' }).first().click();
+    await page.locator('summary', { hasText: 'Extracting magnetic information' }).click();
     const panel = page.locator('details[open]').first();
+    // Josh's choice of name in citations: J Lennon.
     await expect(panel).toContainText('Lennon, J. (2025).');
     await expect(panel).toContainText('@thesis{lennon2025extracting,');
-    await expect(panel).toContainText('type        = {BSc dissertation},');
+    await expect(panel).toContainText('author      = {Lennon, J},');
+    await expect(panel).toContainText('type        = {BSc Artificial Intelligence dissertation},');
     await expect(panel.getByRole('button', { name: /^Copy/ })).toHaveCount(2);
     await expectNoSeriousViolations(page);
+  });
+
+  test('a co-authored paper cites both authors', async ({ page }) => {
+    await page.goto('/research');
+    await page.locator('summary', { hasText: 'Introduction to Deep Learning' }).click();
+    const panel = page.locator('details[open]').first();
+    await expect(panel).toContainText('Lennon, J., & Mukherjee, A. (2025).');
+    await expect(panel).toContainText('author      = {Lennon, J and Mukherjee, Anirbit},');
   });
 });
 
@@ -183,7 +193,8 @@ test.describe('about', () => {
   test('shows the timeline newest first and the skills', async ({ page }) => {
     await page.goto('/about');
     const items = page.locator('.timeline > li h3');
-    await expect(items.first()).toHaveText('MSc Artificial Intelligence');
+    // Newest first: the Mercor contract (August 2026) leads.
+    await expect(items.first()).toHaveText('AI Expert [Contract]');
     await expect(page.getByRole('heading', { name: 'Skills' })).toBeVisible();
   });
 });

@@ -315,6 +315,11 @@ test.describe('keyboard (spec R)', () => {
     await tabTo(page, page.getByRole('button', { name: 'Next', exact: true }));
     await page.keyboard.press('Enter');
 
+    // The music result: the music on the site, before any details.
+    await expect(page.getByRole('heading', { name: 'Music' })).toBeFocused();
+    await tabTo(page, page.getByRole('button', { name: 'Send Josh a message' }));
+    await page.keyboard.press('Enter');
+
     await expect(page.getByRole('heading', { name: 'Your details' })).toBeFocused();
     await tabTo(page, page.getByRole('textbox', { name: 'Your name' }));
     await page.keyboard.type('Keyboard Visitor');

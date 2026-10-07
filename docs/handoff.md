@@ -16,17 +16,9 @@ The full list, with each item's reason, is under Open items in [`current-state.m
 
 1. **Cloudflare**, [`deployment.md`](deployment.md) steps 1 to 3. Merges deploy as soon as the two repository secrets exist; until then the deploy job passes with a "Deploy skipped" notice.
 2. **The contact form**, steps 4 to 6: Turnstile, [Make.com](make-com.md) and the four Worker secrets. Until then messages are stored in D1 and wait to be forwarded.
-3. **The domain**, steps 8 to 12: `joshlennon.com` on Cloudflare and attached to the Worker, `www` redirected, `workers.dev` switched off, and Email Routing for `hello@`.
+3. **The domain**, steps 8 to 11: `joshlennon.com` on Cloudflare and attached to the Worker, `www` redirected, and `workers.dev` switched off.
 4. **A screen-reader pass** (VoiceOver or NVDA). The checklist is in `current-state.md`.
-5. **Content**, which turns drafts into pages:
-   - the GrowTrades facts (it is the one case study);
-   - music links and footage;
-   - LinkedIn;
-   - the CV;
-   - the headshot;
-   - the deep-learning paper without the personal address.
-
-   `pnpm content:todo` prints every gap.
+5. **Content is in** (7 October 2026). `pnpm content:todo` prints any placeholder or draft that comes back; today there are none. What could still be added is under "As content arrives" in [`roadmap.md`](roadmap.md).
 
 ## Everyday tasks
 
@@ -69,9 +61,9 @@ When something is added, these are the places to update:
 
 - **Never invent facts about Josh.** Missing facts are `TODO(josh)` placeholders, and they keep the entry a draft.
 - **Mercor:** nothing beyond the confirmed lines. Never name or hint at Mercor's clients, never describe the role as employment, and keep "[Contract]" in the title.
-- **Keep private data out of the repository and the site:** Josh's personal email address, secret values (the Make.com webhook URL above all), and real SCB customer data.
+- **Keep private data out of the repository and the site:** secret values (the Make.com webhook URL above all), real SCB customer data, and anyone's home address or personal phone number. Josh's email address (joshlennon71@gmail.com) appears only beside the contact form, in the privacy notice, in the CV and on the paper's title page: Josh's choice, 7 October 2026. The form is the way in, so it goes nowhere else.
 - **The SCB images are licensed.** The sources in `apps/wizard/src/assets/images` are kept byte for byte; only the demo's build copies are re-encoded.
-- **Don't link** the `scb-handyman` or `Handy-Man` repositories, because they hold agency documents.
+- **Don't link** the `scb-handyman` or `Handy-Man` repositories while they hold agency documents; `src/lib/github.ts` refuses them even if they are listed in the profile.
 - **Writing about Josh:** use they/them or no pronouns.
 
 ## Where the record is

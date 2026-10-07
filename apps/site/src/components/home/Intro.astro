@@ -41,10 +41,11 @@ const portraitColumn = Boolean(portrait) || import.meta.env.DEV;
               src={portrait.src}
               alt={portrait.alt}
               formats={['avif', 'webp']}
-              widths={[320, 480, 720, 960].filter((width) => width <= portrait.src.width)}
-              sizes="(min-width: 768px) 30vw, (min-width: 480px) 60vw, 100vw"
-              loading="eager"
-              fetchpriority="high"
+              widths={[320, 480, 680, 960].filter((width) => width <= portrait.src.width)}
+              sizes="(min-width: 768px) 30vw, 24rem"
+              quality={55}
+              loading="lazy"
+              decoding="async"
               class="aspect-portrait h-auto w-full max-w-sm rounded-media object-cover"
             />
           ) : (

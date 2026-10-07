@@ -1,0 +1,15 @@
+{
+  "name": "kerr-web-application",
+  "source": "Kerr microscopy dissertation screencast.mp4",
+  "duration": 82,
+  "width": 1920,
+  "height": 1080,
+  "portrait": false,
+  "player": true,
+  "files": {
+    "1080.av1.mp4": 1471358,
+    "1080.h264.mp4": 1207247,
+    "720.av1.mp4": 890327,
+    "720.h264.mp4": 733892
+  }
+}

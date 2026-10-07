@@ -10,6 +10,7 @@ import Elsewhere from '~/components/home/Elsewhere.astro';
 import GetInTouch from '~/components/home/GetInTouch.astro';
 import GrowTrades from '~/components/home/GrowTrades.astro';
 import Intro from '~/components/home/Intro.astro';
+import Lately from '~/components/home/Lately.astro';
 import Music from '~/components/home/Music.astro';
 import Pending from '~/components/home/Pending.astro';
 import ResearchShelf, { type ShelfItem } from '~/components/home/ResearchShelf.astro';
@@ -17,7 +18,7 @@ import SelectedWork from '~/components/home/SelectedWork.astro';
 import Threshold from '~/components/home/Threshold.astro';
 import BaseLayout from '~/layouts/BaseLayout.astro';
 import { bibtexCitation, plainCitation } from '~/lib/citation';
-import { dateOf, getFeaturedWork, getProfile, getWork } from '~/lib/content';
+import { dateOf, getFeaturedWork, getPosts, getProfile, getWork } from '~/lib/content';
 import { publicFileSize } from '~/lib/documents';
 import { intentCtas, selectWork, type HomeSection } from '~/lib/home';
 import { INTENTS } from '~/lib/intents';
@@ -31,6 +32,7 @@ const sentence =
 
 const profile = await getProfile();
 const work = await getWork();
+const posts = await getPosts();
 const selected = selectWork(await getFeaturedWork(), work);
 
 // The shelf: the newest documents across all work, up to three (spec G.3).
@@ -40,7 +42,11 @@ const shelf: ShelfItem[] = work
     const date = dateOf(entry.data.date);
     return entry.data.documents.map((document) => {
       const input = date
-        ? citationInput(entry.data, document, { name: profile.name, site, date })
+        ? citationInput(entry.data, document, {
+          name: profile.citationName ?? profile.name,
+          site,
+          date,
+        })
         : undefined;
       return {
         document,
@@ -100,11 +106,7 @@ const options = INTENTS.filter((intent) => sections.has(intent.target as HomeSec
       />
     )
   }
-  <Pending
-    title="Outside work"
-    needs="Photos needed: performing, badminton, university, each with a caption"
-  />
-  <Pending title="Lately" needs="Appears once the first log post is published" />
+  <Lately posts={posts} />
   <Elsewhere profile={profile} />
   <GetInTouch profile={profile} />
 </BaseLayout>

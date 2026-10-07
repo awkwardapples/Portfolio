@@ -49,7 +49,7 @@ describe('embedFor', () => {
       'http://youtu.be/wWAGaOdlyMw',
       'https://youtu.be/short',
       '/work/kerr-microscopy-dissertation',
-      'mailto:hello@joshlennon.com',
+      'mailto:someone@example.com',
     ]) {
       expect(embedFor(href, 'x'), href).toBeUndefined();
     }

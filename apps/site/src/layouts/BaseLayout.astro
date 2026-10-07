@@ -5,6 +5,7 @@
  */
 import '~/styles/global.css';
 
+import plexRoman from '@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-latin-wght-normal.woff2?url';
 import stixRoman from '@fontsource-variable/stix-two-text/files/stix-two-text-latin-wght-normal.woff2?url';
 
 import Footer from '~/components/Footer.astro';
@@ -41,8 +42,13 @@ const { title, description, noindex = false, image, structuredData } = Astro.pro
       image={image}
       structuredData={structuredData}
     />
-    <!-- Only the STIX roman file is preloaded: page titles and the threshold use it (spec E.3). -->
+    <!--
+      The two roman files are preloaded (spec E.3, P.2): STIX for titles and the threshold,
+      IBM Plex Sans for the text that is often the largest paint (the threshold sentence).
+      The italics load only when used.
+    -->
     <link rel="preload" href={stixRoman} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={plexRoman} as="font" type="font/woff2" crossorigin />
     <slot name="head" />
   </head>
   <body>

@@ -102,10 +102,10 @@ export function intentCtas({
         research ? { label: 'Read the research', href: research } : undefined,
         conversation('Start a conversation', 'research'),
       ) ?? looking,
-    website:
+    experience:
       pair(
         growtrades ? { label: 'See GrowTrades', href: growtrades } : undefined,
-        conversation('Talk about your website', 'website'),
+        conversation('Start a conversation', 'experience'),
       ) ?? looking,
     music:
       pair(

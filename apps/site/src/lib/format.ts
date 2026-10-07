@@ -52,3 +52,13 @@ export function isoDate(date: Date): string {
 export function monthYear(date: Date): string {
   return date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 }
+
+/** A work entry's date as people read it: "August 2025", or "2026" when only the year is known. */
+export function workDateLabel(date: Date, precision?: 'year'): string {
+  return precision === 'year' ? String(date.getUTCFullYear()) : monthYear(date);
+}
+
+/** The same date for `datetime` and structured data: "2025-08-11", or "2026". */
+export function workDateIso(date: Date, precision?: 'year'): string {
+  return precision === 'year' ? String(date.getUTCFullYear()) : isoDate(date);
+}

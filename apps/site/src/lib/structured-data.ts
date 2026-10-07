@@ -142,6 +142,8 @@ export interface WorkInput {
   summary: string;
   kind: string;
   date?: Date | undefined;
+  /** 'year' when only the year is known: the date is then given as "2026". */
+  datePrecision?: 'year' | undefined;
   updated?: Date | undefined;
   authorship?: string | undefined;
   context?: { institution?: string | undefined; programme?: string | undefined } | undefined;
@@ -173,7 +175,10 @@ export function work(input: WorkInput): Node {
     headline: type === 'ScholarlyArticle' ? input.title.slice(0, 110) : undefined,
     description: input.summary,
     url: input.url,
-    datePublished: isoDate(input.date),
+    datePublished:
+      input.datePrecision === 'year' && input.date
+        ? String(input.date.getUTCFullYear())
+        : isoDate(input.date),
     dateModified: isoDate(input.updated),
     author: authored ? josh : undefined,
     contributor: input.authorship === 'contributor' ? josh : undefined,
