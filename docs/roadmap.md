@@ -10,8 +10,8 @@ Steps 1 to 11 in [`deployment.md`](deployment.md) and a screen-reader pass. The 
 
 Most of these are already built and appear with the content:
 
-- **The first log post.** It fills "Lately" on the homepage and brings `/log`, the feed link and the Log link.
-- **A Spotify release.** A `type: spotify` item in a music entry adds the release to `/music` and the homepage band (only the artist link exists today).
+- **More log posts.** The first (7 October 2026) brought `/log`, the feed and the Log link; "Lately" shows the three newest.
+- **A Spotify release.** A `type: spotify` item in a music entry adds the release to `/music` (today there are the artist link and Josh's screenshot of the profile).
 - **Photos.** The outside-work section (spec G.6) was taken off the homepage until there are photos. The profile already holds them (`photos:`); the section itself needs building when they arrive.
 - **More work.** The news classifier and the London Heathrow programme were left out because their dates and details were not given; `pnpm new work` brings them back when they are.
 

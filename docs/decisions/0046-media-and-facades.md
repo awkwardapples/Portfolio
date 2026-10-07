@@ -38,3 +38,9 @@ Spec K.2 asks for a `<button>`; a link that the script takes over does the same 
 ## Addendum (7 October 2026): repositories listed by the profile
 
 Josh asked for specific repositories to be shown, and pinning cannot be done from the repository. The homepage now lists the repositories named in `profile.yaml` (`githubRepos`, as `owner/name`, in order, up to four), including ones Josh contributes to. With a token the build asks GitHub for each by name (one aliased `repository` lookup per entry, through query variables); without one, the snapshot is filtered to the listed names. `Handy-Man` and `scb-handyman` are refused by `NEVER_LISTED` in `lib/github.ts` even when listed, because they still hold SCB agency documents. The snapshot was refreshed on 7 October 2026.
+
+## Addendum (7 October 2026): the footage as a background, and descriptions of Josh's own
+
+At Josh's request the footage loop became the background of the homepage's music section and of the title on `/music`, instead of a 16:9 band above them. `FootageLoop` gained a `fill` mode: it fills the section, keeps its pause and play button above the text, and plays while a third of the section is visible (the section can be taller than a phone's screen). Text sits on a flat scrim of 65% black (`.footage-scrim`; gradients stay banned). On the brightest frames of the field footage, that keeps paper text and tungsten at small sizes above 4.5:1. Muted text over footage is paper rather than fog (`[data-over-footage]`). The `/music` poster still loads eagerly as the page's largest paint.
+
+A listed repository can carry Josh's own description (`{ repo, description }` in `githubRepos`), applied by `describeRepos` when the page is built. The Hex group project belongs to a teammate, so its GitHub description cannot be changed from Josh's account. The snapshot keeps what GitHub says.
