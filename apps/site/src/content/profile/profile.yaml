@@ -20,6 +20,13 @@ bioShort: >-
   engineering. Built production-oriented SaaS software and conducted independent AI research
   including deep learning, neural networks from first principles and visual computing.
 portrait: { src: ./portrait.jpg, alt: Josh Lennon }
+# Josh's screenshot of the artist profile in the Spotify app (7 October 2026), beside the Spotify
+# link in the music section.
+spotifyScreenshot:
+  src: ./spotify-profile.jpg
+  alt: >-
+    Josh Lennon's artist profile in the Spotify app: 610 monthly listeners, with It Ain't No Big
+    Thing as the most popular track.
 now:
   - Studying for an MSc in Artificial Intelligence at the University of Surrey.
   - Building GrowTrades, lead-generation websites for local trades businesses.
@@ -39,10 +46,14 @@ links:
 cv: { file: /cv.pdf }
 
 # The repositories the homepage lists, in this order (spec M.1). Handy-Man and scb-handyman are
-# never listed while they hold SCB agency documents; src/lib/github.ts refuses them.
+# never listed while they hold SCB agency documents; src/lib/github.ts refuses them. A
+# `description` here replaces GitHub's (the Hex repository belongs to a teammate).
 githubRepos:
   - awkwardapples/neetcode-submissions
-  - fmcewan/COMP34111-AI-Games-Hex-Group34
+  - repo: fmcewan/COMP34111-AI-Games-Hex-Group34
+    description: >-
+      A Monte Carlo AI agent built to compete in the game of Hex. This was a team project that
+      scored well.
   - awkwardapples/BEATLEASE
 
 education:
