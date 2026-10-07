@@ -1,11 +1,14 @@
 ---
 /**
- * Music (spec K.1), on stage: Josh's footage as the hero with a pause
- * control, the releases as Spotify facades, the videos as YouTube facades,
- * and the links. Built only once there is music in the content (like the
- * log, a rest route so getStaticPaths can return nothing); the navigation
- * links it from then on (Nav.astro, Footer.astro).
+ * Music (spec K.1), on stage. Josh's footage is the background of the title,
+ * with its pause control and the platforms' marks (Josh's choice, 7 October
+ * 2026); then, in one section, the videos as YouTube facades, the releases as
+ * Spotify facades, and a way to get in touch. Built only once there is music
+ * in the content (like the log, a rest route so getStaticPaths can return
+ * nothing); the navigation links it from then on, as "Hobbies" (Nav.astro,
+ * Footer.astro).
  */
+import MusicLinks from '~/components/MusicLinks.astro';
 import Section from '~/components/Section.astro';
 import Spotify from '~/components/media/Spotify.astro';
 import YouTube from '~/components/media/YouTube.astro';
@@ -36,77 +39,86 @@ const { spotify, youtube } = profile.links;
     ...content.videos.map((item) => video(item)),
   ]}
 >
-  <Section surface="stage" labelledby="music-heading" width="full">
+  <section
+    data-surface="stage"
+    data-over-footage
+    aria-labelledby="music-heading"
+    class="music-title relative isolate flex overflow-hidden"
+  >
     {
       // The loop opens this page: its poster is the largest paint, and its code waits until after.
       content.loop && (
         <FootageLoop
           client:afterload
           priority
+          fill
           name={content.loop.name}
           title={content.loop.title}
         />
       )
     }
-    <div class="mx-auto max-w-content px-4 pt-section-sm sm:px-6 lg:px-8">
-      <h1 id="music-heading" class="text-display">{profile.artistName}</h1>
+    <div
+      class="relative mx-auto flex w-full max-w-content flex-col justify-end px-4 pb-section-sm pt-section-sm sm:px-6 lg:px-8"
+    >
+      <p class="text-sm font-medium text-tungsten">Music</p>
+      <h1 id="music-heading" class="mt-2 max-w-reading text-4xl lg:text-5xl">
+        I also make music as a hobby
+      </h1>
+      <MusicLinks class="mt-6" spotify={spotify} youtube={youtube} />
     </div>
-  </Section>
+  </section>
 
-  {
-    content.releases.length > 0 && (
-      <Section surface="stage" labelledby="releases-heading">
-        <h2 id="releases-heading" class="text-3xl">
-          Releases
-        </h2>
-        <div class="mt-heading-gap flex flex-col gap-8">
-          {content.releases.map((release) => (
-            <Spotify url={release.url} title={release.title} />
-          ))}
-        </div>
-      </Section>
-    )
-  }
-
-  {
-    content.videos.length > 0 && (
-      <Section surface="stage" labelledby="videos-heading">
-        <h2 id="videos-heading" class="text-3xl">
-          Videos
-        </h2>
-        <div class="mt-heading-gap grid gap-8 md:grid-cols-2">
-          {content.videos.map((video) => (
-            <YouTube id={video.id} title={video.title} />
-          ))}
-        </div>
-      </Section>
-    )
-  }
-
-  <Section surface="stage" labelledby="music-links-heading">
-    <h2 id="music-links-heading" class="sr-only">Links</h2>
-    <ul class="flex flex-wrap gap-x-6 gap-y-3" role="list">
-      {
-        spotify && (
-          <li>
-            <a href={spotify} class={buttonClass({ variant: 'quiet', surface: 'stage' })}>
-              Spotify
-            </a>
-          </li>
-        )
-      }
-      {
-        youtube && (
-          <li>
-            <a href={youtube} class={buttonClass({ variant: 'quiet', surface: 'stage' })}>
-              YouTube
-            </a>
-          </li>
-        )
-      }
-      <li>
-        <a href="/contact?intent=music" class={buttonClass({ surface: 'stage' })}>Get in touch</a>
-      </li>
-    </ul>
+  <Section surface="stage">
+    {
+      content.videos.length > 0 && (
+        <section aria-labelledby="videos-heading">
+          <h2 id="videos-heading" class="text-3xl">
+            Videos
+          </h2>
+          <div class="mt-heading-gap grid gap-8 md:grid-cols-2">
+            {content.videos.map((video) => (
+              <YouTube
+                id={video.id}
+                title={video.title}
+                sizes="(min-width: 1200px) 35rem, (min-width: 768px) 50vw, 100vw"
+              />
+            ))}
+          </div>
+        </section>
+      )
+    }
+    {
+      content.releases.length > 0 && (
+        <section
+          aria-labelledby="releases-heading"
+          class:list={[content.videos.length > 0 && 'mt-section-sm']}
+        >
+          <h2 id="releases-heading" class="text-3xl">
+            Releases
+          </h2>
+          <div class="mt-heading-gap flex flex-col gap-8">
+            {content.releases.map((release) => (
+              <Spotify url={release.url} title={release.title} />
+            ))}
+          </div>
+        </section>
+      )
+    }
+    <p class="mt-heading-gap">
+      <a href="/contact?intent=music" class={buttonClass({ surface: 'stage' })}>Get in touch</a>
+    </p>
   </Section>
 </BaseLayout>
+
+<style>
+  /* Tall enough for the footage to read as a scene; the text sits at its foot. */
+  .music-title {
+    min-height: 60svh;
+  }
+
+  @media (min-width: 768px) {
+    .music-title {
+      min-height: 70svh;
+    }
+  }
+</style>

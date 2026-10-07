@@ -14,7 +14,7 @@ import Section from '~/components/Section.astro';
 import { buttonClass } from '~/design/button';
 import type { Profile } from '~/lib/content';
 import { isoDate } from '~/lib/format';
-import { githubData } from '~/lib/github';
+import { describeRepos, githubData } from '~/lib/github';
 import { firstAvailable } from '~/lib/oembed';
 
 interface Props {
@@ -22,7 +22,8 @@ interface Props {
 }
 
 const { profile } = Astro.props;
-const { snapshot } = await githubData(profile.githubRepos);
+const { snapshot } = await githubData(profile.githubRepos.map(({ repo }) => repo));
+const repos = describeRepos(snapshot.repos, profile.githubRepos);
 const updated = new Date(snapshot.fetchedAt);
 const updatedLabel = updated.toLocaleDateString('en-GB', {
   day: 'numeric',
@@ -77,9 +78,9 @@ const { linkedin, youtube, spotify } = profile.links;
         <GitHubCalendar calendar={snapshot.calendar} />
       </div>
       {
-        snapshot.repos.length > 0 && (
+        repos.length > 0 && (
           <ul class="mt-6" role="list">
-            {snapshot.repos.map((repo) => (
+            {repos.map((repo) => (
               <li class="border-t border-rule py-4">
                 <a href={repo.url} class="font-medium underline underline-offset-4">
                   {repo.name}

@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-10-07 (launch content)_
+_Last updated: 2026-10-07 (music, the first post and tidy-ups)_
 
 This repository is Josh Lennon's portfolio. It was built in the passes of section V of [`docs/portfolio-spec.md`](portfolio-spec.md) (v1.2) on the `portfolio-transformation` branch, each merged to `main` once its gates were green. All eleven passes are done. What remains is the set-up and content under Open items, in the order [`handoff.md`](handoff.md) gives. The GrowTrades platform's own state, as last recorded, is archived in [`archive/growtrades-platform/current-state.md`](archive/growtrades-platform/current-state.md).
 
@@ -21,6 +21,29 @@ This repository is Josh Lennon's portfolio. It was built in the passes of sectio
 | 10   | SEO foundations, documentation and launch  | Done 2026-10-05 |
 
 ## What exists
+
+### Music, the first post and tidy-ups (2026-10-07)
+
+Josh's second set of changes of 7 October 2026, on `content/music-and-first-post`.
+
+- **The threshold has four answers.** "Music" is gone from "What brings you here?" (ADR-0042 addendum). It stays in the contact form.
+  - Fixed: the CSS that picks each answer's calls to action still used the old `website` id, so returning visitors who had chosen "What experience do you have?" saw no buttons in the intro. A browser test now checks every answer.
+- **The homepage's music section is compact and sits on the footage.**
+  - The Lumix loop fills the section under a flat 65% scrim, with its pause button (ADR-0046 addendum).
+  - It reads "Music", then "I also make music as a hobby".
+  - It shows the two newest videos, the Spotify screenshot (linked to Spotify), the Spotify and YouTube marks, and "More music".
+- **`/music` puts its title over the footage**, with the same introduction and the platforms' marks. The videos and "Get in touch" follow in one section.
+  - The navigation calls the page "Hobbies"; the address stays `/music`.
+- **The platforms' links are their marks.** Spotify and YouTube are icon-only links, named for screen readers and with a tooltip (`MusicLinks.astro`).
+- **New content:**
+  - **"I'm Too Late This Time"** is a new music entry (YouTube, 26 September 2026).
+  - **The Spotify screenshot** is in the profile (`spotifyScreenshot`), processed with `media:images`.
+  - **The first log post**, "Competing in the Open Agent Hackathon 2026", fills "Lately". It brings `/log`, the post's page, the RSS feed and the Log link in the footer, and it heads the About timeline.
+- **The Hex group project is described in Josh's words:** "A Monte Carlo AI agent built to compete in the game of Hex. This was a team project that scored well."
+  - The repository belongs to a teammate, so its GitHub description cannot be changed from Josh's account. `githubRepos` entries can now carry a `description`.
+- **Fixed on the way:**
+  - The post page's "Log" breadcrumb and the post titles in lists are now 44 px targets.
+  - YouTube thumbnails are responsive (480, 800 and 1280 px), so phones no longer fetch the 1280 px still. With two videos, `/music` had gone over its LCP budget in CI.
 
 ### Launch content (2026-10-07)
 
@@ -261,19 +284,19 @@ Josh's content and decisions of 7 October 2026, added on `content/launch`. `pnpm
 - `docs/portfolio-spec.md` committed and excluded from Prettier, so each version Josh supplies stays byte-for-byte as supplied.
 - History scans of every blob on every ref (including inside `.docx`, `.tar.gz` and PDF streams) and every commit message, with values never printed. Before the rewrite, the only live Make.com webhook token and the only Google Sheet link were in `docs/Agency Docs/Technical Onboarding.IPYNB`. After it, a fresh clone from GitHub has neither, and no agency document, in any of its 285 commits. No Turnstile secret key existed anywhere: the `0x4A…` values in tests and the plugin are the public SCB site key, and the `1x/2x/3x000…` values are Cloudflare's documented test keys. Other `hook.eu1.make.com/…` strings are placeholders (`abc123def456`, `<real-id>`), and `.env.example` on `deploy/test-live` has empty values.
 
-## Gate state (last verified: launch content, 2026-10-07)
+## Gate state (last verified: music and the first post, 2026-10-07)
 
 Node 24.21.0, pnpm 9.15.0, Windows.
 
 - `pnpm format:check`: clean.
 - `pnpm lint`: ESLint 0 errors and 0 warnings in the wizard, the site and the Worker; `scripts/check-design.mjs` clean.
 - `pnpm typecheck`: 0 errors (wizard production and test tsconfig, Worker).
-- `pnpm test`: **1,152 passed**: wizard 888 (70 files), site 142 (18 files, now including the listed repositories and the contact intents), Worker 122 (4 files).
+- `pnpm test`: **1,153 passed**: wizard 888 (70 files), site 143 (18 files, now including the listed repositories, Josh's repository descriptions and the contact intents), Worker 122 (4 files).
 - `pnpm --filter @jl/site check`: 0 errors, 0 warnings (one hint: `tseslint.config()` is deprecated).
 - `pnpm --filter @jl/edge test`: 122/122.
 - `pnpm build`: clean, no placeholders in the built site. Builds the wizard, then the SCB demo (1.3 MB, no source maps), then the site and the Worker.
 - `pnpm check:budgets`: homepage 5.8 kB of 40 kB, `/contact` 82 kB of 120 kB (gzip).
-- `pnpm test:e2e`: **151 passed** on desktop and an emulated phone (29 skipped: tests that run on one device only, such as the viewport matrix on desktop and touch sizes on the phone). The GrowTrades case-study tests run now that it is published. Video files are not served to the tests (`e2e/fixtures.ts`): parallel streams dropped `wrangler dev`'s local connection. Every test runs under the enforced Content Security Policy with no violation; zero serious or critical axe violations; no request to another host before interaction on any route.
+- `pnpm test:e2e`: **159 passed** on desktop and an emulated phone (29 skipped: tests that run on one device only, such as the viewport matrix on desktop and touch sizes on the phone). New: every threshold answer's calls to action, the music section and `/music` on the footage (with axe), the Hex description, "Lately" and the first post, and the post in the feed. Video files are not served to the tests (`e2e/fixtures.ts`): parallel streams dropped `wrangler dev`'s local connection. Every test runs under the enforced Content Security Policy with no violation; zero serious or critical axe violations; no request to another host before interaction on any route.
 - Pass 10 acceptance:
   - Structured data validates against schema.org's definitions on every page (browser test). The online validators need the live URL ([`deployment.md`](deployment.md) step 12).
   - The sitemap lists only public pages.
@@ -283,7 +306,7 @@ Node 24.21.0, pnpm 9.15.0, Windows.
 - Lighthouse CI (homepage, `/work/kerr-microscopy-dissertation`, `/work/growtrades`, `/music` and `/contact`; three mobile runs each, run locally with the CI configuration):
   - performance 99 or 100 on all five;
   - accessibility, best practices and SEO 100 on all five;
-  - LCP, median: home 1.96 s, the dissertation 1.88 s, GrowTrades 1.96 s, `/music` 1.88 s, `/contact` 1.65 s;
+  - LCP, median: home 1.82 s, the dissertation 1.88 s, GrowTrades 1.88 s, `/music` 1.89 s, `/contact` 1.66 s. The second video's 1280 px thumbnail pushed `/music` to 2.03 s in CI; YouTube thumbnails now come at 480, 800 and 1280 px, chosen by `sizes`;
   - CLS 0;
   - TBT 0 ms.
 - PHP: none left; the plugin was deleted once the Worker matched it (ADR-0043).
@@ -401,6 +424,10 @@ To confirm (choices made where the content did not say; each is one line to chan
 - **GrowTrades:** authorship "lead", as founder (the facts say "we").
 - **BEATLEASE:** the name and the start (June 2025) come from the repository; the repository has only Josh's commits, hence "sole"; role "Founder and engineer".
 - **"Real Life":** role "Artist", dated by its YouTube upload (20 April 2026); the summary is your note, lightly edited.
+- **"I'm Too Late This Time":** role "Artist" and authorship "sole", from the video's description ("Original song by me"); dated by its YouTube upload (26 September 2026); the title as YouTube has it.
+- **The hackathon post** says the submission "has to be in before 25 October", as Josh said. The event's page says the build window is 22 to 27 October and submissions close on 27 October 2026 at 23:45 UTC. If 27 October is right, change the line in `content/posts/2026-10-07-open-agent-hackathon-2026/index.mdx`.
+- **"Hobbies"** was chosen over "Other work" for `/music` in the navigation (`ROUTES.music.label` in `src/lib/routes.ts`).
+- **The Hex description** capitalises "Monte Carlo" and "Hex".
 - **The CV** publishes a referee's name, university email address and phone number ("Dr Tim Moris", while the address says "tim.morris"). A referee's details on a public CV need their agreement; "References available on request" avoids the question. The site links `/cv.pdf` as given.
 - **The WhatsApp screenshot** is treated as test data: the phone numbers are blacked out and the postcode (M14 6JI) is not a valid one. Confirm "Stan Heather" is not a real customer.
 - **Handy-Man** is not listed on the homepage, although it was asked for: it still holds `docs/Agency Docs` (the agreement, the sales PDF and the onboarding notebook). Make it private, or remove those files and their history, and it can be added to `githubRepos` (and taken out of `NEVER_LISTED`).
@@ -410,7 +437,7 @@ Needs Josh, for set-up:
 
 - **The domain** ([`deployment.md`](deployment.md) steps 8 to 11): `joshlennon.com` on Cloudflare and attached to the Worker, `www` redirected, then `workers.dev` switched off (tell Claude "the domain is live" for the `wrangler.jsonc` change). After launch, step 12: Search Console and the online structured-data validators.
 - **A screen-reader pass before launch** (spec R): VoiceOver (Safari, Mac or iPhone) or NVDA (Windows, free) on the homepage, a work page, `/contact` and `/work/growtrades`. Listen for:
-  - the threshold's question and its five answers;
+  - the threshold's question and its four answers;
   - the work rows' titles and links;
   - the GitHub summary;
   - each wizard step's heading as it changes, and the errors;
@@ -422,7 +449,7 @@ Needs Josh, for set-up:
 - **The contact form** (after the first deploy): a Turnstile widget and the `PUBLIC_TURNSTILE_SITE_KEY` variable, the Make.com scenario ([`make-com.md`](make-com.md), now with the `growtrades` id), and the four Worker secrets. Steps 4 to 6 in [`deployment.md`](deployment.md). Until then, messages are stored in D1 and wait.
 - **GitHub**: `GH_PROFILE_TOKEN` (`deployment.md` step 7) for fresh data on every deploy; the snapshot is from 7 October 2026.
 - **The privacy notice** at `/privacy` is written for what the site does; read it, and check with the ICO's self-assessment whether the data protection fee applies to you. It now gives `joshlennon71@gmail.com` for data requests. It says your inbox and Sheet copies are kept "only as long as I need them"; give a period if you prefer one.
-- **Optional:** the first log post (it fills "Lately"); a Spotify release URL for `/music`; photos for an outside-work section; embedded titles in the PDFs (File, Properties, Title); the first-person bio (spec Y.7).
+- **Optional:** more log posts; a Spotify release URL for `/music`; photos for an outside-work section; embedded titles in the PDFs (File, Properties, Title); the first-person bio (spec Y.7).
 - `awkwardapples/scb-handyman` and `awkwardapples/Handy-Man` are public and still hold the agency documents (SCB's ranking and enquiry figures, the agreement template, the sales PDF), the old Sheet link and the now-rotated webhook token on `main`. Josh is handling these repositories (spec W item 2).
 - GitHub can keep serving the pre-rewrite commits to anyone who already has their hashes until it garbage-collects them; GitHub Support can purge them on request (first changed commit `fa585a21686cd0bb88e015af7870ae735d3e40cb`).
 - Any clone made before the Pass 0 rewrite must be re-cloned rather than pushed from. This machine's clone still holds the old objects in its reflog until `git reflog expire --expire=now --all && git gc --prune=now` is run.

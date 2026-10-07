@@ -1,12 +1,15 @@
 ---
 /**
- * Music on the homepage (spec G.5), a full-bleed stage band: the footage
- * loop with its pause control, the artist name, the latest release and the
- * latest video, then a link to /music. Shown only once there is music in the
- * content.
+ * Music on the homepage (spec G.5), a compact full-bleed stage section with
+ * Josh's footage loop as its background (Josh's choice, 7 October 2026): a
+ * short introduction, the two latest videos, the Spotify screenshot, the
+ * platforms' marks and a link to /music. The loop keeps its pause control.
+ * Shown only once there is music in the content.
  */
-import Section from '~/components/Section.astro';
-import Spotify from '~/components/media/Spotify.astro';
+import type { ImageMetadata } from 'astro';
+
+import MusicLinks from '~/components/MusicLinks.astro';
+import SpotifyProfile from '~/components/media/SpotifyProfile.astro';
 import YouTube from '~/components/media/YouTube.astro';
 import { buttonClass } from '~/design/button';
 import { FootageLoop } from '~/islands/FootageLoop';
@@ -15,25 +18,61 @@ import type { MusicContent } from '~/lib/music';
 import { ROUTES } from '~/lib/routes';
 
 interface Props {
-  artistName: string;
   content: MusicContent<Work>;
+  spotify?: string | undefined;
+  youtube?: string | undefined;
+  spotifyScreenshot?: { src: ImageMetadata; alt: string } | undefined;
 }
 
-const { artistName, content } = Astro.props;
-const [release] = content.releases;
-const [video] = content.videos;
+const { content, spotify, youtube, spotifyScreenshot } = Astro.props;
+const videos = content.videos.slice(0, 2);
+const screenshot = spotify && spotifyScreenshot;
 ---
 
-<Section id="music" surface="stage" labelledby="music-band-heading" width="full">
-  {content.loop && <FootageLoop client:visible name={content.loop.name} title={content.loop.title} />}
-  <div class="mx-auto max-w-content px-4 pt-section-sm sm:px-6 lg:px-8">
-    <h2 id="music-band-heading" class="text-4xl" tabindex="-1" data-landing>{artistName}</h2>
-    <div class="mt-heading-gap grid gap-8 md:grid-cols-2">
-      {release && <Spotify url={release.url} title={release.title} />}
-      {video && <YouTube id={video.id} title={video.title} />}
+<section
+  id="music"
+  data-surface="stage"
+  data-over-footage
+  aria-labelledby="music-band-heading"
+  class="relative isolate overflow-hidden"
+>
+  {
+    content.loop && (
+      <FootageLoop client:visible fill name={content.loop.name} title={content.loop.title} />
+    )
+  }
+  <div class="relative mx-auto max-w-content px-4 py-section-sm sm:px-6 lg:px-8">
+    <p class="text-sm font-medium text-tungsten">Music</p>
+    <h2 id="music-band-heading" class="mt-2 text-3xl sm:text-4xl" tabindex="-1" data-landing>
+      I also make music as a hobby
+    </h2>
+    <div class="mt-heading-gap grid gap-8 sm:grid-cols-2 lg:grid-cols-12">
+      {
+        videos.map((video) => (
+          <YouTube
+            id={video.id}
+            title={video.title}
+            sizes="(min-width: 1024px) 38vw, (min-width: 640px) 50vw, 100vw"
+            class="lg:col-span-5"
+          />
+        ))
+      }
+      {
+        screenshot && (
+          <SpotifyProfile
+            href={spotify}
+            screenshot={screenshot}
+            sizes="(min-width: 1024px) 11rem, 8rem"
+            class="w-32 lg:col-span-2 lg:w-full"
+          />
+        )
+      }
     </div>
-    <p class="mt-8">
-      <a href={ROUTES.music.path} class={buttonClass({ variant: 'quiet', surface: 'stage' })}>Music</a>
-    </p>
+    <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2">
+      <MusicLinks spotify={spotify} youtube={youtube} />
+      <a href={ROUTES.music.path} class={buttonClass({ variant: 'quiet', surface: 'stage' })}>
+        More music
+      </a>
+    </div>
   </div>
-</Section>
+</section>

@@ -135,10 +135,21 @@ test.describe('the intro', () => {
     await expect(visibleCtas(page)).toHaveCount(1);
     await expect(visibleCtas(page)).toHaveAttribute('data-cta-for', 'looking');
 
+    // Every answer the threshold offers has its own set (Music is not an answer).
+    const answers = await page
+      .locator('a[data-intent-option]')
+      .evaluateAll((links) => links.map((link) => link.getAttribute('data-intent-option') ?? ''));
+    expect(answers).toEqual(['hiring', 'research', 'experience', 'looking']);
+    for (const answer of answers) {
+      await returnAs(page, answer);
+      await expect(visibleCtas(page), answer).toHaveCount(1);
+      await expect(visibleCtas(page), answer).toHaveAttribute('data-cta-for', answer);
+    }
+
     await returnAs(page, 'research');
-    await expect(visibleCtas(page)).toHaveCount(1);
-    await expect(visibleCtas(page)).toHaveAttribute('data-cta-for', 'research');
     await expect(visibleCtas(page).getByRole('link').first()).toHaveText('Read the research');
+    await returnAs(page, 'experience');
+    await expect(visibleCtas(page).getByRole('link').first()).toHaveText('See GrowTrades');
   });
 
   test('links only to destinations that exist', async ({ page, request }) => {

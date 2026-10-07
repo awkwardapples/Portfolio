@@ -1,0 +1,33 @@
+---
+/**
+ * Josh's music on Spotify and YouTube, as the platforms' marks rather than
+ * their names (Josh's choice, 7 October 2026). Each is an icon-only link: its
+ * name is in aria-label and shown as a tooltip on hover and focus (spec E.6).
+ */
+import BrandIcon from '~/components/BrandIcon.astro';
+
+interface Props {
+  spotify?: string | undefined;
+  youtube?: string | undefined;
+  class?: string;
+}
+
+const { spotify, youtube, class: className } = Astro.props;
+const links: { href: string; name: string; icon: 'spotify' | 'youtube' }[] = [];
+if (spotify) links.push({ href: spotify, name: 'Spotify', icon: 'spotify' });
+if (youtube) links.push({ href: youtube, name: 'YouTube', icon: 'youtube' });
+---
+
+{
+  links.length > 0 && (
+    <ul class:list={['flex items-center gap-2', className]} role="list">
+      {links.map((link) => (
+        <li>
+          <a href={link.href} class="icon-button" aria-label={link.name} data-tooltip={link.name}>
+            <BrandIcon name={link.icon} class="h-6 w-6" />
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}

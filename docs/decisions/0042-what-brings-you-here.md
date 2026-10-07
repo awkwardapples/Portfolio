@@ -61,3 +61,7 @@ Spec G.0 asks the homepage to put one question first, "What brings you here?", a
 - Work pages joined the "never shows on other routes" browser test in Pass 5.
 - A new intent is a new entry in `intents.ts` and a label in `lib/intents.ts`; the Worker accepts it with no change.
 - Labels and copy can change freely; ids and option values are contracts (stored rows, the webhook payload, the Sheet's columns).
+
+## Addendum (7 October 2026): four answers
+
+Josh took "Music" out of the threshold: music is a hobby, and its homepage section is there for everyone who scrolls. The answers are "I'm hiring", "Research", "What experience do you have?" (the former website answer, renamed the same day) and "Just looking around". Music stays an option in the contact form ("Contact my management"). Choosing it there now stores "just looking" for the homepage, which no longer has a music set of calls to action. The CSS that shows each answer's calls to action had kept the old `website` id, so returning visitors who chose "What experience do you have?" saw none; it now uses `experience`, and a browser test checks every answer the threshold offers.

@@ -14,6 +14,12 @@ export interface FootageLoopProps {
   hasPortrait?: boolean;
   /** The loop opens the page (on /music): its poster loads at once, not lazily. */
   priority?: boolean;
+  /**
+   * The loop is the background of its section (the homepage's music section and
+   * the /music title): it fills the nearest positioned ancestor under a flat
+   * scrim, so text can sit on it, instead of keeping its own 16:9 box.
+   */
+  fill?: boolean;
   class?: string;
 }
 
@@ -33,13 +39,16 @@ interface NetworkInformation {
  * it never starts by itself with reduced motion, Save-Data or a slow
  * connection, where the button reads "Play". The pause and play button is
  * always there. The video itself is decorative and hidden from assistive
- * technology; the button is not.
+ * technology; the button is not. As a background (`fill`), it plays while a
+ * third of the section is visible, since the section can be taller than the
+ * screen.
  */
 export function FootageLoop({
   name,
   title,
   hasPortrait = false,
   priority = false,
+  fill = false,
   class: className,
 }: FootageLoopProps): ReactElement {
   const base = `/media/video/${name}`;
@@ -102,11 +111,11 @@ export function FootageLoop({
           void video.play().catch(() => undefined);
         else video.pause();
       },
-      { threshold: 0.5 },
+      { threshold: fill ? 0.3 : 0.5 },
     );
     visible.observe(root);
     return () => visible.disconnect();
-  }, [sources, auto]);
+  }, [sources, auto, fill]);
 
   const toggle = () => {
     const video = videoRef.current;
@@ -136,7 +145,7 @@ export function FootageLoop({
   return (
     <div
       ref={rootRef}
-      className={`relative aspect-video w-full overflow-hidden bg-stage ${className ?? ''}`}
+      className={`${fill ? 'absolute inset-0' : 'relative aspect-video w-full'} overflow-hidden bg-stage ${className ?? ''}`}
     >
       <picture>
         <source
@@ -171,7 +180,8 @@ export function FootageLoop({
           <source key={source.src} src={source.src} type={source.type} />
         ))}
       </video>
-      <div className="absolute bottom-4 right-4" data-surface="stage">
+      {fill && <div aria-hidden="true" className="footage-scrim absolute inset-0" />}
+      <div className="absolute bottom-4 right-4 z-10" data-surface="stage">
         <Tooltip label={label}>
           <button
             type="button"

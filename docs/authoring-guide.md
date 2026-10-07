@@ -109,7 +109,7 @@ import photo from './photo.jpg';
 
 ## Music
 
-The music page, the homepage's music band, the Music link and the threshold's "Music" answer all appear as soon as there is one music entry. Create it with `pnpm new work --kind music --title "Release or video title"`, then list what to show under `media:`:
+The music page, the homepage's music section and the "Hobbies" link (the navigation's name for `/music`) all appear as soon as there is one music entry. Music is not an answer to "What brings you here?". Create it with `pnpm new work --kind music --title "Release or video title"`, then list what to show under `media:`:
 
 ```yaml
 media:
@@ -125,9 +125,9 @@ media:
     loop: true
 ```
 
-Releases and videos show as players that load nothing from Spotify or YouTube until someone presses Play; their titles and artwork are fetched when the site builds. The first `loop: true` video becomes the footage behind your name. Make it on your machine with `pnpm media:video clip.mov --name stage` (see [`media-pipeline.md`](media-pipeline.md)); it is muted, pauses when off screen, and never plays by itself for people who ask for less motion or save data. Add your Spotify artist page to `links.spotify` in the profile for the links at the end of the page.
+Releases and videos show as players that load nothing from Spotify or YouTube until someone presses Play; their titles and artwork are fetched when the site builds. The homepage section shows the two newest videos; `/music` shows them all. The first `loop: true` video becomes the background of the homepage's music section and of the title on `/music`, under a flat dark scrim so the text on it stays readable. Make it on your machine with `pnpm media:video clip.mov --name stage` (see [`media-pipeline.md`](media-pipeline.md)); it is muted, pauses when off screen, and never plays by itself for people who ask for less motion or save data. Add your Spotify artist page to `links.spotify` and your YouTube channel to `links.youtube` in the profile: they show as the platforms' marks. A phone screenshot of your Spotify profile goes in `spotifyScreenshot` (`src` beside `profile.yaml`, prepared with `pnpm media:images ... --to apps/site/src/content/profile`, and `alt` saying what it shows); the homepage's music section shows it, linked to Spotify.
 
-GitHub: the calendar updates on every deploy. The repositories listed are the ones in `githubRepos` in the profile (as `owner/name`, in order, up to four); `Handy-Man` and `scb-handyman` are never listed while they hold agency documents.
+GitHub: the calendar updates on every deploy. The repositories listed are the ones in `githubRepos` in the profile (as `owner/name`, in order, up to four); `Handy-Man` and `scb-handyman` are never listed while they hold agency documents. To describe a repository in your own words, for example a team repository whose GitHub description you cannot change, write it as `{ repo: owner/name, description: ... }`.
 
 ## The profile
 

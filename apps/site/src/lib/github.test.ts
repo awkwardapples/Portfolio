@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   calendarWeeks,
+  describeRepos,
   githubQuery,
   loadGitHub,
   monthlyTotals,
@@ -200,6 +201,32 @@ describe('calendar helpers', () => {
     expect(monthlyTotals(days)).toEqual([
       { month: 'September 2026', total: 3 },
       { month: 'October 2026', total: 2 },
+    ]);
+  });
+});
+
+describe('describeRepos', () => {
+  const repo = (fullName: string, description: string | null) => ({
+    fullName,
+    name: fullName.split('/')[1] ?? fullName,
+    description,
+    url: `https://github.com/${fullName}`,
+    stars: 0,
+    pushedAt: '2026-01-01T00:00:00Z',
+    language: null,
+  });
+
+  it("uses Josh's description where the profile gives one, and GitHub's otherwise", () => {
+    const described = describeRepos(
+      [repo('team/Hex-Group34', 'Group 34 implementation.'), repo('josh/own', 'From GitHub.')],
+      [
+        { repo: 'Team/hex-group34', description: 'A Monte Carlo agent for Hex.' },
+        { repo: 'josh/own', description: undefined },
+      ],
+    );
+    expect(described.map((r) => r.description)).toEqual([
+      'A Monte Carlo agent for Hex.',
+      'From GitHub.',
     ]);
   });
 });

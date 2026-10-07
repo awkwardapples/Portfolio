@@ -105,8 +105,7 @@
   html[data-intent='looking'] [data-cta-for='looking'],
   html[data-intent='hiring'] [data-cta-for='hiring'],
   html[data-intent='research'] [data-cta-for='research'],
-  html[data-intent='website'] [data-cta-for='website'],
-  html[data-intent='music'] [data-cta-for='music'] {
+  html[data-intent='experience'] [data-cta-for='experience'] {
     display: flex;
   }
 
@@ -129,6 +128,20 @@
    */
   [data-surface='stage'] .text-graphite {
     color: theme('colors.fog');
+  }
+
+  /*
+   * The flat scrim over footage that has text on it (FootageLoop's fill mode).
+   * At 65% black, the brightest frames of the field footage stay dark enough
+   * for paper text and tungsten at small sizes (4.5:1).
+   */
+  .footage-scrim {
+    background-color: theme('colors.stage / 65%');
+  }
+
+  /* Over footage, muted text is paper: fog falls below 4.5:1 on the brightest frames. */
+  [data-over-footage] .text-graphite {
+    color: theme('colors.paper');
   }
 
   /* An icon-only control: 44 px target, label in aria-label, tooltip from data-tooltip. */

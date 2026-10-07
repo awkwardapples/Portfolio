@@ -231,6 +231,26 @@ export async function loadGitHub(options: LoadOptions = {}): Promise<{
   return { snapshot: { ...snapshot, repos: listed }, source: 'snapshot' };
 }
 
+/**
+ * The repositories with Josh's own descriptions where the profile gives one.
+ * A team repository's description belongs to its owner on GitHub, so it is
+ * replaced here; the snapshot keeps what GitHub says.
+ */
+export function describeRepos(
+  repos: readonly GitHubRepo[],
+  listed: readonly { repo: string; description?: string | undefined }[],
+): GitHubRepo[] {
+  const own = new Map(
+    listed.flatMap(({ repo, description }) =>
+      description ? [[repo.toLowerCase(), description] as const] : [],
+    ),
+  );
+  return repos.map((repo) => {
+    const description = own.get(repo.fullName.toLowerCase());
+    return description ? { ...repo, description } : repo;
+  });
+}
+
 let cached: ReturnType<typeof loadGitHub> | undefined;
 
 /** One fetch per build, shared by every page that shows GitHub. */

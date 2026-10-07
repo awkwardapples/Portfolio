@@ -3,7 +3,9 @@
  * A YouTube video as a facade (spec K.2, N.7, P.2): nothing loads from
  * YouTube until the visitor asks. The title and thumbnail come from oEmbed
  * at build time (src/lib/oembed.ts) and the thumbnail is served from this
- * site; without them, a plain stage panel with the content's title.
+ * site, at the width the layout needs (`sizes`), so a phone does not fetch
+ * the 1280 px still; without them, a plain stage panel with the content's
+ * title.
  *
  * "Play video" is a link to the video on YouTube, so it works without
  * JavaScript; with JavaScript (src/scripts/embeds.ts) it swaps in the
@@ -19,10 +21,19 @@ interface Props {
   title: string;
   start?: number | undefined;
   playlist?: string | undefined;
+  /** How wide the facade shows, for choosing the thumbnail's width. */
+  sizes?: string;
   class?: string;
 }
 
-const { id, title: contentTitle, start, playlist, class: className } = Astro.props;
+const {
+  id,
+  title: contentTitle,
+  start,
+  playlist,
+  sizes = '(min-width: 1200px) 71rem, 100vw',
+  class: className,
+} = Astro.props;
 const watch = new URL('https://www.youtube.com/watch');
 watch.searchParams.set('v', id);
 if (playlist) watch.searchParams.set('list', playlist);
@@ -42,10 +53,28 @@ const candidates = [
 ];
 // Only when oEmbed answered (the build is online); otherwise the plain panel stands in.
 const still = info.thumbnail ? await firstAvailable(candidates) : undefined;
+// 480 and 800 px for phones (a 412 px screen at a 1.75 pixel ratio needs 721), the full still
+// for wide screens.
+const widths = still ? [...new Set([480, 800, still.width])].filter((w) => w <= still.width) : [];
+const stills = still
+  ? await Promise.all(
+      widths.map(async (width) => ({
+        width,
+        src: (
+          await getImage({
+            src: still.url,
+            width,
+            height: Math.round((width * still.height) / still.width),
+            format: 'avif',
+          })
+        ).src,
+      })),
+    )
+  : [];
 const poster = still
   ? {
-      src: (await getImage({ src: still.url, width: still.width, height: still.height, format: 'avif' }))
-        .src,
+      src: stills.at(-1)?.src ?? '',
+      srcset: stills.map((image) => `${image.src} ${image.width}w`).join(', '),
       width: still.width,
       height: still.height,
     }
@@ -65,6 +94,8 @@ const title = info.title;
       poster ? (
         <img
           src={poster.src}
+          srcset={poster.srcset}
+          sizes={sizes}
           alt=""
           width={poster.width}
           height={poster.height}
