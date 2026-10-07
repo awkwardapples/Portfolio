@@ -91,7 +91,7 @@ The homepage's GitHub calendar comes from a snapshot in the repository until thi
 1. GitHub > **Settings > Developer settings > Personal access tokens > Fine-grained tokens > Generate new token**.
 2. Name it "joshlennon.com build", expiry up to a year, **Repository access: Public repositories (read-only)**. No other permissions are needed.
 3. Copy the token, then in **awkwardapples/Portfolio > Settings > Secrets and variables > Actions > New repository secret** add `GH_PROFILE_TOKEN` with it (or `gh secret set GH_PROFILE_TOKEN --repo awkwardapples/Portfolio`).
-4. Pin up to four repositories on your GitHub profile to list them on the site.
+4. The repositories the homepage lists are chosen in `profile.yaml` (`githubRepos`), not by pinning.
 
 ## The domain and launch (Pass 10)
 
@@ -126,22 +126,16 @@ Spec S asks for one address, so once steps 9 and 10 work the `workers.dev` copy 
 
 The routes line records in the repository the domain you attached in step 9, so a deploy never detaches it. Check: after the deploy, the `workers.dev` address no longer serves the site and `joshlennon.com` still does. Then remove the `workers.dev` hostname from the Turnstile widget (step 4).
 
-### 12. Email for hello@joshlennon.com
-
-1. **joshlennon.com > Email > Email Routing > Get started**, and add the records Cloudflare proposes.
-2. **Routing rules > Create address**: `hello`, action **Send to an email**, your own inbox. Cloudflare sends that inbox a link to confirm it. Your own address is typed only into this dashboard, never into the repository.
-3. Check: a message to `hello@joshlennon.com` from another account arrives in your inbox. Email Routing only receives; replies go from your own address unless your mail provider can send as another address.
-
-### 13. Search engines (optional)
+### 12. Search engines (optional)
 
 1. Google Search Console > **Add property > Domain** `joshlennon.com`, verified with the TXT record (Cloudflare can add it for you). Then **Sitemaps** > `https://joshlennon.com/sitemap-index.xml`. Bing Webmaster Tools can import the property from Search Console.
 2. Run `/`, `/about` and `/work/kerr-microscopy-dissertation` through Google's Rich Results Test and validator.schema.org. The browser tests already check the structured data against schema.org's definitions; these confirm it on the live pages.
 
-### 14. The old domain
+### 13. The old domain
 
 If `superdan1505.com` stays registered, replace the GitHub Pages site behind it with one page that links to `https://joshlennon.com`, so old links do not dead-end (spec S). Claude can make that page in the repository that serves it.
 
-### 15. Visitor counts (optional)
+### 14. Visitor counts (optional)
 
 Cloudflare Web Analytics is cookieless (spec P.2). First add it to `/privacy`, which says the site runs no analytics. Then **Analytics & Logs > Web Analytics > Add a site**. The Content Security Policy already allows its two hosts (ADR-0048).
 

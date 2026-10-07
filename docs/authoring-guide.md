@@ -127,7 +127,7 @@ media:
 
 Releases and videos show as players that load nothing from Spotify or YouTube until someone presses Play; their titles and artwork are fetched when the site builds. The first `loop: true` video becomes the footage behind your name. Make it on your machine with `pnpm media:video clip.mov --name stage` (see [`media-pipeline.md`](media-pipeline.md)); it is muted, pauses when off screen, and never plays by itself for people who ask for less motion or save data. Add your Spotify artist page to `links.spotify` in the profile for the links at the end of the page.
 
-GitHub needs nothing from you here: the calendar updates on every deploy. Pin the repositories you want listed on your GitHub profile; only pinned ones appear.
+GitHub: the calendar updates on every deploy. The repositories listed are the ones in `githubRepos` in the profile (as `owner/name`, in order, up to four); `Handy-Man` and `scb-handyman` are never listed while they hold agency documents.
 
 ## The profile
 

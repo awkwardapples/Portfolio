@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-10-05 (Portfolio Pass 10)_
+_Last updated: 2026-10-07 (launch content)_
 
 This repository is Josh Lennon's portfolio. It was built in the passes of section V of [`docs/portfolio-spec.md`](portfolio-spec.md) (v1.2) on the `portfolio-transformation` branch, each merged to `main` once its gates were green. All eleven passes are done. What remains is the set-up and content under Open items, in the order [`handoff.md`](handoff.md) gives. The GrowTrades platform's own state, as last recorded, is archived in [`archive/growtrades-platform/current-state.md`](archive/growtrades-platform/current-state.md).
 
@@ -21,6 +21,59 @@ This repository is Josh Lennon's portfolio. It was built in the passes of sectio
 | 10   | SEO foundations, documentation and launch  | Done 2026-10-05 |
 
 ## What exists
+
+### Launch content (2026-10-07)
+
+Josh's content and decisions of 7 October 2026, added on `content/launch`. `pnpm content:todo` now finds no placeholders and no drafts.
+
+- **Profile:**
+  - the portrait;
+  - the CV at `/cv.pdf`;
+  - LinkedIn and Spotify;
+  - Mercor from August 2026 (title confirmed);
+  - GrowTrades from 2026;
+  - "J Lennon" in citations (`citationName`).
+
+  The London Heathrow programme was taken out: its name and dates were not given, and the timeline cannot place it without them.
+
+- **Work:**
+  - **The dissertation** names its supervisor, Prof Thomas Thomson. It calls the degree BSc Artificial Intelligence, as on the certificate; the PDF's title page still says Computer Science. It leads with a silent 82-second clip of the web application from the presentation; the narration is left out until it has captions. A raw microscope frame is also shown.
+  - **"Introduction to Deep Learning"** is published (`/work/introduction-to-deep-learning`). It is co-authored with Anirbit Mukherjee, the supervisor, cited as "Lennon, J., & Mukherjee, A. (2025)", and identified as the CV's year-long deep learning study.
+  - **GrowTrades** is published. Its two paragraphs come from Josh's facts, and it adds the WhatsApp notification (Fig. 3) and the SCB homepage as its cover.
+  - **The agentic risk-assessment prototype** is published with its 78-second recording and a cover cut from it.
+  - **BEATLEASE** (the beat platform, named after its repository) is published.
+  - **"Real Life"** is a new music entry, which brings `/music`, the homepage band and the Music link. It has the YouTube video and the graded Lumix footage (6 seconds) as the loop.
+  - The news classifier is removed: no date, role or description was given.
+- **The contact form is the way to get in touch.**
+  - The email address has gone from the homepage band and the footer. It stays only beside the form on `/contact` ("Prefer email?") and in the privacy notice, where UK GDPR needs a contact. It is now `joshlennon71@gmail.com`; `hello@joshlennon.com` was a placeholder and is gone everywhere, along with its Email Routing step.
+  - "Get in touch" no longer names topics: "Whatever brings you here, I'd like to hear from you."
+- **Nothing offers a website.**
+  - The threshold's third answer is "What experience do you have?" (GrowTrades and a live client site). It leads to "Something else" on `/contact`.
+  - The contact form's option is "I'm interested in GrowTrades", with one open question instead of the website questions. Its wizard id is now `growtrades` and its answer field `growtrades_question` (`make-com.md`).
+  - The case study ends with "Start a conversation".
+- **The contact form's other options:**
+  - Music reads "Contact my management".
+  - Hiring adds "Data science" as a kind of work and "Consulting" as an arrangement.
+- **The homepage:**
+  - "Lately" is a real section: the three latest posts, or "No posts yet. Short updates on what I'm working on, studying and making will appear here."
+  - "Outside work" is gone until there are photos.
+- **GitHub lists the repositories named in the profile** (`githubRepos`): neetcode-submissions, the COMP34111 Hex group project and BEATLEASE. Handy-Man was asked for but is refused in code (`NEVER_LISTED`), because it still holds the agency documents. The snapshot was refreshed (ADR-0046 addendum).
+- **Year-only dates:** `date: 2026` shows as "2026", never "January 2026".
+- **Media tools:**
+  - ffmpeg is installed (winget).
+  - `media:video` now takes 5-second loops and `--player` recordings of up to 2 minutes.
+  - It writes mozjpeg and AVIF posters at 800, 1280 and 1920 px.
+  - The footage poster is a lazy picture rather than the video's own poster, which downloaded at once wherever the loop sat.
+- **Fixed on the way:**
+  - The case study scrolled sideways on phones: its code column could not shrink.
+  - Grey captions failed contrast on stage: muted text there is now fog.
+  - Several new links were under 44 px.
+  - Pass 7's case-study browser tests run now that the page exists. One tapped before the frame hydrated.
+- **Performance:**
+  - Both roman fonts are now preloaded.
+  - The portrait is lazy and smaller.
+  - Lighthouse CI covers the GrowTrades case study and `/music` too.
+  - Locally, all five pages score 99 to 100 for performance and 100 for accessibility, best practices and SEO, with LCP 1.65 to 1.96 s.
 
 ### Pass 10: SEO foundations, documentation and launch (2026-10-05)
 
@@ -51,11 +104,10 @@ This repository is Josh Lennon's portfolio. It was built in the passes of sectio
 
   They also check `robots.txt` and the icons.
 
-- **Launch steps.** `deployment.md` steps 8 to 15, for Josh:
+- **Launch steps.** `deployment.md` steps 8 to 14 (as renumbered on 7 October 2026), for Josh:
   - the domain on Cloudflare and attached to the Worker;
   - `www` redirected to the apex;
   - `workers.dev` switched off (a two-line change in `wrangler.jsonc`, marked there);
-  - Email Routing for `hello@`;
   - Search Console and the online validators;
   - the old domain;
   - optional analytics.
@@ -67,7 +119,7 @@ This repository is Josh Lennon's portfolio. It was built in the passes of sectio
   - `media-pipeline.md`: `media:screens` and `media:og`;
   - the authoring guide (`uploadDate`);
   - ADR-0049.
-- **Not done, because it needs Josh's Cloudflare account:** the custom domain, disabling `workers.dev` and Email Routing. They are steps 8 to 12, and the site cannot launch until they are done.
+- **Not done, because it needs Josh's Cloudflare account:** the custom domain and disabling `workers.dev`. They are steps 8 to 11, and the site cannot launch until they are done.
 
 ### Pass 9: Responsive, performance and accessibility hardening (2026-10-05)
 
@@ -209,29 +261,29 @@ This repository is Josh Lennon's portfolio. It was built in the passes of sectio
 - `docs/portfolio-spec.md` committed and excluded from Prettier, so each version Josh supplies stays byte-for-byte as supplied.
 - History scans of every blob on every ref (including inside `.docx`, `.tar.gz` and PDF streams) and every commit message, with values never printed. Before the rewrite, the only live Make.com webhook token and the only Google Sheet link were in `docs/Agency Docs/Technical Onboarding.IPYNB`. After it, a fresh clone from GitHub has neither, and no agency document, in any of its 285 commits. No Turnstile secret key existed anywhere: the `0x4A…` values in tests and the plugin are the public SCB site key, and the `1x/2x/3x000…` values are Cloudflare's documented test keys. Other `hook.eu1.make.com/…` strings are placeholders (`abc123def456`, `<real-id>`), and `.env.example` on `deploy/test-live` has empty values.
 
-## Gate state (last verified: Pass 10, 2026-10-05)
+## Gate state (last verified: launch content, 2026-10-07)
 
 Node 24.21.0, pnpm 9.15.0, Windows.
 
 - `pnpm format:check`: clean.
 - `pnpm lint`: ESLint 0 errors and 0 warnings in the wizard, the site and the Worker; `scripts/check-design.mjs` clean.
 - `pnpm typecheck`: 0 errors (wizard production and test tsconfig, Worker).
-- `pnpm test`: **1,149 passed**: wizard 888 (70 files), site 139 (18 files, now including the structured data), Worker 122 (4 files).
+- `pnpm test`: **1,152 passed**: wizard 888 (70 files), site 142 (18 files, now including the listed repositories and the contact intents), Worker 122 (4 files).
 - `pnpm --filter @jl/site check`: 0 errors, 0 warnings (one hint: `tseslint.config()` is deprecated).
 - `pnpm --filter @jl/edge test`: 122/122.
 - `pnpm build`: clean, no placeholders in the built site. Builds the wizard, then the SCB demo (1.3 MB, no source maps), then the site and the Worker.
-- `pnpm check:budgets`: homepage 5.4 kB of 40 kB, `/contact` 82 kB of 120 kB (gzip).
-- `pnpm test:e2e`: **147 passed** on desktop and an emulated phone (31 skipped: tests that run on one device only, such as the viewport matrix on desktop and touch sizes on the phone, and the case-study tests until GrowTrades is published). Every test runs under the enforced Content Security Policy with no violation; zero serious or critical axe violations; no request to another host before interaction on any route.
+- `pnpm check:budgets`: homepage 5.8 kB of 40 kB, `/contact` 82 kB of 120 kB (gzip).
+- `pnpm test:e2e`: **151 passed** on desktop and an emulated phone (29 skipped: tests that run on one device only, such as the viewport matrix on desktop and touch sizes on the phone). The GrowTrades case-study tests run now that it is published. Video files are not served to the tests (`e2e/fixtures.ts`): parallel streams dropped `wrangler dev`'s local connection. Every test runs under the enforced Content Security Policy with no violation; zero serious or critical axe violations; no request to another host before interaction on any route.
 - Pass 10 acceptance:
-  - Structured data validates against schema.org's definitions on every page (browser test). The online validators need the live URL ([`deployment.md`](deployment.md) step 13).
+  - Structured data validates against schema.org's definitions on every page (browser test). The online validators need the live URL ([`deployment.md`](deployment.md) step 12).
   - The sitemap lists only public pages.
   - Lighthouse accessibility and SEO are 100 on the key pages.
   - Spec X passes on every page (reviewed below).
 - Pass 9 acceptance, still met: budgets; zero serious or critical axe violations; the CSP enforced with no violation on any route or flow the suite runs; no horizontal scroll at any width in the matrix.
-- Lighthouse CI (homepage, `/work/kerr-microscopy-dissertation` and `/contact`; three mobile runs each, run locally with the CI configuration):
-  - performance 99, 99 and 99;
-  - accessibility, best practices and SEO 100 on all three;
-  - LCP 1.74, 1.66 and 1.66 s;
+- Lighthouse CI (homepage, `/work/kerr-microscopy-dissertation`, `/work/growtrades`, `/music` and `/contact`; three mobile runs each, run locally with the CI configuration):
+  - performance 99 or 100 on all five;
+  - accessibility, best practices and SEO 100 on all five;
+  - LCP, median: home 1.96 s, the dissertation 1.88 s, GrowTrades 1.96 s, `/music` 1.88 s, `/contact` 1.65 s;
   - CLS 0;
   - TBT 0 ms.
 - PHP: none left; the plugin was deleted once the Worker matched it (ADR-0043).
@@ -343,20 +395,20 @@ Each page was reviewed at desktop width and on a phone. The homepage was reviewe
 
 ## Open items
 
-Needs Josh, for content (each one keeps an entry or item a draft until it is answered; `pnpm content:todo` has the full list):
+To confirm (choices made where the content did not say; each is one line to change):
 
-- **The deep-learning paper.** The PDF on the old site prints a personal Gmail address on page 1, which spec U.8 keeps off the site, so it is not committed. It is titled "Introduction to Deep Learning" inside but "Understanding Deep Learning" on the old site, and it lists Anirbit Mukherjee as a second author, so it cannot be described as sole or independent work. Needed: a PDF without the personal address, the title to use, and how to describe the authorship.
-- **Degree title on the dissertation.** The dissertation's title page says "Bachelor of Science in Computer Science"; spec 1.2 records the degree as "BSc Artificial Intelligence", which the profile uses. Nothing is changed until Josh says which is right (the PDF itself cannot be changed). The title page also names the supervisor; the entry leaves the name off until Josh says otherwise.
-- **Headshot.** `Headshot.png` (spec U.8) is not on this machine; the profile has no portrait until it is added with `pnpm media:images Headshot.png --to apps/site/src/content/profile --name portrait`.
-- None of the three PDFs has an embedded title. Optional: re-export with File, Properties, Title set.
-- **Selected work.** Only the dissertation is featured and published, so the homepage fills the other rows with the newest published work (today the neural network). The proposed order in spec Y.4 is GrowTrades second, the agentic risk-assessment prototype third once there is evidence, and the deep-learning paper fourth; each needs its draft finished first.
-- **Bio.** The intro uses `bioShort` from spec Y.2 verbatim. The optional first-person bio (spec Y.7) is used only if Josh approves it.
-- **The first log post.** `/log` and the feed's footer links appear with it (`pnpm new post`).
-- **Citations name "Josh Lennon"**, from the profile, while the dissertation's title page says "Joshua Lennon". Either is easy to switch; say which you want in citations.
+- **The agentic prototype:** dated February 2026 (the recording's assessments are dated 15 February 2026); role "Developer and presenter" and authorship "lead", from the CV's "Developed" and "Presented". If it was a team at the hackathon, say who did what.
+- **GrowTrades:** authorship "lead", as founder (the facts say "we").
+- **BEATLEASE:** the name and the start (June 2025) come from the repository; the repository has only Josh's commits, hence "sole"; role "Founder and engineer".
+- **"Real Life":** role "Artist", dated by its YouTube upload (20 April 2026); the summary is your note, lightly edited.
+- **The CV** publishes a referee's name, university email address and phone number ("Dr Tim Moris", while the address says "tim.morris"). A referee's details on a public CV need their agreement; "References available on request" avoids the question. The site links `/cv.pdf` as given.
+- **The WhatsApp screenshot** is treated as test data: the phone numbers are blacked out and the postcode (M14 6JI) is not a valid one. Confirm "Stan Heather" is not a real customer.
+- **Handy-Man** is not listed on the homepage, although it was asked for: it still holds `docs/Agency Docs` (the agreement, the sales PDF and the onboarding notebook). Make it private, or remove those files and their history, and it can be added to `githubRepos` (and taken out of `NEVER_LISTED`).
+- **Not used:** the processed dataset movie (mostly white frames without the app around it) and the Kerr screencast's narration (it needs captions first). The second raw frame, the background image, is kept out too.
 
 Needs Josh, for set-up:
 
-- **The domain and email** ([`deployment.md`](deployment.md) steps 8 to 12): `joshlennon.com` on Cloudflare and attached to the Worker, `www` redirected, then `workers.dev` switched off (tell Claude "the domain is live" for the `wrangler.jsonc` change), and Email Routing for `hello@joshlennon.com`. After launch, step 13: Search Console and the online structured-data validators.
+- **The domain** ([`deployment.md`](deployment.md) steps 8 to 11): `joshlennon.com` on Cloudflare and attached to the Worker, `www` redirected, then `workers.dev` switched off (tell Claude "the domain is live" for the `wrangler.jsonc` change). After launch, step 12: Search Console and the online structured-data validators.
 - **A screen-reader pass before launch** (spec R): VoiceOver (Safari, Mac or iPhone) or NVDA (Windows, free) on the homepage, a work page, `/contact` and `/work/growtrades`. Listen for:
   - the threshold's question and its five answers;
   - the work rows' titles and links;
@@ -367,11 +419,10 @@ Needs Josh, for set-up:
   Record what you find here. The automated checks (axe on every page, keyboard flows) do not replace this.
 
 - **Cloudflare set-up** (blocks the first real deploy, not the merges): account, `workers.dev` subdomain, API token, and the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets. Steps 1 to 3 in [`deployment.md`](deployment.md).
-- **The contact form** (after the first deploy): a Turnstile widget and the `PUBLIC_TURNSTILE_SITE_KEY` variable, the Make.com scenario ([`make-com.md`](make-com.md)), and the four Worker secrets. Steps 4 to 6 in [`deployment.md`](deployment.md). Until then, messages are stored in D1 and wait.
-- **Music** (spec W, K): the Spotify artist URL for `links.spotify`, the releases and music videos to feature, and encoded footage (`pnpm media:video` on a Lumix clip, after `winget install Gyan.FFmpeg`). One music entry brings the page, the band and the Music link.
-- **GitHub**: pin up to four repositories to list them; add `GH_PROFILE_TOKEN` (`deployment.md` step 7) for fresh data on every deploy.
-- **LinkedIn**: the profile URL for `links.linkedin` (the card and the footer link appear with it), and optionally screenshots of your GitHub and LinkedIn profiles for link previews.
-- **The privacy notice** at `/privacy` is written for what the site does; read it, and check with the ICO's self-assessment whether the data protection fee applies to you. It says your inbox and Sheet copies are kept "only as long as I need them"; give a period if you prefer one.
+- **The contact form** (after the first deploy): a Turnstile widget and the `PUBLIC_TURNSTILE_SITE_KEY` variable, the Make.com scenario ([`make-com.md`](make-com.md), now with the `growtrades` id), and the four Worker secrets. Steps 4 to 6 in [`deployment.md`](deployment.md). Until then, messages are stored in D1 and wait.
+- **GitHub**: `GH_PROFILE_TOKEN` (`deployment.md` step 7) for fresh data on every deploy; the snapshot is from 7 October 2026.
+- **The privacy notice** at `/privacy` is written for what the site does; read it, and check with the ICO's self-assessment whether the data protection fee applies to you. It now gives `joshlennon71@gmail.com` for data requests. It says your inbox and Sheet copies are kept "only as long as I need them"; give a period if you prefer one.
+- **Optional:** the first log post (it fills "Lately"); a Spotify release URL for `/music`; photos for an outside-work section; embedded titles in the PDFs (File, Properties, Title); the first-person bio (spec Y.7).
 - `awkwardapples/scb-handyman` and `awkwardapples/Handy-Man` are public and still hold the agency documents (SCB's ranking and enquiry figures, the agreement template, the sales PDF), the old Sheet link and the now-rotated webhook token on `main`. Josh is handling these repositories (spec W item 2).
 - GitHub can keep serving the pre-rewrite commits to anyone who already has their hashes until it garbage-collects them; GitHub Support can purge them on request (first changed commit `fa585a21686cd0bb88e015af7870ae735d3e40cb`).
 - Any clone made before the Pass 0 rewrite must be re-cloned rather than pushed from. This machine's clone still holds the old objects in its reflog until `git reflog expire --expire=now --all && git gc --prune=now` is run.

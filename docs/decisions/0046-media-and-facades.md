@@ -21,7 +21,7 @@ Spec K.2 asks for a `<button>`; a link that the script takes over does the same 
 
 **Only pinned repositories are listed.** Josh chooses what to feature by pinning it on GitHub. With nothing pinned, the section shows the calendar and the profile link only. Listing recent repositories instead was rejected: two of the public ones still hold SCB agency documents (see `current-state.md`), and the portfolio must not point at them.
 
-**LinkedIn** is a plain card from `profile.yaml` (name, headline, current published roles, "View profile on LinkedIn"), shown once the profile URL is there. It does not imitate LinkedIn's interface. The Aceternity link previews are skipped until Josh supplies screenshots of his own profiles (spec M.2).
+**LinkedIn** is a plain card from `profile.yaml` (name, headline, current published roles, "View profile on LinkedIn"), shown once the profile URL is there. It does not imitate LinkedIn's interface. The Aceternity link previews are skipped until Josh supplies screenshots of the GitHub and LinkedIn profiles (spec M.2).
 
 ## Alternatives considered
 
@@ -34,3 +34,7 @@ Spec K.2 asks for a `<button>`; a link that the script takes over does the same 
 - The production build needs network access for fresh titles and thumbnails; offline builds still succeed with fallbacks.
 - `src/data/github.snapshot.json` changes when the deploy refreshes it. The committed copy is the last one fetched on a developer's machine; the deploy builds use the live data.
 - Browser tests record every request on every route and fail on any to another origin before interaction.
+
+## Addendum (7 October 2026): repositories listed by the profile
+
+Josh asked for specific repositories to be shown, and pinning cannot be done from the repository. The homepage now lists the repositories named in `profile.yaml` (`githubRepos`, as `owner/name`, in order, up to four), including ones Josh contributes to. With a token the build asks GitHub for each by name (one aliased `repository` lookup per entry, through query variables); without one, the snapshot is filtered to the listed names. `Handy-Man` and `scb-handyman` are refused by `NEVER_LISTED` in `lib/github.ts` even when listed, because they still hold SCB agency documents. The snapshot was refreshed on 7 October 2026.
