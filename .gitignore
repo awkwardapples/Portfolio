@@ -83,3 +83,6 @@ wp-env-home/
 # Husky — managed but its install state is local
 # =============================================================================
 .husky/_/
+
+# Josh's source files (videos, photos, documents) before the media scripts process them.
+/media/

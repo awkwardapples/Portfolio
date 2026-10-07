@@ -80,6 +80,8 @@ export const profileSchema = ({ image }: SchemaContext) =>
     name: z.string().min(1),
     alternateNames: z.array(z.string().min(1)).default([]),
     artistName: z.string().min(1).default('Josh Lennon'),
+    // How citations name Josh, e.g. "J Lennon" for "Lennon, J."; the name otherwise.
+    citationName: z.string().min(1).optional(),
     location: z.string().min(1).optional(),
     headline: z.strictObject({
       role: z.string().min(1),
@@ -101,6 +103,10 @@ export const profileSchema = ({ image }: SchemaContext) =>
     cv: z
       .strictObject({ file: z.string().regex(/^\/[a-z0-9-]+\.pdf$/, 'e.g. /cv.pdf') })
       .optional(),
+    // The GitHub repositories the homepage lists, as owner/name (spec M.1).
+    githubRepos: z
+      .array(z.string().regex(/^[\w.-]+\/[\w.-]+$/, 'owner/name, e.g. awkwardapples/BEATLEASE'))
+      .default([]),
     education: z.array(education).default([]),
     experience: z.array(experience(image)).default([]),
     skills: z

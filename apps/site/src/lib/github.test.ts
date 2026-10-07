@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   calendarWeeks,
+  githubQuery,
   loadGitHub,
   monthlyTotals,
   parseGitHub,
@@ -22,20 +23,6 @@ const response = {
       avatarUrl: 'https://avatars.githubusercontent.com/u/1?v=4',
       url: 'https://github.com/awkwardapples',
       repositories: { totalCount: 8 },
-      pinnedItems: {
-        nodes: [
-          {
-            name: 'Portfolio',
-            description: 'This site',
-            url: 'https://github.com/awkwardapples/Portfolio',
-            stargazerCount: 2,
-            pushedAt: '2026-10-04T12:00:00Z',
-            isPrivate: false,
-            primaryLanguage: { name: 'TypeScript' },
-          },
-          { name: 'secret', isPrivate: true, url: 'x', stargazerCount: 0, pushedAt: '' },
-        ],
-      },
       contributionsCollection: {
         contributionCalendar: {
           totalContributions: 5,
@@ -55,6 +42,34 @@ const response = {
         },
       },
     },
+    // The listed repositories, in the order asked for.
+    r0: {
+      nameWithOwner: 'awkwardapples/Portfolio',
+      name: 'Portfolio',
+      description: 'This site',
+      url: 'https://github.com/awkwardapples/Portfolio',
+      stargazerCount: 2,
+      pushedAt: '2026-10-04T12:00:00Z',
+      isPrivate: false,
+      primaryLanguage: { name: 'TypeScript' },
+    },
+    r1: {
+      nameWithOwner: 'awkwardapples/secret',
+      name: 'secret',
+      isPrivate: true,
+      url: 'x',
+      stargazerCount: 0,
+      pushedAt: '',
+    },
+    r2: null,
+    r3: {
+      nameWithOwner: 'awkwardapples/Handy-Man',
+      name: 'Handy-Man',
+      isPrivate: false,
+      url: 'https://github.com/awkwardapples/Handy-Man',
+      stargazerCount: 0,
+      pushedAt: '',
+    },
   },
 };
 
@@ -66,10 +81,14 @@ function snapshotFile(): string {
 }
 
 describe('parseGitHub', () => {
-  it('keeps public pinned repositories only, and maps contribution levels to 0 to 4', () => {
+  it('keeps listed public repositories only, never the SCB ones, and maps levels to 0 to 4', () => {
     const snapshot = parseGitHub(response, '2026-10-05T00:00:00.000Z');
-    expect(snapshot.pinned.map((repo) => repo.name)).toEqual(['Portfolio']);
-    expect(snapshot.pinned[0]).toMatchObject({ language: 'TypeScript', stars: 2 });
+    expect(snapshot.repos.map((repo) => repo.name)).toEqual(['Portfolio']);
+    expect(snapshot.repos[0]).toMatchObject({
+      fullName: 'awkwardapples/Portfolio',
+      language: 'TypeScript',
+      stars: 2,
+    });
     expect(snapshot.calendar.total).toBe(5);
     expect(snapshot.calendar.days.map((day) => day.level)).toEqual([0, 2, 1]);
     expect(snapshot.publicRepos).toBe(8);
@@ -80,17 +99,50 @@ describe('parseGitHub', () => {
   });
 });
 
+describe('githubQuery', () => {
+  it('asks for each listed repository in order, through variables, and never for the SCB ones', () => {
+    const { query, variables } = githubQuery('awkwardapples', [
+      'awkwardapples/BEATLEASE',
+      'awkwardapples/Handy-Man',
+      'fmcewan/COMP34111-AI-Games-Hex-Group34',
+    ]);
+    expect(variables).toEqual({
+      login: 'awkwardapples',
+      o0: 'awkwardapples',
+      n0: 'BEATLEASE',
+      o1: 'fmcewan',
+      n1: 'COMP34111-AI-Games-Hex-Group34',
+    });
+    expect(query).toContain('r0: repository(owner: $o0, name: $n0)');
+    expect(query).toContain('r1: repository(owner: $o1, name: $n1)');
+    expect(query).not.toContain('r2:');
+    expect(query).not.toContain('Handy-Man');
+  });
+});
+
 describe('loadGitHub', () => {
   it('uses the snapshot when there is no token, without asking GitHub', async () => {
     const fetchImpl = vi.fn();
     const result = await loadGitHub({
       token: '',
+      repos: ['awkwardapples/portfolio'],
       snapshotPath: snapshotFile(),
       fetchImpl,
       write: false,
     });
     expect(result.source).toBe('snapshot');
     expect(fetchImpl).not.toHaveBeenCalled();
+    expect(result.snapshot.repos.map((repo) => repo.name)).toEqual(['Portfolio']);
+  });
+
+  it('keeps only the repositories still listed when it falls back to the snapshot', async () => {
+    const result = await loadGitHub({
+      token: '',
+      repos: ['awkwardapples/BEATLEASE'],
+      snapshotPath: snapshotFile(),
+      write: false,
+    });
+    expect(result.snapshot.repos).toEqual([]);
   });
 
   it('uses the snapshot, with a warning, when GitHub is unreachable or refuses', async () => {

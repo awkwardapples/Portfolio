@@ -1,0 +1,15 @@
+{
+  "name": "field",
+  "source": "Portfolio Lumix clip.mp4",
+  "duration": 6,
+  "width": 1920,
+  "height": 1080,
+  "portrait": false,
+  "player": false,
+  "files": {
+    "1080.av1.mp4": 496596,
+    "1080.h264.mp4": 3153005,
+    "720.av1.mp4": 275364,
+    "720.h264.mp4": 1022457
+  }
+}

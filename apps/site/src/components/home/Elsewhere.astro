@@ -1,7 +1,7 @@
 ---
 /**
  * Elsewhere (spec G.8, M.1, M.2): GitHub from the build-time snapshot (the
- * calendar, the repositories Josh pins, when it was updated), a LinkedIn
+ * calendar, the repositories listed in profile.yaml, when it was updated), a LinkedIn
  * card from profile.yaml once the profile URL is there, and the YouTube and
  * Spotify links. Nothing here asks GitHub or LinkedIn for anything in the
  * browser; the avatar is downloaded and optimised at build time.
@@ -22,7 +22,7 @@ interface Props {
 }
 
 const { profile } = Astro.props;
-const { snapshot } = await githubData();
+const { snapshot } = await githubData(profile.githubRepos);
 const updated = new Date(snapshot.fetchedAt);
 const updatedLabel = updated.toLocaleDateString('en-GB', {
   day: 'numeric',
@@ -77,9 +77,9 @@ const { linkedin, youtube, spotify } = profile.links;
         <GitHubCalendar calendar={snapshot.calendar} />
       </div>
       {
-        snapshot.pinned.length > 0 && (
+        snapshot.repos.length > 0 && (
           <ul class="mt-6" role="list">
-            {snapshot.pinned.map((repo) => (
+            {snapshot.repos.map((repo) => (
               <li class="border-t border-rule py-4">
                 <a href={repo.url} class="font-medium underline underline-offset-4">
                   {repo.name}
