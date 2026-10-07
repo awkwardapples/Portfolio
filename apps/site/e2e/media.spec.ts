@@ -13,6 +13,8 @@ const ROUTES = [
   '/work/kerr-microscopy-dissertation',
   '/work/neural-network-from-scratch',
   '/research',
+  '/music',
+  '/log/open-agent-hackathon-2026',
   '/about',
   '/contact',
   '/privacy',
@@ -80,5 +82,58 @@ test.describe('Elsewhere', () => {
   test('passes axe', async ({ page }) => {
     await page.goto('/');
     await expectNoSeriousViolations(page, '#elsewhere');
+  });
+});
+
+test("Elsewhere describes the Hex repository in Josh's words, not GitHub's", async ({ page }) => {
+  await page.goto('/');
+  const section = page.locator('#elsewhere');
+  await expect(
+    section.getByText(
+      'A Monte Carlo AI agent built to compete in the game of Hex. This was a team project that scored well.',
+    ),
+  ).toBeVisible();
+  await expect(section.getByText("Group 34's implementation of the AI.")).toHaveCount(0);
+});
+
+test.describe('music', () => {
+  test('the homepage section sits on the footage, with two videos, the Spotify screenshot and the platforms', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const section = page.locator('#music');
+    await expect(section.getByRole('heading', { level: 2 })).toHaveText(
+      'I also make music as a hobby',
+    );
+    // The loop is the section's background: its scrim sits under the text.
+    await expect(section.locator('.footage-scrim')).toBeAttached();
+    await expect(section.getByRole('link', { name: /^Play video/ })).toHaveCount(2);
+    await expect(
+      section.getByRole('link', { name: /artist profile in the Spotify app/ }),
+    ).toHaveAttribute('href', /^https:\/\/open\.spotify\.com\/artist\//);
+    // The platforms as their marks, named for assistive technology.
+    await expect(section.getByRole('link', { name: 'Spotify', exact: true })).toBeVisible();
+    await expect(section.getByRole('link', { name: 'YouTube', exact: true })).toBeVisible();
+    await expect(section.getByRole('link', { name: 'More music' })).toHaveAttribute(
+      'href',
+      '/music',
+    );
+    await expectNoSeriousViolations(page, '#music');
+  });
+
+  test('/music puts its title over the footage, and the navigation calls it "Hobbies"', async ({
+    page,
+  }) => {
+    await page.goto('/music');
+    const title = page.locator('section[aria-labelledby="music-heading"]');
+    await expect(title.getByRole('heading', { level: 1 })).toHaveText(
+      'I also make music as a hobby',
+    );
+    await expect(title.locator('.footage-scrim')).toBeAttached();
+    await expect(title.getByRole('link', { name: 'Spotify', exact: true })).toBeVisible();
+    await expect(title.getByRole('link', { name: 'YouTube', exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: /^Play video/ })).toHaveCount(2);
+    await expect(page.locator('nav[aria-label="Main"] a[href="/music"]')).toHaveText('Hobbies');
+    await expectNoSeriousViolations(page);
   });
 });

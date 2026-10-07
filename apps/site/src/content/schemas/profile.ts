@@ -13,6 +13,8 @@ import { THREADS } from './work';
 
 const yearMonth = z.string().regex(/^\d{4}(-\d{2})?$/, 'Use YYYY or YYYY-MM');
 
+const repoName = z.string().regex(/^[\w.-]+\/[\w.-]+$/, 'owner/name, e.g. awkwardapples/BEATLEASE');
+
 const experience = (image: SchemaContext['image']) =>
   z
     .strictObject({
@@ -91,6 +93,10 @@ export const profileSchema = ({ image }: SchemaContext) =>
     bioShort: z.string().min(1),
     bioLong: orTodo(z.string().min(1)).optional(),
     portrait: z.strictObject({ src: localImage(image), alt: z.string().min(1) }).optional(),
+    // A phone screenshot of Josh's artist profile in the Spotify app, for the music section.
+    spotifyScreenshot: z
+      .strictObject({ src: localImage(image), alt: z.string().min(1) })
+      .optional(),
     now: z.array(z.string().min(1)).default([]),
     links: z.strictObject({
       github: z.url().optional(),
@@ -103,9 +109,15 @@ export const profileSchema = ({ image }: SchemaContext) =>
     cv: z
       .strictObject({ file: z.string().regex(/^\/[a-z0-9-]+\.pdf$/, 'e.g. /cv.pdf') })
       .optional(),
-    // The GitHub repositories the homepage lists, as owner/name (spec M.1).
+    // The GitHub repositories the homepage lists, as owner/name (spec M.1). A repository can
+    // carry Josh's own description in place of GitHub's: { repo: owner/name, description: ... }.
     githubRepos: z
-      .array(z.string().regex(/^[\w.-]+\/[\w.-]+$/, 'owner/name, e.g. awkwardapples/BEATLEASE'))
+      .array(
+        z.union([
+          repoName.transform((repo) => ({ repo, description: undefined })),
+          z.strictObject({ repo: repoName, description: z.string().min(1).max(200) }),
+        ]),
+      )
       .default([]),
     education: z.array(education).default([]),
     experience: z.array(experience(image)).default([]),

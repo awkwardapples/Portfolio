@@ -193,8 +193,11 @@ test.describe('about', () => {
   test('shows the timeline newest first and the skills', async ({ page }) => {
     await page.goto('/about');
     const items = page.locator('.timeline > li h3');
-    // Newest first: the Mercor contract (August 2026) leads.
-    await expect(items.first()).toHaveText('AI Expert [Contract]');
+    // Newest first: the first log post (7 October 2026), the latest song (26 September 2026),
+    // then the Mercor contract (August 2026).
+    await expect(items.nth(0)).toHaveText('Competing in the Open Agent Hackathon 2026');
+    await expect(items.nth(1)).toHaveText("I'm Too Late This Time");
+    await expect(items.nth(2)).toHaveText('AI Expert [Contract]');
     await expect(page.getByRole('heading', { name: 'Skills' })).toBeVisible();
   });
 });
@@ -211,6 +214,27 @@ test.describe('site files', () => {
   test('the RSS feed is valid XML', async ({ request }) => {
     const response = await request.get('/rss.xml');
     expect(response.status()).toBe(200);
-    expect(await response.text()).toMatch(/^<\?xml[^>]*\?><rss/);
+    const feed = await response.text();
+    expect(feed).toMatch(/^<\?xml[^>]*\?><rss/);
+    expect(feed).toContain('/log/open-agent-hackathon-2026');
+  });
+});
+
+test.describe('the log', () => {
+  test('Lately leads with the newest post, and the post has its own page', async ({ page }) => {
+    await page.goto('/');
+    const lately = page.locator('#lately');
+    await expect(lately.getByText('No posts yet', { exact: false })).toHaveCount(0);
+    const post = lately.getByRole('link', { name: 'Competing in the Open Agent Hackathon 2026' });
+    await expect(post).toHaveAttribute('href', '/log/open-agent-hackathon-2026');
+    await post.click();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'Competing in the Open Agent Hackathon 2026',
+    );
+    await expect(page.getByRole('link', { name: 'Open Agent Hackathon 2026' })).toHaveAttribute(
+      'href',
+      'https://hackathon.genai.works/event/open-agent-hackathon-2026',
+    );
+    await expectNoSeriousViolations(page);
   });
 });

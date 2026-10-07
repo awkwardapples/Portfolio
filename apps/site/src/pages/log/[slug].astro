@@ -62,7 +62,11 @@ const structuredData = [
 >
   <Section labelledby="post-title" width="reading">
     <nav aria-label="Breadcrumb" class="text-sm">
-      <a href="/log" class="text-graphite underline underline-offset-4 hover:text-ink">Log</a>
+      <a
+        href="/log"
+        class="inline-flex min-h-11 min-w-11 items-center text-graphite underline underline-offset-4 hover:text-ink"
+        >Log</a
+      >
     </nav>
     <p class="mt-4 flex flex-wrap gap-x-4 text-sm text-graphite">
       {date && <time datetime={isoDate(date)}>{day}</time>}

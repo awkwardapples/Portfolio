@@ -114,7 +114,6 @@ describe('the contact wizards (spec I.3)', () => {
       hiring: 'hiring',
       research: 'research',
       experience: 'other',
-      music: 'music',
       looking: 'other',
     });
   });

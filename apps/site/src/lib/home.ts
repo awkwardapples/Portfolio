@@ -48,7 +48,7 @@ export interface CtaInputs {
   /** The public CV, when there is one: its URL and size ("140 kB"). */
   cv?: { href: string; size?: string } | undefined;
   /** Pages that exist in this build. */
-  pages: { contact: boolean; research: boolean; music: boolean; growtrades: boolean };
+  pages: { contact: boolean; research: boolean; growtrades: boolean };
 }
 
 /**
@@ -83,7 +83,6 @@ export function intentCtas({
 
   const research = destination('research', pages.research ? '/research' : undefined);
   const growtrades = destination('growtrades', pages.growtrades ? '/work/growtrades' : undefined);
-  const music = destination('music', pages.music ? '/music' : undefined);
 
   return {
     hiring:
@@ -106,11 +105,6 @@ export function intentCtas({
       pair(
         growtrades ? { label: 'See GrowTrades', href: growtrades } : undefined,
         conversation('Start a conversation', 'experience'),
-      ) ?? looking,
-    music:
-      pair(
-        music ? { label: 'Listen', href: music } : undefined,
-        conversation('Get in touch', 'music'),
       ) ?? looking,
     looking,
   };

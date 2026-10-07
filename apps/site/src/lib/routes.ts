@@ -16,8 +16,9 @@ export interface SiteRoute {
 export const ROUTES = {
   work: { path: '/work', label: 'Work', ready: true },
   research: { path: '/research', label: 'Research', ready: true },
-  // Built once there is music in the content; Nav and Footer check (lib/music.ts).
-  music: { path: '/music', label: 'Music', ready: true },
+  // Built once there is music in the content; Nav and Footer check (lib/music.ts). Labelled
+  // "Hobbies" rather than "Music" (Josh's choice, 7 October 2026); the address stays /music.
+  music: { path: '/music', label: 'Hobbies', ready: true },
   about: { path: '/about', label: 'About', ready: true },
   // Built once the first post exists; the footer checks (Footer.astro).
   log: { path: '/log', label: 'Log', ready: true },

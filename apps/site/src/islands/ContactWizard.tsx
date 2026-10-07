@@ -46,11 +46,12 @@ export interface ContactWizardProps {
 /** The action the Worker requires on Turnstile tokens (spec Q.2). */
 const TURNSTILE_ACTION = 'contact-submit';
 
+// Music is not a threshold answer, so choosing it here leaves the homepage on its default set.
 const THRESHOLD_FOR: Record<ContactIntentId, string> = {
   hiring: 'hiring',
   research: 'research',
   growtrades: 'experience',
-  music: 'music',
+  music: 'looking',
   other: 'looking',
 };
 

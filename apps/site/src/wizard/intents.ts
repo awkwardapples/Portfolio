@@ -26,7 +26,6 @@ export const INTENT_FROM_THRESHOLD = {
   hiring: 'hiring',
   research: 'research',
   experience: 'other',
-  music: 'music',
   looking: 'other',
 } as const satisfies Record<string, ContactIntentId>;
 

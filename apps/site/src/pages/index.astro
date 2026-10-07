@@ -77,7 +77,6 @@ const ctas = intentCtas({
   pages: {
     contact: isLinkable(ROUTES.contact),
     research: isLinkable(ROUTES.research),
-    music: isLinkable(ROUTES.music) && showMusic,
     growtrades: isLinkable(ROUTES.work) && growtrades !== undefined,
   },
 });
@@ -96,7 +95,12 @@ const options = INTENTS.filter((intent) => sections.has(intent.target as HomeSec
   {growtrades && <GrowTrades entry={growtrades} />}
   {
     showMusic ? (
-      <Music artistName={profile.artistName} content={music} />
+      <Music
+        content={music}
+        spotify={profile.links.spotify}
+        youtube={profile.links.youtube}
+        spotifyScreenshot={profile.spotifyScreenshot}
+      />
     ) : (
       <Pending
         id="music"

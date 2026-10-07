@@ -28,7 +28,7 @@ const day = date?.toLocaleDateString('en-GB', {
     <span>{post.data.threads.map((thread) => THREAD_LABELS[thread]).join(', ')}</span>
   </p>
   <Heading class="mt-1 text-xl">
-    <a href={`/log/${post.id}`}>{post.data.title}</a>
+    <a href={`/log/${post.id}`} class="inline-flex min-h-11 items-center">{post.data.title}</a>
     {post.data.draft && <span class="ml-2 font-sans text-xs text-graphite">(draft)</span>}
   </Heading>
   <p class="mt-2 max-w-reading">{post.data.summary}</p>
