@@ -42,7 +42,7 @@ export const INTENT_DESCRIPTIONS: Record<ContactIntentId, string> = {
   hiring: 'A role or consulting work to talk about',
   research: 'A collaboration, a paper or an academic opportunity',
   growtrades: 'A question about GrowTrades',
-  music: 'Contact my management',
+  music: 'Contact me',
   other: 'Anything else',
 };
 

@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-10-07 (music, the first post and tidy-ups)_
+_Last updated: 2026-10-10 (more experience)_
 
 This repository is Josh Lennon's portfolio. It was built in the passes of section V of [`docs/portfolio-spec.md`](portfolio-spec.md) (v1.2) on the `portfolio-transformation` branch, each merged to `main` once its gates were green. All eleven passes are done. What remains is the set-up and content under Open items, in the order [`handoff.md`](handoff.md) gives. The GrowTrades platform's own state, as last recorded, is archived in [`archive/growtrades-platform/current-state.md`](archive/growtrades-platform/current-state.md).
 
@@ -21,6 +21,25 @@ This repository is Josh Lennon's portfolio. It was built in the passes of sectio
 | 10   | SEO foundations, documentation and launch  | Done 2026-10-05 |
 
 ## What exists
+
+### More experience (2026-10-10)
+
+Josh's request of 10 October 2026, on `content/experience`.
+
+- **A "More experience" section on the homepage**, straight after GrowTrades (where "What experience do you have?" lands). It shows the profile's other roles, newest first (`components/home/Experience.astro`).
+  - **Mercor:** "AI Expert [Contract], August 2026 to now" and its one confirmed line. It has no link, and nothing about clients (spec Y.3).
+  - **BEATLEASE:** "Co-founder, 2025 to now", from Josh's account:
+    - co-founding a SaaS platform for music producers to lease their music to clients, during the final year of the BSc;
+    - a lower-cost alternative for customers neglected by existing platforms;
+    - consulting directly with clients and turning their feedback into technical work for Josh or another developer;
+    - full-stack development.
+  - The threshold's description for that answer is now "GrowTrades, Mercor and a music start-up".
+- **The co-founder role is in the profile**, so it is also on the About timeline and the LinkedIn card's current roles.
+- **The BEATLEASE page** now says Josh co-founded it and describes the client consulting. Its role is "Co-founder and engineer" and its authorship "lead", because another developer took on some of the work.
+- **The music option on `/contact`** reads "Contact me" instead of "Contact my management".
+- **Tests:**
+  - New: the experience section (Mercor with its one line and no link, then BEATLEASE) and "Contact me".
+  - Fixed: axe checks after a click to another page now wait for the page's cross-fade to finish. The fixture records `pagereveal` (`e2e/fixtures.ts`). Without the wait, axe read every link on the new page as obscured.
 
 ### Music, the first post and tidy-ups (2026-10-07)
 
@@ -284,7 +303,7 @@ Josh's content and decisions of 7 October 2026, added on `content/launch`. `pnpm
 - `docs/portfolio-spec.md` committed and excluded from Prettier, so each version Josh supplies stays byte-for-byte as supplied.
 - History scans of every blob on every ref (including inside `.docx`, `.tar.gz` and PDF streams) and every commit message, with values never printed. Before the rewrite, the only live Make.com webhook token and the only Google Sheet link were in `docs/Agency Docs/Technical Onboarding.IPYNB`. After it, a fresh clone from GitHub has neither, and no agency document, in any of its 285 commits. No Turnstile secret key existed anywhere: the `0x4A…` values in tests and the plugin are the public SCB site key, and the `1x/2x/3x000…` values are Cloudflare's documented test keys. Other `hook.eu1.make.com/…` strings are placeholders (`abc123def456`, `<real-id>`), and `.env.example` on `deploy/test-live` has empty values.
 
-## Gate state (last verified: music and the first post, 2026-10-07)
+## Gate state (last verified: more experience, 2026-10-10)
 
 Node 24.21.0, pnpm 9.15.0, Windows.
 
@@ -296,7 +315,7 @@ Node 24.21.0, pnpm 9.15.0, Windows.
 - `pnpm --filter @jl/edge test`: 122/122.
 - `pnpm build`: clean, no placeholders in the built site. Builds the wizard, then the SCB demo (1.3 MB, no source maps), then the site and the Worker.
 - `pnpm check:budgets`: homepage 5.8 kB of 40 kB, `/contact` 82 kB of 120 kB (gzip).
-- `pnpm test:e2e`: **159 passed** on desktop and an emulated phone (29 skipped: tests that run on one device only, such as the viewport matrix on desktop and touch sizes on the phone). New: every threshold answer's calls to action, the music section and `/music` on the footage (with axe), the Hex description, "Lately" and the first post, and the post in the feed. Video files are not served to the tests (`e2e/fixtures.ts`): parallel streams dropped `wrangler dev`'s local connection. Every test runs under the enforced Content Security Policy with no violation; zero serious or critical axe violations; no request to another host before interaction on any route.
+- `pnpm test:e2e`: **161 passed** on desktop and an emulated phone (29 skipped: tests that run on one device only, such as the viewport matrix on desktop and touch sizes on the phone). Since 7 October: every threshold answer's calls to action, the music section and `/music` on the footage (with axe), the Hex description, "Lately" and the first post, the post in the feed, the experience section and "Contact me". The SCB demo's address-bar test once timed out waiting for the demo under full parallel load; it passed alone four times and in the next full run. Video files are not served to the tests (`e2e/fixtures.ts`): parallel streams dropped `wrangler dev`'s local connection. Every test runs under the enforced Content Security Policy with no violation; zero serious or critical axe violations; no request to another host before interaction on any route.
 - Pass 10 acceptance:
   - Structured data validates against schema.org's definitions on every page (browser test). The online validators need the live URL ([`deployment.md`](deployment.md) step 12).
   - The sitemap lists only public pages.
@@ -422,7 +441,12 @@ To confirm (choices made where the content did not say; each is one line to chan
 
 - **The agentic prototype:** dated February 2026 (the recording's assessments are dated 15 February 2026); role "Developer and presenter" and authorship "lead", from the CV's "Developed" and "Presented". If it was a team at the hackathon, say who did what.
 - **GrowTrades:** authorship "lead", as founder (the facts say "we").
-- **BEATLEASE:** the name and the start (June 2025) come from the repository; the repository has only Josh's commits, hence "sole"; role "Founder and engineer".
+- **The music start-up is taken to be BEATLEASE:** the same platform, stack and timing as the CV's "Full stack e-commerce SaaS platform startup". If it had another name, or is a different platform, say so.
+  - The co-founder role starts in 2025, the year the repository was created; Josh became involved during the final year of the BSc (2024 to 2025). If it was 2024, change `start` in `profile.yaml`.
+  - It shows as current ("2025 to now"), because the CV says "Building". If your part has finished, give an `end`.
+  - BEATLEASE's authorship is now "lead" rather than "sole", since another developer took on some of the work.
+  - The name and the work page's date (June 2025) still come from the repository.
+- **Mercor** shows only its confirmed line ("Contract work as an AI expert with Mercor."). Anything more needs your own wording, and never anything about clients.
 - **"Real Life":** role "Artist", dated by its YouTube upload (20 April 2026); the summary is your note, lightly edited.
 - **"I'm Too Late This Time":** role "Artist" and authorship "sole", from the video's description ("Original song by me"); dated by its YouTube upload (26 September 2026); the title as YouTube has it.
 - **The hackathon post** says the submission "has to be in before 25 October", as Josh said. The event's page says the build window is 22 to 27 October and submissions close on 27 October 2026 at 23:45 UTC. If 27 October is right, change the line in `content/posts/2026-10-07-open-agent-hackathon-2026/index.mdx`.
