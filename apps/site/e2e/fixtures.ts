@@ -7,6 +7,9 @@ import { expect, test as base } from '@playwright/test';
  * Violations inside other sites' frames (a YouTube player, a blank page that
  * tries to frame the demo) belong to them and are ignored.
  *
+ * Each page records when it has been revealed, after any cross-document view
+ * transition (global.css), so axe can wait for that (axe.ts).
+ *
  * Video files are not served to the tests: the footage loop streams whenever
  * it scrolls into view, no test needs it, and many parallel streams from
  * wrangler dev's local asset server dropped its connection mid-run (the
@@ -20,6 +23,22 @@ export const test = base.extend({
     await page.exposeBinding('__reportCspViolation', ({ frame }, report: string) => {
       const url = frame.url();
       if (url.startsWith(origin)) violations.push(`${url}: ${report}`);
+    });
+    await page.addInitScript(() => {
+      (window as unknown as { __revealed: Promise<void> }).__revealed = new Promise((resolve) => {
+        // Never wait long: a browser without view transitions may not fire pagereveal.
+        setTimeout(resolve, 2000);
+        window.addEventListener(
+          'pagereveal',
+          (event) => {
+            const transition = (event as Event & { viewTransition?: ViewTransition | null })
+              .viewTransition;
+            if (transition) void transition.finished.then(resolve, resolve);
+            else resolve();
+          },
+          { once: true },
+        );
+      });
     });
     await page.addInitScript(() => {
       document.addEventListener('securitypolicyviolation', (event) => {

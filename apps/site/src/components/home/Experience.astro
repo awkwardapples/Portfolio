@@ -1,0 +1,54 @@
+---
+/**
+ * More experience on the homepage, straight after GrowTrades (Josh's
+ * choice, 10 October 2026): the profile's other roles, newest first, each
+ * with its organisation, title and period, its lines and its link. The
+ * threshold's "What experience do you have?" lands on GrowTrades just above.
+ * Confidential roles (Mercor) show only their confirmed lines and never a
+ * link (spec Y.3).
+ */
+import Section from '~/components/Section.astro';
+import { buttonClass } from '~/design/button';
+import type { Profile } from '~/lib/content';
+import { periodLabel } from '~/lib/timeline';
+
+interface Props {
+  roles: Profile['experience'];
+}
+
+const { roles } = Astro.props;
+const headingId = (index: number) => `experience-role-${index}`;
+---
+
+<Section id="experience" labelledby="experience-heading" divided>
+  <h2 id="experience-heading" class="text-3xl">More experience</h2>
+  <div class="mt-heading-gap grid gap-12 md:grid-cols-2">
+    {
+      roles.map((role, index) => {
+        const link = role.confidential ? undefined : role.links[0];
+        return (
+          <article aria-labelledby={headingId(index)}>
+            <h3 id={headingId(index)} class="text-2xl">
+              {role.organisation}
+            </h3>
+            <p class="mt-1 text-sm text-graphite">
+              {role.title}, {periodLabel(role.start, role.end)}
+            </p>
+            <ul class="mt-4 flex max-w-reading list-disc flex-col gap-2 pl-5" role="list">
+              {role.description.map((line) => (
+                <li>{line}</li>
+              ))}
+            </ul>
+            {link && (
+              <p class="mt-4">
+                <a href={link.url} class={buttonClass({ variant: 'quiet' })}>
+                  {link.label}
+                </a>
+              </p>
+            )}
+          </article>
+        );
+      })
+    }
+  </div>
+</Section>

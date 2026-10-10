@@ -6,6 +6,10 @@ import { expect, type Page } from '@playwright/test';
  * critical violation (spec R). Minor and moderate findings are printed.
  */
 export async function expectNoSeriousViolations(page: Page, include?: string): Promise<void> {
+  // After a click to another page, the cross-document view transition (global.css) covers the
+  // new page while it runs, and axe would read every control as obscured: wait for it to end
+  // (fixtures.ts records it as the page is revealed).
+  await page.evaluate(() => (window as unknown as { __revealed?: Promise<void> }).__revealed);
   let builder = new AxeBuilder({ page }).withTags([
     'wcag2a',
     'wcag2aa',

@@ -189,6 +189,35 @@ test.describe('media', () => {
   });
 });
 
+test.describe('experience', () => {
+  test('follows GrowTrades on the homepage: Mercor with its confirmed line only, then BEATLEASE', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const section = page.locator('#experience');
+    await expect(section.getByRole('heading', { level: 2 })).toHaveText('More experience');
+    await expect(section.getByRole('heading', { level: 3 })).toHaveText(['Mercor', 'BEATLEASE']);
+    const mercor = section.getByRole('article', { name: 'Mercor' });
+    await expect(mercor).toContainText('AI Expert [Contract], August 2026 to now');
+    await expect(mercor.getByRole('listitem')).toHaveText([
+      'Contract work as an AI expert with Mercor.',
+    ]);
+    // A confidential role never links anywhere (spec Y.3).
+    await expect(mercor.getByRole('link')).toHaveCount(0);
+    const beatlease = section.getByRole('article', { name: 'BEATLEASE' });
+    await expect(beatlease).toContainText('Co-founder, 2025 to now');
+    await expect(beatlease.getByRole('link', { name: 'About BEATLEASE' })).toHaveAttribute(
+      'href',
+      '/work/beatlease',
+    );
+    // GrowTrades has its own section just above.
+    await expect(page.locator('#growtrades + #experience, #growtrades ~ #experience')).toHaveCount(
+      1,
+    );
+    await expectNoSeriousViolations(page, '#experience');
+  });
+});
+
 test.describe('about', () => {
   test('shows the timeline newest first and the skills', async ({ page }) => {
     await page.goto('/about');

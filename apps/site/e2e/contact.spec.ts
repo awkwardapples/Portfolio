@@ -197,6 +197,7 @@ test.describe('the journey', () => {
   test('without an intent, asks first and keeps the answer in the URL', async ({ page }) => {
     await page.goto('/contact');
     await expect(page.getByRole('heading', { name: 'What brings you here?' })).toBeFocused();
+    await expect(page.getByRole('button', { name: /^Music/ })).toContainText('Contact me');
     await page.getByRole('button', { name: /^Research/ }).click();
     await expect(page).toHaveURL(/\/contact\?intent=research$/);
     await expect(page.getByRole('heading', { name: 'About your research question' })).toBeFocused();

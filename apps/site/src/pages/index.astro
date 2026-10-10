@@ -7,6 +7,7 @@
  * on the page (spec T.4); `astro dev` shows them as labelled gaps.
  */
 import Elsewhere from '~/components/home/Elsewhere.astro';
+import Experience from '~/components/home/Experience.astro';
 import GetInTouch from '~/components/home/GetInTouch.astro';
 import GrowTrades from '~/components/home/GrowTrades.astro';
 import Intro from '~/components/home/Intro.astro';
@@ -65,6 +66,10 @@ const sections = new Set<HomeSection>(['intro', 'get-in-touch']);
 if (selected.length > 0) sections.add('selected-work');
 if (shelf.length > 0) sections.add('research');
 if (growtrades) sections.add('growtrades');
+// More experience: the profile's roles other than GrowTrades (which has its section), newest first.
+const roles = profile.experience
+  .filter((role) => !(growtrades && role.organisation === 'GrowTrades'))
+  .sort((a, b) => b.start.localeCompare(a.start));
 // Music appears once there is music in the content (spec G.5).
 const music = musicContent(work);
 const showMusic = hasMusic(music);
@@ -93,6 +98,7 @@ const options = INTENTS.filter((intent) => sections.has(intent.target as HomeSec
   {selected.length > 0 && <SelectedWork entries={selected} />}
   {shelf.length > 0 && <ResearchShelf items={shelf} />}
   {growtrades && <GrowTrades entry={growtrades} />}
+  {roles.length > 0 && <Experience roles={roles} />}
   {
     showMusic ? (
       <Music

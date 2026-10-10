@@ -31,7 +31,7 @@ export const INTENTS: readonly Intent[] = [
   {
     value: 'experience',
     label: 'What experience do you have?',
-    description: 'GrowTrades and a live client site',
+    description: 'GrowTrades, Mercor and a music start-up',
     target: 'growtrades',
   },
   { value: 'looking', label: 'Just looking around', target: 'intro' },

@@ -111,6 +111,20 @@ experience:
       - First client is SCB Handyman Services in Guildford, Surrey.
     links: [{ url: /work/growtrades, label: Case study }]
 
+  # Josh's account of 10 October 2026. The startup is taken to be BEATLEASE: the same platform, stack
+  # and timing as the CV's "Full stack e-commerce SaaS platform startup". The start is the year the
+  # repository was created; Josh became involved during the final year of the BSc (2024 to 2025).
+  - title: Co-founder
+    organisation: BEATLEASE
+    employmentType: founder
+    start: '2025'
+    description:
+      - Co-founded, during the final year of my BSc, a SaaS platform where music producers connect with clients and lease them their music.
+      - A lower-cost alternative for customers who felt existing platforms neglected their needs.
+      - Consulted directly with clients, which I enjoyed, turning their non-technical feedback into technical work for me or another developer.
+      - Full-stack development with Remix, PostgreSQL, Stripe Connect and Cloudflare R2.
+    links: [{ url: /work/beatlease, label: About BEATLEASE }]
+
   # Josh describes the role as "AI expert contractor for Mercor". Never name or hint at Mercor's
   # clients, never describe it as employment, never add detail beyond confirmed lines (spec Y.3).
   - title: AI Expert [Contract]
