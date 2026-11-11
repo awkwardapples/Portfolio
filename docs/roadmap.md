@@ -1,6 +1,6 @@
 # Roadmap
 
-The transformation in [`docs/portfolio-spec.md`](portfolio-spec.md) section V is complete: Passes 0 to 10 are merged ([`current-state.md`](current-state.md#passes)). What happens next depends on Josh.
+The transformation in the portfolio specification's section V is complete: Passes 0 to 10 are merged, and Pass 11 added Arbiter and the new CV ([`current-state.md`](current-state.md#passes)). What happens next depends on Josh.
 
 ## Before launch (Josh)
 

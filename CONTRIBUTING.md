@@ -2,7 +2,7 @@
 
 The rules for working on this codebase. If a rule seems wrong for a situation, change it with an ADR rather than ignoring it.
 
-The governing document is [`docs/portfolio-spec.md`](docs/portfolio-spec.md). Where it and older documents disagree, the code is the source of truth, then the spec, then ADRs 0039 onwards.
+The site was built to the portfolio specification and its Pass 11 addendum, removed from the repository once Pass 11 was done and kept in its history: `git show d9d5645:docs/portfolio-spec.md` (v1.2) and `git show db2fac7:docs/portfolio-spec-pass-11.md`. Where documents disagree, the code is the source of truth, then ADRs 0039 onwards, then the specification.
 
 ---
 

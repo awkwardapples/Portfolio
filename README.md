@@ -2,7 +2,7 @@
 
 The source of [joshlennon.com](https://joshlennon.com), Josh Lennon's personal portfolio: a static Astro site served by a Cloudflare Worker, with a contact wizard built on the quote-wizard engine from GrowTrades.
 
-> **Status:** built (Passes 0 to 10 of [`docs/portfolio-spec.md`](docs/portfolio-spec.md) are merged). Launch waits on the Cloudflare, contact-form and domain steps in [`docs/deployment.md`](docs/deployment.md); [`docs/handoff.md`](docs/handoff.md) explains how to continue.
+> **Status:** built (Passes 0 to 11 of the portfolio specification, which is kept in the repository's history). Launch waits on the Cloudflare, contact-form and domain steps in [`docs/deployment.md`](docs/deployment.md); [`docs/handoff.md`](docs/handoff.md) explains how to continue.
 
 ---
 
@@ -64,7 +64,6 @@ CI runs the same gates on every pull request, plus Lighthouse CI on the homepage
 
 ## Documentation
 
-- [`docs/portfolio-spec.md`](docs/portfolio-spec.md): the governing specification.
 - [`docs/current-state.md`](docs/current-state.md): what is built, the last gate run and open items.
 - [`docs/handoff.md`](docs/handoff.md): how to keep the site going. Start here.
 - [`docs/roadmap.md`](docs/roadmap.md), [`docs/technical-debt.md`](docs/technical-debt.md): what is next and what is deferred.

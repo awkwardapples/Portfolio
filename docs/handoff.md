@@ -1,6 +1,6 @@
 # Handoff
 
-How to keep this site going: for Josh, and for whoever (or whichever agent) works on it next. The transformation in [`portfolio-spec.md`](portfolio-spec.md) section V is complete. Passes 0 to 10 are merged, and what remains is content and a few one-time set-up steps that only Josh can do.
+How to keep this site going: for Josh, and for whoever (or whichever agent) works on it next. The transformation in the portfolio specification's section V is complete, and Pass 11 (Arbiter and the new CV) followed it. The specifications are in the repository's history: `git show d9d5645:docs/portfolio-spec.md` (v1.2) and `git show db2fac7:docs/portfolio-spec-pass-11.md`. Passes 0 to 10 are merged, and what remains is content and a few one-time set-up steps that only Josh can do.
 
 ## What the site is
 
@@ -71,8 +71,7 @@ When something is added, these are the places to update:
 
 ## Where the record is
 
-| Document                                 | What it records                                  |
-| ---------------------------------------- | ------------------------------------------------ |
-| [`current-state.md`](current-state.md)   | Every pass, the last gate run and the open items |
-| [`roadmap.md`](roadmap.md)               | What could come after launch                     |
-| [`portfolio-spec.md`](portfolio-spec.md) | The original specification (v1.2)                |
+| Document                               | What it records                                  |
+| -------------------------------------- | ------------------------------------------------ |
+| [`current-state.md`](current-state.md) | Every pass, the last gate run and the open items |
+| [`roadmap.md`](roadmap.md)             | What could come after launch                     |

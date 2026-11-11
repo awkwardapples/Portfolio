@@ -2,7 +2,7 @@
 
 _Last updated: 2026-11-11 (Pass 11: Arbiter, the new CV and its short links)_
 
-This repository is Josh Lennon's portfolio. It was built in the passes of section V of the portfolio specification (v1.2) on the `portfolio-transformation` branch, each merged to `main` once its gates were green, then Pass 11 from its addendum. The specifications were removed from the repository once Pass 11 was done, at Josh's request; they are in the history (`git show d9d5645:docs/portfolio-spec.md`, and `docs/portfolio-spec-pass-11.md` at the first commit of `feat/arbiter-and-cv`). References to "spec" sections in the code and the ADRs are to those files. What remains is the set-up and content under Open items, in the order [`handoff.md`](handoff.md) gives. The GrowTrades platform's own state, as last recorded, is archived in [`archive/growtrades-platform/current-state.md`](archive/growtrades-platform/current-state.md).
+This repository is Josh Lennon's portfolio. It was built in the passes of section V of the portfolio specification (v1.2) on the `portfolio-transformation` branch, each merged to `main` once its gates were green, then Pass 11 from its addendum. The specifications were removed from the repository once Pass 11 was done, at Josh's request; they are in the history: `git show d9d5645:docs/portfolio-spec.md` (v1.2) and `git show db2fac7:docs/portfolio-spec-pass-11.md`. References to "spec" sections in the code and the ADRs are to those files. What remains is the set-up and content under Open items, in the order [`handoff.md`](handoff.md) gives. The GrowTrades platform's own state, as last recorded, is archived in [`archive/growtrades-platform/current-state.md`](archive/growtrades-platform/current-state.md).
 
 ## Passes
 

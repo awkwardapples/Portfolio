@@ -5,7 +5,7 @@
 
 ## Context
 
-This repository becomes Josh Lennon's personal portfolio ([`docs/portfolio-spec.md`](../portfolio-spec.md)). Its old host, a WordPress plugin rendering an empty `<div id="qw-root">` and building every page in the browser, is the wrong model for a content site: search engines and link previews see no content, unknown routes render the homepage as soft 404s, and the bundle was over twice its budget (spec B.4). The wizard engine in `apps/wizard`, by contrast, is pure, typed and covered by 856 tests, and is worth keeping (spec B.2).
+This repository becomes Josh Lennon's personal portfolio (the portfolio specification, `docs/portfolio-spec.md`, removed in Pass 11 and kept in the history). Its old host, a WordPress plugin rendering an empty `<div id="qw-root">` and building every page in the browser, is the wrong model for a content site: search engines and link previews see no content, unknown routes render the homepage as soft 404s, and the bundle was over twice its budget (spec B.4). The wizard engine in `apps/wizard`, by contrast, is pure, typed and covered by 856 tests, and is worth keeping (spec B.2).
 
 ## Decision
 
