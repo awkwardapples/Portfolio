@@ -118,13 +118,12 @@ describe('the contact wizards (spec I.3)', () => {
     });
   });
 
-  it("never offer a website: GrowTrades asks an open question, and hiring offers the CV's roles", () => {
+  it("never offer a website or GrowTrades, and hiring offers the CV's roles", () => {
     const text = JSON.stringify(CONTACT_WIZARDS).toLowerCase();
     expect(text).not.toContain('website');
-    const growtrades = CONTACT_WIZARDS.growtrades.steps[0];
-    expect(growtrades && 'fields' in growtrades ? growtrades.fields.map((f) => f.key) : []).toEqual(
-      ['growtrades_question'],
-    );
+    // "I'm interested in GrowTrades" left the form (Josh, 11 November 2026).
+    expect(CONTACT_INTENT_IDS).toEqual(['hiring', 'research', 'music', 'other']);
+    expect(text).not.toContain('growtrades');
     const role = CONTACT_WIZARDS.hiring.steps[0];
     const options = (key: string) =>
       role && 'fields' in role

@@ -41,15 +41,20 @@ test.describe('the homepage section', () => {
     await section.scrollIntoViewIfNeeded();
     await expect(section.getByRole('heading', { level: 2 })).toHaveText('Arbiter');
     await expect(section).toContainText(
-      'Open Agent Hackathon 2026, built solo in five days: 28th in the Reasoning Architecture track, 109th of 547 projects.',
+      'Open Agent Hackathon 2026, built solo in five days: 28th in the Reasoning Architecture track.',
     );
     await expect(section.getByRole('link', { name: /^Try the live demo/ }).first()).toBeVisible();
     await expect(section.getByRole('link', { name: /^Play video/ })).toBeVisible();
     // The endorsement links to its public source, in a new tab, and says so.
-    const comment = section.getByRole('link', { name: /^View the comment on LinkedIn/ });
+    // The endorsement is the comment's screenshot, linked to it, with its words in the alt text.
+    const comment = section.locator('a[data-endorsement-link]');
     await expect(comment).toHaveAttribute('href', ENDORSEMENT);
     await expect(comment).toHaveAttribute('target', '_blank');
-    await expect(comment).toHaveAccessibleName(/opens in a new tab/);
+    await expect(comment).toHaveAccessibleName(
+      /^Frederick Newbrough II, VP of Global Pre-Sales, Zetaris.*"Agents that verify a vendor's security claims.*opens the comment on LinkedIn in a new tab/,
+    );
+    await expect(comment.locator('img')).toBeVisible();
+    await expect(section.getByText('View the comment on LinkedIn')).toHaveCount(0);
     expect(asked).toEqual([]);
     await expectNoSeriousViolations(page, '#arbiter');
   });
@@ -66,7 +71,10 @@ test.describe('the homepage section', () => {
       'Watch the demo video',
       'Code on GitHub',
     ]);
-    await expect(actions.first()).toHaveAttribute('href', '#arbiter');
+    // Both stay on the page: the demo and the video are in the Arbiter section.
+    await expect(actions.nth(0)).toHaveAttribute('href', '#arbiter');
+    await expect(actions.nth(1)).toHaveAttribute('href', '#arbiter-video');
+    await expect(page.locator('#arbiter-video')).toHaveCount(1);
   });
 });
 
@@ -87,7 +95,13 @@ test.describe('the case study', () => {
     ]) {
       await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
     }
-    await expect(page.locator('blockquote[cite="https://lnkd.in/p/eQA8-Kin"]')).toBeVisible();
+    await expect(page.locator('a[data-endorsement-link] img')).toBeVisible();
+    // "Watch the demo video" plays it here, at Fig. 2, not on YouTube.
+    await expect(page.getByRole('link', { name: 'Watch the demo video' })).toHaveAttribute(
+      'href',
+      '#demo-video',
+    );
+    await expect(page.locator('figure#demo-video')).toContainText('Fig. 2.');
     // Every Under the hood link points at the pinned commit, never main.
     const code = await page
       .locator('[data-under-the-hood] a')

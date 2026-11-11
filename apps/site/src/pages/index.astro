@@ -100,7 +100,12 @@ const options = INTENTS.filter((intent) => sections.has(intent.target as HomeSec
   <Intro profile={profile} ctas={ctas} />
   {
     selected.length > 0 && (
-      <SelectedWork entries={selected} demos={arbiter ? { arbiter: '#arbiter' } : {}} />
+      <SelectedWork
+        entries={selected}
+        anchors={
+          arbiter ? { arbiter: { '#live-demo': '#arbiter', '#demo-video': '#arbiter-video' } } : {}
+        }
+      />
     )
   }
   {arbiter && <Arbiter entry={arbiter} />}

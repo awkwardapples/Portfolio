@@ -128,6 +128,8 @@ export const workSchema = ({ image }: SchemaContext) =>
               context: z.string().min(1),
               url: z.url(),
               date: z.coerce.date().optional(),
+              // A screenshot of the comment, shown linked to it in place of the quotation.
+              screenshot: localImage(image).optional(),
             }),
           )
           .default([]),

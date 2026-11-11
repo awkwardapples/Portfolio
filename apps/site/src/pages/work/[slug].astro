@@ -96,8 +96,8 @@ const related = (await Promise.all(data.related.map((reference) => getEntry(refe
 
 const title = data.seo?.title ?? data.title;
 const caseStudy = data.template === 'case-study';
-// A case study's closing action: its own, or GrowTrades' (Pass 11, F.1).
-const cta = data.cta ?? { label: 'Start a conversation', href: '/contact?intent=growtrades' };
+// A case study's closing action: its own, or the contact form's first question.
+const cta = data.cta ?? { label: 'Start a conversation', href: '/contact' };
 
 // For search engines and link previews (spec S): what this work is, where
 // it sits, and a share image cut from its cover or its document's first page.

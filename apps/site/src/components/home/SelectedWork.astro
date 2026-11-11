@@ -8,17 +8,17 @@ import { ROUTES, isLinkable } from '~/lib/routes';
 
 interface Props {
   entries: readonly Work[];
-  /** Entries whose demo is on this page: the row's "Try the live demo" goes there (#arbiter). */
-  demos?: Readonly<Record<string, string>>;
+  /** Per entry, the work page's anchors this page has too (Arbiter's demo and video). */
+  anchors?: Readonly<Record<string, Readonly<Record<string, string>>>>;
 }
 
-const { entries, demos = {} } = Astro.props;
+const { entries, anchors = {} } = Astro.props;
 ---
 
 <Section id="selected-work" labelledby="selected-work-heading" divided>
   <h2 id="selected-work-heading" class="text-3xl" tabindex="-1" data-landing>Selected work</h2>
   <ul class="mt-heading-gap" role="list">
-    {entries.map((entry) => <WorkRow entry={entry} demoHref={demos[entry.id]} />)}
+    {entries.map((entry) => <WorkRow entry={entry} anchors={anchors[entry.id]} />)}
   </ul>
   {
     isLinkable(ROUTES.work) && (

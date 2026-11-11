@@ -72,6 +72,17 @@ On `feat/arbiter-and-cv`, in four parts, each committed with the gates green. No
   - the SCB address-bar test waits for its frame to hydrate;
   - Markdown tables in a body have styles, and scroll inside themselves on phones;
   - Under the hood's code blocks take keyboard focus where they scroll.
+- **After Josh's first review (11 November 2026):**
+  - "109th of 547 projects" is gone from the whole site. The result post is "Arbiter placed 28th globally in Reasoning Architecture".
+  - "Watch the demo video" plays the video here: `#demo-video` on the case study, and `#arbiter-video` in the homepage's Arbiter section from its Selected work row.
+  - **The Zetaris endorsement is Josh's screenshot of the LinkedIn comment.** The screenshot itself links to the comment, in a new tab, with no text link. Its alternative text gives the commenter, Frederick Newbrough II (named in the screenshot), and the words.
+  - **Now** lists only the MSc and Mercor.
+  - **BEATLEASE** is 2025 only, so it is no longer a current role on the LinkedIn card.
+  - **The About timeline** follows Josh's order, oldest first (`timeline` in `profile.yaml`):
+    - no music;
+    - GrowTrades and BEATLEASE appear once each, as their roles, which link to their pages;
+    - anything not in the order follows it by date.
+  - **The contact form** no longer offers "I'm interested in GrowTrades". The GrowTrades case study's "Start a conversation" opens the form's first question.
 - **The old CV stays in the history**, by Josh's decision (11 November 2026). Its versions from `d9bfab8` on, with a referee's university email address and office phone number, remain in the repository's history on GitHub. Nothing was rewritten or force-pushed.
 
 ### More experience (2026-10-10)
@@ -362,7 +373,7 @@ Node 24.21.0, pnpm 9.15.0, Windows.
 - `pnpm format:check`: clean.
 - `pnpm lint`: ESLint 0 errors and 0 warnings in the wizard, the site and the Worker; `scripts/check-design.mjs` clean.
 - `pnpm typecheck`: 0 errors (wizard production and test tsconfig, Worker).
-- `pnpm test`: **1,186 passed**: wizard 888 (70 files), site 159, Worker 122 (4 files), and the Arbiter demo's adapter 17 (2 files). New in Pass 11:
+- `pnpm test`: **1,187 passed**: wizard 888 (70 files), site 160, Worker 122 (4 files), and the Arbiter demo's adapter 17 (2 files). New in Pass 11:
   - the short-link registry;
   - excerpts with line numbers and trace lines;
   - the frame's message types and phone scaling;
@@ -374,7 +385,7 @@ Node 24.21.0, pnpm 9.15.0, Windows.
 - `pnpm build`: clean, no placeholders in the built site. Builds the wizard, then the SCB demo (1.3 MB, no source maps), then the site and the Worker.
 - `pnpm check:budgets`: homepage 6.0 kB of 40 kB, `/contact` 82 kB of 120 kB, the Arbiter demo's first view 389 kB of 450 kB (gzip).
 - `pnpm check:cv`: two pages, seven links, no phone number or referee, and every site link resolves.
-- `pnpm test:e2e`: **185 passed** on desktop and an emulated phone (37 skipped: tests that run on one device only, such as the viewport matrix on desktop and touch sizes on the phone). New in Pass 11:
+- `pnpm test:e2e`: **183 passed** on desktop and an emulated phone (37 skipped: tests that run on one device only, such as the viewport matrix on desktop and touch sizes on the phone). New in Pass 11:
   - the CV, the About page and the hiring options;
   - each short link's 301 and its landing;
   - the Arbiter demo on its own (Quillfeather to its case, every rail page, a recorded live run, dossiers, and the not-saved and not-in-demo answers, with no foreign request, failed request or console error);
@@ -510,11 +521,16 @@ Pass 11, for Josh's review before merging:
   1. **The agentic risk-assessment prototype's date:** the site says February 2026; the new CV says 2025.
   2. **"Introduction to Deep Learning":** the site says 17 September 2025; the CV says 2024.
   3. **The Heathrow placement:** no year, so it stays a draft.
-  4. **The Zetaris commenter's name:** the endorsement gives the role ("VP of Global Pre-Sales"), which is enough without a name.
+  4. **The Zetaris commenter's name:** answered by Josh's screenshot, Frederick Newbrough II.
   5. **The news classifier:** the CV describes it but gives no year, and does not say whether it was coursework, so it stays off the site.
 - **Choices made in the pass:**
   - **Arbiter's summary** was cut by eight characters to fit the 220-character limit: "every step replays from a signed audit trail" rather than "every step can be replayed from".
-  - **The endorsement's link** has no LinkedIn mark. Simple Icons removed it at LinkedIn's request and Lucide dropped its brand icons, so adding one would mean a new dependency or copying the trademark by hand. The link says "View the comment on LinkedIn", with the new-tab icon and "(opens in a new tab)" for screen readers.
+  - **The timeline's dates and Josh's order disagree in two places**, and the order wins:
+    - "Neural network from scratch" (October 2023) comes before the BSc (2021 to 2025);
+    - "Introduction to Deep Learning" (September 2025) comes before the dissertation (August 2025).
+
+    If the CV's 2024 for the paper is right (question 2), changing its date makes the labels agree.
+
   - **Credits** add one line from Arbiter's README: it was built with coding agents (Cursor's, then Claude Code), with every change reviewed. Remove it if you prefer.
   - **The New vendor form** in the demo answers with the not-in-demo message: its presets were not captured, an optional step in the spec.
   - **Arbiter's README** is vendored too (`apps/arbiter-demo/upstream/README.md`), because the case study quotes its figures, sources, agents table and trace lines.

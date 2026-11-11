@@ -207,7 +207,8 @@ test.describe('experience', () => {
     // A confidential role never links anywhere (spec Y.3).
     await expect(mercor.getByRole('link')).toHaveCount(0);
     const beatlease = section.getByRole('article', { name: 'BEATLEASE' });
-    await expect(beatlease).toContainText('Co-founder, 2025 to now');
+    await expect(beatlease).toContainText('Co-founder, 2025');
+    await expect(beatlease).not.toContainText('to now');
     await expect(beatlease.getByRole('link', { name: 'About BEATLEASE' })).toHaveAttribute(
       'href',
       '/work/beatlease',
@@ -221,16 +222,27 @@ test.describe('experience', () => {
 });
 
 test.describe('about', () => {
-  test('shows the timeline newest first and the skills', async ({ page }) => {
+  test("shows the timeline in Josh's order, oldest first, and the skills", async ({ page }) => {
     await page.goto('/about');
     const items = page.locator('.timeline > li h3');
     // Newest first: Arbiter's result (11 November 2026), Arbiter (25 October), the hackathon
     // post (7 October), the latest song (26 September), then the Mercor contract (August).
-    await expect(items.nth(0)).toHaveText('Arbiter placed 28th in Reasoning Architecture');
-    await expect(items.nth(1)).toHaveText('Arbiter');
-    await expect(items.nth(2)).toHaveText('Competing in the Open Agent Hackathon 2026');
-    await expect(items.nth(3)).toHaveText("I'm Too Late This Time");
-    await expect(items.nth(4)).toHaveText('AI Expert [Contract]');
+    // Josh's order (11 November 2026): no music, and GrowTrades and BEATLEASE once each.
+    await expect(items).toHaveText([
+      'A Levels',
+      'Neural network from scratch',
+      'BSc Artificial Intelligence',
+      'Introduction to Deep Learning',
+      'Extracting magnetic information from Kerr Microscopy images',
+      'Co-founder',
+      'Agentic risk-assessment prototype',
+      'Founder',
+      'AI Expert [Contract]',
+      'MSc Artificial Intelligence',
+      'Competing in the Open Agent Hackathon 2026',
+      'Arbiter',
+      'Arbiter placed 28th globally in Reasoning Architecture',
+    ]);
     await expect(page.getByRole('heading', { name: 'Skills' })).toBeVisible();
   });
 
@@ -238,10 +250,9 @@ test.describe('about', () => {
     await page.goto('/about');
     const titles = (await page.locator('.timeline > li h3').allTextContents()).map((t) => t.trim());
     const at = (title: string) => titles.indexOf(title);
-    // Education newest first, the sixth form included.
-    expect(at('A Levels')).toBeGreaterThan(-1);
-    expect(at('MSc Artificial Intelligence')).toBeLessThan(at('BSc Artificial Intelligence'));
-    expect(at('BSc Artificial Intelligence')).toBeLessThan(at('A Levels'));
+    // Education oldest first, the sixth form included.
+    expect(at('A Levels')).toBe(0);
+    expect(at('BSc Artificial Intelligence')).toBeLessThan(at('MSc Artificial Intelligence'));
     // Skills in the CV's groups, then volunteering and interests as plain lists.
     await expect(page.locator('section[aria-labelledby="skills-heading"] h3')).toHaveText([
       'Programming',

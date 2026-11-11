@@ -29,8 +29,7 @@ const code = data.links.find((link) => link.type === 'github');
 <Section id="arbiter" labelledby="arbiter-heading" divided>
   <h2 id="arbiter-heading" class="text-3xl" tabindex="-1" data-landing>Arbiter</h2>
   <p class="mt-6 max-w-reading">
-    Open Agent Hackathon 2026, built solo in five days: 28th in the Reasoning Architecture track,
-    109th of 547 projects.
+    Open Agent Hackathon 2026, built solo in five days: 28th in the Reasoning Architecture track.
   </p>
   <p class="mt-4 max-w-reading text-lg">{data.summary}</p>
   <div class="mt-heading-gap">
@@ -43,6 +42,7 @@ const code = data.links.find((link) => link.type === 'github');
           <YouTube
             id={video.id}
             title={video.title}
+            anchor="arbiter-video"
             sizes="(min-width: 1024px) 40rem, 100vw"
             class="lg:col-span-7"
           />

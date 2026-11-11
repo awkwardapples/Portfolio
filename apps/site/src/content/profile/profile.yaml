@@ -14,7 +14,7 @@ headline:
   role: AI Engineer
   focus: [Machine learning, Agentic AI, NLP, Computer vision]
 # Josh's CV profile (11 November 2026), with one change: "28th globally" is stated precisely as
-# 28th in the Reasoning Architecture track (he finished 109th of 547 projects overall).
+# 28th in the Reasoning Architecture track.
 availability: Open to graduate roles in AI engineering, machine learning and AI consulting.
 bioShort: >-
   MSc Artificial Intelligence student at the University of Surrey, with a BSc in Artificial
@@ -32,8 +32,6 @@ spotifyScreenshot:
     Thing as the most popular track.
 now:
   - Studying for an MSc in Artificial Intelligence at the University of Surrey.
-  - Building GrowTrades, lead-generation websites for local trades businesses.
-  - Building a music e-commerce platform for selling and delivering beats.
   - Working with Mercor as an AI expert on contract.
 
 links:
@@ -127,6 +125,25 @@ skills:
     items:
       [Client consulting, Presenting to senior audiences, Written communication, Agile delivery]
 
+# The About timeline, oldest first, in Josh's order (11 November 2026). Each item is
+# education:<qualification>, experience:<organisation>, work:<entry> or post:<post>. Anything not
+# listed comes after these, by date. Music is left out, and a role's own work page is not listed
+# twice: the role links to it.
+timeline:
+  - 'education:A Levels'
+  - 'work:neural-network-from-scratch'
+  - 'education:BSc Artificial Intelligence'
+  - 'work:introduction-to-deep-learning'
+  - 'work:kerr-microscopy-dissertation'
+  - 'experience:BEATLEASE'
+  - 'work:agentic-risk-assessment-prototype'
+  - 'experience:GrowTrades'
+  - 'experience:Mercor'
+  - 'education:MSc Artificial Intelligence'
+  - 'post:open-agent-hackathon-2026'
+  - 'work:arbiter'
+  - 'post:arbiter-result'
+
 # Shown on /about under the skills, as plain text (the CV of 11 November 2026).
 volunteering:
   - DEBRA charity, one week, 2018.
@@ -153,7 +170,9 @@ experience:
   - title: Co-founder
     organisation: BEATLEASE
     employmentType: founder
+    # 2025 only (Josh, 11 November 2026).
     start: '2025'
+    end: '2025'
     description:
       - Co-founded, during the final year of my BSc, a SaaS platform where music producers connect with clients and lease them their music.
       - A lower-cost alternative for customers who felt existing platforms neglected their needs.

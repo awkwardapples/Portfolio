@@ -25,6 +25,8 @@ interface Props {
   sizes?: string;
   /** Show "Fig. 2." before the title (the case studies number their figures). */
   number?: number | undefined;
+  /** An id for the figure, so "Watch the demo video" can link to it (#demo-video). */
+  anchor?: string | undefined;
   class?: string;
 }
 
@@ -35,6 +37,7 @@ const {
   playlist,
   sizes = '(min-width: 1200px) 71rem, 100vw',
   number,
+  anchor,
   class: className,
 } = Astro.props;
 const watch = new URL('https://www.youtube.com/watch');
@@ -85,7 +88,7 @@ const poster = still
 const title = info.title;
 ---
 
-<figure class:list={['flex flex-col gap-3', className]}>
+<figure id={anchor} class:list={['flex flex-col gap-3', className]}>
   <div
     class="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-media"
     data-surface="stage"

@@ -14,7 +14,7 @@
  */
 import type { AnyStep, Field, WizardConfig } from '@/domain/config/wizard-config';
 
-export const CONTACT_INTENT_IDS = ['hiring', 'research', 'growtrades', 'music', 'other'] as const;
+export const CONTACT_INTENT_IDS = ['hiring', 'research', 'music', 'other'] as const;
 export type ContactIntentId = (typeof CONTACT_INTENT_IDS)[number];
 
 /**
@@ -33,7 +33,6 @@ export const INTENT_FROM_THRESHOLD = {
 export const INTENT_LABELS: Record<ContactIntentId, string> = {
   hiring: "I'm hiring",
   research: 'Research',
-  growtrades: "I'm interested in GrowTrades",
   music: 'Music',
   other: 'Something else',
 };
@@ -41,7 +40,6 @@ export const INTENT_LABELS: Record<ContactIntentId, string> = {
 export const INTENT_DESCRIPTIONS: Record<ContactIntentId, string> = {
   hiring: 'A role or consulting work to talk about',
   research: 'A collaboration, a paper or an academic opportunity',
-  growtrades: 'A question about GrowTrades',
   music: 'Contact me',
   other: 'Anything else',
 };
@@ -216,31 +214,6 @@ export const CONTACT_WIZARDS: Readonly<Record<ContactIntentId, WizardConfig>> = 
         ],
       },
       result('research', 'My research', RESULT_DESCRIPTION),
-      detailsStep({ askOrganisation: true, messageRequired: true }),
-      optionalStep,
-    ],
-  },
-  growtrades: {
-    schemaVersion: 1,
-    id: 'growtrades',
-    title: INTENT_LABELS.growtrades,
-    quoteMode: 'manual',
-    steps: [
-      {
-        id: 'question',
-        title: 'About GrowTrades',
-        fields: [
-          {
-            id: 'growtrades_question',
-            key: 'growtrades_question',
-            type: 'textarea',
-            label: 'What would you like to know?',
-            required: true,
-            maxLength: LONG,
-          },
-        ],
-      },
-      result('venture', 'GrowTrades', RESULT_DESCRIPTION),
       detailsStep({ askOrganisation: true, messageRequired: true }),
       optionalStep,
     ],

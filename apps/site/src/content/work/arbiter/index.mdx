@@ -21,7 +21,7 @@ authorship:
     - the Zetaris platform
 context:
   programme: Open Agent Hackathon 2026, Reasoning Architecture track
-  result: 28th in the Reasoning Architecture track; 109th of 547 projects
+  result: 28th in the Reasoning Architecture track
 tech:
   [
     Python,
@@ -46,7 +46,7 @@ coverAlt: >-
   Cloud Ltd says EU, but its contract (CTR-30007) shows US."
 links:
   - { type: demo, url: '#live-demo', label: Try the live demo }
-  - { type: video, url: 'https://youtu.be/qzYbxp3Pc2U', label: Watch the demo video }
+  - { type: video, url: '#demo-video', label: Watch the demo video }
   - { type: github, url: 'https://github.com/awkwardapples/Arbiter', label: Code on GitHub }
   - {
       type: other,
@@ -60,18 +60,22 @@ endorsements:
       Agents that verify a vendor's security claims instead of taking them at face value is a
       great use case, Josh Lennon. One semantic layer over five systems is exactly how agents
       should see enterprise data. Thanks for building with Zetaris.
+    name: Frederick Newbrough II
     role: VP of Global Pre-Sales
     organisation: Zetaris
     context: commenting on my LinkedIn post about Arbiter
     url: https://lnkd.in/p/eQA8-Kin
+    # Josh's screenshot of the comment (11 November 2026), shown linked to it.
+    screenshot: ./linkedin-comment.jpg
 tags: [agentic AI, multi-agent systems, risk, policy-as-code]
 ---
 
 import caseStill from './screens/console-case-desktop.png';
+import comment from './linkedin-comment.jpg';
 
 I built Arbiter on my own in five days for the Open Agent Hackathon 2026, sponsored by NVIDIA and
 SpaceX, in the Reasoning Architecture track. I competed solo against thousands of participants, most
-of them in teams, and Arbiter placed 28th in the track and 109th of 547 projects overall.
+of them in teams, and Arbiter placed 28th in the track.
 
 It is for the third-party risk analyst who decides whether a new SaaS vendor may touch customer
 data. The vendor answers a security questionnaire; Arbiter checks each answer against what the
@@ -95,9 +99,9 @@ log.
 
 ## The demo video
 
-<YouTube id="qzYbxp3Pc2U" title="Arbiter: the demo video" number={2} />
+<YouTube id="qzYbxp3Pc2U" title="Arbiter: the demo video" number={2} anchor="demo-video" />
 
-<Endorsement endorsement={frontmatter.endorsements[0]} class="mt-12" />
+<Endorsement endorsement={frontmatter.endorsements[0]} screenshot={comment} class="mt-12" />
 
 ## What it does
 
