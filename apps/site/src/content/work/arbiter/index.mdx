@@ -1,0 +1,178 @@
+---
+title: Arbiter
+subtitle: Auditable reasoning for third-party vendor onboarding
+kind: software
+threads: [ai, software]
+summary: >-
+  A multi-agent system that checks a SaaS vendor's security claims against the company's own
+  records. Agents gather cited evidence, a versioned policy makes the decision, and every step
+  replays from a signed audit trail.
+date: 2026-10-25
+status: complete
+featured: true
+featuredOrder: 1
+role: Solo builder
+authorship:
+  type: sole
+  # The sponsors' components, named as tools Josh did not build (Pass 11, F.1).
+  tools:
+    - NVIDIA Nemotron models
+    - Meterless Nightshift, H-MEM and Scout (Arbiter vendors part of Scout in vendor/meterless)
+    - the Zetaris platform
+context:
+  programme: Open Agent Hackathon 2026, Reasoning Architecture track
+  result: 28th in the Reasoning Architecture track
+tech:
+  [
+    Python,
+    FastAPI,
+    React,
+    TypeScript,
+    NVIDIA Nemotron,
+    Meterless Nightshift,
+    Meterless H-MEM,
+    Meterless Scout,
+    Zetaris,
+    DuckDB,
+    Docker,
+  ]
+template: case-study
+cta: { label: Start a conversation, href: /contact?intent=hiring }
+award: 28th, Reasoning Architecture track, Open Agent Hackathon 2026
+cover: ./screens/console-ruling-desktop.png
+coverAlt: >-
+  Arbiter's console after assessing Quillfeather Payroll Cloud Ltd: the agents' bench, and the
+  ruling card reading Escalate, with the brief "Escalate to the TPRM lead: Quillfeather Payroll
+  Cloud Ltd says EU, but its contract (CTR-30007) shows US."
+links:
+  - { type: demo, url: '#live-demo', label: Try the live demo }
+  - { type: video, url: '#demo-video', label: Watch the demo video }
+  - { type: github, url: 'https://github.com/awkwardapples/Arbiter', label: Code on GitHub }
+  - {
+      type: other,
+      url: 'https://drive.google.com/file/d/1bLk0TJypcDtn7ZVOfptUXQ9txrTQCzir/view?usp=sharing',
+      label: Slides (Google Drive),
+    }
+media:
+  - { type: youtube, id: qzYbxp3Pc2U, title: 'Arbiter: the demo video' }
+endorsements:
+  - quote: >-
+      Agents that verify a vendor's security claims instead of taking them at face value is a
+      great use case, Josh Lennon. One semantic layer over five systems is exactly how agents
+      should see enterprise data. Thanks for building with Zetaris.
+    name: Frederick Newbrough II
+    role: VP of Global Pre-Sales
+    organisation: Zetaris
+    context: commenting on my LinkedIn post about Arbiter
+    url: https://lnkd.in/p/eQA8-Kin
+    # Josh's screenshot of the comment (11 November 2026), shown linked to it.
+    screenshot: ./linkedin-comment.jpg
+tags: [agentic AI, multi-agent systems, risk, policy-as-code]
+---
+
+import caseStill from './screens/console-case-desktop.png';
+import comment from './linkedin-comment.jpg';
+
+I built Arbiter on my own in five days for the Open Agent Hackathon 2026, sponsored by NVIDIA and
+SpaceX, in the Reasoning Architecture track. I competed solo against thousands of participants, most
+of them in teams, and Arbiter placed 28th in the track.
+
+It is for the third-party risk analyst who decides whether a new SaaS vendor may touch customer
+data. The vendor answers a security questionnaire; Arbiter checks each answer against what the
+company's own systems say, from contracts and incidents to watchlists and CISA's list of
+known-exploited vulnerabilities, and does the first pass of the triage.
+
+Five agents do the reasoning on NVIDIA Nemotron, through Meterless Nightshift. A Planner chooses
+which records to read, an Evidence agent extracts each claim with a verbatim quote, an Evaluator
+checks the claims against the records and sends the plan back when evidence is missing, a Challenger
+attacks the candidate decision, and a Reporter writes the cited brief. The decision itself is made
+by a versioned policy engine, not a model: one of five outcomes, from approve to decline. When
+evidence is missing, Arbiter drafts the request back to the vendor.
+
+All five company systems sit behind one Zetaris semantic layer, so the agents query one governed
+model instead of five schemas. Meterless H-MEM recalls precedents a TPRM lead has approved, and
+Meterless Scout screens vendor text before any model sees it. Every step is written to a hash-chained
+audit log, every action needs a signed execution contract, and any decision can be replayed from the
+log.
+
+<LiveDemo demo="arbiter" number={1} id="live-demo" />
+
+## The demo video
+
+<YouTube id="qzYbxp3Pc2U" title="Arbiter: the demo video" number={2} anchor="demo-video" />
+
+<Endorsement endorsement={frontmatter.endorsements[0]} screenshot={comment} class="mt-12" />
+
+## What it does
+
+A third-party risk analyst at a 500 to 5,000-person company decides whether a new SaaS vendor may
+touch customer data, and a TPRM lead signs off the exceptions. The evidence sits in five systems and
+a questionnaire, and the queue does not wait:
+
+- Third parties are involved in 48% of breaches
+  ([Verizon 2026 DBIR](https://www.verizon.com/business/resources/Te26/reports/2026-dbir-data-breach-investigations-report.pdf)).
+- Organisations average 2,643 third parties but assess only 36% of them, and 40% have an assessment
+  backlog
+  ([ProcessUnity / Ponemon-Sullivan 2026, n = 1,465](https://ponemonsullivanreport.com/2026/03/state-of-third-party-risk-assessments/)).
+- Companies spend 37.4 hours a week assessing vendors
+  ([Whistic 2025 TPRM Impact Report, n = 525](https://www.whistic.com/resources/blog/2025-impact-report-takeaways)).
+
+Arbiter turns one onboarding into a cited, replayable decision with one of five outcomes:
+
+- Approve
+- Approve with conditions
+- Request information
+- Escalate
+- Decline
+
+<Figure
+  src={caseStill}
+  alt="Arbiter's case view for Quillfeather Payroll Cloud Ltd: Escalate, then the claim against the record, the vendor trust portal's EU against the contract system's US for contract CTR-30007, beside the drafted next action for the TPRM lead."
+  caption="A case: the vendor's word against the company's records, and the next action already drafted."
+  number={3}
+  sizes="(min-width: 1280px) 1200px, 100vw"
+/>
+
+## How it reasons
+
+The orchestrator is an explicit state machine, and each agent has a narrow job:
+
+| Agent             | Can                                                                             | Cannot                                    |
+| ----------------- | ------------------------------------------------------------------------------- | ----------------------------------------- |
+| `PlannerAgent`    | Choose registry queries from the USL catalogue; revise the plan                 | Write SQL, or skip a required control     |
+| `EvidenceAgent`   | Run registry queries, run ScoutGuard, extract claims with verbatim quotes       | Mark a claim verified                     |
+| `EvaluatorAgent`  | Ground quotes, cross-check claims against systems of record, send the plan back | Decide an outcome                         |
+| `PolicyEngine`    | Tier the vendor; produce the outcome and what evidence would change it          | Call a model                              |
+| `MemoryKeeper`    | Retrieve lead-approved precedents; record feedback                              | Change the policy                         |
+| `ChallengerAgent` | Attack the candidate decision; request one re-plan; escalate                    | Approve or upgrade an outcome             |
+| `ReporterAgent`   | Write the cited brief and draft the next action                                 | Cite anything outside the decision record |
+| `ScoutGuard`      | Block, warn or pass untrusted vendor text; redact PII                           | Decide                                    |
+| `ActionExecutor`  | Issue and verify signed contracts; run the outbox once approvals exist          | Act without a valid contract              |
+
+### Under the hood
+
+Seven steps of one assessment, each beside the code or the trace line behind it, from Arbiter's
+repository at the commit this page describes.
+
+<UnderTheHood pipeline="arbiter" />
+
+## How well it works
+
+<ArbiterEvaluation />
+
+## Credits
+
+Arbiter runs on its sponsors' technology:
+
+- NVIDIA Nemotron 3.5 Super VL 120B and Nemotron 3.5 Lightning 30B, through Meterless Nightshift;
+- Meterless H-MEM and Scout;
+- the Zetaris Unified Semantic Layer;
+- the CISA Known Exploited Vulnerabilities catalogue, as a committed snapshot.
+
+One deviation, stated plainly, as Arbiter's README states it. The deep lane was designed for
+Nemotron 3 Super, which the account was not entitled to. A Nightshift routing rule coerced both lanes
+to `auto`, so lane separation was not guaranteed, and Meterless acknowledged the routing bug on 24
+October.
+
+I built Arbiter with coding agents, Cursor's for the early passes and then Claude Code, and reviewed
+every change, as the README's "AI and model usage" records.

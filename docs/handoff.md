@@ -1,6 +1,6 @@
 # Handoff
 
-How to keep this site going: for Josh, and for whoever (or whichever agent) works on it next. The transformation in [`portfolio-spec.md`](portfolio-spec.md) section V is complete. Passes 0 to 10 are merged, and what remains is content and a few one-time set-up steps that only Josh can do.
+How to keep this site going: for Josh, and for whoever (or whichever agent) works on it next. The transformation in the portfolio specification's section V is complete, and Pass 11 (Arbiter and the new CV) followed it. The specifications are in the repository's history: `git show d9d5645:docs/portfolio-spec.md` (v1.2) and `git show db2fac7:docs/portfolio-spec-pass-11.md`. Passes 0 to 10 are merged, and what remains is content and a few one-time set-up steps that only Josh can do.
 
 ## What the site is
 
@@ -22,15 +22,18 @@ The full list, with each item's reason, is under Open items in [`current-state.m
 
 ## Everyday tasks
 
-| Task                                        | How                                                                                                                       |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Add a post, a project or a release          | [`authoring-guide.md`](authoring-guide.md): `/admin`, `pnpm new`, or by hand. New entries start as drafts.                |
-| Add photos, a PDF, a footage loop           | [`media-pipeline.md`](media-pipeline.md): `pnpm media:images`, `media:pdf`, `media:video`                                 |
-| Change the name or headline on share images | Edit the profile, then `pnpm media:og`                                                                                    |
-| Answer a data request or rotate a secret    | [`data-protection.md`](data-protection.md)                                                                                |
-| See what is deferred and why                | [`technical-debt.md`](technical-debt.md)                                                                                  |
-| Check a change before merging               | `pnpm gates`; CI runs the same, plus Lighthouse                                                                           |
-| Deploy                                      | Merge to `main`. The Deploy workflow also runs daily (fresh GitHub data) and by hand: **Actions > Deploy > Run workflow** |
+| Task                                        | How                                                                                                                                                   |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Add a post, a project or a release          | [`authoring-guide.md`](authoring-guide.md): `/admin`, `pnpm new`, or by hand. New entries start as drafts.                                            |
+| Add photos, a PDF, a footage loop           | [`media-pipeline.md`](media-pipeline.md): `pnpm media:images`, `media:pdf`, `media:video`                                                             |
+| Change the name or headline on share images | Edit the profile, then `pnpm media:og`                                                                                                                |
+| Replace the CV                              | Save it as `apps/site/public/cv.pdf`, then `pnpm build` and `pnpm check:cv`: no phone number or referee, and every link to the site resolves          |
+| Add a short link for print                  | One line in `apps/site/src/lib/short-links.ts` ([`authoring-guide.md`](authoring-guide.md#short-links)); paths are permanent once printed             |
+| Refresh the Arbiter demo                    | [`apps/arbiter-demo/README.md`](../apps/arbiter-demo/README.md): re-sync the console with `pnpm arbiter:sync`, then capture a new snapshot and stills |
+| Answer a data request or rotate a secret    | [`data-protection.md`](data-protection.md)                                                                                                            |
+| See what is deferred and why                | [`technical-debt.md`](technical-debt.md)                                                                                                              |
+| Check a change before merging               | `pnpm gates`; CI runs the same, plus Lighthouse                                                                                                       |
+| Deploy                                      | Merge to `main`. The Deploy workflow also runs daily (fresh GitHub data) and by hand: **Actions > Deploy > Run workflow**                             |
 
 ## Working on the code
 
@@ -68,8 +71,7 @@ When something is added, these are the places to update:
 
 ## Where the record is
 
-| Document                                 | What it records                                  |
-| ---------------------------------------- | ------------------------------------------------ |
-| [`current-state.md`](current-state.md)   | Every pass, the last gate run and the open items |
-| [`roadmap.md`](roadmap.md)               | What could come after launch                     |
-| [`portfolio-spec.md`](portfolio-spec.md) | The original specification (v1.2)                |
+| Document                               | What it records                                  |
+| -------------------------------------- | ------------------------------------------------ |
+| [`current-state.md`](current-state.md) | Every pass, the last gate run and the open items |
+| [`roadmap.md`](roadmap.md)             | What could come after launch                     |

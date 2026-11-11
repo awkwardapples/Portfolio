@@ -1,26 +1,89 @@
 # Current State
 
-_Last updated: 2026-10-10 (more experience)_
+_Last updated: 2026-11-11 (Pass 11: Arbiter, the new CV and its short links)_
 
-This repository is Josh Lennon's portfolio. It was built in the passes of section V of [`docs/portfolio-spec.md`](portfolio-spec.md) (v1.2) on the `portfolio-transformation` branch, each merged to `main` once its gates were green. All eleven passes are done. What remains is the set-up and content under Open items, in the order [`handoff.md`](handoff.md) gives. The GrowTrades platform's own state, as last recorded, is archived in [`archive/growtrades-platform/current-state.md`](archive/growtrades-platform/current-state.md).
+This repository is Josh Lennon's portfolio. It was built in the passes of section V of the portfolio specification (v1.2) on the `portfolio-transformation` branch, each merged to `main` once its gates were green, then Pass 11 from its addendum. The specifications were removed from the repository once Pass 11 was done, at Josh's request; they are in the history: `git show d9d5645:docs/portfolio-spec.md` (v1.2) and `git show db2fac7:docs/portfolio-spec-pass-11.md`. References to "spec" sections in the code and the ADRs are to those files. What remains is the set-up and content under Open items, in the order [`handoff.md`](handoff.md) gives. The GrowTrades platform's own state, as last recorded, is archived in [`archive/growtrades-platform/current-state.md`](archive/growtrades-platform/current-state.md).
 
 ## Passes
 
-| Pass | Scope                                      | Status          |
-| ---- | ------------------------------------------ | --------------- |
-| 0    | Security and repository hygiene            | Done 2026-10-03 |
-| 1    | Architecture scaffold                      | Done 2026-10-04 |
-| 2    | Content model, migration and media tooling | Done 2026-10-04 |
-| 3    | Visual system and global layout            | Done 2026-10-04 |
-| 4    | Homepage, threshold and navigation flow    | Done 2026-10-04 |
-| 5    | Work, research, log and about pages        | Done 2026-10-04 |
-| 6    | Contact wizard and submission pipeline     | Done 2026-10-04 |
-| 7    | GrowTrades case study and SCB demo         | Done 2026-10-04 |
-| 8    | Music, media, GitHub and LinkedIn          | Done 2026-10-05 |
-| 9    | Responsive, performance and accessibility  | Done 2026-10-05 |
-| 10   | SEO foundations, documentation and launch  | Done 2026-10-05 |
+| Pass | Scope                                      | Status                                                     |
+| ---- | ------------------------------------------ | ---------------------------------------------------------- |
+| 0    | Security and repository hygiene            | Done 2026-10-03                                            |
+| 1    | Architecture scaffold                      | Done 2026-10-04                                            |
+| 2    | Content model, migration and media tooling | Done 2026-10-04                                            |
+| 3    | Visual system and global layout            | Done 2026-10-04                                            |
+| 4    | Homepage, threshold and navigation flow    | Done 2026-10-04                                            |
+| 5    | Work, research, log and about pages        | Done 2026-10-04                                            |
+| 6    | Contact wizard and submission pipeline     | Done 2026-10-04                                            |
+| 7    | GrowTrades case study and SCB demo         | Done 2026-10-04                                            |
+| 8    | Music, media, GitHub and LinkedIn          | Done 2026-10-05                                            |
+| 9    | Responsive, performance and accessibility  | Done 2026-10-05                                            |
+| 10   | SEO foundations, documentation and launch  | Done 2026-10-05                                            |
+| 11   | Arbiter, the new CV and its short links    | Built 2026-11-11, waiting for Josh's review before merging |
 
 ## What exists
+
+### Pass 11: Arbiter, the new CV and its short links (2026-11-11)
+
+On `feat/arbiter-and-cv`, in four parts, each committed with the gates green. Not merged: Josh reviews it in the production preview first.
+
+- **Part 1, the CV and the profile.**
+  - `/cv.pdf` is the CV of 11 November 2026: two pages, no phone number, and seven working links (the email, LinkedIn, GitHub, the site, the Arbiter repository and the two short links).
+  - `scripts/check-cv.mjs` (in the gates and CI) fails on a UK phone number, a `tel:` link or "Referee", and on any `joshlennon.com` link the built site cannot resolve. It never prints what it matched.
+  - The profile follows the CV:
+    - the bio and availability;
+    - education, with the sixth form;
+    - skills in the CV's groups;
+    - Mercor's CV line;
+    - volunteering and interests, as plain lists on `/about`.
+  - The Heathrow placement is a draft until its year is known.
+  - The contact form's hiring options are the CV's roles: AI engineering, Machine learning, AI consulting, Agentic AI, Something else.
+- **Part 2, short links** (ADR-0051).
+  - `/intro-to-deep-learning`, `/extracting-image-data`, `/arbiter` and `/cv` answer 301 from `_redirects`, generated from `src/lib/short-links.ts` and checked against the build.
+  - Document cards are `#read`, `#read-2` and so on. Landing on one opens the reader from 768 px, with focus on the card's heading, and only scrolls on phones.
+- **Part 3, the Arbiter demo** (ADR-0050).
+  - `apps/arbiter-demo` is Arbiter's console at `7450988`, never edited, with a snapshot of its own engine in sample mode (4.4 MB). An adapter answers its API in the browser.
+  - It is served at `/demo/arbiter`, with a first view of 389 kB of its 450 kB budget.
+  - One frame (`LiveDemo.astro`, `SiteFrame`, `src/lib/demos.ts`) holds both demos. Arbiter's opens at 844 px on phones, scaled, and fits when the phone is turned sideways.
+  - `pnpm media:screens arbiter` captures its stills from the demo.
+- **Part 4, the Arbiter section and case study.**
+  - A homepage section straight after Selected work, which Arbiter now heads. It shows:
+    - the result;
+    - the summary;
+    - the frame;
+    - the demo video;
+    - the Zetaris endorsement;
+    - links to the case study and the code.
+  - `/work/arbiter` is a case study, in this order:
+    - the live demo (Fig. 1);
+    - the demo video (Fig. 2);
+    - the endorsement;
+    - what it does, with the README's three sourced figures and the case still (Fig. 3);
+    - how it reasons: the agents table, then seven "Under the hood" steps cut from Arbiter's files at the pinned commit, with line links;
+    - how well it works, with figures tested against Arbiter's own evaluation;
+    - credits, with the routing deviation stated plainly;
+    - "Start a conversation" as a hiring enquiry.
+  - Its structured data is `SoftwareSourceCode`, with the award and the repository.
+  - Featured order: Arbiter, the dissertation, GrowTrades, "Introduction to Deep Learning". The agentic prototype is no longer featured.
+  - The threshold's "I'm hiring" reads "Selected work, a live AI demo and my CV".
+  - The hackathon post now belongs to Arbiter, and a new post reports its result.
+- **Fixed on the way:**
+  - axe now waits for a page's reveal transition;
+  - the SCB address-bar test waits for its frame to hydrate;
+  - Markdown tables in a body have styles, and scroll inside themselves on phones;
+  - Under the hood's code blocks take keyboard focus where they scroll.
+- **After Josh's first review (11 November 2026):**
+  - "109th of 547 projects" is gone from the whole site. The result post is "Arbiter placed 28th globally in Reasoning Architecture".
+  - "Watch the demo video" plays the video here: `#demo-video` on the case study, and `#arbiter-video` in the homepage's Arbiter section from its Selected work row.
+  - **The Zetaris endorsement is Josh's screenshot of the LinkedIn comment.** The screenshot itself links to the comment, in a new tab, with no text link. Its alternative text gives the commenter, Frederick Newbrough II (named in the screenshot), and the words.
+  - **Now** lists only the MSc and Mercor.
+  - **BEATLEASE** is 2025 only, so it is no longer a current role on the LinkedIn card.
+  - **The About timeline** follows Josh's order, oldest first (`timeline` in `profile.yaml`):
+    - no music;
+    - GrowTrades and BEATLEASE appear once each, as their roles, which link to their pages;
+    - anything not in the order follows it by date.
+  - **The contact form** no longer offers "I'm interested in GrowTrades". The GrowTrades case study's "Start a conversation" opens the form's first question.
+- **The old CV stays in the history**, by Josh's decision (11 November 2026). Its versions from `d9bfab8` on, with a referee's university email address and office phone number, remain in the repository's history on GitHub. Nothing was rewritten or force-pushed.
 
 ### More experience (2026-10-10)
 
@@ -303,29 +366,44 @@ Josh's content and decisions of 7 October 2026, added on `content/launch`. `pnpm
 - `docs/portfolio-spec.md` committed and excluded from Prettier, so each version Josh supplies stays byte-for-byte as supplied.
 - History scans of every blob on every ref (including inside `.docx`, `.tar.gz` and PDF streams) and every commit message, with values never printed. Before the rewrite, the only live Make.com webhook token and the only Google Sheet link were in `docs/Agency Docs/Technical Onboarding.IPYNB`. After it, a fresh clone from GitHub has neither, and no agency document, in any of its 285 commits. No Turnstile secret key existed anywhere: the `0x4A…` values in tests and the plugin are the public SCB site key, and the `1x/2x/3x000…` values are Cloudflare's documented test keys. Other `hook.eu1.make.com/…` strings are placeholders (`abc123def456`, `<real-id>`), and `.env.example` on `deploy/test-live` has empty values.
 
-## Gate state (last verified: more experience, 2026-10-10)
+## Gate state (last verified: Pass 11, 2026-11-11)
 
 Node 24.21.0, pnpm 9.15.0, Windows.
 
 - `pnpm format:check`: clean.
 - `pnpm lint`: ESLint 0 errors and 0 warnings in the wizard, the site and the Worker; `scripts/check-design.mjs` clean.
 - `pnpm typecheck`: 0 errors (wizard production and test tsconfig, Worker).
-- `pnpm test`: **1,153 passed**: wizard 888 (70 files), site 143 (18 files, now including the listed repositories, Josh's repository descriptions and the contact intents), Worker 122 (4 files).
+- `pnpm test`: **1,187 passed**: wizard 888 (70 files), site 160, Worker 122 (4 files), and the Arbiter demo's adapter 17 (2 files). New in Pass 11:
+  - the short-link registry;
+  - excerpts with line numbers and trace lines;
+  - the frame's message types and phone scaling;
+  - tools in the authorship statement;
+  - `SoftwareSourceCode`;
+  - Arbiter's pinned commit, and its evaluation figures against Arbiter's own files.
 - `pnpm --filter @jl/site check`: 0 errors, 0 warnings (one hint: `tseslint.config()` is deprecated).
 - `pnpm --filter @jl/edge test`: 122/122.
 - `pnpm build`: clean, no placeholders in the built site. Builds the wizard, then the SCB demo (1.3 MB, no source maps), then the site and the Worker.
-- `pnpm check:budgets`: homepage 5.8 kB of 40 kB, `/contact` 82 kB of 120 kB (gzip).
-- `pnpm test:e2e`: **161 passed** on desktop and an emulated phone (29 skipped: tests that run on one device only, such as the viewport matrix on desktop and touch sizes on the phone). Since 7 October: every threshold answer's calls to action, the music section and `/music` on the footage (with axe), the Hex description, "Lately" and the first post, the post in the feed, the experience section and "Contact me". The SCB demo's address-bar test once timed out waiting for the demo under full parallel load; it passed alone four times and in the next full run. Video files are not served to the tests (`e2e/fixtures.ts`): parallel streams dropped `wrangler dev`'s local connection. Every test runs under the enforced Content Security Policy with no violation; zero serious or critical axe violations; no request to another host before interaction on any route.
+- `pnpm check:budgets`: homepage 6.0 kB of 40 kB, `/contact` 82 kB of 120 kB, the Arbiter demo's first view 389 kB of 450 kB (gzip).
+- `pnpm check:cv`: two pages, seven links, no phone number or referee, and every site link resolves.
+- `pnpm test:e2e`: **183 passed** on desktop and an emulated phone (37 skipped: tests that run on one device only, such as the viewport matrix on desktop and touch sizes on the phone). New in Pass 11:
+  - the CV, the About page and the hiring options;
+  - each short link's 301 and its landing;
+  - the Arbiter demo on its own (Quillfeather to its case, every rail page, a recorded live run, dossiers, and the not-saved and not-in-demo answers, with no foreign request, failed request or console error);
+  - the homepage section, the case study, the framed run with its address bar, and the phone dialog upright and sideways.
+
+  Since 7 October: every threshold answer's calls to action, the music section and `/music` on the footage (with axe), the Hex description, "Lately" and the first post, the post in the feed, the experience section and "Contact me". The SCB demo's address-bar test once timed out waiting for the demo under full parallel load; it passed alone four times and in the next full run. Video files are not served to the tests (`e2e/fixtures.ts`): parallel streams dropped `wrangler dev`'s local connection. Every test runs under the enforced Content Security Policy with no violation; zero serious or critical axe violations; no request to another host before interaction on any route.
+
 - Pass 10 acceptance:
   - Structured data validates against schema.org's definitions on every page (browser test). The online validators need the live URL ([`deployment.md`](deployment.md) step 12).
   - The sitemap lists only public pages.
   - Lighthouse accessibility and SEO are 100 on the key pages.
   - Spec X passes on every page (reviewed below).
 - Pass 9 acceptance, still met: budgets; zero serious or critical axe violations; the CSP enforced with no violation on any route or flow the suite runs; no horizontal scroll at any width in the matrix.
-- Lighthouse CI (homepage, `/work/kerr-microscopy-dissertation`, `/work/growtrades`, `/music` and `/contact`; three mobile runs each, run locally with the CI configuration):
-  - performance 99 or 100 on all five;
-  - accessibility, best practices and SEO 100 on all five;
-  - LCP, median: home 1.82 s, the dissertation 1.88 s, GrowTrades 1.88 s, `/music` 1.89 s, `/contact` 1.66 s. The second video's 1280 px thumbnail pushed `/music` to 2.03 s in CI; YouTube thumbnails now come at 480, 800 and 1280 px, chosen by `sizes`;
+- Lighthouse CI (homepage, `/work/kerr-microscopy-dissertation`, `/work/growtrades`, `/work/arbiter`, `/music` and `/contact`; three mobile runs each, run locally with the CI configuration):
+  - performance 98 to 100 on all six;
+  - accessibility, best practices and SEO 100 on all six;
+  - LCP, median: home 1.96 s, the dissertation 1.88 s, GrowTrades 1.96 s, Arbiter 1.88 s, `/music` 1.88 s, `/contact` 1.66 s.
+  - The homepage measured the same without the Arbiter section (1.96 s), so the section is not what holds it there, but it is close to the 2.0 s budget.
   - CLS 0;
   - TBT 0 ms.
 - PHP: none left; the plugin was deleted once the Worker matched it (ADR-0043).
@@ -437,7 +515,29 @@ Each page was reviewed at desktop width and on a phone. The homepage was reviewe
 
 ## Open items
 
-To confirm (choices made where the content did not say; each is one line to change):
+Pass 11, for Josh's review before merging:
+
+- **Questions the pass left for Josh (spec B.5)**; the current values stay until he answers:
+  1. **The agentic risk-assessment prototype's date:** the site says February 2026; the new CV says 2025.
+  2. **"Introduction to Deep Learning":** the site says 17 September 2025; the CV says 2024.
+  3. **The Heathrow placement:** no year, so it stays a draft.
+  4. **The Zetaris commenter's name:** answered by Josh's screenshot, Frederick Newbrough II.
+  5. **The news classifier:** the CV describes it but gives no year, and does not say whether it was coursework, so it stays off the site.
+- **Choices made in the pass:**
+  - **Arbiter's summary** was cut by eight characters to fit the 220-character limit: "every step replays from a signed audit trail" rather than "every step can be replayed from".
+  - **The timeline's dates and Josh's order disagree in two places**, and the order wins:
+    - "Neural network from scratch" (October 2023) comes before the BSc (2021 to 2025);
+    - "Introduction to Deep Learning" (September 2025) comes before the dissertation (August 2025).
+
+    If the CV's 2024 for the paper is right (question 2), changing its date makes the labels agree.
+
+  - **Credits** add one line from Arbiter's README: it was built with coding agents (Cursor's, then Claude Code), with every change reviewed. Remove it if you prefer.
+  - **The New vendor form** in the demo answers with the not-in-demo message: its presets were not captured, an optional step in the spec.
+  - **Arbiter's README** is vendored too (`apps/arbiter-demo/upstream/README.md`), because the case study quotes its figures, sources, agents table and trace lines.
+  - **The Professional skills** follow the spec's list ("Agile delivery"); the CV says "Agile pipelines, CI/CD", and CI/CD is under Software and cloud.
+  - **The Arbiter stills** hide the demo's banner, as the SCB stills hide its notice; Arbiter's own "Sample mode" chip stays.
+
+Earlier choices to confirm (each is one line to change):
 
 - **The agentic prototype:** dated February 2026 (the recording's assessments are dated 15 February 2026); role "Developer and presenter" and authorship "lead", from the CV's "Developed" and "Presented". If it was a team at the hackathon, say who did what.
 - **GrowTrades:** authorship "lead", as founder (the facts say "we").
@@ -446,13 +546,13 @@ To confirm (choices made where the content did not say; each is one line to chan
   - It shows as current ("2025 to now"), because the CV says "Building". If your part has finished, give an `end`.
   - BEATLEASE's authorship is now "lead" rather than "sole", since another developer took on some of the work.
   - The name and the work page's date (June 2025) still come from the repository.
-- **Mercor** shows only its confirmed line ("Contract work as an AI expert with Mercor."). Anything more needs your own wording, and never anything about clients.
+- **Mercor** shows the CV's own line (Pass 11). Anything more needs your own wording, and never anything about clients.
 - **"Real Life":** role "Artist", dated by its YouTube upload (20 April 2026); the summary is your note, lightly edited.
 - **"I'm Too Late This Time":** role "Artist" and authorship "sole", from the video's description ("Original song by me"); dated by its YouTube upload (26 September 2026); the title as YouTube has it.
 - **The hackathon post** says the submission "has to be in before 25 October", as Josh said. The event's page says the build window is 22 to 27 October and submissions close on 27 October 2026 at 23:45 UTC. If 27 October is right, change the line in `content/posts/2026-10-07-open-agent-hackathon-2026/index.mdx`.
 - **"Hobbies"** was chosen over "Other work" for `/music` in the navigation (`ROUTES.music.label` in `src/lib/routes.ts`).
 - **The Hex description** capitalises "Monte Carlo" and "Hex".
-- **The CV** publishes a referee's name, university email address and phone number ("Dr Tim Moris", while the address says "tim.morris"). A referee's details on a public CV need their agreement; "References available on request" avoids the question. The site links `/cv.pdf` as given.
+- **The CV:** the new CV (Pass 11) has no referee and no phone number. The old one, with a referee's university email address and office phone number, stays in the repository's history by Josh's decision.
 - **The WhatsApp screenshot** is treated as test data: the phone numbers are blacked out and the postcode (M14 6JI) is not a valid one. Confirm "Stan Heather" is not a real customer.
 - **Handy-Man** is not listed on the homepage, although it was asked for: it still holds `docs/Agency Docs` (the agreement, the sales PDF and the onboarding notebook). Make it private, or remove those files and their history, and it can be added to `githubRepos` (and taken out of `NEVER_LISTED`).
 - **Not used:** the processed dataset movie (mostly white frames without the app around it) and the Kerr screencast's narration (it needs captions first). The second raw frame, the background image, is kept out too.

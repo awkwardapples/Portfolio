@@ -107,6 +107,30 @@ describe('work', () => {
     expect(vocabularyProblems(node)).toEqual([]);
   });
 
+  it('is SoftwareSourceCode with its repository and award for software with public code (Pass 11, F.4)', () => {
+    const node = work({
+      ...base,
+      url: 'https://joshlennon.com/work/arbiter',
+      title: 'Arbiter',
+      kind: 'software',
+      date: new Date('2026-10-25'),
+      authorship: 'sole',
+      documents: [],
+      award: '28th, Reasoning Architecture track, Open Agent Hackathon 2026',
+      codeRepository: 'https://github.com/awkwardapples/Arbiter',
+    });
+    expect(node).toMatchObject({
+      '@type': 'SoftwareSourceCode',
+      award: '28th, Reasoning Architecture track, Open Agent Hackathon 2026',
+      codeRepository: 'https://github.com/awkwardapples/Arbiter',
+    });
+    expect(vocabularyProblems(node)).toEqual([]);
+    // Without a repository it stays a CreativeWork, and never names one.
+    const plain = work({ ...base, kind: 'software', documents: [] });
+    expect(plain['@type']).toBe('CreativeWork');
+    expect(plain).not.toHaveProperty('codeRepository');
+  });
+
   it('is a ScholarlyArticle for a paper, and a CreativeWork otherwise', () => {
     const paper = work({
       ...base,

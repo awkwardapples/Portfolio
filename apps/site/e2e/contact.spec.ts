@@ -130,35 +130,6 @@ test.describe('each intent, through to success', () => {
       .toBe('research');
   });
 
-  test('GrowTrades: an open question, then the case study, and nothing offered', async ({
-    page,
-    request,
-  }) => {
-    const { ip, email } = identity();
-    await as(page, ip);
-    await page.goto('/contact?intent=growtrades');
-    await page
-      .getByRole('textbox', { name: 'What would you like to know?' })
-      .fill('How does the quote wizard work?');
-    await next(page);
-    await expect(page.getByRole('heading', { name: 'GrowTrades', level: 2 })).toBeFocused();
-    await expect(page.getByRole('link', { name: 'GrowTrades', exact: true })).toHaveAttribute(
-      'href',
-      '/work/growtrades',
-    );
-    await page.getByRole('button', { name: 'Send Josh a message' }).click();
-    await details(page, email);
-    await send(page);
-    const ref = await reference(page);
-    await expect
-      .poll(async () => (await forwardsFor(request, ref))[0]?.payload)
-      .toMatchObject({
-        wizard_id: 'growtrades',
-        intent_label: "I'm interested in GrowTrades",
-        answers: { growtrades_question: 'How does the quote wizard work?' },
-      });
-  });
-
   test('music', async ({ page, request }) => {
     const { ip, email } = identity();
     await as(page, ip);

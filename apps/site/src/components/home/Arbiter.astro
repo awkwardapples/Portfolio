@@ -1,0 +1,70 @@
+---
+/**
+ * Arbiter on the homepage (Pass 11, F.3), straight after Selected work: for
+ * the roles Josh is seeking it is the strongest evidence on the page. The
+ * hackathon result, what Arbiter does, the browser frame with its console
+ * (the still until the visitor asks for the live demo), the demo video and
+ * the Zetaris endorsement, then the case study and the code. Shown whenever
+ * the Arbiter entry is visible.
+ */
+import LiveDemo from '~/components/case-study/LiveDemo.astro';
+import Endorsement from '~/components/Endorsement.astro';
+import Section from '~/components/Section.astro';
+import YouTube from '~/components/media/YouTube.astro';
+import { buttonClass } from '~/design/button';
+import type { Work } from '~/lib/content';
+import { ROUTES } from '~/lib/routes';
+
+interface Props {
+  entry: Work;
+}
+
+const { entry } = Astro.props;
+const { data } = entry;
+const video = data.media.find((item) => item.type === 'youtube');
+const [endorsement] = data.endorsements;
+const code = data.links.find((link) => link.type === 'github');
+---
+
+<Section id="arbiter" labelledby="arbiter-heading" divided>
+  <h2 id="arbiter-heading" class="text-3xl" tabindex="-1" data-landing>Arbiter</h2>
+  <p class="mt-6 max-w-reading">
+    Open Agent Hackathon 2026, built solo in five days: 28th in the Reasoning Architecture track.
+  </p>
+  <p class="mt-4 max-w-reading text-lg">{data.summary}</p>
+  <div class="mt-heading-gap">
+    <LiveDemo demo="arbiter" />
+  </div>
+  {
+    (video || endorsement) && (
+      <div class="mt-12 grid gap-10 lg:grid-cols-12 lg:gap-12">
+        {video && video.type === 'youtube' && (
+          <YouTube
+            id={video.id}
+            title={video.title}
+            anchor="arbiter-video"
+            sizes="(min-width: 1024px) 40rem, 100vw"
+            class="lg:col-span-7"
+          />
+        )}
+        {endorsement && <Endorsement endorsement={endorsement} class="lg:col-span-5" />}
+      </div>
+    )
+  }
+  <ul class="mt-8 flex flex-wrap gap-x-6" role="list">
+    <li>
+      <a href={`${ROUTES.work.path}/${entry.id}`} class={buttonClass({ variant: 'quiet' })}>
+        Read the case study
+      </a>
+    </li>
+    {
+      code && (
+        <li>
+          <a href={code.url} class={buttonClass({ variant: 'quiet' })}>
+            {code.label}
+          </a>
+        </li>
+      )
+    }
+  </ul>
+</Section>

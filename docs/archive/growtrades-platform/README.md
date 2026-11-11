@@ -2,7 +2,7 @@
 
 These documents describe the GrowTrades lead-generation platform as it stood before this repository became Josh Lennon's portfolio: a WordPress plugin hosting a React quote wizard for local trades businesses, with SCB Handyman as the first client. They were moved here unchanged on 4 October 2026 (Portfolio Pass 1, spec C.5) and are not maintained.
 
-They remain useful as history and as evidence for the GrowTrades case study, but they are not instructions for the portfolio. Where they disagree with the code or with [`docs/portfolio-spec.md`](../../portfolio-spec.md), the code and the spec win.
+They remain useful as history and as evidence for the GrowTrades case study, but they are not instructions for the portfolio. Where they disagree with the code or with the portfolio specification (in the repository's history since Pass 11), the code and the spec win.
 
 Some links inside them point to paths that no longer exist (the WordPress plugin, the old build scripts, `docs/Agency Docs/`), and commit hashes quoted in them changed when the repository history was rewritten in Pass 0.
 

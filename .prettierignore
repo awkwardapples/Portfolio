@@ -18,8 +18,16 @@ composer.lock
 *.min.js
 *.min.css
 
-# The portfolio spec is supplied by Josh and replaced wholesale by each new
-# version; keep it byte-for-byte as supplied so versions can be diffed.
-docs/portfolio-spec.md
 playwright-report
 test-results
+
+# Arbiter's console, copied verbatim with its snapshot and backend files
+# (apps/arbiter-demo/UPSTREAM.md): upstream's own formatting is kept, and the
+# generated UPSTREAM.md and package.json are rewritten by pnpm arbiter:sync.
+# The demo's own files (src/demo, vite.demo.config.ts, README.md) are formatted.
+apps/arbiter-demo/*
+!apps/arbiter-demo/src
+!apps/arbiter-demo/vite.demo.config.ts
+!apps/arbiter-demo/README.md
+apps/arbiter-demo/src/*
+!apps/arbiter-demo/src/demo

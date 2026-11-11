@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { newestFirst, periodLabel, yearMonthLabel, type TimelineItem } from './timeline';
+import { inOrder, newestFirst, periodLabel, yearMonthLabel, type TimelineItem } from './timeline';
 
 const item = (sortKey: string, title: string): TimelineItem => ({
   kind: 'work',
+  key: `work:${title}`,
   sortKey,
   when: '',
   title,
@@ -17,6 +18,28 @@ describe('timeline', () => {
     expect(periodLabel('2021', '2025')).toBe('2021 to 2025');
     expect(periodLabel('2026', '2027', true)).toBe('2026 to 2027 (in progress)');
     expect(periodLabel('2024-03', undefined)).toBe('March 2024 to now');
+    // A period within one year is that year alone (BEATLEASE, 2025).
+    expect(periodLabel('2025', '2025')).toBe('2025');
+  });
+
+  it("follows Josh's order, oldest first, then anything unlisted by date", () => {
+    const ordered = inOrder(
+      [
+        item('2026', 'MSc'),
+        item('2021', 'BSc'),
+        item('2023-10-08', 'Neural network'),
+        item('2026-12-01', 'Later post'),
+        item('2026-11-30', 'Another post'),
+      ],
+      ['work:Neural network', 'work:BSc', 'work:MSc', 'work:Gone'],
+    );
+    expect(ordered.map((entry) => entry.title)).toEqual([
+      'Neural network',
+      'BSc',
+      'MSc',
+      'Another post',
+      'Later post',
+    ]);
   });
 
   it('orders newest first across kinds', () => {

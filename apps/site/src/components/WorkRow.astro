@@ -4,6 +4,12 @@
  * kind and year, Josh's role and the evidence actions, with the artefact
  * itself beside it (the entry's cover, or the first page of its PDF). On
  * phones the artefact sits above the text. The homepage and /work share it.
+ *
+ * The actions are the entry's documents and links, except `other` links
+ * (slides and the like, kept for the work page); "Watch on YouTube" is added
+ * only when no link already offers the video. A link to an anchor on the
+ * work page (#live-demo, #demo-video) goes there, or to `anchors` when the
+ * page that shows the row has the same thing (the homepage's #arbiter).
  */
 import { Picture } from 'astro:assets';
 
@@ -17,9 +23,11 @@ interface Props {
   entry: Work;
   /** Marks the row for a filter (src/scripts/filters.ts), e.g. its kind on /work. */
   filterTags?: string;
+  /** The work page's anchors this page has too: { '#live-demo': '#arbiter' }. */
+  anchors?: Readonly<Record<string, string>> | undefined;
 }
 
-const { entry, filterTags } = Astro.props;
+const { entry, filterTags, anchors = {} } = Astro.props;
 const { data } = entry;
 
 const href = isLinkable(ROUTES.work) ? `${ROUTES.work.path}/${entry.id}` : undefined;
@@ -42,8 +50,15 @@ if (document) {
     href: info?.url ?? `/documents/${document.file}`,
   });
 }
-for (const link of data.links) actions.push({ label: link.label, href: link.url });
+for (const link of data.links) {
+  if (link.type === 'other') continue;
+  const target = link.url.startsWith('#')
+    ? (anchors[link.url] ?? `${href ?? ''}${link.url}`)
+    : link.url;
+  actions.push({ label: link.label, href: target });
+}
 for (const item of data.media) {
+  if (data.links.some((link) => link.type === 'video')) break;
   if (item.type === 'youtube') {
     actions.push({ label: 'Watch on YouTube', href: `https://www.youtube.com/watch?v=${item.id}` });
     break;

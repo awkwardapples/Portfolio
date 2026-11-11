@@ -151,6 +151,10 @@ export interface WorkInput {
   documents: readonly { url: string; title: string; docType: string }[];
   tags: readonly string[];
   imageUrl?: string | undefined;
+  /** A result the work won, e.g. a placing in a competition (Pass 11, F.4). */
+  award?: string | undefined;
+  /** The public repository of a software work: it is then SoftwareSourceCode. */
+  codeRepository?: string | undefined;
 }
 
 /**
@@ -166,7 +170,9 @@ export function work(input: WorkInput): Node {
       ? 'Thesis'
       : input.kind === 'research' && types.includes('paper')
         ? 'ScholarlyArticle'
-        : 'CreativeWork';
+        : input.kind === 'software' && isUrl(input.codeRepository)
+          ? 'SoftwareSourceCode'
+          : 'CreativeWork';
   const josh = { '@id': personId(input.site) };
   const authored = input.authorship === 'sole' || input.authorship === 'lead';
   return compact({
@@ -187,6 +193,8 @@ export function work(input: WorkInput): Node {
       ? { '@type': 'CollegeOrUniversity', name: input.context.institution }
       : undefined,
     keywords: input.tags.length > 0 ? input.tags.join(', ') : undefined,
+    award: input.award,
+    codeRepository: type === 'SoftwareSourceCode' ? input.codeRepository : undefined,
     image: isUrl(input.imageUrl) ? input.imageUrl : undefined,
     inLanguage: 'en-GB',
     associatedMedia: oneOrMany(

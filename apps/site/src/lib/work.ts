@@ -26,6 +26,8 @@ export interface WorkFacts {
     type: 'sole' | 'lead' | 'contributor' | string;
     collaborators: readonly Collaborator[];
     supervisor?: string | undefined;
+    /** Other people's tools the work is built on (Arbiter's sponsor components). */
+    tools?: readonly string[] | undefined;
   };
   context?:
     | {
@@ -59,6 +61,11 @@ function nameList(collaborators: readonly Collaborator[]): string {
   return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 }
 
+function listOf(items: readonly string[]): string {
+  if (items.length <= 1) return items[0] ?? '';
+  return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
+}
+
 /** The statement of authorship (spec H.6 item 7), in the first person. */
 export function authorshipStatement(work: WorkFacts, hasExternalMedia: boolean): string[] {
   const { type, collaborators, supervisor } = work.authorship;
@@ -75,6 +82,8 @@ export function authorshipStatement(work: WorkFacts, hasExternalMedia: boolean):
     );
   }
   if (supervisor) lines.push(`Supervised by ${supervisor}.`);
+  const tools = work.authorship.tools ?? [];
+  if (tools.length > 0) lines.push(`It is built on tools I did not make: ${listOf(tools)}.`);
   if (hasExternalMedia) lines.push('Material by other people is credited where it appears.');
   return lines;
 }

@@ -21,6 +21,7 @@ const CREATIVE_WORK = [
   'isPartOf',
   'mainEntity',
   'thumbnailUrl',
+  'award',
 ];
 const MEDIA_OBJECT = [...CREATIVE_WORK, 'contentUrl', 'embedUrl', 'encodingFormat', 'uploadDate'];
 
@@ -32,6 +33,7 @@ export const VOCABULARY: Record<string, readonly string[]> = {
   CreativeWork: CREATIVE_WORK,
   Thesis: [...CREATIVE_WORK, 'inSupportOf'],
   ScholarlyArticle: CREATIVE_WORK,
+  SoftwareSourceCode: [...CREATIVE_WORK, 'codeRepository', 'programmingLanguage'],
   BlogPosting: CREATIVE_WORK,
   MediaObject: MEDIA_OBJECT,
   VideoObject: MEDIA_OBJECT,

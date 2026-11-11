@@ -9,6 +9,7 @@ import type { IntentValue } from './intents';
 export type HomeSection =
   | 'intro'
   | 'selected-work'
+  | 'arbiter'
   | 'research'
   | 'growtrades'
   | 'music'

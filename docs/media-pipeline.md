@@ -64,7 +64,9 @@ Writes `apps/site/public/media/video/<name>/`:
 - Targets: about 3 MB for 1080 AV1 and 6 MB for 1080 H.264. The script flags files over target, and fails if any file is over Cloudflare's 25 MiB limit.
 - Reference the set from an entry as `type: video` with `name: <name>`.
 
-## SCB demo stills: `pnpm media:screens`
+## Demo stills: `pnpm media:screens`
+
+### SCB demo stills: `pnpm media:screens scb`
 
 ```bash
 pnpm --filter @growth-ops/wizard build:demo   # once, to build the demo
@@ -72,6 +74,16 @@ pnpm media:screens
 ```
 
 Opens the built demo in Playwright's Chromium and saves the homepage at desktop and phone sizes, and the quote page, as PNGs in `src/content/work/growtrades/screens/`. Astro turns them into AVIF and WebP for the frame's still. Run it again when the SCB site changes.
+
+### Arbiter demo stills: `pnpm media:screens arbiter`
+
+Builds the Arbiter demo, opens it in Playwright's Chromium and captures three stills into `src/content/work/arbiter/screens/`:
+
+- `console-ruling-desktop.png` (1280 by 800): the run view for Quillfeather Payroll Cloud Ltd once its ruling shows. It is the frame's still and the work's cover.
+- `console-assess-landscape.png` (844 by 390): the Assess page, the phone still, shown in a landscape outline.
+- `console-case-desktop.png` (1280 by 800): Quillfeather's case, claim against record (Fig. 3).
+
+The demo's banner is hidden in the stills, since the captions say it is a demo; Arbiter's own "Sample mode" chip stays. Run it again whenever the console or its snapshot changes (`apps/arbiter-demo/README.md`). `pnpm media:screens` with no argument does both demos.
 
 ## Share image and icons: `pnpm media:og`
 

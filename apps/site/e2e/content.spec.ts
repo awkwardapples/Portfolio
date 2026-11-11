@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+
 import type { Page } from '@playwright/test';
 
 import { expectNoSeriousViolations } from './axe';
@@ -200,12 +202,13 @@ test.describe('experience', () => {
     const mercor = section.getByRole('article', { name: 'Mercor' });
     await expect(mercor).toContainText('AI Expert [Contract], August 2026 to now');
     await expect(mercor.getByRole('listitem')).toHaveText([
-      'Contract work as an AI expert with Mercor.',
+      'Evaluating and annotating AI model outputs in large-scale workflows, producing training data for model fine-tuning while keeping accuracy and throughput high alongside full-time study.',
     ]);
     // A confidential role never links anywhere (spec Y.3).
     await expect(mercor.getByRole('link')).toHaveCount(0);
     const beatlease = section.getByRole('article', { name: 'BEATLEASE' });
-    await expect(beatlease).toContainText('Co-founder, 2025 to now');
+    await expect(beatlease).toContainText('Co-founder, 2025');
+    await expect(beatlease).not.toContainText('to now');
     await expect(beatlease.getByRole('link', { name: 'About BEATLEASE' })).toHaveAttribute(
       'href',
       '/work/beatlease',
@@ -219,15 +222,62 @@ test.describe('experience', () => {
 });
 
 test.describe('about', () => {
-  test('shows the timeline newest first and the skills', async ({ page }) => {
+  test("shows the timeline in Josh's order, oldest first, and the skills", async ({ page }) => {
     await page.goto('/about');
     const items = page.locator('.timeline > li h3');
-    // Newest first: the first log post (7 October 2026), the latest song (26 September 2026),
-    // then the Mercor contract (August 2026).
-    await expect(items.nth(0)).toHaveText('Competing in the Open Agent Hackathon 2026');
-    await expect(items.nth(1)).toHaveText("I'm Too Late This Time");
-    await expect(items.nth(2)).toHaveText('AI Expert [Contract]');
+    // Newest first: Arbiter's result (11 November 2026), Arbiter (25 October), the hackathon
+    // post (7 October), the latest song (26 September), then the Mercor contract (August).
+    // Josh's order (11 November 2026): no music, and GrowTrades and BEATLEASE once each.
+    await expect(items).toHaveText([
+      'A Levels',
+      'Neural network from scratch',
+      'BSc Artificial Intelligence',
+      'Introduction to Deep Learning',
+      'Extracting magnetic information from Kerr Microscopy images',
+      'Co-founder',
+      'Agentic risk-assessment prototype',
+      'Founder',
+      'AI Expert [Contract]',
+      'MSc Artificial Intelligence',
+      'Competing in the Open Agent Hackathon 2026',
+      'Arbiter',
+      'Arbiter placed 28th globally in Reasoning Architecture',
+    ]);
     await expect(page.getByRole('heading', { name: 'Skills' })).toBeVisible();
+  });
+
+  test('follows the CV of 11 November 2026', async ({ page }) => {
+    await page.goto('/about');
+    const titles = (await page.locator('.timeline > li h3').allTextContents()).map((t) => t.trim());
+    const at = (title: string) => titles.indexOf(title);
+    // Education oldest first, the sixth form included.
+    expect(at('A Levels')).toBe(0);
+    expect(at('BSc Artificial Intelligence')).toBeLessThan(at('MSc Artificial Intelligence'));
+    // Skills in the CV's groups, then volunteering and interests as plain lists.
+    await expect(page.locator('section[aria-labelledby="skills-heading"] h3')).toHaveText([
+      'Programming',
+      'AI and data',
+      'Software and cloud',
+      'AI coding tools',
+      'Professional',
+    ]);
+    const beyond = page.locator('section[aria-labelledby="beyond-heading"]');
+    await expect(beyond.getByRole('heading', { level: 3 })).toHaveText([
+      'Volunteering',
+      'Interests',
+    ]);
+    await expect(beyond).toContainText('Coaching an under-9s rugby team.');
+    await expect(beyond).toContainText('University of Surrey badminton.');
+    await expect(beyond.locator('svg, img')).toHaveCount(0);
+    // Mercor: the CV's own line, and never a link (spec Y.3).
+    const mercor = page.locator('.timeline > li', {
+      has: page.getByRole('heading', { name: 'AI Expert [Contract]' }),
+    });
+    await expect(mercor).toContainText('Evaluating and annotating AI model outputs');
+    await expect(mercor.getByRole('link')).toHaveCount(0);
+    // The Heathrow placement stays a draft until its year is known.
+    await expect(page.getByText('Heathrow')).toHaveCount(0);
+    await expectNoSeriousViolations(page);
   });
 });
 
@@ -238,6 +288,21 @@ test.describe('site files', () => {
       expect(sitemap, path).toContain(`${path}</loc>`);
     }
     expect(sitemap).not.toMatch(/\/(404|dev\/|admin|demo|api)/);
+  });
+
+  test('/cv.pdf is the CV of 11 November 2026, with its size on the download', async ({
+    page,
+    request,
+  }) => {
+    const response = await request.get('/cv.pdf');
+    expect(response.status()).toBe(200);
+    expect(response.headers()['content-type']).toContain('application/pdf');
+    expect((await response.body()).equals(readFileSync('public/cv.pdf'))).toBe(true);
+    await page.goto('/about');
+    await expect(page.getByRole('link', { name: /^Download CV \(PDF, \d+ kB\)$/ })).toHaveAttribute(
+      'href',
+      '/cv.pdf',
+    );
   });
 
   test('the RSS feed is valid XML', async ({ request }) => {

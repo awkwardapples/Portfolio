@@ -1,0 +1,98 @@
+---
+/**
+ * A live demo in a browser frame (spec J.2 item 2, J.4, N.4; ADR-0044,
+ * ADR-0050; Pass 11, E.5): the SCB site in the GrowTrades case study and on
+ * the homepage, or Arbiter's console in its case study and homepage
+ * section. Each demo's addresses, labels, stills and caption are in
+ * src/lib/demos.ts. The frame island hydrates when it comes into view, and
+ * loads nothing of the demo until the visitor presses the button.
+ *
+ * As the frame scrolls into view it tilts from slightly back to flat (N.4),
+ * with a CSS scroll-driven animation; with reduced motion, or in browsers
+ * without scroll-driven animations, it is simply flat.
+ */
+import { getImage } from 'astro:assets';
+
+import { SiteFrame } from '~/islands/SiteFrame';
+import { DEMOS, type DemoKey } from '~/lib/demos';
+
+interface Props {
+  demo: DemoKey;
+  /** Show "Fig. 1." before the caption (the case studies number their figures). */
+  number?: number;
+  /** An id for the figure, e.g. live-demo, so the actions row can link to it. */
+  id?: string;
+}
+
+const { demo: key, number, id } = Astro.props;
+const demo = DEMOS[key];
+const demoUrl = import.meta.env.DEV ? demo.devUrl : demo.demoUrl;
+const { desktop, phone } = demo.stills;
+const [desktopStill, phoneStill] = await Promise.all([
+  getImage({ src: desktop.src, width: desktop.src.width, format: 'avif' }),
+  getImage({ src: phone.src, width: phone.src.width, format: 'avif' }),
+]);
+---
+
+<figure id={id} class="live-site flex flex-col gap-3">
+  <div class="live-site-reveal">
+    <SiteFrame
+      client:visible
+      demoUrl={demoUrl}
+      domain={demo.domain}
+      initialPath={demo.initialPath}
+      siteName={demo.siteName}
+      frameTitle={demo.frameTitle}
+      tryLabel={demo.tryLabel}
+      tryDescription={demo.tryDescription}
+      messageType={demo.messageType}
+      skeleton={demo.skeleton}
+      viewports={demo.viewports}
+      phoneViewportWidth={demo.phoneViewportWidth}
+      desktopStill={{
+        src: desktopStill.src,
+        width: desktop.src.width,
+        height: desktop.src.height,
+        alt: desktop.alt,
+      }}
+      mobileStill={{
+        src: phoneStill.src,
+        width: phone.src.width,
+        height: phone.src.height,
+        alt: phone.alt,
+        orientation: phone.orientation,
+      }}
+    />
+  </div>
+  <figcaption class="max-w-reading text-xs text-graphite">
+    {number !== undefined && <span class="font-medium text-ink">Fig. {number}. </span>}
+    {demo.caption}
+  </figcaption>
+</figure>
+
+<style>
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) and (min-width: 768px) {
+      .live-site {
+        perspective: 1200px;
+      }
+
+      .live-site-reveal {
+        transform-origin: center top;
+        animation: frame-settle linear both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 35%;
+      }
+    }
+  }
+
+  @keyframes frame-settle {
+    from {
+      transform: rotateX(12deg) scale(0.94);
+    }
+
+    to {
+      transform: none;
+    }
+  }
+</style>

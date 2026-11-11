@@ -124,6 +124,21 @@ export const profileSchema = ({ image }: SchemaContext) =>
     skills: z
       .array(z.strictObject({ group: z.string().min(1), items: z.array(z.string().min(1)).min(1) }))
       .default([]),
+    // The About timeline's order, oldest first: education:<qualification>,
+    // experience:<organisation>, work:<entry> or post:<post> (Josh, 11 November 2026).
+    timeline: z
+      .array(
+        z
+          .string()
+          .regex(
+            /^(education|experience|work|post):.+$/,
+            'e.g. work:arbiter or education:A Levels',
+          ),
+      )
+      .default([]),
+    // Plain lists for /about, under the skills (Pass 11, C.2).
+    volunteering: z.array(z.string().min(1)).default([]),
+    interests: z.array(z.string().min(1)).default([]),
     photos: z
       .array(
         z.strictObject({

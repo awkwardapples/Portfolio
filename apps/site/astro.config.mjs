@@ -17,7 +17,14 @@ import { defineConfig } from 'astro/config';
 import { afterLoad } from './integrations/after-load.mjs';
 import { devRoutes } from './integrations/dev-routes.mjs';
 import { placeholderGuard } from './integrations/placeholder-guard.mjs';
+import { shortLinks } from './integrations/short-links.mjs';
 import { EARLY_SCRIPT } from './src/lib/early-script.ts';
+import {
+  SHORT_LINKS,
+  devRedirects,
+  redirectsFile,
+  shortLinkProblems,
+} from './src/lib/short-links.ts';
 
 // The canonical origin (spec U.8). CI and local builds use the same value so
 // canonical URLs never point at a preview host.
@@ -33,7 +40,16 @@ export default defineConfig({
   build: {
     format: 'file',
   },
-  integrations: [react(), mdx(), sitemap(), afterLoad(), devRoutes(), placeholderGuard()],
+  integrations: [
+    react(),
+    mdx(),
+    sitemap(),
+    afterLoad(),
+    devRoutes(),
+    placeholderGuard(),
+    // The CV's short links (Pass 11, D.1): dist/_redirects, checked against the build.
+    shortLinks({ links: SHORT_LINKS, redirectsFile, devRedirects, shortLinkProblems }),
+  ],
   // Content Security Policy (spec Q.4, ADR-0048): Astro writes a <meta> policy
   // into each page with the hash of every script and style it rendered, so no
   // inline script runs unless the build put it there. The layout's is:inline

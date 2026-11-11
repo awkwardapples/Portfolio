@@ -20,8 +20,9 @@
   Content-Security-Policy: frame-ancestors 'self'
   Cache-Control: public, max-age=604800
 
-# The SCB demo (ADR-0044, ADR-0048): framed by this site only, never indexed,
-# and under its own policy (a Vite page, so no Astro meta policy).
+# The demos, SCB (ADR-0044) and Arbiter (ADR-0050): framed by this site only, never
+# indexed, and under their own policy (Vite pages, so no Astro meta policy, ADR-0048).
+# Arbiter's console fetches its snapshot from this origin and uses inline styles.
 /demo/*
   ! X-Frame-Options
   ! Content-Security-Policy
@@ -33,6 +34,13 @@
 
 /demo/scb-handyman/assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+/demo/arbiter/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The Arbiter demo's snapshot (Pass 11, E.4): replaced whenever the demo is refreshed.
+/demo/arbiter/data/*
+  Cache-Control: public, max-age=86400
 
 # Self-hosted video loops (pnpm media:video); a changed loop gets a new folder name.
 /media/*

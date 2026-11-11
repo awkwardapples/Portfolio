@@ -163,6 +163,10 @@ test.describe('the GrowTrades case study', () => {
     await page.goto('/work/growtrades');
     await page.locator('.site-frame').first().scrollIntoViewIfNeeded();
     expect(demoRequests).toEqual([]);
+    // Until the frame hydrates, the link simply opens the demo (its no-JavaScript fallback).
+    await expect(
+      page.locator('astro-island[component-export="SiteFrame"]:not([ssr])').first(),
+    ).toBeAttached();
     await page
       .getByRole('link', { name: /^Try the live site/ })
       .first()

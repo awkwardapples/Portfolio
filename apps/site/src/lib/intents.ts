@@ -19,7 +19,7 @@ export const INTENTS: readonly Intent[] = [
   {
     value: 'hiring',
     label: "I'm hiring",
-    description: 'Selected work, experience and my CV',
+    description: 'Selected work, a live AI demo and my CV',
     target: 'selected-work',
   },
   {

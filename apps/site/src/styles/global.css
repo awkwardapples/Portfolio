@@ -115,8 +115,10 @@
     display: none !important;
   }
 
-  /* Sections land below the sticky bar. */
-  section[id] {
+  /* Sections, and document cards a short link lands on, sit below the sticky bar. */
+  section[id],
+  figure[id],
+  .document-card[id] {
     scroll-margin-top: theme('spacing.16');
   }
 }
@@ -266,6 +268,36 @@
 
   .prose-body code {
     font-size: 0.9em;
+  }
+
+  /*
+   * Tables in a body (Pass 11, F.4: Arbiter's agents): hairline rows and a
+   * left-aligned header, at the interface size. A wide table scrolls inside
+   * itself, so a phone never scrolls the page sideways.
+   */
+  .prose-body > table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+    font-size: theme('fontSize.sm[0]');
+    line-height: 1.5;
+  }
+
+  .prose-body > table thead th {
+    border-bottom: 1px solid theme('colors.ink');
+    font-weight: theme('fontWeight.medium');
+  }
+
+  .prose-body > table th,
+  .prose-body > table td {
+    padding: theme('spacing.2') theme('spacing.4') theme('spacing.2') 0;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .prose-body > table tbody tr {
+    border-bottom: 1px solid theme('colors.rule');
   }
 
   .prose-body pre {

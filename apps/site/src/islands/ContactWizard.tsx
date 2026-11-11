@@ -50,7 +50,6 @@ const TURNSTILE_ACTION = 'contact-submit';
 const THRESHOLD_FOR: Record<ContactIntentId, string> = {
   hiring: 'hiring',
   research: 'research',
-  growtrades: 'experience',
   music: 'looking',
   other: 'looking',
 };

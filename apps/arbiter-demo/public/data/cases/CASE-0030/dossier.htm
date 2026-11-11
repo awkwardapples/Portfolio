@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Decision dossier: Kettle Docs 0030 Ltd</title>
+<style>
+body { font-family: Georgia, serif; margin: 2rem; color: #222; }
+h1, h2 { font-family: sans-serif; }
+table { border-collapse: collapse; width: 100%; }
+td, th { border: 1px solid #ccc; padding: 0.4rem; vertical-align: top; }
+pre { white-space: pre-wrap; font-family: Georgia, serif; }
+</style>
+</head>
+<body>
+<h1>Decision dossier: Kettle Docs 0030 Ltd</h1>
+<h2>Header</h2>
+<pre>Vendor: Kettle Docs 0030 Ltd
+Decision: Escalate. A person must decide; the policy will not approve this case as it stands.
+Tier: T2
+Residual risk: 62
+Confidence 90%. Unverified controls: C05 Current independent assurance (SOC 2 Type II or ISO 27001).</pre>
+<h2>Analyst brief</h2>
+<pre>Escalate to the TPRM lead: Data Processing Agreement executed is not met. What would satisfy it: CLM shows DPA signed with a signature date.
+
+- Data Processing Agreement executed is not met. What would satisfy it: CLM shows DPA signed with a signature date.
+- Current independent assurance (SOC 2 Type II or ISO 27001) is unverified. What would satisfy it: SOC 2 Type II report summary issued ≤ 12 months before as_of; or ISO 27001 certificate with expires_on ≥ as_of.
+
+Next steps:
+- Open the service-desk ticket for the TPRM lead. Owner: tprm_lead.</pre>
+<h2>Evidence</h2>
+<pre>No claim disagreed with a system of record.</pre>
+<h2>Controls</h2>
+<pre>- MFA enforced for privileged and remote access: met. The cited evidence meets the control.
+- Credential and secret hygiene: met. The cited evidence meets the control.
+- Least privilege with periodic access reviews: met. The cited evidence meets the control.
+- Encryption at rest and in transit: met. The cited evidence meets the control.
+- Current independent assurance (SOC 2 Type II or ISO 27001): unverified. Would need SOC 2 Type II report summary issued ≤ 12 months before as_of; or ISO 27001 certificate with expires_on ≥ as_of.
+- No unremediated material incident in 24 months: met. The cited evidence meets the control.
+- Personal-data breach notification within 72 hours: met. The cited evidence meets the control.
+- Data Processing Agreement executed: not met. Would need CLM shows DPA signed with a signature date.
+- Data residency or lawful transfer mechanism: met. The cited evidence meets the control.
+- Sub-processor disclosure: met. The cited evidence meets the control.
+- Sanctions and watchlist clear: met. The cited evidence meets the control.
+- No unmitigated exposure to known-exploited vulnerabilities: met. The cited evidence meets the control.</pre>
+<h2>What would change this decision</h2>
+<pre>- Current independent assurance (SOC 2 Type II or ISO 27001) (unverified to met). SOC 2 Type II report summary issued ≤ 12 months before as_of; or ISO 27001 certificate with expires_on ≥ as_of Which independent certifications or attestations do you hold?
+- Data Processing Agreement executed (not met to met). CLM shows DPA signed with a signature date Will you sign our Data Processing Agreement?</pre>
+<h2>Drafts</h2>
+<pre>To: tprm_lead
+Subject: Escalation ticket: Kettle Docs 0030 Ltd
+
+Summary: Kettle Docs 0030 Ltd needs a decision from the TPRM lead.
+
+Evidence:
+- Current independent assurance (SOC 2 Type II or ISO 27001) is unverified
+- Data Processing Agreement executed is not met
+
+Risk: residual risk 62 out of 100, tier T2.
+
+Requested decision: continue, ask Kettle Docs 0030 Ltd for evidence, or decline.</pre>
+<h2>Approvals</h2>
+<pre>Approvals required: none.
+- ctr-9aeed6b5c0a1: state executed, intent vendor.onboarding.escalate, signature valid.</pre>
+<h2>Precedents</h2>
+<pre>No precedents were considered.</pre>
+<h2>Integrity</h2>
+<pre>Policy version: 1.0.0
+Policy hash: d87244d91cacbd6a8c7119595311261a1205fc9019b00426b7d9c66fa06f4857
+Calibration version: cal-2026-10-26-eb975166
+Record hash: f7080ce87405b314ffd956eac8dab0d66ec6c5247ba3c118b2eb746e8b9d61e8
+Replay command: python run.py replay CASE-0030
+Trace id: run-4be5c9c9914c
+Models served: none (deterministic brief)</pre>
+</body></html>
