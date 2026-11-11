@@ -1,0 +1,41 @@
+/*
+ * The demo banner (Pass 11, E.3): fixed at the top, 28 px tall, in the
+ * console's own type. The console's full-height layout is offset by the
+ * banner so nothing is hidden. Upstream's "Sample mode" chip stays visible:
+ * it is the label Arbiter's own rules require over sample-mode runs.
+ */
+:root {
+  --demo-banner: 28px;
+}
+
+.demo-banner {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 60;
+  display: flex;
+  height: var(--demo-banner);
+  margin: 0;
+  align-items: center;
+  overflow: hidden;
+  padding: 0 16px;
+  background: #1d1d1b;
+  color: #f5f4ef;
+  font:
+    500 12px/1 'Public Sans',
+    system-ui,
+    sans-serif;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+body {
+  padding-top: var(--demo-banner);
+}
+
+.h-screen {
+  height: calc(100vh - var(--demo-banner)) !important;
+}
+
+nav.sticky {
+  top: var(--demo-banner) !important;
+}

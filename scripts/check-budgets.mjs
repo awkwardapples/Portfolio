@@ -14,6 +14,10 @@
  * asked (/contact); the Turnstile script, from another host, is not counted.
  * Every other page is listed for information. Lighthouse CI checks timings.
  *
+ * The Arbiter demo (Pass 11, E.4) loads only after "Try the live demo", so
+ * the site's budgets leave it out; its first view, the JavaScript and CSS
+ * its index.html loads, has its own: 450 kB or less, gzipped.
+ *
  *   node scripts/check-budgets.mjs        (after pnpm build; CI runs it)
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
@@ -109,6 +113,27 @@ function measure(html, { visible, dynamic }) {
 }
 
 const kb = (bytes) => `${(bytes / KB).toFixed(1)} kB`;
+
+/** The JavaScript and CSS a Vite page loads at first, with its static imports. */
+function measureDemo(base) {
+  const page = join(DIST, ...base.split('/').filter(Boolean), 'index.html');
+  if (!existsSync(page)) return undefined;
+  const html = readFileSync(page, 'utf8');
+  const scripts = new Set();
+  for (const [, src] of html.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g))
+    collect(src, scripts, false);
+  for (const [, href] of html.matchAll(/<link\b[^>]*rel="modulepreload"[^>]*href="([^"]+)"/g)) {
+    collect(href, scripts, false);
+  }
+  const styles = [...html.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(
+    ([, href]) => href,
+  );
+  const read = (url) => readFileSync(join(DIST, ...url.split('/')), 'utf8');
+  const bytes = [...scripts, ...styles].reduce((sum, url) => sum + gzipped(read(url)), 0);
+  return { bytes, files: scripts.size + styles.length };
+}
+
+const DEMO_BUDGETS = { '/demo/arbiter': 450 * KB };
 const built = pages();
 let failed = false;
 console.log('JavaScript budgets (spec P.1), gzipped:');
@@ -133,6 +158,19 @@ for (const [path, file] of built) {
       `::error::${path} loads ${kb(result.bytes)} of JavaScript; the budget is ${kb(budget.limit)} (spec P.1).`,
     );
   }
+}
+for (const [base, limit] of Object.entries(DEMO_BUDGETS)) {
+  const result = measureDemo(base);
+  if (!result) {
+    console.error(`check-budgets: ${base} has a budget but was not built.`);
+    failed = true;
+    continue;
+  }
+  const over = result.bytes > limit;
+  failed ||= over;
+  console.log(
+    `  ${`${base} (first view, JS and CSS)`.padEnd(40)} ${kb(result.bytes).padStart(9)} of ${kb(limit)}  (${result.files} files)${over ? '  OVER' : ''}`,
+  );
 }
 for (const path of Object.keys(BUDGETS)) {
   if (!built.some(([page]) => page === path)) {

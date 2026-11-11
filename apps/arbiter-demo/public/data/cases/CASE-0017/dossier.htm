@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Decision dossier: Glimmer Forms 0017 Ltd</title>
+<style>
+body { font-family: Georgia, serif; margin: 2rem; color: #222; }
+h1, h2 { font-family: sans-serif; }
+table { border-collapse: collapse; width: 100%; }
+td, th { border: 1px solid #ccc; padding: 0.4rem; vertical-align: top; }
+pre { white-space: pre-wrap; font-family: Georgia, serif; }
+</style>
+</head>
+<body>
+<h1>Decision dossier: Glimmer Forms 0017 Ltd</h1>
+<h2>Header</h2>
+<pre>Vendor: Glimmer Forms 0017 Ltd
+Decision: Request information. Required evidence is missing, so the vendor must reply before a decision.
+Tier: T2
+Residual risk: 50
+Confidence 85%. Unverified controls: C05 Current independent assurance (SOC 2 Type II or ISO 27001), C07 Personal-data breach notification within 72 hours, C08 Data Processing Agreement executed.</pre>
+<h2>Analyst brief</h2>
+<pre>Ask the vendor for more information: Current independent assurance (SOC 2 Type II or ISO 27001) is unverified. What would satisfy it: SOC 2 Type II report summary issued ≤ 12 months before as_of; or ISO 27001 certificate with expires_on ≥ as_of.
+
+- Current independent assurance (SOC 2 Type II or ISO 27001) is unverified. What would satisfy it: SOC 2 Type II report summary issued ≤ 12 months before as_of; or ISO 27001 certificate with expires_on ≥ as_of.
+- Personal-data breach notification within 72 hours is unverified. What would satisfy it: CLM contract clause ≤ 72h; or Q09 commitment ≤ 72h while the contract is not yet signed.
+
+Next steps:
+- Send the clarification email and wait for the vendor&#x27;s reply. Owner: tprm_analyst.</pre>
+<h2>Evidence</h2>
+<pre>No claim disagreed with a system of record.</pre>
+<h2>Controls</h2>
+<pre>- MFA enforced for privileged and remote access: met. The cited evidence meets the control.
+- Credential and secret hygiene: met. The cited evidence meets the control.
+- Least privilege with periodic access reviews: met. The cited evidence meets the control.
+- Encryption at rest and in transit: met. The cited evidence meets the control.
+- Current independent assurance (SOC 2 Type II or ISO 27001): unverified. Would need SOC 2 Type II report summary issued ≤ 12 months before as_of; or ISO 27001 certificate with expires_on ≥ as_of.
+- No unremediated material incident in 24 months: met. The cited evidence meets the control.
+- Personal-data breach notification within 72 hours: unverified. Would need CLM contract clause ≤ 72h; or Q09 commitment ≤ 72h while the contract is not yet signed.
+- Data Processing Agreement executed: met. The cited evidence meets the control.
+- Data residency or lawful transfer mechanism: met. The cited evidence meets the control.
+- Sub-processor disclosure: met. The cited evidence meets the control.
+- Sanctions and watchlist clear: met. The cited evidence meets the control.
+- No unmitigated exposure to known-exploited vulnerabilities: met. The cited evidence meets the control.</pre>
+<h2>What would change this decision</h2>
+<pre>- Current independent assurance (SOC 2 Type II or ISO 27001) (unverified to met). SOC 2 Type II report summary issued ≤ 12 months before as_of; or ISO 27001 certificate with expires_on ≥ as_of Which independent certifications or attestations do you hold?
+- Personal-data breach notification within 72 hours (unverified to met). CLM contract clause ≤ 72h; or Q09 commitment ≤ 72h while the contract is not yet signed Within how many hours will you notify us of a personal-data breach?</pre>
+<h2>Drafts</h2>
+<pre>To: vendor
+Subject: Information requested for Glimmer Forms 0017 Ltd (CASE-0017)
+
+Please send the following so we can finish the assessment of Glimmer Forms 0017 Ltd.
+
+Which independent certifications or attestations do you hold?
+Evidence that would satisfy this: SOC 2 Type II report summary issued ≤ 12 months before as_of; or ISO 27001 certificate with expires_on ≥ as_of
+
+Within how many hours will you notify us of a personal-data breach?
+Evidence that would satisfy this: CLM contract clause ≤ 72h; or Q09 commitment ≤ 72h while the contract is not yet signed</pre>
+<h2>Approvals</h2>
+<pre>Approvals required: none.
+- ctr-0c025f163b6c: state executed, intent vendor.onboarding.request_info, signature valid.</pre>
+<h2>Precedents</h2>
+<pre>No precedents were considered.</pre>
+<h2>Integrity</h2>
+<pre>Policy version: 1.0.0
+Policy hash: d87244d91cacbd6a8c7119595311261a1205fc9019b00426b7d9c66fa06f4857
+Calibration version: cal-2026-10-26-eb975166
+Record hash: 4da92a49aa4ded49407e469f86a76c60ee44b587022a5029f3f88edff4a4c21f
+Replay command: python run.py replay CASE-0017
+Trace id: run-c027bb127cfa
+Models served: none (deterministic brief)</pre>
+</body></html>

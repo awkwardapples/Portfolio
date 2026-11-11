@@ -1,12 +1,12 @@
 /**
  * Components available in every MDX body without an import (spec T.2,
  * docs/authoring-guide.md): `<Figure>`, `<Video>`, `<Audio>`, `<YouTube>`,
- * `<Spotify>` and `<Aside>`, the case-study sections `<LiveSite>`,
+ * `<Spotify>` and `<Aside>`, the case-study sections `<LiveDemo>`,
  * `<UnderTheHood>` and `<EngineeringEvidence>`, plus the paragraph override
  * that turns lone links and images into embeds, document cards and figures.
  */
 import EngineeringEvidence from '~/components/case-study/EngineeringEvidence.astro';
-import LiveSite from '~/components/case-study/LiveSite.astro';
+import LiveDemo from '~/components/case-study/LiveDemo.astro';
 import UnderTheHood from '~/components/case-study/UnderTheHood.astro';
 import Figure from '~/components/Figure.astro';
 import Audio from '~/components/media/Audio.astro';
@@ -26,7 +26,7 @@ export const mdxComponents = {
   Spotify,
   Aside,
   // The GrowTrades case study's sections (spec J.2).
-  LiveSite,
+  LiveDemo,
   UnderTheHood,
   EngineeringEvidence,
 };
