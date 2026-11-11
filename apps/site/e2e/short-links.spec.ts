@@ -9,6 +9,7 @@ import { expect, test } from './fixtures';
 const LINKS: [path: string, target: string][] = [
   ['/intro-to-deep-learning', '/work/introduction-to-deep-learning#read'],
   ['/extracting-image-data', '/work/kerr-microscopy-dissertation#read'],
+  ['/arbiter', '/work/arbiter'],
   ['/cv', '/cv.pdf'],
 ];
 

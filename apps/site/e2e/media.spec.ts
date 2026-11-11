@@ -12,6 +12,7 @@ const ROUTES = [
   '/work',
   '/work/kerr-microscopy-dissertation',
   '/work/neural-network-from-scratch',
+  '/work/arbiter',
   '/research',
   '/music',
   '/log/open-agent-hackathon-2026',

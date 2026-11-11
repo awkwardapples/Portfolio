@@ -1,0 +1,52 @@
+---
+/**
+ * How well Arbiter works (Pass 11, F.6): a short table of the figures from
+ * its own published evaluation, each with its caveat, and two sentences
+ * that say what the figures do not show. Not big-number tiles. The figures
+ * come from src/lib/arbiter-evaluation.ts, whose test checks every one
+ * against Arbiter's files.
+ */
+import { ARBITER_EVALUATION } from '~/lib/arbiter-evaluation';
+import { arbiterFile } from '~/lib/arbiter';
+---
+
+<div class="flex flex-col gap-6">
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-0 border-collapse text-left text-sm">
+      <caption class="sr-only">Arbiter's evaluation, from its own published results</caption>
+      <thead>
+        <tr class="border-b border-ink">
+          <th scope="col" class="py-2 pr-4 font-medium">Measure</th>
+          <th scope="col" class="py-2 pr-4 font-medium">Result</th>
+          <th scope="col" class="py-2 font-medium">Caveat</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          ARBITER_EVALUATION.map((row) => (
+            <tr class="border-b border-rule align-top">
+              <th scope="row" class="py-3 pr-4 font-normal">
+                {row.measure}
+              </th>
+              <td class="whitespace-nowrap py-3 pr-4 font-medium">{row.result}</td>
+              <td class="py-3 text-graphite">{row.note ?? ''}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+  <p class="max-w-reading">
+    The data is synthetic and n is small: these numbers show that the live path works end to end,
+    not a precision estimate. The single-prompt baseline could not be measured, so no claim is made
+    that Arbiter beats it; whichever calls fell back, the policy decided every case.
+  </p>
+  <p class="text-sm">
+    <a
+      href={arbiterFile('docs/EVALUATION.md')}
+      class="inline-flex min-h-11 items-center underline underline-offset-4"
+    >
+      The method, labels and discussion, in Arbiter's EVALUATION.md
+    </a>
+  </p>
+</div>

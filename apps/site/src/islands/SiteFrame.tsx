@@ -344,63 +344,65 @@ export function SiteFrame({
             Open in a new tab<span className="sr-only">: the {siteName} demo</span>
           </a>
         </div>
-        <dialog
-          ref={dialogRef}
-          aria-label={frameTitle}
-          className="site-frame-dialog"
-          onClose={() => {
-            setPhoneOpen(false);
-            document.documentElement.classList.remove('scroll-locked');
-            phoneTriggerRef.current?.focus();
-          }}
-        >
-          <div className="flex items-center justify-between gap-3 border-b border-rule bg-paper px-3 py-2">
-            <div className="min-w-0">
-              <p className="truncate text-xs text-graphite">{addressFor(domain, path)}</p>
-              {phoneViewportWidth && upright && phone.scale < 1 && (
-                <p className="text-xs" data-sideways-hint>
-                  Best with your phone turned sideways.
-                </p>
-              )}
-            </div>
-            <button
-              type="button"
-              aria-label="Close the demo"
-              onClick={closePhoneDialog}
-              className="icon-button"
-            >
-              <X aria-hidden="true" className="h-5 w-5" />
-            </button>
-          </div>
-          <div ref={phoneBoxRef} className="relative flex-1 overflow-hidden">
-            {phoneOpen && (
-              <>
-                {!loaded && <Skeleton />}
-                <iframe
-                  ref={dialogFrameRef}
-                  src={demoUrl}
-                  title={frameTitle}
-                  onLoad={() => setLoaded(true)}
-                  className={
-                    phone.scale < 1
-                      ? 'absolute left-0 top-0 origin-top-left border-0 bg-paper'
-                      : 'absolute inset-0 h-full w-full border-0 bg-paper'
-                  }
-                  style={
-                    phone.scale < 1
-                      ? {
-                          width: phone.width,
-                          height: phone.height,
-                          transform: `scale(${phone.scale})`,
-                        }
-                      : undefined
-                  }
-                />
-              </>
+      </div>
+
+      {/* Outside the phone block, so an open demo stays open when the phone is turned sideways. */}
+      <dialog
+        ref={dialogRef}
+        aria-label={frameTitle}
+        className="site-frame-dialog"
+        onClose={() => {
+          setPhoneOpen(false);
+          document.documentElement.classList.remove('scroll-locked');
+          phoneTriggerRef.current?.focus();
+        }}
+      >
+        <div className="flex items-center justify-between gap-3 border-b border-rule bg-paper px-3 py-2">
+          <div className="min-w-0">
+            <p className="truncate text-xs text-graphite">{addressFor(domain, path)}</p>
+            {phoneViewportWidth && upright && phone.scale < 1 && (
+              <p className="text-xs" data-sideways-hint>
+                Best with your phone turned sideways.
+              </p>
             )}
           </div>
-        </dialog>
-      </div>
+          <button
+            type="button"
+            aria-label="Close the demo"
+            onClick={closePhoneDialog}
+            className="icon-button"
+          >
+            <X aria-hidden="true" className="h-5 w-5" />
+          </button>
+        </div>
+        <div ref={phoneBoxRef} className="relative flex-1 overflow-hidden">
+          {phoneOpen && (
+            <>
+              {!loaded && <Skeleton />}
+              <iframe
+                ref={dialogFrameRef}
+                src={demoUrl}
+                title={frameTitle}
+                onLoad={() => setLoaded(true)}
+                className={
+                  phone.scale < 1
+                    ? 'absolute left-0 top-0 origin-top-left border-0 bg-paper'
+                    : 'absolute inset-0 h-full w-full border-0 bg-paper'
+                }
+                style={
+                  phone.scale < 1
+                    ? {
+                        width: phone.width,
+                        height: phone.height,
+                        transform: `scale(${phone.scale})`,
+                      }
+                    : undefined
+                }
+              />
+            </>
+          )}
+        </div>
+      </dialog>
     </div>
   );
 }

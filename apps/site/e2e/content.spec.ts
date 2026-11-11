@@ -224,11 +224,13 @@ test.describe('about', () => {
   test('shows the timeline newest first and the skills', async ({ page }) => {
     await page.goto('/about');
     const items = page.locator('.timeline > li h3');
-    // Newest first: the first log post (7 October 2026), the latest song (26 September 2026),
-    // then the Mercor contract (August 2026).
-    await expect(items.nth(0)).toHaveText('Competing in the Open Agent Hackathon 2026');
-    await expect(items.nth(1)).toHaveText("I'm Too Late This Time");
-    await expect(items.nth(2)).toHaveText('AI Expert [Contract]');
+    // Newest first: Arbiter's result (11 November 2026), Arbiter (25 October), the hackathon
+    // post (7 October), the latest song (26 September), then the Mercor contract (August).
+    await expect(items.nth(0)).toHaveText('Arbiter placed 28th in Reasoning Architecture');
+    await expect(items.nth(1)).toHaveText('Arbiter');
+    await expect(items.nth(2)).toHaveText('Competing in the Open Agent Hackathon 2026');
+    await expect(items.nth(3)).toHaveText("I'm Too Late This Time");
+    await expect(items.nth(4)).toHaveText('AI Expert [Contract]');
     await expect(page.getByRole('heading', { name: 'Skills' })).toBeVisible();
   });
 

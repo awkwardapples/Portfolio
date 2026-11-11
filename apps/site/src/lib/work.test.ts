@@ -48,6 +48,21 @@ describe('authorshipStatement', () => {
     ]);
   });
 
+  it("names other people's tools the work is built on (Pass 11, F.1)", () => {
+    const arbiter: WorkFacts = {
+      ...dissertation,
+      authorship: {
+        type: 'sole',
+        collaborators: [],
+        tools: ['NVIDIA Nemotron models', 'Meterless Nightshift', 'the Zetaris platform'],
+      },
+    };
+    expect(authorshipStatement(arbiter, false)).toEqual([
+      'This is my own work.',
+      'It is built on tools I did not make: NVIDIA Nemotron models, Meterless Nightshift and the Zetaris platform.',
+    ]);
+  });
+
   it('describes a contribution with the role', () => {
     const contributor: WorkFacts = {
       ...dissertation,

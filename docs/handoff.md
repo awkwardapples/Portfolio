@@ -22,15 +22,18 @@ The full list, with each item's reason, is under Open items in [`current-state.m
 
 ## Everyday tasks
 
-| Task                                        | How                                                                                                                       |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Add a post, a project or a release          | [`authoring-guide.md`](authoring-guide.md): `/admin`, `pnpm new`, or by hand. New entries start as drafts.                |
-| Add photos, a PDF, a footage loop           | [`media-pipeline.md`](media-pipeline.md): `pnpm media:images`, `media:pdf`, `media:video`                                 |
-| Change the name or headline on share images | Edit the profile, then `pnpm media:og`                                                                                    |
-| Answer a data request or rotate a secret    | [`data-protection.md`](data-protection.md)                                                                                |
-| See what is deferred and why                | [`technical-debt.md`](technical-debt.md)                                                                                  |
-| Check a change before merging               | `pnpm gates`; CI runs the same, plus Lighthouse                                                                           |
-| Deploy                                      | Merge to `main`. The Deploy workflow also runs daily (fresh GitHub data) and by hand: **Actions > Deploy > Run workflow** |
+| Task                                        | How                                                                                                                                                   |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Add a post, a project or a release          | [`authoring-guide.md`](authoring-guide.md): `/admin`, `pnpm new`, or by hand. New entries start as drafts.                                            |
+| Add photos, a PDF, a footage loop           | [`media-pipeline.md`](media-pipeline.md): `pnpm media:images`, `media:pdf`, `media:video`                                                             |
+| Change the name or headline on share images | Edit the profile, then `pnpm media:og`                                                                                                                |
+| Replace the CV                              | Save it as `apps/site/public/cv.pdf`, then `pnpm build` and `pnpm check:cv`: no phone number or referee, and every link to the site resolves          |
+| Add a short link for print                  | One line in `apps/site/src/lib/short-links.ts` ([`authoring-guide.md`](authoring-guide.md#short-links)); paths are permanent once printed             |
+| Refresh the Arbiter demo                    | [`apps/arbiter-demo/README.md`](../apps/arbiter-demo/README.md): re-sync the console with `pnpm arbiter:sync`, then capture a new snapshot and stills |
+| Answer a data request or rotate a secret    | [`data-protection.md`](data-protection.md)                                                                                                            |
+| See what is deferred and why                | [`technical-debt.md`](technical-debt.md)                                                                                                              |
+| Check a change before merging               | `pnpm gates`; CI runs the same, plus Lighthouse                                                                                                       |
+| Deploy                                      | Merge to `main`. The Deploy workflow also runs daily (fresh GitHub data) and by hand: **Actions > Deploy > Run workflow**                             |
 
 ## Working on the code
 

@@ -6,6 +6,7 @@
  * production builds, and the threshold only offers answers whose section is
  * on the page (spec T.4); `astro dev` shows them as labelled gaps.
  */
+import Arbiter from '~/components/home/Arbiter.astro';
 import Elsewhere from '~/components/home/Elsewhere.astro';
 import Experience from '~/components/home/Experience.astro';
 import GetInTouch from '~/components/home/GetInTouch.astro';
@@ -60,10 +61,12 @@ const shelf: ShelfItem[] = work
   })
   .slice(0, 3);
 
-// GrowTrades appears with its entry (published, or a draft in development).
+// GrowTrades and Arbiter appear with their entries (published, or drafts in development).
 const growtrades = work.find((entry) => entry.id === 'growtrades');
+const arbiter = work.find((entry) => entry.id === 'arbiter');
 const sections = new Set<HomeSection>(['intro', 'get-in-touch']);
 if (selected.length > 0) sections.add('selected-work');
+if (arbiter) sections.add('arbiter');
 if (shelf.length > 0) sections.add('research');
 if (growtrades) sections.add('growtrades');
 // More experience: the profile's roles other than GrowTrades (which has its section), newest first.
@@ -95,7 +98,12 @@ const options = INTENTS.filter((intent) => sections.has(intent.target as HomeSec
 >
   <Threshold sentence={sentence} options={options} />
   <Intro profile={profile} ctas={ctas} />
-  {selected.length > 0 && <SelectedWork entries={selected} />}
+  {
+    selected.length > 0 && (
+      <SelectedWork entries={selected} demos={arbiter ? { arbiter: '#arbiter' } : {}} />
+    )
+  }
+  {arbiter && <Arbiter entry={arbiter} />}
   {shelf.length > 0 && <ResearchShelf items={shelf} />}
   {growtrades && <GrowTrades entry={growtrades} />}
   {roles.length > 0 && <Experience roles={roles} />}

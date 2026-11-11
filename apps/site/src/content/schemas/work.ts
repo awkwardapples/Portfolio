@@ -70,6 +70,9 @@ export const workSchema = ({ image }: SchemaContext) =>
             )
             .default([]),
           supervisor: orTodo(z.string().min(1)).optional(),
+          // Other people's tools the work is built on, named in the statement of authorship
+          // (Pass 11, F.1: Arbiter's sponsor components).
+          tools: z.array(z.string().min(1)).default([]),
         }),
         context: z
           .strictObject({
@@ -86,7 +89,10 @@ export const workSchema = ({ image }: SchemaContext) =>
           .array(
             z.strictObject({
               type: z.enum(['github', 'live', 'demo', 'paper', 'video', 'spotify', 'other']),
-              url: orTodo(z.string().regex(/^(https:\/\/|\/)/, 'Links start with https:// or /')),
+              // An in-page anchor (#live-demo) is resolved on the work page, or by the row.
+              url: orTodo(
+                z.string().regex(/^(https:\/\/|\/|#)/, 'Links start with https://, / or #'),
+              ),
               label: z.string().min(1),
             }),
           )
@@ -100,6 +106,31 @@ export const workSchema = ({ image }: SchemaContext) =>
         // Spec H.3 calls this `layout`, but Astro's MDX reads a frontmatter `layout` as a
         // layout file to import, so the field is named `template` (ADR-0041).
         template: z.enum(['standard', 'case-study']).default('standard'),
+        // A result the work won, for search engines, e.g. a competition placing (Pass 11, F.4).
+        award: z.string().min(1).optional(),
+        // A case study's closing call to action; without one, GrowTrades' (Pass 11, F.1).
+        cta: z
+          .strictObject({
+            label: z.string().min(1),
+            href: z
+              .string()
+              .regex(/^(\/|https:\/\/)/, 'A call to action starts with / or https://'),
+          })
+          .optional(),
+        // What others said about the work, verbatim, with its public source (Pass 11, F.2).
+        endorsements: z
+          .array(
+            z.strictObject({
+              quote: z.string().min(1),
+              name: z.string().min(1).optional(),
+              role: z.string().min(1),
+              organisation: z.string().min(1),
+              context: z.string().min(1),
+              url: z.url(),
+              date: z.coerce.date().optional(),
+            }),
+          )
+          .default([]),
         seo: z
           .strictObject({
             title: z.string().min(1).optional(),

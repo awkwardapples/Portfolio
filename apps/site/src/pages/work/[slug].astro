@@ -96,6 +96,8 @@ const related = (await Promise.all(data.related.map((reference) => getEntry(refe
 
 const title = data.seo?.title ?? data.title;
 const caseStudy = data.template === 'case-study';
+// A case study's closing action: its own, or GrowTrades' (Pass 11, F.1).
+const cta = data.cta ?? { label: 'Start a conversation', href: '/contact?intent=growtrades' };
 
 // For search engines and link previews (spec S): what this work is, where
 // it sits, and a share image cut from its cover or its document's first page.
@@ -138,6 +140,8 @@ const structuredData = [
     })),
     tags: data.tags,
     imageUrl: share ? new URL(share.src, site).href : undefined,
+    award: data.award,
+    codeRepository: data.links.find((link) => link.type === 'github')?.url,
   }),
   ...data.media.map((item) =>
     item.type === 'youtube'
@@ -234,8 +238,8 @@ const structuredData = [
     {
       caseStudy && (
         <p class="mt-heading-gap">
-          <a href="/contact?intent=growtrades" class={buttonClass()}>
-            Start a conversation
+          <a href={cta.href} class={buttonClass()}>
+            {cta.label}
           </a>
         </p>
       )

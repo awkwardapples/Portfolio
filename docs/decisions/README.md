@@ -16,16 +16,18 @@ Superseded or adapted for this repository:
 
 ## ADRs 0039 onwards: the portfolio
 
-| ADR                                           | Decision                                                                               |
-| --------------------------------------------- | -------------------------------------------------------------------------------------- |
-| [0039](0039-portfolio-architecture.md)        | Portfolio architecture: Astro static site plus Worker; WordPress leaves this repo      |
-| [0040](0040-cloudflare-hosting-and-deploy.md) | Hosting on Cloudflare Workers static assets, D1 and Turnstile; deploy via Actions      |
-| [0041](0041-content-model-and-authoring.md)   | Content model, placeholders as drafts, documents, `pnpm new`, Sveltia CMS              |
-| [0042](0042-what-brings-you-here.md)          | "What brings you here?": the threshold, the contact wizard and the content-result step |
-| [0043](0043-submission-pipeline-port.md)      | The submission pipeline ported to the Worker, with parity tests; the plugin deleted    |
-| [0044](0044-scb-demo-and-framing.md)          | The SCB demo build, its memory router, and framing by this site only                   |
-| [0045](0045-visual-identity-and-theming.md)   | Visual identity and theming through a token contract shared with the wizard            |
-| [0046](0046-media-and-facades.md)             | Facades for YouTube and Spotify, the footage loop, and GitHub at build time            |
-| [0047](0047-lighthouse-ci.md)                 | Performance budgets checked by Lighthouse CI, run as a GitHub Action                   |
-| [0048](0048-csp-and-hardening.md)             | The Content Security Policy, the deferred contact wizard, and hardening checks in CI   |
-| [0049](0049-seo-foundations.md)               | Structured data, share images and robots.txt                                           |
+| ADR                                                 | Decision                                                                               |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [0039](0039-portfolio-architecture.md)              | Portfolio architecture: Astro static site plus Worker; WordPress leaves this repo      |
+| [0040](0040-cloudflare-hosting-and-deploy.md)       | Hosting on Cloudflare Workers static assets, D1 and Turnstile; deploy via Actions      |
+| [0041](0041-content-model-and-authoring.md)         | Content model, placeholders as drafts, documents, `pnpm new`, Sveltia CMS              |
+| [0042](0042-what-brings-you-here.md)                | "What brings you here?": the threshold, the contact wizard and the content-result step |
+| [0043](0043-submission-pipeline-port.md)            | The submission pipeline ported to the Worker, with parity tests; the plugin deleted    |
+| [0044](0044-scb-demo-and-framing.md)                | The SCB demo build, its memory router, and framing by this site only                   |
+| [0045](0045-visual-identity-and-theming.md)         | Visual identity and theming through a token contract shared with the wizard            |
+| [0046](0046-media-and-facades.md)                   | Facades for YouTube and Spotify, the footage loop, and GitHub at build time            |
+| [0047](0047-lighthouse-ci.md)                       | Performance budgets checked by Lighthouse CI, run as a GitHub Action                   |
+| [0048](0048-csp-and-hardening.md)                   | The Content Security Policy, the deferred contact wizard, and hardening checks in CI   |
+| [0049](0049-seo-foundations.md)                     | Structured data, share images and robots.txt                                           |
+| [0050](0050-arbiter-demo.md)                        | The Arbiter demo: the vendored console, the snapshot of its own engine, and the shims  |
+| [0051](0051-short-links-and-document-deep-links.md) | Short links for the CV, and document cards that open where they land                   |

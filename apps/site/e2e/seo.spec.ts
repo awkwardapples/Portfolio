@@ -52,7 +52,9 @@ test.describe('search engines (spec S)', () => {
         expect(types, path).toContain('BreadcrumbList');
         expect(
           types.some((type) =>
-            ['Thesis', 'ScholarlyArticle', 'CreativeWork'].includes(String(type)),
+            ['Thesis', 'ScholarlyArticle', 'SoftwareSourceCode', 'CreativeWork'].includes(
+              String(type),
+            ),
           ),
           path,
         ).toBe(true);

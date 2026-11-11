@@ -129,6 +129,33 @@ Releases and videos show as players that load nothing from Spotify or YouTube un
 
 GitHub: the calendar updates on every deploy. The repositories listed are the ones in `githubRepos` in the profile (as `owner/name`, in order, up to four); `Handy-Man` and `scb-handyman` are never listed while they hold agency documents. To describe a repository in your own words, for example a team repository whose GitHub description you cannot change, write it as `{ repo: owner/name, description: ... }`.
 
+## Endorsements
+
+What someone else said about a piece of work goes under `endorsements:` in its front matter, word for word, with the public place it was said:
+
+```yaml
+endorsements:
+  - quote: >-
+      The words, exactly as written.
+    name: Their name # optional
+    role: VP of Global Pre-Sales
+    organisation: Zetaris
+    context: commenting on my LinkedIn post about Arbiter
+    url: https://lnkd.in/... # the public source
+```
+
+Show it in the body with `<Endorsement endorsement={frontmatter.endorsements[0]} />`. Arbiter's homepage section shows its first endorsement too. Quote only what is public at the link, and nowhere else on the site.
+
+## Short links
+
+A short address for print, like `joshlennon.com/intro-to-deep-learning` on the CV, is one line in `apps/site/src/lib/short-links.ts`:
+
+```ts
+{ path: '/intro-to-deep-learning', to: '/work/introduction-to-deep-learning#read', printedIn: 'CV' },
+```
+
+The build turns it into a 301, with and without a trailing slash. It fails if the target page, or the part of it after `#`, does not exist, or if the short path is already a page. A work page's documents are `#read`, `#read-2` and so on, in the order they appear; a link to one opens the reader on wider screens. Once a path is printed, never change or remove it.
+
 ## The profile
 
 `content/profile/profile.yaml` holds your name, headline, bios, the "Now" list, links, education, experience and skills. Things still missing are noted in comments starting `# TODO(josh)`. To add one, write the field and delete the comment; for example, once you have the LinkedIn URL:

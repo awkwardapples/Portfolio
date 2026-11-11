@@ -1,0 +1,50 @@
+---
+/**
+ * What someone else said about the work (Pass 11, F.2), verbatim, with its
+ * public source. A quotation in STIX Two Text at the lead size, marked by a
+ * 4 px tungsten rule (the accent as a highlighter, never as text on paper),
+ * then who said it and where, and a link to the comment itself.
+ *
+ * Nothing imitates the source's interface (spec M.2): no avatar, reactions
+ * or counts. No Review structured data: self-serving review markup is
+ * against search guidelines. LinkedIn's mark is not used: Simple Icons
+ * removed it at LinkedIn's request (BrandIcon.astro), so the link says where
+ * it goes in words, with the new-tab icon.
+ */
+import { ExternalLink } from 'lucide-react';
+
+interface Props {
+  endorsement: {
+    quote: string;
+    name?: string | undefined;
+    role: string;
+    organisation: string;
+    context: string;
+    url: string;
+  };
+  class?: string;
+}
+
+const { endorsement, class: className } = Astro.props;
+const { quote, name, role, organisation, context, url } = endorsement;
+const who = [name, role, organisation, context].filter(Boolean).join(', ');
+const source = /linkedin\.com|lnkd\.in/.test(url) ? 'LinkedIn' : new URL(url).hostname;
+---
+
+<figure class:list={['flex flex-col gap-4', className]}>
+  <blockquote cite={url} class="border-l-4 border-tungsten pl-5 font-serif text-lg">
+    <p>{quote}</p>
+  </blockquote>
+  <figcaption class="flex flex-col gap-1 pl-6 text-sm">
+    <span>{who}.</span>
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="inline-flex min-h-11 items-center gap-2 self-start underline underline-offset-4"
+    >
+      View the comment on {source}<span class="sr-only"> (opens in a new tab)</span>
+      <ExternalLink aria-hidden="true" size={16} strokeWidth={1.75} />
+    </a>
+  </figcaption>
+</figure>

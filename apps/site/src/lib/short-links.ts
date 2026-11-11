@@ -25,6 +25,7 @@ export const SHORT_LINKS: readonly ShortLink[] = [
     to: '/work/kerr-microscopy-dissertation#read',
     printedIn: 'CV',
   },
+  { path: '/arbiter', to: '/work/arbiter', printedIn: 'spare' },
   { path: '/cv', to: '/cv.pdf', printedIn: 'spare' },
 ];
 
