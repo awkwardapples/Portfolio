@@ -13,12 +13,15 @@ location: Surrey, UK
 headline:
   role: AI Engineer
   focus: [Machine learning, Agentic AI, NLP, Computer vision]
-availability: Open to AI engineering, LLM evaluation, AI automation and agentic AI roles.
+# Josh's CV profile (11 November 2026), with one change: "28th globally" is stated precisely as
+# 28th in the Reasoning Architecture track (he finished 109th of 547 projects overall).
+availability: Open to graduate roles in AI engineering, machine learning and AI consulting.
 bioShort: >-
-  Artificial Intelligence graduate with a First-Class dissertation (76%) and MSc Artificial
-  Intelligence student. Experience across machine learning, NLP, computer vision and software
-  engineering. Built production-oriented SaaS software and conducted independent AI research
-  including deep learning, neural networks from first principles and visual computing.
+  MSc Artificial Intelligence student at the University of Surrey, with a BSc in Artificial
+  Intelligence from the University of Manchester and a first-class dissertation (76%). I build
+  working AI products end to end: a solo multi-agent system that placed 28th in the Reasoning
+  Architecture track at the Open Agent Hackathon, and a lead-generation business with paying
+  clients. Seeking a graduate role in AI engineering, machine learning or AI consulting.
 portrait: { src: ./portrait.jpg, alt: Josh Lennon }
 # Josh's screenshot of the artist profile in the Spotify app (7 October 2026), beside the Spotify
 # link in the music section.
@@ -56,49 +59,82 @@ githubRepos:
       scored well.
   - awkwardapples/BEATLEASE
 
+# Education and skills follow the CV of 11 November 2026 (Pass 11, C.2).
 education:
-  - institution: University of Manchester
-    qualification: BSc Artificial Intelligence
-    start: 2021
-    end: 2025
-    highlights:
-      - Dissertation awarded 76% (first class).
-      - 'Key modules: Machine Learning, Data Science, Visual Computing, Database Systems.'
-      - Year-long Java team project using Git and GitHub, maintaining a large codebase.
   - institution: University of Surrey
     qualification: MSc Artificial Intelligence
     start: 2026
     end: 2027
     status: in-progress
+    highlights:
+      - 'Modules: Machine Learning, People-Centred AI, AI and Health, Speech and Audio Processing, AR and VR.'
+      - 'Predicted grade: Distinction.'
+  - institution: University of Manchester
+    qualification: BSc Artificial Intelligence
+    start: 2021
+    end: 2025
+    highlights:
+      - Dissertation awarded 76% (first class), an image-processing application for physicists analysing magnetic field images in materials science.
+      - 'Modules: Machine Learning, Data Science, Visual Computing, Knowledge-Based AI, Database Systems, Spanish.'
+      - Year-long team project in Java, coordinating bug fixes on a large codebase through Git and GitHub issues.
+  - institution: Fullbrook Sixth Form, Surrey
+    qualification: A Levels
+    start: 2019
+    end: 2021
+    highlights:
+      - 'Computing A*, Mathematics A*, Physics A.'
+      - An Extended Project on AI and surveillance in Chinese and British media, presented at conferences.
+      - 'Relevant GCSEs: English 9, Computing 8, Physics 9.'
 
+# The CV's groups; compound items are split so they match `tech` values on work entries.
 skills:
-  - group: Languages and web
-    items: [Python, Java, C++, JavaScript, SQL, HTML/CSS, React]
-  - group: Machine learning and data
+  - group: Programming
+    items: [Python, TypeScript, JavaScript, SQL, Java, C, C++, MATLAB, HTML/CSS]
+  - group: AI and data
     items:
       [
         Machine learning,
         Deep learning,
         NLP,
         Computer vision,
-        Data science,
+        LLM agents,
+        Agentic workflows,
         PyTorch,
         OpenCV,
         Pandas,
         NumPy,
         Matplotlib,
       ]
-  - group: Engineering and infrastructure
+  - group: Software and cloud
     items:
       [
-        Git and GitHub,
-        PostgreSQL,
+        React,
+        FastAPI,
+        Node.js,
         Remix,
-        Stripe Connect,
+        PostgreSQL,
+        Docker,
+        Git and GitHub,
+        CI/CD,
+        Cloudflare Workers,
         Cloudflare R2,
-        Software engineering,
-        Object-oriented programming,
+        Stripe Connect,
+        WordPress,
       ]
+  - group: AI coding tools
+    items: [Claude Code, Coding agents, Plan-first and test-first development]
+  - group: Professional
+    items:
+      [Client consulting, Presenting to senior audiences, Written communication, Agile delivery]
+
+# Shown on /about under the skills, as plain text (the CV of 11 November 2026).
+volunteering:
+  - DEBRA charity, one week, 2018.
+  - Primary school work experience, one week, 2019.
+  - Coaching an under-9s rugby team.
+interests:
+  - 'Songwriting and music production: writing, producing and recording my own songs.'
+  - University of Surrey badminton.
 
 experience:
   - title: Founder
@@ -125,13 +161,23 @@ experience:
       - Full-stack development with Remix, PostgreSQL, Stripe Connect and Cloudflare R2.
     links: [{ url: /work/beatlease, label: About BEATLEASE }]
 
-  # Josh describes the role as "AI expert contractor for Mercor". Never name or hint at Mercor's
-  # clients, never describe it as employment, never add detail beyond confirmed lines (spec Y.3).
+  # Mercor: the CV's own line (11 November 2026). High-level, no client, contract. Never name or
+  # hint at Mercor's clients, never describe it as employment, never add detail beyond confirmed
+  # lines (spec Y.3). Started 7 August 2026; the title is confirmed by Josh.
   - title: AI Expert [Contract]
     organisation: Mercor
     employmentType: contract
-    # Started 7 August 2026; the title is confirmed by Josh.
     start: '2026-08'
     confidential: true
     description:
-      - Contract work as an AI expert with Mercor.
+      - Evaluating and annotating AI model outputs in large-scale workflows, producing training data for model fine-tuning while keeping accuracy and throughput high alongside full-time study.
+
+  # The CV gives no year for the placement, so it stays a draft until Josh does (Pass 11, B.5).
+  - title: Work experience placement
+    organisation: Heathrow Airport
+    employmentType: placement
+    start: 'TODO(josh): the year of the placement'
+    draft: true
+    description:
+      - Selected for a competitive programme with access to restricted areas, including the runways, air traffic control and security operations.
+      - Worked in large groups and presented to senior corporate audiences, including the Chief Commercial Officer.

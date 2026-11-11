@@ -124,6 +124,9 @@ export const profileSchema = ({ image }: SchemaContext) =>
     skills: z
       .array(z.strictObject({ group: z.string().min(1), items: z.array(z.string().min(1)).min(1) }))
       .default([]),
+    // Plain lists for /about, under the skills (Pass 11, C.2).
+    volunteering: z.array(z.string().min(1)).default([]),
+    interests: z.array(z.string().min(1)).default([]),
     photos: z
       .array(
         z.strictObject({

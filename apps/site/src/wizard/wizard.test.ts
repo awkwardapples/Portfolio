@@ -118,7 +118,7 @@ describe('the contact wizards (spec I.3)', () => {
     });
   });
 
-  it('never offer a website: GrowTrades asks an open question, and hiring covers data science and consulting', () => {
+  it("never offer a website: GrowTrades asks an open question, and hiring offers the CV's roles", () => {
     const text = JSON.stringify(CONTACT_WIZARDS).toLowerCase();
     expect(text).not.toContain('website');
     const growtrades = CONTACT_WIZARDS.growtrades.steps[0];
@@ -126,10 +126,17 @@ describe('the contact wizards (spec I.3)', () => {
       ['growtrades_question'],
     );
     const role = CONTACT_WIZARDS.hiring.steps[0];
-    const values =
+    const options = (key: string) =>
       role && 'fields' in role
-        ? role.fields.flatMap((f) => f.options?.map((o) => o.value) ?? [])
+        ? (role.fields.find((f) => f.key === key)?.options?.map((o) => o.value) ?? [])
         : [];
-    expect(values).toEqual(expect.arrayContaining(['data-science', 'consulting']));
+    expect(options('work_type')).toEqual([
+      'ai-engineering',
+      'machine-learning',
+      'ai-consulting',
+      'agentic-ai',
+      'something-else',
+    ]);
+    expect(options('arrangement')).toContain('consulting');
   });
 });

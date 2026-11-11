@@ -162,12 +162,12 @@ export const CONTACT_WIZARDS: Readonly<Record<ContactIntentId, WizardConfig>> = 
         id: 'role',
         title: 'The role',
         fields: [
+          // The roles Josh's CV seeks (11 November 2026).
           choice('work_type', 'What kind of work?', [
             option('ai-engineering', 'AI engineering'),
-            option('llm-evaluation', 'LLM evaluation'),
-            option('ai-automation', 'AI automation'),
+            option('machine-learning', 'Machine learning'),
+            option('ai-consulting', 'AI consulting'),
             option('agentic-ai', 'Agentic AI'),
-            option('data-science', 'Data science'),
             option('something-else', 'Something else'),
           ]),
           choice('arrangement', 'What kind of arrangement?', [

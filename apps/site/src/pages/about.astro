@@ -5,7 +5,8 @@
  * plain grouped lists, and the CV download once it exists. Skills that a
  * work entry lists in `tech` link to that work, so the list is also an
  * index of evidence. Confidential roles show only their confirmed lines
- * (spec H.5): the schema refuses links and images for them.
+ * (spec H.5): the schema refuses links and images for them. Volunteering and
+ * interests from the CV follow the skills as plain lists (Pass 11, C.2).
  */
 import { Picture } from 'astro:assets';
 
@@ -202,6 +203,33 @@ const bio = profile.bioLong ?? profile.bioShort;
               </ul>
             </div>
           ))}
+        </div>
+      </Section>
+    )
+  }
+
+  {
+    (profile.volunteering.length > 0 || profile.interests.length > 0) && (
+      <Section labelledby="beyond-heading" divided>
+        <h2 id="beyond-heading" class="text-3xl">
+          Volunteering and interests
+        </h2>
+        <div class="mt-heading-gap grid gap-10 md:grid-cols-2">
+          {[
+            { heading: 'Volunteering', items: profile.volunteering },
+            { heading: 'Interests', items: profile.interests },
+          ]
+            .filter((list) => list.items.length > 0)
+            .map((list) => (
+              <div>
+                <h3 class="font-sans text-base font-medium">{list.heading}</h3>
+                <ul class="mt-3 flex max-w-reading flex-col gap-2" role="list">
+                  {list.items.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
         </div>
       </Section>
     )
