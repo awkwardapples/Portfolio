@@ -115,8 +115,9 @@
     display: none !important;
   }
 
-  /* Sections land below the sticky bar. */
-  section[id] {
+  /* Sections, and document cards a short link lands on, sit below the sticky bar. */
+  section[id],
+  .document-card[id] {
     scroll-margin-top: theme('spacing.16');
   }
 }

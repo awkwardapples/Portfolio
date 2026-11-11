@@ -9,6 +9,10 @@
  *
  * `shelf` stacks the cover above the text (the homepage and /research);
  * `row` puts it beside the text (the documents on a work page).
+ *
+ * On a work page each card has an id ("read", then "read-2" and so on), so a
+ * short link can land on it: documents.ts scrolls to the card and, on wider
+ * screens, opens the reader (Pass 11, D.2).
  */
 import { Picture } from 'astro:assets';
 
@@ -34,6 +38,8 @@ interface Props {
   work?: { href: string; title: string } | undefined;
   layout?: 'shelf' | 'row';
   headingLevel?: 'h2' | 'h3';
+  /** The card's id on a work page: "read", "read-2" and so on. */
+  id?: string | undefined;
 }
 
 const {
@@ -44,6 +50,7 @@ const {
   work,
   layout = 'shelf',
   headingLevel: Heading = 'h3',
+  id,
 } = Astro.props;
 const info = documentInfo(document.file);
 const url = info?.url ?? `/documents/${document.file}`;
@@ -52,6 +59,7 @@ const copyButton = buttonClass({ variant: 'secondary', size: 'compact' });
 ---
 
 <li
+  id={id}
   class:list={['document-card', layout === 'row' ? 'grid gap-6 sm:grid-cols-12' : 'flex flex-col gap-4']}
   data-document={url}
   data-document-title={document.title}
@@ -80,7 +88,9 @@ const copyButton = buttonClass({ variant: 'secondary', size: 'compact' });
     )
   }
   <div class:list={[layout === 'row' && 'sm:col-span-9']}>
-    <Heading class="text-xl">{document.title}</Heading>
+    <Heading class="text-xl" tabindex={id ? '-1' : undefined} data-document-heading>
+      {document.title}
+    </Heading>
     <p class="mt-2 flex flex-wrap gap-x-4 text-sm text-graphite">
       <span>{DOC_TYPE_LABELS[document.docType]}</span>
       {date && <time datetime={isoDate(date)}>{monthYear(date)}</time>}

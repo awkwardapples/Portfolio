@@ -54,6 +54,9 @@ const site = Astro.site ?? new URL('https://joshlennon.com');
 const leadMedia = data.media.find((item) => item.type === 'youtube' || item.type === 'video');
 const [leadDocument, ...otherDocuments] = leadMedia ? [] : data.documents;
 const documents = leadMedia ? data.documents : otherDocuments;
+// Cards in display order are "read", "read-2" and so on: the CV's short links land on them.
+const readId = (position: number) => (position === 0 ? 'read' : `read-${position + 1}`);
+const firstListed = leadDocument ? 1 : 0;
 const otherMedia = data.media.filter((item) => item !== leadMedia);
 
 const citationFor = (document: (typeof data.documents)[number]) =>
@@ -205,6 +208,7 @@ const structuredData = [
         ) : leadDocument ? (
           <ul role="list">
             <DocumentCard
+              id={readId(0)}
               document={leadDocument}
               date={date}
               citation={citationFor(leadDocument)}
@@ -245,8 +249,9 @@ const structuredData = [
           Documents
         </h2>
         <ul class="mt-8 flex flex-col gap-12" role="list">
-          {documents.map((document) => (
+          {documents.map((document, index) => (
             <DocumentCard
+              id={readId(firstListed + index)}
               document={document}
               date={date}
               citation={citationFor(document)}

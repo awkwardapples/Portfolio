@@ -67,6 +67,10 @@ jobs:
       - name: JavaScript budgets
         run: pnpm check:budgets
 
+      # The public CV: no phone number or referee, and its links to the site resolve (Pass 11, C.1).
+      - name: CV checks
+        run: pnpm check:cv
+
       - name: PDF cover rendering on Linux (spec Pass 2 acceptance)
         run: pnpm media:pdf apps/site/public/documents/kerr-microscopy-dissertation.pdf --dry-run
 
