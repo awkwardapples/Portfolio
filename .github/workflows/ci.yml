@@ -25,9 +25,7 @@ env:
 jobs:
   gates:
     name: Gates (Node 24)
-    # Pinned: ubuntu-latest became 26.04 in November 2026, where Playwright's --with-deps
-    # could not reach the Ubuntu security mirror for Chromium's system packages.
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Checkout
