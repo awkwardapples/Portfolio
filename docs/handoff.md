@@ -14,9 +14,9 @@ The architecture is in [ADR-0039](decisions/0039-portfolio-architecture.md) and 
 
 The full list, with each item's reason, is under Open items in [`current-state.md`](current-state.md). In order:
 
-1. **Cloudflare**, [`deployment.md`](deployment.md) steps 1 to 3. Merges deploy as soon as the two repository secrets exist; until then the deploy job passes with a "Deploy skipped" notice.
+1. **Cloudflare**, [`deployment.md`](deployment.md) steps 1 to 3. Done: merges, and the daily schedule, deploy.
 2. **The contact form**, steps 4 to 6: Turnstile, [Make.com](make-com.md) and the four Worker secrets. Until then messages are stored in D1 and wait to be forwarded.
-3. **The domain**, steps 8 to 11: `joshlennon.com` on Cloudflare and attached to the Worker, `www` redirected, and `workers.dev` switched off.
+3. **The domain**, steps 8 to 11. Done on 19 November 2026: `joshlennon.com` serves the site, `www` redirects to it, and `workers.dev` is switched off.
 4. **A screen-reader pass** (VoiceOver or NVDA). The checklist is in `current-state.md`.
 5. **Content is in** (7 October 2026). `pnpm content:todo` prints any placeholder or draft that comes back; today there are none. What could still be added is under "As content arrives" in [`roadmap.md`](roadmap.md).
 

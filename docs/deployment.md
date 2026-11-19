@@ -117,6 +117,8 @@ Do these once the site is live on `workers.dev` (step 3). Each step ends with a 
 
 ### 11. Switch off the workers.dev address
 
+Done on 19 November 2026, once steps 9 and 10 were checked on the live domain.
+
 Spec S asks for one address, so once steps 9 and 10 work the `workers.dev` copy goes. Tell Claude "the domain is live", or make this change in `apps/edge/wrangler.jsonc` yourself and merge it to `main`:
 
 ```jsonc

@@ -1,6 +1,6 @@
 # Current State
 
-_Last updated: 2026-11-11 (Pass 11: Arbiter, the new CV and its short links)_
+_Last updated: 2026-11-19 (the domain is live)_
 
 This repository is Josh Lennon's portfolio. It was built in the passes of section V of the portfolio specification (v1.2) on the `portfolio-transformation` branch, each merged to `main` once its gates were green, then Pass 11 from its addendum. The specifications were removed from the repository once Pass 11 was done, at Josh's request; they are in the history: `git show d9d5645:docs/portfolio-spec.md` (v1.2) and `git show db2fac7:docs/portfolio-spec-pass-11.md`. References to "spec" sections in the code and the ADRs are to those files. What remains is the set-up and content under Open items, in the order [`handoff.md`](handoff.md) gives. The GrowTrades platform's own state, as last recorded, is archived in [`archive/growtrades-platform/current-state.md`](archive/growtrades-platform/current-state.md).
 
@@ -22,6 +22,16 @@ This repository is Josh Lennon's portfolio. It was built in the passes of sectio
 | 11   | Arbiter, the new CV and its short links    | Built 2026-11-11, waiting for Josh's review before merging |
 
 ## What exists
+
+### The domain is live (2026-11-19)
+
+- `https://joshlennon.com` serves the site, from the Worker's custom domain. Josh did steps 8 to 10 in Cloudflare; the daily deploys run now that the repository secrets exist. Checked live:
+  - the homepage and `/work/arbiter` answer 200;
+  - `/api/health` answers `{"status":"ok"}`;
+  - `www.joshlennon.com/work` answers 301 to `https://joshlennon.com/work`;
+  - `/intro-to-deep-learning` answers 301 to the paper's card.
+- Step 11: `apps/edge/wrangler.jsonc` lists `joshlennon.com` as the custom domain under `routes`, so a deploy never detaches it, and `workers_dev` is false, so `joshlennon-site.joshlennon71.workers.dev` no longer serves the site after the next deploy.
+- For Josh: remove the `workers.dev` hostname from the Turnstile widget (step 4).
 
 ### Pass 11: Arbiter, the new CV and its short links (2026-11-11)
 
@@ -559,7 +569,7 @@ Earlier choices to confirm (each is one line to change):
 
 Needs Josh, for set-up:
 
-- **The domain** ([`deployment.md`](deployment.md) steps 8 to 11): `joshlennon.com` on Cloudflare and attached to the Worker, `www` redirected, then `workers.dev` switched off (tell Claude "the domain is live" for the `wrangler.jsonc` change). After launch, step 12: Search Console and the online structured-data validators.
+- **The domain:** done on 19 November 2026 (steps 8 to 11). After launch, step 12: Search Console and the online structured-data validators.
 - **A screen-reader pass before launch** (spec R): VoiceOver (Safari, Mac or iPhone) or NVDA (Windows, free) on the homepage, a work page, `/contact` and `/work/growtrades`. Listen for:
   - the threshold's question and its four answers;
   - the work rows' titles and links;
@@ -569,8 +579,8 @@ Needs Josh, for set-up:
 
   Record what you find here. The automated checks (axe on every page, keyboard flows) do not replace this.
 
-- **Cloudflare set-up** (blocks the first real deploy, not the merges): account, `workers.dev` subdomain, API token, and the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets. Steps 1 to 3 in [`deployment.md`](deployment.md).
-- **The contact form** (after the first deploy): a Turnstile widget and the `PUBLIC_TURNSTILE_SITE_KEY` variable, the Make.com scenario ([`make-com.md`](make-com.md), now with the `growtrades` id), and the four Worker secrets. Steps 4 to 6 in [`deployment.md`](deployment.md). Until then, messages are stored in D1 and wait.
+- **Cloudflare set-up:** done. Merges and the daily schedule deploy (steps 1 to 3).
+- **The contact form** (after the first deploy): a Turnstile widget and the `PUBLIC_TURNSTILE_SITE_KEY` variable, the Make.com scenario ([`make-com.md`](make-com.md)), and the four Worker secrets. Steps 4 to 6 in [`deployment.md`](deployment.md). Until then, messages are stored in D1 and wait.
 - **GitHub**: `GH_PROFILE_TOKEN` (`deployment.md` step 7) for fresh data on every deploy; the snapshot is from 7 October 2026.
 - **The privacy notice** at `/privacy` is written for what the site does; read it, and check with the ICO's self-assessment whether the data protection fee applies to you. It now gives `joshlennon71@gmail.com` for data requests. It says your inbox and Sheet copies are kept "only as long as I need them"; give a period if you prefer one.
 - **Optional:** more log posts; a Spotify release URL for `/music`; photos for an outside-work section; embedded titles in the PDFs (File, Properties, Title); the first-person bio (spec Y.7).
